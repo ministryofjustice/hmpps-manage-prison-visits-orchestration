@@ -1,6 +1,6 @@
 {
   "role": {
-    "name": "hmpps-template-kotlin"
+    "name": "hmpps-manage-prison-visits-orchestration"
   },
   "customDimensions": {
     "service.version": "${BUILD_NUMBER}"
