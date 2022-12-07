@@ -1,9 +1,9 @@
 ---
-# Per environment values which override defaults in hmpps-template-kotlin/values.yaml
+# Per environment values which override defaults in hmpps-manage-prison-visits-orchestration/values.yaml
 
 generic-service:
   ingress:
-    host: hmpps-template-kotlin-preprod.hmpps.service.justice.gov.uk
+    host: hmpps-manage-prison-visits-orchestration-preprod.hmpps.service.justice.gov.uk
 
   env:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
