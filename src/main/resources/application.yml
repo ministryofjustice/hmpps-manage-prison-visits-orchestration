@@ -18,8 +18,25 @@ spring:
       test:
         - "stdout"
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${hmpps.auth.url}/.well-known/jwks.json
+      client:
+        registration:
+          visit-scheduler:
+            provider: hmpps-auth
+            client-id: ${system.client.id}
+            client-secret: ${system.client.secret}
+            authorization-grant-type: client_credentials
+            scope: read
+        provider:
+          hmpps-auth:
+            token-uri: ${hmpps.auth.url}/oauth/token
+
 server:
-  port: 8080
+  port: 8081
   servlet:
     context-path: /
   forward-headers-strategy: native
@@ -49,3 +66,10 @@ management:
     info:
       cache:
         time-to-live: 2000ms
+
+visit-scheduler:
+  api:
+    url: http://localhost:8080
+    timeout: 10s
+
+hmpps.auth.url: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
