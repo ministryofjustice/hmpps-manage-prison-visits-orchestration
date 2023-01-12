@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.reactive.function.client.WebClientException
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import javax.validation.ValidationException
 
 @RestControllerAdvice
@@ -37,6 +39,28 @@ class HmppsManagePrisonVisitsOrchestrationExceptionHandler {
           developerMessage = e.message
         )
       )
+  }
+
+  @ExceptionHandler(WebClientResponseException::class)
+  fun handleWebClientResponseException(e: WebClientResponseException): ResponseEntity<ByteArray> {
+    if (e.statusCode.is4xxClientError) {
+      log.debug("Unexpected client exception with message {}", e.message)
+    } else {
+      log.error("Unexpected server exception", e)
+    }
+    return ResponseEntity
+      .status(e.rawStatusCode)
+      .body(e.responseBodyAsByteArray)
+  }
+
+  @ExceptionHandler(WebClientException::class)
+  fun handleWebClientException(e: WebClientException): ResponseEntity<ErrorResponse> {
+    log.error("Unexpected exception", e)
+    val error = ErrorResponse(
+      status = INTERNAL_SERVER_ERROR,
+      developerMessage = e.message
+    )
+    return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(error)
   }
 
   companion object {

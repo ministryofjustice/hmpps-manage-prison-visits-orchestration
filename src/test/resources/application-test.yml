@@ -4,3 +4,8 @@ server:
 management.endpoint:
   health.cache.time-to-live: 0
   info.cache.time-to-live: 0
+
+visit-scheduler:
+  api:
+    url: http://localhost:8092
+    timeout: 10s
