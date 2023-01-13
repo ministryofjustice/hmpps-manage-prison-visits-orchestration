@@ -15,8 +15,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.Res
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.SupportTypeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.VisitCancelDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.VisitDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.VisitSearchDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import java.time.Duration
 import java.util.Optional
 
@@ -36,10 +36,10 @@ class VisitSchedulerClient(
       .bodyToMono<VisitDto>().block(apiTimeout)
   }
 
-  fun getVisits(visitSearchDto: VisitSearchDto): RestPage<VisitDto>? {
+  fun getVisits(visitSearchRequestFilter: VisitSearchRequestFilter): RestPage<VisitDto>? {
     return webClient.get()
       .uri("/visits/search") {
-        visitSearchUriBuilder(visitSearchDto, it).build()
+        visitSearchUriBuilder(visitSearchRequestFilter, it).build()
       }
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
@@ -108,15 +108,23 @@ class VisitSchedulerClient(
       .bodyToMono<List<VisitSessionDto>>().block(apiTimeout)
   }
 
-  private fun visitSearchUriBuilder(visitSearchDto: VisitSearchDto, uriBuilder: UriBuilder): UriBuilder {
-    uriBuilder.queryParamIfPresent("prisonId", Optional.ofNullable(visitSearchDto.prisonCode))
-    uriBuilder.queryParam("prisonerId", visitSearchDto.prisonerId)
-    uriBuilder.queryParam("visitStatus", visitSearchDto.visitStatusList)
-    uriBuilder.queryParamIfPresent("startDateTime", Optional.ofNullable(visitSearchDto.startDateTime))
-    uriBuilder.queryParamIfPresent("endDateTime", Optional.ofNullable(visitSearchDto.endDateTime))
-    uriBuilder.queryParamIfPresent("visitorId", Optional.ofNullable(visitSearchDto.visitorId))
-    uriBuilder.queryParam("page", visitSearchDto.page)
-    uriBuilder.queryParam("size", visitSearchDto.size)
+  fun getSupportedPrisons(): List<String>? {
+    return webClient.get()
+      .uri("/config/prisons/supported")
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<List<String>>().block(apiTimeout)
+  }
+
+  private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {
+    uriBuilder.queryParamIfPresent("prisonId", Optional.ofNullable(visitSearchRequestFilter.prisonCode))
+    uriBuilder.queryParamIfPresent("prisonerId", Optional.ofNullable(visitSearchRequestFilter.prisonerId))
+    uriBuilder.queryParam("visitStatus", visitSearchRequestFilter.visitStatusList)
+    uriBuilder.queryParamIfPresent("startDateTime", Optional.ofNullable(visitSearchRequestFilter.startDateTime))
+    uriBuilder.queryParamIfPresent("endDateTime", Optional.ofNullable(visitSearchRequestFilter.endDateTime))
+    uriBuilder.queryParamIfPresent("visitorId", Optional.ofNullable(visitSearchRequestFilter.visitorId))
+    uriBuilder.queryParam("page", visitSearchRequestFilter.page)
+    uriBuilder.queryParam("size", visitSearchRequestFilter.size)
     return uriBuilder
   }
 

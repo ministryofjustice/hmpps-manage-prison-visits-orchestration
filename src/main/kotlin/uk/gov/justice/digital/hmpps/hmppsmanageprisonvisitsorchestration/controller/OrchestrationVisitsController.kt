@@ -24,7 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.Res
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.SupportTypeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.VisitCancelDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.VisitDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.VisitSearchDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
 import java.time.LocalDateTime
 import javax.validation.Valid
@@ -142,7 +142,7 @@ class OrchestrationVisitsController(
       example = "50"
     ) size: Int
   ): Page<VisitDto>? {
-    val visitSearchDto = VisitSearchDto(
+    val visitSearchRequestFilter = VisitSearchRequestFilter(
       prisonCode = prisonCode,
       prisonerId = prisonerId,
       visitorId = visitorId?.toString(),
@@ -152,7 +152,7 @@ class OrchestrationVisitsController(
       page = page,
       size = size
     )
-    return visitSchedulerService.visitsSearch(visitSearchDto)
+    return visitSchedulerService.visitsSearch(visitSearchRequestFilter)
   }
 
   @PreAuthorize("hasRole('VISIT_SCHEDULER')")
@@ -369,8 +369,26 @@ class OrchestrationVisitsController(
   }
 
   @PreAuthorize("hasRole('VISIT_SCHEDULER')")
-  @GetMapping("visit-support")
-  fun getVisitSupport(): List<SupportTypeDto>? {
-    return visitSchedulerService.getVisitSupport()
-  }
+  @GetMapping("/visit-support")
+  @Operation(
+    summary = "Available Support",
+    description = "Retrieve all available support types",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Available Support information returned"
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))]
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to Get Available Support",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))]
+      )
+    ]
+  )
+  fun getSupportTypes(): List<SupportTypeDto>? = visitSchedulerService.getVisitSupport()
 }

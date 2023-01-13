@@ -12,8 +12,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.Res
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.SupportTypeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.VisitCancelDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.VisitDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.VisitSearchDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 
 @Service
 class VisitSchedulerService(
@@ -27,12 +27,12 @@ class VisitSchedulerService(
     return visitSchedulerClient.getVisitByReference(reference)
   }
 
-  fun visitsSearch(visitSearchDto: VisitSearchDto): Page<VisitDto>? {
+  fun visitsSearch(visitSearchRequestFilter: VisitSearchRequestFilter): Page<VisitDto>? {
     try {
-      return visitSchedulerClient.getVisits(visitSearchDto)
+      return visitSchedulerClient.getVisits(visitSearchRequestFilter)
     } catch (e: WebClientResponseException) {
       if (e.statusCode != HttpStatus.NOT_FOUND) {
-        LOG.error("Exception thrown on visit-scheduler call - /visits/search - with parameters - $visitSearchDto", e)
+        LOG.error("Exception thrown on visit-scheduler call - /visits/search - with parameters - $visitSearchRequestFilter", e)
         throw e
       }
     }
@@ -66,5 +66,9 @@ class VisitSchedulerService(
 
   fun getVisitSessions(prisonCode: String, prisonerId: String?, min: Long?, max: Long?): List<VisitSessionDto>? {
     return visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max)
+  }
+
+  fun getSupportedPrisons(): List<String>? {
+    return visitSchedulerClient.getSupportedPrisons()
   }
 }

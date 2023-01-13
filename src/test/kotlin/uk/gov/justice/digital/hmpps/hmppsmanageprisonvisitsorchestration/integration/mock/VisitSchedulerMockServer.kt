@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.SupportTypeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.VisitSessionDto
 
@@ -182,6 +183,34 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
             .withStatus(HttpStatus.OK.value())
             .withBody(
               getJsonString(visitSessions)
+            )
+        )
+    )
+  }
+
+  fun stubGetVisitSupport(visitSupportList: List<SupportTypeDto>) {
+    stubFor(
+      get("/visit-support")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+            .withStatus(HttpStatus.OK.value())
+            .withBody(
+              getJsonString(visitSupportList)
+            )
+        )
+    )
+  }
+
+  fun stubGetSupportedPrisons(supportedPrisonsList: List<String>) {
+    stubFor(
+      get("/config/prisons/supported")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+            .withStatus(HttpStatus.OK.value())
+            .withBody(
+              getJsonString(supportedPrisonsList)
             )
         )
     )
