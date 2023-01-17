@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client
 
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
@@ -26,8 +25,6 @@ class VisitSchedulerClient(
   @Qualifier("visitSchedulerWebClient") private val webClient: WebClient,
   @Value("\${visit-scheduler.api.timeout:10s}") val apiTimeout: Duration
 ) {
-  private val pagedModel = object : ParameterizedTypeReference<RestPage<VisitDto>>() {}
-
   fun getVisitByReference(reference: String): VisitDto? {
     return webClient.get()
       .uri("/visits/$reference")
@@ -43,7 +40,7 @@ class VisitSchedulerClient(
       }
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono(pagedModel).block(apiTimeout)
+      .bodyToMono<RestPage<VisitDto>>().block(apiTimeout)
   }
 
   fun reserveVisitSlot(reserveVisitSlotDto: ReserveVisitSlotDto): VisitDto? {
