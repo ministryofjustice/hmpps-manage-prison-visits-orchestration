@@ -2,17 +2,17 @@
 # Per environment values which override defaults in hmpps-manage-prison-visits-orchestration/values.yaml
 
 generic-service:
-  replicaCount: 4
+  replicaCount: 2
 
   ingress:
-    host: hmpps-manage-prison-visits-orchestration.hmpps.service.justice.gov.uk
+    host: hmpps-manage-prison-visits-orchestration-staging.hmpps.service.justice.gov.uk
 
   env:
-    HMPPS_AUTH_URL: https://sign-in.hmpps.service.justice.gov.uk/auth
-    VISIT-SCHEDULER_API_URL: https://visit-scheduler.prison.service.justice.gov.uk
-    APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
+    HMPPS_AUTH_URL: https://sign-in-staging.hmpps.service.justice.gov.uk/auth
+    VISIT-SCHEDULER_API_URL: https://visit-scheduler-staging.prison.service.justice.gov.uk
+    APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
 
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:
-  alertSeverity: digital-prison-service
+  alertSeverity: digital-prison-service-dev
