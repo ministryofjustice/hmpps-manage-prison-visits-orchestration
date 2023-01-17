@@ -27,9 +27,7 @@ class ResourceServerConfiguration {
           "/swagger-ui/**", "/swagger-ui.html",
           "/swagger-resources",
           "/swagger-resources/configuration/ui",
-          "/swagger-resources/configuration/security",
-          "/webjars/**", "/favicon.ico", "/csrf",
-          "/h2-console/**",
+          "/swagger-resources/configuration/security"
         ).permitAll().anyRequest().authenticated()
       }.oauth2ResourceServer().jwt().jwtAuthenticationConverter(AuthAwareTokenConverter())
 
