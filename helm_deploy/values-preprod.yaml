@@ -5,7 +5,7 @@ generic-service:
   replicaCount: 2
 
   ingress:
-    host: hmpps-manage-prison-visits-orchestration-preprod.hmpps.service.justice.gov.uk
+    host: hmpps-manage-prison-visits-orchestration-preprod.prison.service.justice.gov.uk
 
   env:
     HMPPS_AUTH_URL: https://sign-in-preprod.hmpps.service.justice.gov.uk/auth
