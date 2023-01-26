@@ -10,9 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.SupportTypeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.VisitSessionDto
+import java.time.LocalDate
+import java.time.LocalTime
 
 class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper) : WireMockServer(8092) {
 
@@ -214,6 +217,30 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
             )
         )
     )
+  }
+
+  fun stubGetSessionCapacity(prisonCode: String, sessionDate: LocalDate, sessionStartTime: LocalTime, sessionEndTime: LocalTime, sessionCapacityDto: SessionCapacityDto?) {
+    if (sessionCapacityDto == null) {
+      stubFor(
+        get("/visit-sessions/capacity?prisonId=$prisonCode&sessionDate=$sessionDate&sessionStartTime=$sessionStartTime&sessionEndTime=$sessionEndTime")
+          .willReturn(
+            aResponse()
+              .withStatus(HttpStatus.NOT_FOUND.value())
+          )
+      )
+    } else {
+      stubFor(
+        get("/visit-sessions/capacity?prisonId=$prisonCode&sessionDate=$sessionDate&sessionStartTime=$sessionStartTime&sessionEndTime=$sessionEndTime")
+          .willReturn(
+            aResponse()
+              .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+              .withStatus(HttpStatus.OK.value())
+              .withBody(
+                getJsonString(sessionCapacityDto)
+              )
+          )
+      )
+    }
   }
 
   private fun getJsonString(obj: Any): String {

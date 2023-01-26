@@ -11,12 +11,15 @@ import org.springframework.web.util.UriBuilder
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.ChangeVisitSlotRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.ReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.SupportTypeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.VisitCancelDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalTime
 import java.util.Optional
 
 @Component
@@ -113,6 +116,21 @@ class VisitSchedulerClient(
       .bodyToMono<List<String>>().block(apiTimeout)
   }
 
+  fun getSessionCapacity(
+    prisonCode: String,
+    sessionDate: LocalDate,
+    sessionStartTime: LocalTime,
+    sessionEndTime: LocalTime
+  ): SessionCapacityDto? {
+    return webClient.get()
+      .uri("/visit-sessions/capacity") {
+        visitSessionsCapacityUriBuilder(prisonCode, sessionDate, sessionStartTime, sessionEndTime, it).build()
+      }
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<SessionCapacityDto>().block(apiTimeout)
+  }
+
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParamIfPresent("prisonId", Optional.ofNullable(visitSearchRequestFilter.prisonCode))
     uriBuilder.queryParamIfPresent("prisonerId", Optional.ofNullable(visitSearchRequestFilter.prisonerId))
@@ -130,6 +148,21 @@ class VisitSchedulerClient(
     uriBuilder.queryParamIfPresent("prisonerId", Optional.ofNullable(prisonerId))
     uriBuilder.queryParamIfPresent("min", Optional.ofNullable(min))
     uriBuilder.queryParamIfPresent("max", Optional.ofNullable(max))
+    return uriBuilder
+  }
+
+  private fun visitSessionsCapacityUriBuilder(
+    prisonCode: String,
+    sessionDate: LocalDate,
+    sessionStartTime: LocalTime,
+    sessionEndTime: LocalTime,
+    uriBuilder: UriBuilder
+  ): UriBuilder {
+    uriBuilder.queryParam("prisonId", prisonCode)
+    uriBuilder.queryParam("sessionDate", sessionDate)
+    uriBuilder.queryParam("sessionStartTime", sessionStartTime)
+    uriBuilder.queryParam("sessionEndTime", sessionEndTime)
+
     return uriBuilder
   }
 }
