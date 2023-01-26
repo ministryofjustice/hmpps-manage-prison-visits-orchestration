@@ -7,13 +7,17 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
+import java.time.LocalDate
+import java.time.LocalTime
 
 @RestController
 class OrchestrationSessionsController(private val visitSchedulerService: VisitSchedulerService) {
@@ -67,4 +71,57 @@ class OrchestrationSessionsController(private val visitSchedulerService: VisitSc
     ) max: Long?
   ): List<VisitSessionDto>? =
     visitSchedulerService.getVisitSessions(prisonCode, prisonerId, min, max)
+
+  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @GetMapping("/visit-sessions/capacity")
+  @Operation(
+    summary = "Returns the VSIP session capacity for the given sessions",
+    description = "Returns the VSIP session capacity for the given sessions",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "the session capacity for the given sessions"
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))]
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request ",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))]
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Capacity not found ",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))]
+      )
+    ]
+  )
+  fun getSessionCapacity(
+    @RequestParam(value = "prisonId", required = true)
+    @Parameter(
+      description = "Query by NOMIS Prison Identifier",
+      example = "CLI"
+    ) prisonCode: String,
+    @RequestParam(value = "sessionDate", required = true)
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @Parameter(
+      description = "Session date",
+      example = "2020-11-01"
+    ) sessionDate: LocalDate,
+    @RequestParam(value = "sessionStartTime", required = true)
+    @DateTimeFormat(iso = DateTimeFormat.ISO.TIME)
+    @Parameter(
+      description = "Session start time",
+      example = "13:30:00"
+    ) sessionStartTime: LocalTime,
+    @RequestParam(value = "sessionEndTime", required = true)
+    @DateTimeFormat(iso = DateTimeFormat.ISO.TIME)
+    @Parameter(
+      description = "Session end time",
+      example = "14:30:00"
+    ) sessionEndTime: LocalTime
+  ): SessionCapacityDto? = visitSchedulerService.getSessionCapacity(prisonCode, sessionDate, sessionStartTime, sessionEndTime)
 }
