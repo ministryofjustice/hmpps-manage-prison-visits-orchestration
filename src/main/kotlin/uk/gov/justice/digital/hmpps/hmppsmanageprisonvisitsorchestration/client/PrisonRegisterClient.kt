@@ -9,12 +9,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import java.time.Duration
 
 @Component
-class  PrisonRegisterClient(
+class PrisonRegisterClient(
   @Qualifier("prisonRegisterWebClient") private val webClient: WebClient,
   @Value("\${prisoner.offender.search.timeout:10s}") private val apiTimeout: Duration
 ) {
-  fun getPrisons(
-  ): List<PrisonDto>? {
+  fun getPrisons(): List<PrisonDto>? {
     return webClient.get().uri("/prisons")
       .retrieve()
       .bodyToMono<List<PrisonDto>>()

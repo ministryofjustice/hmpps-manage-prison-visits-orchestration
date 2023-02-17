@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import java.time.Duration
 
 @Component
-class  PrisonerOffenderSearchClient(
+class PrisonerOffenderSearchClient(
   @Qualifier("prisonerOffenderSearchWebClient") private val webClient: WebClient,
   @Value("\${prisoner.offender.search.timeout:10s}") private val apiTimeout: Duration
 ) {

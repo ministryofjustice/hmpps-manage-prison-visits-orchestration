@@ -19,7 +19,7 @@ data class PrisonerProfileDto(
   val firstName: String,
 
   @Schema(required = true, description = "Last name", example = "Larsen")
-val lastName: String,
+  val lastName: String,
 
   @Schema(required = false, description = "Date of Birth", example = "1975-04-02")
   val dateOfBirth: LocalDate,
@@ -70,4 +70,3 @@ val lastName: String,
     visitBalances = visitBalances
   )
 }
-

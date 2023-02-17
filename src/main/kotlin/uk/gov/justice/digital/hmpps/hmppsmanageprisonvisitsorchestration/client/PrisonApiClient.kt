@@ -8,7 +8,11 @@ import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.*
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.CaseLoadDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.InmateDetailDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.PrisonerBookingSummaryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.VisitBalancesDto
 import java.time.Duration
 
 @Component
@@ -44,11 +48,10 @@ class PrisonApiClient(
       .block(apiTimeout)
   }
 
-
   fun getOffenderRestrictions(offenderNo: String): OffenderRestrictionsDto? {
     return webClient.get()
-      .uri("/api/offenders/${offenderNo}/offender-restrictions") {
-        it.queryParam("activeRestrictionsOnly", true ).build()
+      .uri("/api/offenders/$offenderNo/offender-restrictions") {
+        it.queryParam("activeRestrictionsOnly", true).build()
       }
       .retrieve()
       .bodyToMono<OffenderRestrictionsDto>()
@@ -64,9 +67,9 @@ class PrisonApiClient(
   }
 
   fun setActiveCaseLoad(caseLoadId: String) {
-     webClient.put().uri("/api/users/me/activeCaseLoad")
-       .body(BodyInserters.fromValue(caseLoadId))
-       .accept(MediaType.APPLICATION_JSON)
-       .retrieve()
+    webClient.put().uri("/api/users/me/activeCaseLoad")
+      .body(BodyInserters.fromValue(caseLoadId))
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
   }
 }

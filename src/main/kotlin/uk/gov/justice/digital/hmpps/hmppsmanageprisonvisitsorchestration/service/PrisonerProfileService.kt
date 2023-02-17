@@ -12,10 +12,10 @@ class PrisonerProfileService(
   private val prisonerOffenderSearchClient: PrisonerOffenderSearchClient,
 ) {
   fun getPrisonerProfile(offenderNo: String): PrisonerProfileDto? {
-    val prisoner = prisonerOffenderSearchClient.getPrisonerById(offenderNo)?:
-      throw InvalidPrisonerProfileException("Unable to retrieve offender details from Prison Offender Search API")
-    val inmateDetail = prisonApiClient.getInmateDetails(offenderNo)?:
-      throw InvalidPrisonerProfileException("Unable to retrieve inmate details from Prison API")
+    val prisoner = prisonerOffenderSearchClient
+      .getPrisonerById(offenderNo) ?: throw InvalidPrisonerProfileException("Unable to retrieve offender details from Prison Offender Search API")
+    val inmateDetail = prisonApiClient
+      .getInmateDetails(offenderNo) ?: throw InvalidPrisonerProfileException("Unable to retrieve inmate details from Prison API")
     val visitBalances = prisonApiClient.getVisitBalances(offenderNo)
 
     val prisonerBookingSummaryList =

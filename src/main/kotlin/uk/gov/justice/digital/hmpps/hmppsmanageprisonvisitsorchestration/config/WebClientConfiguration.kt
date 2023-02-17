@@ -145,7 +145,6 @@ class WebClientConfiguration(
     return WebClient.builder().baseUrl(whereAboutsApiUrl).build()
   }
 
-
   @Bean
   fun authorizedClientManager(
     clientRegistrationRepository: ClientRegistrationRepository?,
