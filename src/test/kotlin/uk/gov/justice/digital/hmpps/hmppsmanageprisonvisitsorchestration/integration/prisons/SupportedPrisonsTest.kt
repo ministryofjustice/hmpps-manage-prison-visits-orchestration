@@ -49,8 +49,9 @@ class SupportedPrisonsTest : IntegrationTestBase() {
     val responseSpec = callGetSupportedPrisons(webTestClient, roleVisitSchedulerHttpHeaders)
 
     // Then
-    val results = responseSpec.expectStatus().isOk
+    responseSpec.expectStatus().isOk
       .expectBody()
+      .jsonPath("$.size()").isEqualTo(0)
   }
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<String> {

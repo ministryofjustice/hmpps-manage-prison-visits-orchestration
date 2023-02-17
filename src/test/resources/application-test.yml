@@ -10,7 +10,6 @@ visit-scheduler:
     url: http://localhost:8092
     timeout: 10s
 
-
 prison:
   api:
     #url: http://localhost:8091
