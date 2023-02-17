@@ -20,9 +20,23 @@ import org.springframework.web.reactive.function.client.WebClient
 @Configuration
 class WebClientConfiguration(
   @Value("\${visit-scheduler.api.url}")
-  private val visitSchedulerBaseUrl: String
-) {
+  private val visitSchedulerBaseUrl: String,
 
+  @Value("\${prison.api.url}")
+  private val prisonApiBaseUrl: String,
+
+  @Value("\${prisoner-offender.search.url}")
+  private val prisonOffenderSearchBaseUrl: String,
+
+  @Value("\${prison-register.api.url}")
+  private val prisonRegisterBaseUrl: String,
+
+  @Value("\${prisoner-contact.registry.url}")
+  private val prisonerContactRegistryBaseUrl: String,
+
+  @Value("\${whereabouts.api.url}")
+  private val whereAboutsApiUrl: String
+) {
   @Bean
   fun visitSchedulerWebClient(): WebClient {
     val exchangeStrategies = ExchangeStrategies.builder()
@@ -37,9 +51,100 @@ class WebClientConfiguration(
   }
 
   @Bean
+  fun prisonApiWebClient(): WebClient {
+    val exchangeStrategies = ExchangeStrategies.builder()
+      .codecs { configurer: ClientCodecConfigurer -> configurer.defaultCodecs().maxInMemorySize(-1) }
+      .build()
+
+    return WebClient.builder()
+      .baseUrl(prisonApiBaseUrl)
+      .filter(addAuthHeaderFilterFunction())
+      .exchangeStrategies(exchangeStrategies)
+      .build()
+  }
+
+  @Bean
+  fun prisonerOffenderSearchWebClient(): WebClient {
+    val exchangeStrategies = ExchangeStrategies.builder()
+      .codecs { configurer: ClientCodecConfigurer -> configurer.defaultCodecs().maxInMemorySize(-1) }
+      .build()
+
+    return WebClient.builder()
+      .baseUrl(prisonOffenderSearchBaseUrl)
+      .filter(addAuthHeaderFilterFunction())
+      .exchangeStrategies(exchangeStrategies)
+      .build()
+  }
+
+  @Bean
+  fun prisonRegisterWebClient(): WebClient {
+    val exchangeStrategies = ExchangeStrategies.builder()
+      .codecs { configurer: ClientCodecConfigurer -> configurer.defaultCodecs().maxInMemorySize(-1) }
+      .build()
+
+    return WebClient.builder()
+      .baseUrl(prisonRegisterBaseUrl)
+      .filter(addAuthHeaderFilterFunction())
+      .exchangeStrategies(exchangeStrategies)
+      .build()
+  }
+
+  @Bean
+  fun prisonerContactRegistryWebClient(): WebClient {
+    val exchangeStrategies = ExchangeStrategies.builder()
+      .codecs { configurer: ClientCodecConfigurer -> configurer.defaultCodecs().maxInMemorySize(-1) }
+      .build()
+
+    return WebClient.builder()
+      .baseUrl(prisonerContactRegistryBaseUrl)
+      .filter(addAuthHeaderFilterFunction())
+      .exchangeStrategies(exchangeStrategies)
+      .build()
+  }
+
+  @Bean
+  fun whereAboutsApiWebClient(): WebClient {
+    val exchangeStrategies = ExchangeStrategies.builder()
+      .codecs { configurer: ClientCodecConfigurer -> configurer.defaultCodecs().maxInMemorySize(-1) }
+      .build()
+
+    return WebClient.builder()
+      .baseUrl(whereAboutsApiUrl)
+      .filter(addAuthHeaderFilterFunction())
+      .exchangeStrategies(exchangeStrategies)
+      .build()
+  }
+
+  @Bean
   fun visitSchedulerHealthWebClient(): WebClient {
     return WebClient.builder().baseUrl(visitSchedulerBaseUrl).build()
   }
+
+  @Bean
+  fun prisonApiHealthWebClient(): WebClient {
+    return WebClient.builder().baseUrl(prisonApiBaseUrl).build()
+  }
+
+  @Bean
+  fun prisonOffenderSearchHealthWebClient(): WebClient {
+    return WebClient.builder().baseUrl(prisonOffenderSearchBaseUrl).build()
+  }
+
+  @Bean
+  fun prisonRegisterHealthWebClient(): WebClient {
+    return WebClient.builder().baseUrl(prisonRegisterBaseUrl).build()
+  }
+
+  @Bean
+  fun prisonerContactRegistryHealthWebClient(): WebClient {
+    return WebClient.builder().baseUrl(prisonerContactRegistryBaseUrl).build()
+  }
+
+  @Bean
+  fun whereAboutsHealthWebClient(): WebClient {
+    return WebClient.builder().baseUrl(whereAboutsApiUrl).build()
+  }
+
 
   @Bean
   fun authorizedClientManager(
