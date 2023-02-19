@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.InmateDetailDto
@@ -12,17 +13,21 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.VisitBalancesDto
 
 class PrisonApiMockServer(@Autowired private val objectMapper: ObjectMapper) : WireMockServer(8093) {
-  fun stubGetInmateDetails(inmateDetail: InmateDetailDto) {
+  fun stubGetInmateDetails(offenderNo: String, inmateDetail: InmateDetailDto?) {
+    val responseBuilder = aResponse()
+      .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
 
     stubFor(
-      get("/api/offenders/${inmateDetail.offenderNo}")
+      get("/api/offenders/$offenderNo")
         .willReturn(
-          aResponse()
-            .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-            .withStatus(200)
-            .withBody(
-              getJsonString(inmateDetail)
-            )
+          if (inmateDetail == null) {
+            responseBuilder
+              .withStatus(HttpStatus.NOT_FOUND.value())
+          } else {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(inmateDetail))
+          }
         )
     )
   }
@@ -43,17 +48,21 @@ class PrisonApiMockServer(@Autowired private val objectMapper: ObjectMapper) : W
     )
   }
 
-  fun stubGetVisitBalances(offenderNo: String, visitBalances: VisitBalancesDto) {
+  fun stubGetVisitBalances(offenderNo: String, visitBalances: VisitBalancesDto?) {
+    val responseBuilder = aResponse()
+      .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
 
     stubFor(
       get("/api/bookings/offenderNo/$offenderNo/visit/balances")
         .willReturn(
-          aResponse()
-            .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-            .withStatus(200)
-            .withBody(
-              getJsonString(visitBalances)
-            )
+          if (visitBalances == null) {
+            responseBuilder
+              .withStatus(HttpStatus.NOT_FOUND.value())
+          } else {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(visitBalances))
+          }
         )
     )
   }

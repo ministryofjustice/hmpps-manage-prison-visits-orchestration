@@ -16,7 +16,8 @@ class PrisonerProfileService(
       .getPrisonerById(offenderNo) ?: throw InvalidPrisonerProfileException("Unable to retrieve offender details from Prison Offender Search API")
     val inmateDetail = prisonApiClient
       .getInmateDetails(offenderNo) ?: throw InvalidPrisonerProfileException("Unable to retrieve inmate details from Prison API")
-    val visitBalances = prisonApiClient.getVisitBalances(offenderNo)
+    val visitBalances = prisonApiClient
+      .getVisitBalances(offenderNo) ?: throw InvalidPrisonerProfileException("Unable to retrieve visit balances from Prison API")
 
     val prisonerBookingSummaryList =
       prisonApiClient.getBookings(offenderNo, prisoner.prisonId)?.content

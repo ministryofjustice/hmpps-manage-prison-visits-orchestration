@@ -67,20 +67,4 @@ data class AlertDto(
   @Schema(required = true, description = "True / False based on alert status", example = "false")
   @JsonProperty("active")
   val active: @NotNull Boolean = false,
-
-  @Schema(description = "First name of the user who added the alert", example = "John")
-  @JsonProperty("addedByFirstName")
-  val addedByFirstName: String? = null,
-
-  @Schema(description = "Last name of the user who added the alert", example = "Smith")
-  @JsonProperty("addedByLastName")
-  val addedByLastName: String? = null,
-
-  @Schema(description = "First name of the user who last modified the alert", example = "John")
-  @JsonProperty("expiredByFirstName")
-  val expiredByFirstName: String? = null,
-
-  @Schema(description = "Last name of the user who last modified the alert", example = "Smith")
-  @JsonProperty("expiredByLastName")
-  val expiredByLastName: String? = null
 )
