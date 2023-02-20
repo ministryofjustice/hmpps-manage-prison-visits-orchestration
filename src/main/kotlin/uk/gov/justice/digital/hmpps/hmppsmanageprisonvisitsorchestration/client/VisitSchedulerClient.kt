@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.Cha
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.ReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.SessionCapacityDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.SupportTypeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.VisitCancelDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.VisitDto
@@ -129,6 +130,21 @@ class VisitSchedulerClient(
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono<SessionCapacityDto>().block(apiTimeout)
+  }
+
+  fun getSessionSchedule(
+    prisonCode: String,
+    sessionDate: LocalDate
+  ): List<SessionScheduleDto>? {
+    return webClient.get()
+      .uri("/visit-sessions/schedule") {
+        it.queryParam("prisonId", prisonCode)
+          .queryParam("sessionDate", sessionDate)
+          .build()
+      }
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<List<SessionScheduleDto>>().block(apiTimeout)
   }
 
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {
