@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
+import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.CaseLoadDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.InmateDetailDto
@@ -20,6 +21,8 @@ class PrisonApiClient(
   @Qualifier("prisonApiWebClient") private val webClient: WebClient,
   @Value("\${prison.api.timeout:60s}") private val apiTimeout: Duration
 ) {
+  // TODO - keep this till we do the performance tests
+/*
   fun getInmateDetails(offenderNo: String): InmateDetailDto? {
     return webClient.get()
       .uri("/api/offenders/$offenderNo")
@@ -27,7 +30,17 @@ class PrisonApiClient(
       .bodyToMono<InmateDetailDto>()
       .block(apiTimeout)
   }
+*/
 
+  fun getInmateDetails(offenderNo: String): Mono<InmateDetailDto> {
+    return webClient.get()
+      .uri("/api/offenders/$offenderNo")
+      .retrieve()
+      .bodyToMono()
+  }
+
+  /*
+  // TODO - keep this till we do the performance tests
   fun getBookings(offenderNo: String, prisonId: String): RestPage<PrisonerBookingSummaryDto>? {
     return webClient.get()
       .uri("/api/bookings/v2") {
@@ -38,14 +51,33 @@ class PrisonApiClient(
       .retrieve()
       .bodyToMono<RestPage<PrisonerBookingSummaryDto>>()
       .block(apiTimeout)
+  }*/
+
+  fun getBookings(offenderNo: String, prisonId: String): Mono<RestPage<PrisonerBookingSummaryDto>> {
+    return webClient.get()
+      .uri("/api/bookings/v2") {
+        it.queryParam("prisonId", prisonId)
+          .queryParam("offenderNo", offenderNo)
+          .queryParam("legalInfo", true).build()
+      }
+      .retrieve()
+      .bodyToMono()
   }
 
-  fun getVisitBalances(offenderNo: String): VisitBalancesDto? {
+  // TODO - keep this till we do the performance tests
+  /*fun getVisitBalances(offenderNo: String): VisitBalancesDto? {
     return webClient.get()
       .uri("/api/bookings/offenderNo/$offenderNo/visit/balances")
       .retrieve()
       .bodyToMono<VisitBalancesDto>()
       .block(apiTimeout)
+  }*/
+
+  fun getVisitBalances(offenderNo: String): Mono<VisitBalancesDto> {
+    return webClient.get()
+      .uri("/api/bookings/offenderNo/$offenderNo/visit/balances")
+      .retrieve()
+      .bodyToMono()
   }
 
   fun getOffenderRestrictions(offenderNo: String): OffenderRestrictionsDto? {

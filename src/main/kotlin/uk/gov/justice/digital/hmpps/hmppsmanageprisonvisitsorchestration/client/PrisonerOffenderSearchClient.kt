@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
+import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import java.time.Duration
@@ -14,11 +15,19 @@ class PrisonerOffenderSearchClient(
   @Qualifier("prisonerOffenderSearchWebClient") private val webClient: WebClient,
   @Value("\${prisoner.offender.search.timeout:10s}") private val apiTimeout: Duration
 ) {
+/*
+  TODO - keep this till we do the performance tests
   fun getPrisonerById(id: String): PrisonerDto? {
     return webClient.get().uri("/prisoner/$id")
       .retrieve()
       .bodyToMono<PrisonerDto>()
       .block(apiTimeout)
+  }*/
+
+  fun getPrisonerById(id: String): Mono<PrisonerDto> {
+    return webClient.get().uri("/prisoner/$id")
+      .retrieve()
+      .bodyToMono()
   }
 
   fun getPrisoners(

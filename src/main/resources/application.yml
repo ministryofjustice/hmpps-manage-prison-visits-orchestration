@@ -98,3 +98,7 @@ prison-register:
 whereabouts:
   api:
     url: https://prison-register-dev.hmpps.service.justice.gov.uk
+
+prisoner:
+  profile:
+    timeout: 10s

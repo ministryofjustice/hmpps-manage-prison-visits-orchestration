@@ -52,9 +52,10 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
   fun callGetPrisonerProfile(
     webTestClient: WebTestClient,
     authHttpHeaders: (HttpHeaders) -> Unit,
+    prisonId: String,
     offenderNo: String
   ): WebTestClient.ResponseSpec {
-    return webTestClient.get().uri("/prisoner/$offenderNo/profile")
+    return webTestClient.get().uri("/prisoner/$prisonId/$offenderNo/profile")
       .headers(authHttpHeaders)
       .exchange()
   }
@@ -69,7 +70,7 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetVisitBalances(offenderNo, visitBalancesDto)
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, offenderNo)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, offenderNo)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -91,7 +92,7 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetVisitBalances(offenderNo, visitBalancesDto)
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, offenderNo)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, offenderNo)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -106,7 +107,7 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetVisitBalances(offenderNo, visitBalancesDto)
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, offenderNo)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, offenderNo)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -120,7 +121,7 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetVisitBalances(offenderNo, null)
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, offenderNo)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, offenderNo)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -136,7 +137,7 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetVisitBalances(offenderNo, visitBalancesDto)
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, offenderNo)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, offenderNo)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -160,7 +161,7 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetVisitBalances(offenderNo, visitBalancesDto)
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, offenderNo)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, offenderNo)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -189,7 +190,7 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetVisitBalances(offenderNo, visitBalancesDto)
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, offenderNo)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, offenderNo)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()

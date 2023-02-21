@@ -16,10 +16,10 @@ const val ORCHESTRATION_PRISONER_CONTROLLER_PATH: String = "/prisoner"
 
 @RestController
 class PrisonerProfileController(
-  private val pisonerProfileService: PrisonerProfileService
+  private val prisonerProfileService: PrisonerProfileService
 ) {
   @PreAuthorize("hasRole('VISIT_SCHEDULER')")
-  @GetMapping("$ORCHESTRATION_PRISONER_CONTROLLER_PATH/{offenderNo}/profile")
+  @GetMapping("$ORCHESTRATION_PRISONER_CONTROLLER_PATH/{prisonId}/{offenderNo}/profile")
   @Operation(
     summary = "Get a prisoner's profile page",
     description = "Get the prisoner's profile page",
@@ -50,7 +50,9 @@ class PrisonerProfileController(
       ),
     ]
   )
-  fun getPrisonerProfile(@PathVariable offenderNo: String): PrisonerProfileDto? {
-    return pisonerProfileService.getPrisonerProfile(offenderNo)
+  fun getPrisonerProfile(@PathVariable prisonId: String, @PathVariable offenderNo: String): PrisonerProfileDto? {
+    // TODO - keep this till we do the performance tests
+    // return prisonerProfileService.getPrisonerProfile(offenderNo)
+    return prisonerProfileService.getPrisonerProfile(offenderNo, prisonId)
   }
 }
