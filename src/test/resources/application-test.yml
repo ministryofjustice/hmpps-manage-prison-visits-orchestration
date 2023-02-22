@@ -9,3 +9,26 @@ visit-scheduler:
   api:
     url: http://localhost:8092
     timeout: 10s
+
+prison:
+  api:
+    #url: http://localhost:8091
+    url: http://localhost:8093
+    timeout: 10s
+
+prisoner-offender:
+  search:
+    url: http://localhost:8094
+    timeout: 10s
+
+prisoner-contact:
+  registry:
+    url: https://prisoner-contact-registry-dev.prison.service.justice.gov.uk
+
+prison-register:
+  api:
+    url: https://prison-register-dev.hmpps.service.justice.gov.uk
+
+whereabouts:
+  api:
+    url: https://prison-register-dev.hmpps.service.justice.gov.uk
