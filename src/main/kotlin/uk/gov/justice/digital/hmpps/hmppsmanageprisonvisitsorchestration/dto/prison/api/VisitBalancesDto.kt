@@ -6,10 +6,10 @@ import java.time.LocalDate
 @Schema(description = "Balances of visit orders and privilege visit orders")
 data class VisitBalancesDto(
   @Schema(required = true, description = "Balance of visit orders remaining")
-  var remainingVo: Int? = null,
+  var remainingVo: Int,
 
   @Schema(required = true, description = "Balance of privilege visit orders remaining")
-  var remainingPvo: Int? = null,
+  var remainingPvo: Int,
 
   @Schema(description = "Date of last IEP adjustment for Visit orders")
   var latestIepAdjustDate: LocalDate? = null,

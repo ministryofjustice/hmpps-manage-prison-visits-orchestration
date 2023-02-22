@@ -1,34 +1,31 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api
 
-import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
-import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 
 @Schema(description = "Alert")
-@JsonInclude(JsonInclude.Include.NON_NULL)
 data class AlertDto(
   @Schema(required = true, description = "Alert Type", example = "X")
   @JsonProperty("alertType")
-  val alertType: @NotBlank String? = null,
+  val alertType: String,
 
   @Schema(required = true, description = "Alert Type Description", example = "Security")
   @JsonProperty("alertTypeDescription")
-  val alertTypeDescription: @NotBlank String? = null,
+  val alertTypeDescription: String,
 
   @Schema(required = true, description = "Alert Code", example = "XER")
   @JsonProperty("alertCode")
-  val alertCode: @NotBlank String? = null,
+  val alertCode: String,
 
   @Schema(required = true, description = "Alert Code Description", example = "Escape Risk")
   @JsonProperty("alertCodeDescription")
-  val alertCodeDescription: @NotBlank String? = null,
+  val alertCodeDescription: String,
 
   @Schema(required = true, description = "Alert comments", example = "Profession lock pick.")
   @JsonProperty("comment")
-  val comment: @NotBlank String? = null,
+  val comment: String,
 
   @Schema(
     required = true,
@@ -36,7 +33,7 @@ data class AlertDto(
     example = "2019-08-20"
   )
   @JsonProperty("dateCreated")
-  val dateCreated: @NotNull LocalDate? = null,
+  val dateCreated: LocalDate,
 
   @Schema(description = "Date the alert expires", example = "2020-08-20")
   @JsonProperty("dateExpires")

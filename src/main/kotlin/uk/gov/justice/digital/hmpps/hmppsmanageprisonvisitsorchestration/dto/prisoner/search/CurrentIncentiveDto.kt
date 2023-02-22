@@ -16,6 +16,6 @@ data class CurrentIncentive(
 data class IncentiveLevel(
   @Schema(description = "code", example = "STD")
   val code: String?,
-  @Schema(description = "description", example = "Standard")
+  @Schema(required = true, description = "description", example = "Standard")
   val description: String,
 )

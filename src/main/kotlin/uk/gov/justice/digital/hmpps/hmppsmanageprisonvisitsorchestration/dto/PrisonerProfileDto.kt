@@ -13,7 +13,7 @@ data class PrisonerProfileDto(
   val prisonerId: String,
 
   @Schema(description = "Prison ID", example = "MDI")
-  val prisonId: String,
+  val prisonId: String?,
 
   @Schema(required = true, description = "First Name", example = "Robert")
   val firstName: String,
@@ -28,7 +28,7 @@ data class PrisonerProfileDto(
   val cellLocation: String?,
 
   @Schema(description = "Prison Name", example = "HMP Leeds")
-  val prisonName: String,
+  val prisonName: String?,
 
   @Schema(description = "Category description (from list of assessments)", example = "Category C")
   val category: String?,

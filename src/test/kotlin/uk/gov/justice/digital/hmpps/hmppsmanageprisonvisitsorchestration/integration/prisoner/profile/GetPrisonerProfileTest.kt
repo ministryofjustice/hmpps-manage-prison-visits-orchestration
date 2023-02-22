@@ -28,7 +28,7 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
     private val dateOfBirth = LocalDate.of(2000, 1, 31)
     private const val category = "Category - C"
     private const val prisonId = "MDI"
-    private val alert = AlertDto(comment = "Alert 1")
+    private val alert = AlertDto(comment = "Alert 1", alertCode = "C", alertCodeDescription = "Alert Code Desc", alertType = "T", alertTypeDescription = "Type Description", dateCreated = LocalDate.now())
   }
 
   private final val currentIncentive = createCurrentIncentive()
@@ -157,7 +157,7 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetailDto)
     val prisonerBookingSummaryDto1 = createPrisonerBookingSummary(prisonerId, "Remand")
-    prisonApiMockServer.stubGetBookings(prisonerDto.prisonId, prisonerId, listOf(prisonerBookingSummaryDto, prisonerBookingSummaryDto1))
+    prisonApiMockServer.stubGetBookings(prisonId, prisonerId, listOf(prisonerBookingSummaryDto, prisonerBookingSummaryDto1))
     prisonApiMockServer.stubGetVisitBalances(prisonerId, visitBalancesDto)
 
     // When
@@ -186,7 +186,7 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
     )
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetailDto)
-    prisonApiMockServer.stubGetBookings(prisonerDto.prisonId, prisonerId, listOf(prisonerBookingSummaryDto))
+    prisonApiMockServer.stubGetBookings(prisonId, prisonerId, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(prisonerId, visitBalancesDto)
 
     // When

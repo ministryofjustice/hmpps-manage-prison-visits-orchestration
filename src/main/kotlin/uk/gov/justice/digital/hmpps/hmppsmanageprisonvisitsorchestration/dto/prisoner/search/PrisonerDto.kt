@@ -17,10 +17,10 @@ data class PrisonerDto(
   val dateOfBirth: LocalDate,
 
   @Schema(description = "Prison ID", example = "MDI")
-  val prisonId: String,
+  val prisonId: String?,
 
   @Schema(description = "Prison Name", example = "HMP Leeds")
-  val prisonName: String,
+  val prisonName: String?,
 
   @Schema(description = "In prison cell location", example = "A-1-002")
   val cellLocation: String? = null,
