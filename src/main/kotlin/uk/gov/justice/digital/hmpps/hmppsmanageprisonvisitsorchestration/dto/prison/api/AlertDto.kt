@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pr
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
-import javax.validation.constraints.NotNull
 
 @Schema(description = "Alert")
 data class AlertDto(
@@ -41,9 +40,9 @@ data class AlertDto(
 
   @Schema(required = true, description = "True / False based on presence of expiry date", example = "true")
   @JsonProperty("expired")
-  val expired: @NotNull Boolean = false,
+  val expired: Boolean = false,
 
   @Schema(required = true, description = "True / False based on alert status", example = "false")
   @JsonProperty("active")
-  val active: @NotNull Boolean = false,
+  val active: Boolean = false,
 )
