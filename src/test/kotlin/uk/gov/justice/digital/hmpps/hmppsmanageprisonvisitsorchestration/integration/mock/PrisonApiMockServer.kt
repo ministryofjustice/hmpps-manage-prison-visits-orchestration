@@ -13,12 +13,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.VisitBalancesDto
 
 class PrisonApiMockServer(@Autowired private val objectMapper: ObjectMapper) : WireMockServer(8093) {
-  fun stubGetInmateDetails(offenderNo: String, inmateDetail: InmateDetailDto?) {
+  fun stubGetInmateDetails(prisonerId: String, inmateDetail: InmateDetailDto?) {
     val responseBuilder = aResponse()
       .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
 
     stubFor(
-      get("/api/offenders/$offenderNo")
+      get("/api/offenders/$prisonerId")
         .willReturn(
           if (inmateDetail == null) {
             responseBuilder
@@ -32,11 +32,11 @@ class PrisonApiMockServer(@Autowired private val objectMapper: ObjectMapper) : W
     )
   }
 
-  fun stubGetBookings(prisonId: String, offenderNo: String, prisonerBookingSummaryList: List<PrisonerBookingSummaryDto>) {
+  fun stubGetBookings(prisonId: String, prisonerId: String, prisonerBookingSummaryList: List<PrisonerBookingSummaryDto>) {
     val totalElements = prisonerBookingSummaryList.size
     val restPage = RestPage(prisonerBookingSummaryList, 1, 100, totalElements.toLong())
     stubFor(
-      get("/api/bookings/v2?prisonId=$prisonId&offenderNo=$offenderNo&legalInfo=true")
+      get("/api/bookings/v2?prisonId=$prisonId&offenderNo=$prisonerId&legalInfo=true")
         .willReturn(
           aResponse()
             .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
@@ -48,12 +48,12 @@ class PrisonApiMockServer(@Autowired private val objectMapper: ObjectMapper) : W
     )
   }
 
-  fun stubGetVisitBalances(offenderNo: String, visitBalances: VisitBalancesDto?) {
+  fun stubGetVisitBalances(prisonerId: String, visitBalances: VisitBalancesDto?) {
     val responseBuilder = aResponse()
       .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
 
     stubFor(
-      get("/api/bookings/offenderNo/$offenderNo/visit/balances")
+      get("/api/bookings/offenderNo/$prisonerId/visit/balances")
         .willReturn(
           if (visitBalances == null) {
             responseBuilder

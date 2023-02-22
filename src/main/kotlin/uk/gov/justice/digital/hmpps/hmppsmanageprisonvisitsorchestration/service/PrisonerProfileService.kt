@@ -46,13 +46,11 @@ class PrisonerProfileService(
   }
 */
 
-  fun getPrisonerProfile(offenderNo: String, prisonId: String): PrisonerProfileDto? {
-    val prisoner = prisonerOffenderSearchClient.getPrisonerById(offenderNo)
-    val inmateDetail = prisonApiClient.getInmateDetails(offenderNo)
-    val visitBalances = prisonApiClient.getVisitBalances(offenderNo)
-
-    val prisonerBookingSummaryList =
-      prisonApiClient.getBookings(offenderNo, prisonId)
+  fun getPrisonerProfile(prisonId: String, prisonerId: String): PrisonerProfileDto? {
+    val prisoner = prisonerOffenderSearchClient.getPrisonerById(prisonerId)
+    val inmateDetail = prisonApiClient.getInmateDetails(prisonerId)
+    val visitBalances = prisonApiClient.getVisitBalances(prisonerId)
+    val prisonerBookingSummaryList = prisonApiClient.getBookings(prisonId, prisonerId)
 
     val prisonerProfileTuple =
       Mono.zip(prisoner, inmateDetail, visitBalances, prisonerBookingSummaryList).block(apiTimeout)

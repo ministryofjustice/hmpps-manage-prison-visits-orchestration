@@ -10,12 +10,12 @@ import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 
 class PrisonOffenderSearchMockServer(@Autowired private val objectMapper: ObjectMapper) : WireMockServer(8094) {
-  fun stubGetPrisonerById(offenderNo: String, prisoner: PrisonerDto?) {
+  fun stubGetPrisonerById(prisonerId: String, prisoner: PrisonerDto?) {
     val responseBuilder = aResponse()
       .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
 
     stubFor(
-      get("/prisoner/$offenderNo")
+      get("/prisoner/$prisonerId")
         .willReturn(
           if (prisoner == null) {
             responseBuilder

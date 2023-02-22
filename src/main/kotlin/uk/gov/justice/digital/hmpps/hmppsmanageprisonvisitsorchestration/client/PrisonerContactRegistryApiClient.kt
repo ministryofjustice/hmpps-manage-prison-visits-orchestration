@@ -14,8 +14,8 @@ class PrisonerContactRegistryApiClient(
   @Value("\${prisoner.offender.search.timeout:10s}") private val apiTimeout: Duration
 ) {
 
-  fun getPrisonerSocialContacts(offenderNo: String): List<PrisonDto>? {
-    return webClient.get().uri("/prisoners/$offenderNo/contacts") {
+  fun getPrisonerSocialContacts(prisonerId: String): List<PrisonDto>? {
+    return webClient.get().uri("/prisoners/$prisonerId/contacts") {
       it.queryParam("type", SOCIAL_VISITOR_TYPE).build()
     }
       .retrieve()

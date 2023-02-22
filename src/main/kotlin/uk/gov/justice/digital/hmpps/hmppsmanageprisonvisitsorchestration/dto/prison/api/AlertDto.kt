@@ -1,9 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
-import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 import javax.validation.constraints.NotBlank
@@ -12,22 +10,6 @@ import javax.validation.constraints.NotNull
 @Schema(description = "Alert")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class AlertDto(
-  @Hidden
-  @JsonIgnore
-  val additionalProperties: Map<String, Any>? = null,
-
-  @Schema(required = true, description = "Alert Id", example = "1")
-  @JsonProperty("alertId")
-  val alertId: @NotNull Long? = null,
-
-  @Schema(required = true, description = "Offender booking id.", example = "14")
-  @JsonProperty("bookingId")
-  val bookingId: @NotNull Long? = null,
-
-  @Schema(required = true, description = "Offender Unique Reference", example = "G3878UK")
-  @JsonProperty("offenderNo")
-  val offenderNo: @NotBlank String? = null,
-
   @Schema(required = true, description = "Alert Type", example = "X")
   @JsonProperty("alertType")
   val alertType: @NotBlank String? = null,

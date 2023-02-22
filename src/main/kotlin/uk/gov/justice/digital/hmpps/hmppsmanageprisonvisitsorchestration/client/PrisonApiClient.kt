@@ -32,9 +32,9 @@ class PrisonApiClient(
   }
 */
 
-  fun getInmateDetails(offenderNo: String): Mono<InmateDetailDto> {
+  fun getInmateDetails(prisonerId: String): Mono<InmateDetailDto> {
     return webClient.get()
-      .uri("/api/offenders/$offenderNo")
+      .uri("/api/offenders/$prisonerId")
       .retrieve()
       .bodyToMono()
   }
@@ -53,11 +53,11 @@ class PrisonApiClient(
       .block(apiTimeout)
   }*/
 
-  fun getBookings(offenderNo: String, prisonId: String): Mono<RestPage<PrisonerBookingSummaryDto>> {
+  fun getBookings(prisonId: String, prisonerId: String): Mono<RestPage<PrisonerBookingSummaryDto>> {
     return webClient.get()
       .uri("/api/bookings/v2") {
         it.queryParam("prisonId", prisonId)
-          .queryParam("offenderNo", offenderNo)
+          .queryParam("offenderNo", prisonerId)
           .queryParam("legalInfo", true).build()
       }
       .retrieve()
@@ -73,16 +73,16 @@ class PrisonApiClient(
       .block(apiTimeout)
   }*/
 
-  fun getVisitBalances(offenderNo: String): Mono<VisitBalancesDto> {
+  fun getVisitBalances(prisonerId: String): Mono<VisitBalancesDto> {
     return webClient.get()
-      .uri("/api/bookings/offenderNo/$offenderNo/visit/balances")
+      .uri("/api/bookings/offenderNo/$prisonerId/visit/balances")
       .retrieve()
       .bodyToMono()
   }
 
-  fun getOffenderRestrictions(offenderNo: String): OffenderRestrictionsDto? {
+  fun getOffenderRestrictions(prisonerId: String): OffenderRestrictionsDto? {
     return webClient.get()
-      .uri("/api/offenders/$offenderNo/offender-restrictions") {
+      .uri("/api/offenders/$prisonerId/offender-restrictions") {
         it.queryParam("activeRestrictionsOnly", true).build()
       }
       .retrieve()

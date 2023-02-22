@@ -22,19 +22,19 @@ import java.time.LocalDateTime
 @DisplayName("Get Prisoner Profile")
 class GetPrisonerProfileTest : IntegrationTestBase() {
   companion object {
-    private const val offenderNo = "AA112233B"
+    private const val prisonerId = "AA112233B"
     private const val firstName = "FirstName"
     private const val lastName = "LastName"
     private val dateOfBirth = LocalDate.of(2000, 1, 31)
     private const val category = "Category - C"
     private const val prisonId = "MDI"
-    private val alert = AlertDto(offenderNo = offenderNo, comment = "Alert 1")
+    private val alert = AlertDto(comment = "Alert 1")
   }
 
   private final val currentIncentive = createCurrentIncentive()
 
   private final val prisonerDto = createPrisoner(
-    offenderNo = offenderNo,
+    prisonerId = prisonerId,
     firstName = firstName,
     lastName = lastName,
     dateOfBirth = dateOfBirth,
@@ -42,9 +42,9 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
   )
 
   private final val alerts = listOf(alert)
-  private final val inmateDetailDto = createInmateDetails(offenderNo, category, alerts)
+  private final val inmateDetailDto = createInmateDetails(prisonerId, category, alerts)
   private final val visitBalancesDto = createVisitBalancesDto()
-  private final val prisonerBookingSummaryDto = createPrisonerBookingSummary(offenderNo, "Convicted")
+  private final val prisonerBookingSummaryDto = createPrisonerBookingSummary(prisonerId, "Convicted")
 
   @Autowired
   protected lateinit var objectMapper: ObjectMapper
@@ -53,9 +53,9 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
     webTestClient: WebTestClient,
     authHttpHeaders: (HttpHeaders) -> Unit,
     prisonId: String,
-    offenderNo: String
+    prisonerId: String
   ): WebTestClient.ResponseSpec {
-    return webTestClient.get().uri("/prisoner/$prisonId/$offenderNo/profile")
+    return webTestClient.get().uri("/prisoner/$prisonId/$prisonerId/profile")
       .headers(authHttpHeaders)
       .exchange()
   }
@@ -64,13 +64,13 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
   fun `when valid prisoner prisoner profile is collated and returned`() {
     // Given
 
-    prisonOffenderSearchMockServer.stubGetPrisonerById(offenderNo, prisonerDto)
-    prisonApiMockServer.stubGetInmateDetails(offenderNo, inmateDetailDto)
-    prisonApiMockServer.stubGetBookings(prisonerDto.prisonId, offenderNo, listOf(prisonerBookingSummaryDto))
-    prisonApiMockServer.stubGetVisitBalances(offenderNo, visitBalancesDto)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetailDto)
+    prisonApiMockServer.stubGetBookings(prisonId, prisonerId, listOf(prisonerBookingSummaryDto))
+    prisonApiMockServer.stubGetVisitBalances(prisonerId, visitBalancesDto)
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, offenderNo)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, prisonerId)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -86,13 +86,13 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
   @Test
   fun `when prison API get prisoner details returns NOT_FOUND prisoner profile call returns NOT_FOUND status`() {
     // Given
-    prisonOffenderSearchMockServer.stubGetPrisonerById(offenderNo, null)
-    prisonApiMockServer.stubGetInmateDetails(offenderNo, inmateDetailDto)
-    prisonApiMockServer.stubGetBookings(prisonId, offenderNo, listOf(prisonerBookingSummaryDto))
-    prisonApiMockServer.stubGetVisitBalances(offenderNo, visitBalancesDto)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, null)
+    prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetailDto)
+    prisonApiMockServer.stubGetBookings(prisonId, prisonerId, listOf(prisonerBookingSummaryDto))
+    prisonApiMockServer.stubGetVisitBalances(prisonerId, visitBalancesDto)
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, offenderNo)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, prisonerId)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -101,13 +101,13 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
   @Test
   fun `when prison API get inmate details returns NOT_FOUND prisoner profile call returns NOT_FOUND status`() {
     // Given
-    prisonOffenderSearchMockServer.stubGetPrisonerById(offenderNo, prisonerDto)
-    prisonApiMockServer.stubGetInmateDetails(offenderNo, null)
-    prisonApiMockServer.stubGetBookings(prisonId, offenderNo, listOf(prisonerBookingSummaryDto))
-    prisonApiMockServer.stubGetVisitBalances(offenderNo, visitBalancesDto)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonApiMockServer.stubGetInmateDetails(prisonerId, null)
+    prisonApiMockServer.stubGetBookings(prisonId, prisonerId, listOf(prisonerBookingSummaryDto))
+    prisonApiMockServer.stubGetVisitBalances(prisonerId, visitBalancesDto)
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, offenderNo)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, prisonerId)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -115,13 +115,13 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
   @Test
   fun `when prison API get visit balances returns NOT_FOUND prisoner profile call returns NOT_FOUND status`() {
     // Given
-    prisonOffenderSearchMockServer.stubGetPrisonerById(offenderNo, prisonerDto)
-    prisonApiMockServer.stubGetInmateDetails(offenderNo, inmateDetailDto)
-    prisonApiMockServer.stubGetBookings(prisonId, offenderNo, listOf(prisonerBookingSummaryDto))
-    prisonApiMockServer.stubGetVisitBalances(offenderNo, null)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetailDto)
+    prisonApiMockServer.stubGetBookings(prisonId, prisonerId, listOf(prisonerBookingSummaryDto))
+    prisonApiMockServer.stubGetVisitBalances(prisonerId, null)
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, offenderNo)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, prisonerId)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -130,14 +130,14 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
   @Test
   fun `when prison API get bookings returns no records some prisoner profile details are blank`() {
     // Given
-    prisonOffenderSearchMockServer.stubGetPrisonerById(offenderNo, prisonerDto)
-    prisonApiMockServer.stubGetInmateDetails(offenderNo, inmateDetailDto)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetailDto)
     // get bookings will return empty contents
-    prisonApiMockServer.stubGetBookings(prisonId, offenderNo, mutableListOf())
-    prisonApiMockServer.stubGetVisitBalances(offenderNo, visitBalancesDto)
+    prisonApiMockServer.stubGetBookings(prisonId, prisonerId, mutableListOf())
+    prisonApiMockServer.stubGetVisitBalances(prisonerId, visitBalancesDto)
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, offenderNo)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, prisonerId)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -154,14 +154,14 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
   fun `when prison API get bookings returns multiple records only 1st one is populated on prisoner profile`() {
     // Given
 
-    prisonOffenderSearchMockServer.stubGetPrisonerById(offenderNo, prisonerDto)
-    prisonApiMockServer.stubGetInmateDetails(offenderNo, inmateDetailDto)
-    val prisonerBookingSummaryDto1 = createPrisonerBookingSummary(offenderNo, "Remand")
-    prisonApiMockServer.stubGetBookings(prisonerDto.prisonId, offenderNo, listOf(prisonerBookingSummaryDto, prisonerBookingSummaryDto1))
-    prisonApiMockServer.stubGetVisitBalances(offenderNo, visitBalancesDto)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetailDto)
+    val prisonerBookingSummaryDto1 = createPrisonerBookingSummary(prisonerId, "Remand")
+    prisonApiMockServer.stubGetBookings(prisonerDto.prisonId, prisonerId, listOf(prisonerBookingSummaryDto, prisonerBookingSummaryDto1))
+    prisonApiMockServer.stubGetVisitBalances(prisonerId, visitBalancesDto)
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, offenderNo)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, prisonerId)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -178,19 +178,19 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
   fun `when prison API get prisoner current incentive is null prisoner profile current incentive is null`() {
     // Given
     val prisonerDto = createPrisoner(
-      offenderNo = offenderNo,
+      prisonerId = prisonerId,
       firstName = firstName,
       lastName = lastName,
       dateOfBirth = dateOfBirth,
       currentIncentive = null,
     )
-    prisonOffenderSearchMockServer.stubGetPrisonerById(offenderNo, prisonerDto)
-    prisonApiMockServer.stubGetInmateDetails(offenderNo, inmateDetailDto)
-    prisonApiMockServer.stubGetBookings(prisonerDto.prisonId, offenderNo, listOf(prisonerBookingSummaryDto))
-    prisonApiMockServer.stubGetVisitBalances(offenderNo, visitBalancesDto)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetailDto)
+    prisonApiMockServer.stubGetBookings(prisonerDto.prisonId, prisonerId, listOf(prisonerBookingSummaryDto))
+    prisonApiMockServer.stubGetVisitBalances(prisonerId, visitBalancesDto)
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, offenderNo)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, prisonerId)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -204,7 +204,7 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
   }
 
   private fun assertPrisonerDtoDetails(prisonerProfile: PrisonerProfileDto, prisonerDto: PrisonerDto) {
-    Assertions.assertThat(prisonerProfile.offenderNo).isEqualTo(prisonerDto.prisonerNumber)
+    Assertions.assertThat(prisonerProfile.prisonerId).isEqualTo(prisonerDto.prisonerNumber)
     Assertions.assertThat(prisonerProfile.firstName).isEqualTo(prisonerDto.firstName)
     Assertions.assertThat(prisonerProfile.lastName).isEqualTo(prisonerDto.lastName)
     Assertions.assertThat(prisonerProfile.dateOfBirth).isEqualTo(prisonerDto.dateOfBirth)
@@ -223,7 +223,7 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
   }
 
   private fun createPrisoner(
-    offenderNo: String,
+    prisonerId: String,
     firstName: String,
     lastName: String,
     dateOfBirth: LocalDate,
@@ -233,7 +233,7 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
     currentIncentive: CurrentIncentive? = null
   ): PrisonerDto {
     return PrisonerDto(
-      prisonerNumber = offenderNo,
+      prisonerNumber = prisonerId,
       firstName = firstName,
       lastName = lastName,
       dateOfBirth = dateOfBirth,
@@ -245,11 +245,11 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
   }
 
   private fun createInmateDetails(
-    offenderNo: String,
+    prisonerId: String,
     category: String? = null,
     alerts: List<AlertDto>? = null
   ): InmateDetailDto {
-    return InmateDetailDto(offenderNo = offenderNo, category = category, alerts = alerts)
+    return InmateDetailDto(offenderNo = prisonerId, category = category, alerts = alerts)
   }
 
   private fun createVisitBalancesDto(): VisitBalancesDto {
@@ -261,7 +261,7 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
     return CurrentIncentive(incentiveLevel, LocalDateTime.now())
   }
 
-  private fun createPrisonerBookingSummary(offenderNo: String, convictedStatus: String): PrisonerBookingSummaryDto {
-    return PrisonerBookingSummaryDto(offenderNo, convictedStatus)
+  private fun createPrisonerBookingSummary(prisonerId: String, convictedStatus: String): PrisonerBookingSummaryDto {
+    return PrisonerBookingSummaryDto(prisonerId, convictedStatus)
   }
 }

@@ -15,9 +15,9 @@ class WhereAboutsApiClient(
   @Qualifier("whereAboutsApiWebClient") private val webClient: WebClient,
   @Value("\${prison.api.timeout:60s}") private val apiTimeout: Duration
 ) {
-  fun getEvents(offenderNo: String, fromDate: LocalDate?, toDate: LocalDate?): List<ScheduledEventDto>? {
+  fun getEvents(prisonerId: String, fromDate: LocalDate?, toDate: LocalDate?): List<ScheduledEventDto>? {
     return webClient.get()
-      .uri("/events/$offenderNo") {
+      .uri("/events/$prisonerId") {
         it.queryParamIfPresent("fromDate", Optional.ofNullable(fromDate))
           .queryParamIfPresent("toDate", Optional.ofNullable(toDate)).build()
       }

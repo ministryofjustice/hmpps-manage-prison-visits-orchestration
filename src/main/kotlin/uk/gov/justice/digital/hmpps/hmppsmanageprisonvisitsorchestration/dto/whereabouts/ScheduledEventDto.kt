@@ -1,44 +1,40 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts
 
-import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
-import javax.validation.constraints.NotBlank
-import javax.validation.constraints.NotNull
 
 /**
  * Scheduled Event
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
 data class ScheduledEventDto(
   @Schema(required = true, description = "Offender booking id")
   val bookingId: Long,
 
-  @Schema(required = true, description = "Class of event")
-  val eventClass: @NotBlank String? = null,
+  @Schema(description = "Class of event")
+  val eventClass: String? = null,
 
   @Schema(description = "Activity id if any. Used to attend or pay an activity.")
   val eventId: Long? = null,
 
-  @Schema(required = true, description = "Status of event")
-  val eventStatus: @NotBlank String? = null,
+  @Schema(description = "Status of event")
+  val eventStatus: String? = null,
 
-  @Schema(required = true, description = "Type of scheduled event (as a code)")
-  val eventType: @NotBlank String? = null,
+  @Schema(description = "Type of scheduled event (as a code)")
+  val eventType: String? = null,
 
-  @Schema(required = true, description = "Description of scheduled event type")
-  val eventTypeDesc: @NotBlank String? = null,
+  @Schema(description = "Description of scheduled event type")
+  val eventTypeDesc: String? = null,
 
-  @Schema(required = true, description = "Sub type (or reason) of scheduled event (as a code)")
-  val eventSubType: @NotBlank String? = null,
+  @Schema(description = "Sub type (or reason) of scheduled event (as a code)")
+  val eventSubType: String? = null,
 
-  @Schema(required = true, description = "Description of scheduled event sub type")
-  val eventSubTypeDesc: @NotBlank String? = null,
+  @Schema(description = "Description of scheduled event sub type")
+  val eventSubTypeDesc: String? = null,
 
-  @Schema(required = true, description = "Date on which event occurs")
-  val eventDate: @NotNull LocalDate? = null,
+  @Schema(description = "Date on which event occurs")
+  val eventDate: LocalDate? = null,
 
   @Schema(description = "Date and time at which event starts")
   val startTime: LocalDateTime? = null,
@@ -55,8 +51,8 @@ data class ScheduledEventDto(
   @Schema(description = "The agency ID for the booked internal location", example = "WWI")
   val agencyId: String? = null,
 
-  @Schema(required = true, description = "Code identifying underlying source of event data")
-  val eventSource: @NotBlank String? = null,
+  @Schema(description = "Code identifying underlying source of event data")
+  val eventSource: String? = null,
 
   @Schema(description = "Source-specific code for the type or nature of the event")
   val eventSourceCode: String? = null,

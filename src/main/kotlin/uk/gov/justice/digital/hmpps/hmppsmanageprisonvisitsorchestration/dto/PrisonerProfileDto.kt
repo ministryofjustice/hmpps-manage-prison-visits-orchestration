@@ -10,7 +10,7 @@ import java.time.LocalDate
 
 data class PrisonerProfileDto(
   @Schema(required = true, description = "Prisoner Number", example = "A1234AA")
-  val offenderNo: String,
+  val prisonerId: String,
 
   @Schema(description = "Prison ID", example = "MDI")
   val prisonId: String,
@@ -56,7 +56,7 @@ data class PrisonerProfileDto(
     prisonerBookingSummary: PrisonerBookingSummaryDto?,
     visitBalances: VisitBalancesDto?
   ) : this(
-    offenderNo = prisoner.prisonerNumber,
+    prisonerId = prisoner.prisonerNumber,
     prisonId = prisoner.prisonId,
     firstName = prisoner.firstName,
     lastName = prisoner.lastName,

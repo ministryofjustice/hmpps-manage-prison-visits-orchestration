@@ -24,8 +24,8 @@ class PrisonerOffenderSearchClient(
       .block(apiTimeout)
   }*/
 
-  fun getPrisonerById(id: String): Mono<PrisonerDto> {
-    return webClient.get().uri("/prisoner/$id")
+  fun getPrisonerById(prisonerId: String): Mono<PrisonerDto> {
+    return webClient.get().uri("/prisoner/$prisonerId")
       .retrieve()
       .bodyToMono()
   }
