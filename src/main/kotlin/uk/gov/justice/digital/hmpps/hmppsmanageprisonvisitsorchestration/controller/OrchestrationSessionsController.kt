@@ -124,4 +124,41 @@ class OrchestrationSessionsController(private val visitSchedulerService: VisitSc
       example = "14:30:00"
     ) sessionEndTime: LocalTime
   ): SessionCapacityDto? = visitSchedulerService.getSessionCapacity(prisonCode, sessionDate, sessionStartTime, sessionEndTime)
+
+  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @GetMapping("/visit-sessions/schedule")
+  @Operation(
+    summary = "Returns session scheduled for given prison and date",
+    description = "Returns session scheduled for given prison and date",
+
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Session templates returned"
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))]
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to view session templates",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))]
+      )
+    ]
+  )
+  fun getSessionSchedule(
+    @RequestParam(value = "prisonId", required = true)
+    @Parameter(
+      description = "Query by NOMIS Prison Identifier",
+      example = "CLI"
+    ) prisonCode: String,
+    @RequestParam(value = "sessionDate", required = true)
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @Parameter(
+      description = "Session date",
+      example = "2023-01-31"
+    ) sessionDate: LocalDate,
+  ): List<SessionScheduleDto>? = visitSchedulerService.getSessionSchedule(prisonCode, sessionDate)
 }

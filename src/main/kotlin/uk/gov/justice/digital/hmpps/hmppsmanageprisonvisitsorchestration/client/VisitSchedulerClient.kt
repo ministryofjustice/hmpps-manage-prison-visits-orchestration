@@ -131,6 +131,21 @@ class VisitSchedulerClient(
       .bodyToMono<SessionCapacityDto>().block(apiTimeout)
   }
 
+  fun getSessionSchedule(
+    prisonCode: String,
+    sessionDate: LocalDate
+  ): List<SessionScheduleDto>? {
+    return webClient.get()
+      .uri("/visit-sessions/schedule") {
+        it.queryParam("prisonId", prisonCode)
+          .queryParam("sessionDate", sessionDate)
+          .build()
+      }
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<List<SessionScheduleDto>>().block(apiTimeout)
+  }
+
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParamIfPresent("prisonId", Optional.ofNullable(visitSearchRequestFilter.prisonCode))
     uriBuilder.queryParamIfPresent("prisonerId", Optional.ofNullable(visitSearchRequestFilter.prisonerId))

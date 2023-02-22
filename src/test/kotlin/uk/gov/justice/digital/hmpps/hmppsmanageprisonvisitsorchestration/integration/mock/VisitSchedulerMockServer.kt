@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integr
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SupportTypeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
@@ -18,28 +20,19 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper) : WireMockServer(8092) {
-
   fun stubGetVisit(reference: String, visitDto: VisitDto?) {
-    if (visitDto == null) {
-      stubFor(
-        get("/visits/$reference")
-          .willReturn(
-            aResponse().withStatus(HttpStatus.NOT_FOUND.value())
-          )
-      )
-    } else {
-      stubFor(
-        get("/visits/$reference")
-          .willReturn(
-            aResponse()
-              .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-              .withStatus(HttpStatus.OK.value())
-              .withBody(
-                getJsonString(visitDto)
-              )
-          )
-      )
-    }
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      get("/visits/$reference")
+        .willReturn(
+          if (visitDto == null) {
+            responseBuilder.withStatus(HttpStatus.NOT_FOUND.value())
+          } else {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(visitDto))
+          }
+        )
+    )
   }
 
   fun stubGetVisits(visitStatus: String, prisonerId: String, page: Int, size: Int, visits: List<VisitDto>) {
@@ -47,8 +40,7 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     stubFor(
       get("/visits/search?prisonerId=$prisonerId&visitStatus=$visitStatus&page=$page&size=$size")
         .willReturn(
-          aResponse()
-            .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+          createJsonResponseBuilder()
             .withStatus(HttpStatus.OK.value()).withBody(
               getJsonString(restPage)
             )
@@ -57,136 +49,97 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
   }
 
   fun stubReserveVisitSlot(visitDto: VisitDto?) {
-    if (visitDto == null) {
-      stubFor(
-        post("/visits/slot/reserve")
-          .willReturn(
-            aResponse()
-              .withStatus(HttpStatus.BAD_REQUEST.value())
+    val responseBuilder = createJsonResponseBuilder()
 
-          )
-      )
-    } else {
-      stubFor(
-        post("/visits/slot/reserve")
-          .willReturn(
-            aResponse()
-              .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+    stubFor(
+      post("/visits/slot/reserve")
+        .willReturn(
+          if (visitDto == null) {
+            responseBuilder
+              .withStatus(HttpStatus.BAD_REQUEST.value())
+          } else {
+            responseBuilder
               .withStatus(HttpStatus.OK.value())
-              .withBody(
-                getJsonString(visitDto)
-              )
-          )
-      )
-    }
+              .withBody(getJsonString(visitDto))
+          }
+        )
+    )
   }
 
   fun stubBookVisit(applicationReference: String, visitDto: VisitDto?) {
-    if (visitDto == null) {
-      stubFor(
-        put("/visits/$applicationReference/book")
-          .willReturn(
-            aResponse()
-              .withStatus(HttpStatus.NOT_FOUND.value())
-          )
-      )
-    } else {
-      stubFor(
-        put("/visits/$applicationReference/book")
-          .willReturn(
-            aResponse()
-              .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-              .withStatus(HttpStatus.OK.value())
-              .withBody(
-                getJsonString(visitDto)
-              )
-          )
-      )
-    }
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      put("/visits/$applicationReference/book")
+        .willReturn(
+          if (visitDto == null) {
+            responseBuilder.withStatus(HttpStatus.NOT_FOUND.value())
+          } else {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(visitDto))
+          }
+        )
+    )
   }
 
   fun stubCancelVisit(reference: String, visitDto: VisitDto?) {
-    if (visitDto == null) {
-      stubFor(
-        put("/visits/$reference/cancel")
-          .willReturn(
-            aResponse()
-              .withStatus(HttpStatus.NOT_FOUND.value())
-          )
-      )
-    } else {
-      stubFor(
-        put("/visits/$reference/cancel")
-          .willReturn(
-            aResponse()
-              .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      put("/visits/$reference/cancel")
+        .willReturn(
+          if (visitDto == null) {
+            responseBuilder.withStatus(HttpStatus.NOT_FOUND.value())
+          } else {
+            responseBuilder
               .withStatus(HttpStatus.OK.value())
-              .withBody(
-                getJsonString(visitDto)
-              )
-          )
-      )
-    }
+              .withBody(getJsonString(visitDto))
+          }
+        )
+    )
   }
 
   fun stubChangeBookedVisit(reference: String, visitDto: VisitDto?) {
-    if (visitDto == null) {
-      stubFor(
-        put("/visits/$reference/change")
-          .willReturn(
-            aResponse()
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      put("/visits/$reference/change")
+        .willReturn(
+          if (visitDto == null) {
+            responseBuilder
               .withStatus(HttpStatus.NOT_FOUND.value())
-          )
-      )
-    } else {
-      stubFor(
-        put("/visits/$reference/change")
-          .willReturn(
-            aResponse()
-              .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+          } else {
+            responseBuilder
               .withStatus(HttpStatus.OK.value())
-              .withBody(
-                getJsonString(visitDto)
-              )
-          )
-      )
-    }
+              .withBody(getJsonString(visitDto))
+          }
+        )
+    )
   }
 
   fun stubChangeReservedVisitSlot(applicationReference: String, visitDto: VisitDto?) {
-    if (visitDto == null) {
-      stubFor(
-        put("/visits/$applicationReference/slot/change")
-          .willReturn(
-            aResponse()
-              .withStatus(HttpStatus.NOT_FOUND.value())
-          )
-      )
-    } else {
-      stubFor(
-        put("/visits/$applicationReference/slot/change")
-          .willReturn(
-            aResponse()
-              .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-              .withStatus(HttpStatus.OK.value())
-              .withBody(
-                getJsonString(visitDto)
-              )
-          )
-      )
-    }
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      put("/visits/$applicationReference/slot/change")
+        .willReturn(
+          if (visitDto == null) {
+            responseBuilder.withStatus(HttpStatus.NOT_FOUND.value())
+          } else {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(visitDto))
+          }
+        )
+    )
   }
 
   fun stubGetVisitSessions(prisonId: String, prisonerId: String, visitSessions: List<VisitSessionDto>) {
     stubFor(
       get("/visit-sessions?prisonId=$prisonId&prisonerId=$prisonerId")
         .willReturn(
-          aResponse()
-            .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+          createJsonResponseBuilder()
             .withStatus(HttpStatus.OK.value())
-            .withBody(
-              getJsonString(visitSessions)
-            )
+            .withBody(getJsonString(visitSessions))
         )
     )
   }
@@ -195,12 +148,9 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     stubFor(
       get("/visit-support")
         .willReturn(
-          aResponse()
-            .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+          createJsonResponseBuilder()
             .withStatus(HttpStatus.OK.value())
-            .withBody(
-              getJsonString(visitSupportList)
-            )
+            .withBody(getJsonString(visitSupportList))
         )
     )
   }
@@ -209,41 +159,54 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     stubFor(
       get("/config/prisons/supported")
         .willReturn(
-          aResponse()
-            .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+          createJsonResponseBuilder()
             .withStatus(HttpStatus.OK.value())
-            .withBody(
-              getJsonString(supportedPrisonsList)
-            )
+            .withBody(getJsonString(supportedPrisonsList))
         )
     )
   }
 
-  fun stubGetSessionCapacity(prisonCode: String, sessionDate: LocalDate, sessionStartTime: LocalTime, sessionEndTime: LocalTime, sessionCapacityDto: SessionCapacityDto?) {
-    if (sessionCapacityDto == null) {
-      stubFor(
-        get("/visit-sessions/capacity?prisonId=$prisonCode&sessionDate=$sessionDate&sessionStartTime=$sessionStartTime&sessionEndTime=$sessionEndTime")
-          .willReturn(
-            aResponse()
-              .withStatus(HttpStatus.NOT_FOUND.value())
-          )
-      )
-    } else {
-      stubFor(
-        get("/visit-sessions/capacity?prisonId=$prisonCode&sessionDate=$sessionDate&sessionStartTime=$sessionStartTime&sessionEndTime=$sessionEndTime")
-          .willReturn(
-            aResponse()
-              .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-              .withStatus(HttpStatus.OK.value())
-              .withBody(
-                getJsonString(sessionCapacityDto)
-              )
-          )
-      )
-    }
+  fun stubGetSessionCapacity(
+    prisonCode: String,
+    sessionDate: LocalDate,
+    sessionStartTime: LocalTime,
+    sessionEndTime: LocalTime,
+    sessionCapacityDto: SessionCapacityDto?
+  ) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      get("/visit-sessions/capacity?prisonId=$prisonCode&sessionDate=$sessionDate&sessionStartTime=$sessionStartTime&sessionEndTime=$sessionEndTime")
+        .willReturn(
+          if (sessionCapacityDto == null) {
+            responseBuilder.withStatus(HttpStatus.NOT_FOUND.value())
+          } else {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(sessionCapacityDto))
+          }
+        )
+    )
+  }
+
+  fun stubGetSessionSchedule(
+    prisonCode: String,
+    sessionDate: LocalDate,
+    sessionSchedules: List<SessionScheduleDto>
+  ) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      get("/visit-sessions/schedule?prisonId=$prisonCode&sessionDate=$sessionDate")
+        .willReturn(
+          responseBuilder.withStatus(HttpStatus.OK.value())
+            .withBody(getJsonString(sessionSchedules))
+        )
+    )
   }
 
   private fun getJsonString(obj: Any): String {
     return objectMapper.writer().withDefaultPrettyPrinter().writeValueAsString(obj)
+  }
+
+  private fun createJsonResponseBuilder(): ResponseDefinitionBuilder {
+    return aResponse().withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
   }
 }
