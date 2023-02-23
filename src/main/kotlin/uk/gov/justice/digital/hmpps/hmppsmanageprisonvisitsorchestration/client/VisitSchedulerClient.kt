@@ -139,7 +139,7 @@ class VisitSchedulerClient(
     return webClient.get()
       .uri("/visit-sessions/schedule") {
         it.queryParam("prisonId", prisonCode)
-          .queryParam("sessionDate", sessionDate)
+          .queryParam("date", sessionDate)
           .build()
       }
       .accept(MediaType.APPLICATION_JSON)

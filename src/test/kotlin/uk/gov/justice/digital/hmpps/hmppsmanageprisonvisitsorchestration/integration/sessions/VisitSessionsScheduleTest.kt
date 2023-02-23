@@ -18,7 +18,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     sessionDate: LocalDate,
     authHttpHeaders: (HttpHeaders) -> Unit
   ): WebTestClient.ResponseSpec {
-    return webTestClient.get().uri("/visit-sessions/schedule?prisonId=$prisonCode&sessionDate=$sessionDate")
+    return webTestClient.get().uri("/visit-sessions/schedule?prisonId=$prisonCode&date=$sessionDate")
       .headers(authHttpHeaders)
       .exchange()
   }

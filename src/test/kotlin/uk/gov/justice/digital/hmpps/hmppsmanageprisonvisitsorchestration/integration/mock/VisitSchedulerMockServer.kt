@@ -194,7 +194,7 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
   ) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
-      get("/visit-sessions/schedule?prisonId=$prisonCode&sessionDate=$sessionDate")
+      get("/visit-sessions/schedule?prisonId=$prisonCode&date=$sessionDate")
         .willReturn(
           responseBuilder.withStatus(HttpStatus.OK.value())
             .withBody(getJsonString(sessionSchedules))

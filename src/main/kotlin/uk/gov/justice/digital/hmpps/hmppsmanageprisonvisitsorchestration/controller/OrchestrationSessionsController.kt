@@ -155,7 +155,7 @@ class OrchestrationSessionsController(private val visitSchedulerService: VisitSc
       description = "Query by NOMIS Prison Identifier",
       example = "CLI"
     ) prisonCode: String,
-    @RequestParam(value = "sessionDate", required = true)
+    @RequestParam(value = "date", required = true)
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Parameter(
       description = "Session date",
