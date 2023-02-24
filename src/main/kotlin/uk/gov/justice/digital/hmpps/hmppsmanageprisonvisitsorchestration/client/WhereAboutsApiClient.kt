@@ -13,7 +13,7 @@ import java.util.Optional
 @Component
 class WhereAboutsApiClient(
   @Qualifier("whereAboutsApiWebClient") private val webClient: WebClient,
-  @Value("\${prison.api.timeout:60s}") private val apiTimeout: Duration
+  @Value("\${whereabouts.api.timeout:10s}") private val apiTimeout: Duration
 ) {
   fun getEvents(prisonerId: String, fromDate: LocalDate?, toDate: LocalDate?): List<ScheduledEventDto>? {
     return webClient.get()

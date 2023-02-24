@@ -11,7 +11,7 @@ import java.time.Duration
 @Component
 class PrisonerContactRegistryApiClient(
   @Qualifier("prisonerContactRegistryWebClient") private val webClient: WebClient,
-  @Value("\${prisoner.offender.search.timeout:10s}") private val apiTimeout: Duration
+  @Value("\${prisoner-contact.registry.timeout:10s}") private val apiTimeout: Duration
 ) {
 
   fun getPrisonerSocialContacts(prisonerId: String): List<PrisonDto>? {
