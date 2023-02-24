@@ -73,7 +73,7 @@ management:
 
 visit-scheduler:
   api:
-    url: http://localhost:8080
+    url: http://localhost:8081
     timeout: 10s
 
 hmpps:
@@ -101,7 +101,7 @@ prison-register:
 
 whereabouts:
   api:
-    url: https://prison-register-dev.hmpps.service.justice.gov.uk
+    url: https://whereabouts-api-dev.service.justice.gov.uk
 
 prisoner:
   profile:
