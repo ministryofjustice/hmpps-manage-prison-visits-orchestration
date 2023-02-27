@@ -30,11 +30,11 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     val sessionDate = LocalDate.now().plusDays(1)
     val sessionScheduleDto1 = createSessionScheduleDto(
       reference = "reference-1",
-      startTime = LocalTime.of(9, 0), endTime = LocalTime.of(10, 0)
+      startTime = LocalTime.of(9, 0), endTime = LocalTime.of(10, 0), enhanced = true
     )
     val sessionScheduleDto2 = createSessionScheduleDto(
       reference = "reference-2",
-      startTime = LocalTime.of(10, 0), endTime = LocalTime.of(11, 0)
+      startTime = LocalTime.of(10, 0), endTime = LocalTime.of(11, 0), enhanced = false
     )
     visitSchedulerMockServer.stubGetSessionSchedule(
       prisonCode,
@@ -52,9 +52,11 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
       .jsonPath("$[0].sessionTemplateReference").isEqualTo(sessionScheduleDto1.sessionTemplateReference)
       .jsonPath("$[0].startTime").isEqualTo("09:00:00")
       .jsonPath("$[0].endTime").isEqualTo("10:00:00")
+      .jsonPath("$[0].enhanced").isEqualTo(true)
       .jsonPath("$[1].sessionTemplateReference").isEqualTo(sessionScheduleDto2.sessionTemplateReference)
       .jsonPath("$[1].startTime").isEqualTo("10:00:00")
       .jsonPath("$[1].endTime").isEqualTo("11:00:00")
+      .jsonPath("$[1].enhanced").isEqualTo(false)
   }
 
   @Test
@@ -80,12 +82,14 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     endTime: LocalTime,
     sessionCapacityDto: SessionCapacityDto = SessionCapacityDto(2, 30),
     sessionTemplateFrequency: String = "WEEKLY",
-    sessionTemplateEndDate: LocalDate? = null
+    sessionTemplateEndDate: LocalDate? = null,
+    enhanced: Boolean
   ): SessionScheduleDto {
     return SessionScheduleDto(
       sessionTemplateReference = reference, startTime = startTime, endTime = endTime,
       capacity = sessionCapacityDto, sessionTemplateFrequency = sessionTemplateFrequency,
-      prisonerLocationGroupNames = mutableListOf(), sessionTemplateEndDate = sessionTemplateEndDate
+      prisonerLocationGroupNames = mutableListOf(), sessionTemplateEndDate = sessionTemplateEndDate,
+      enhanced = enhanced
     )
   }
 }
