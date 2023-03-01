@@ -68,22 +68,33 @@ abstract class IntegrationTestBase {
 
   fun createVisitDto(
     reference: String = "aa-bb-cc-dd",
-    applicationReference: String = "aaa-bbb-ccc-ddd"
+    applicationReference: String = "aaa-bbb-ccc-ddd",
+    prisonerId: String = "AB12345DS",
+    prisonCode: String = "MDI",
+    visitRoom: String = "A1 L3",
+    visitType: String = "SOCIAL",
+    visitStatus: String = "BOOKED",
+    visitRestriction: String = "OPEN",
+    startTimestamp: LocalDateTime = LocalDateTime.now(),
+    endTimestamp: LocalDateTime = startTimestamp.plusHours(1),
+    outcomeStatus: String? = null,
+    createdTimestamp: LocalDateTime = LocalDateTime.now(),
+    modifiedTimestamp: LocalDateTime = LocalDateTime.now()
   ): VisitDto {
     return VisitDto(
       applicationReference = applicationReference,
       reference = reference,
-      prisonerId = "AB12345DS",
-      prisonCode = "MDI",
-      visitRoom = "A1 L3",
-      visitType = "SOCIAL",
-      visitStatus = "BOOKED",
-      visitRestriction = "OPEN",
-      startTimestamp = LocalDateTime.now(),
-      endTimestamp = LocalDateTime.now().plusHours(1),
-      outcomeStatus = null,
-      createdTimestamp = LocalDateTime.now(),
-      modifiedTimestamp = LocalDateTime.now()
+      prisonerId = prisonerId,
+      prisonCode = prisonCode,
+      visitRoom = visitRoom,
+      visitType = visitType,
+      visitStatus = visitStatus,
+      visitRestriction = visitRestriction,
+      startTimestamp = startTimestamp,
+      endTimestamp = endTimestamp,
+      outcomeStatus = outcomeStatus,
+      createdTimestamp = createdTimestamp,
+      modifiedTimestamp = modifiedTimestamp
     )
   }
 

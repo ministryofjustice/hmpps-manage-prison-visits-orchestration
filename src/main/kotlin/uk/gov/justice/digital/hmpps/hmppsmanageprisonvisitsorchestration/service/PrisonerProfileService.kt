@@ -28,24 +28,6 @@ class PrisonerProfileService(
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-/*
-  TODO - keep this till we do the performance tests
-  fun getPrisonerProfile(offenderNo: String): PrisonerProfileDto? {
-    val prisoner = prisonerOffenderSearchClient
-      .getPrisonerById(offenderNo) ?: throw InvalidPrisonerProfileException("Unable to retrieve offender details from Prison Offender Search API")
-    val inmateDetail = prisonApiClient
-      .getInmateDetails(offenderNo) ?: throw InvalidPrisonerProfileException("Unable to retrieve inmate details from Prison API")
-    val visitBalances = prisonApiClient
-      .getVisitBalances(offenderNo) ?: throw InvalidPrisonerProfileException("Unable to retrieve visit balances from Prison API")
-
-    val prisonerBookingSummaryList =
-      prisonApiClient.getBookings(offenderNo, prisoner.prisonId)?.content
-    val prisonerBookingSummary = prisonerBookingSummaryList?.firstOrNull()
-
-    return PrisonerProfileDto(prisoner, inmateDetail, prisonerBookingSummary, visitBalances)
-  }
-*/
-
   fun getPrisonerProfile(prisonId: String, prisonerId: String): PrisonerProfileDto? {
     val prisoner = prisonerOffenderSearchClient.getPrisonerById(prisonerId)
     val inmateDetail = prisonApiClient.getInmateDetails(prisonerId)
@@ -64,7 +46,7 @@ class PrisonerProfileService(
   ): PrisonerProfileDto {
     val prisoner = prisonerProfileTuple?.t1 ?: throw InvalidPrisonerProfileException("Unable to retrieve offender details from Prison Offender Search API")
     val inmateDetail = prisonerProfileTuple.t2 ?: throw InvalidPrisonerProfileException("Unable to retrieve inmate details from Prison API")
-    val visitBalances = prisonerProfileTuple.t3 ?: throw InvalidPrisonerProfileException("Unable to retrieve visit balances from Prison API")
+    val visitBalances = if (prisonerProfileTuple.t3.isNotFound) null else prisonerProfileTuple.t3
     val prisonerBookingSummaryList = prisonerProfileTuple.t4.content
     val prisonerBookingSummary = prisonerBookingSummaryList.firstOrNull()
     return PrisonerProfileDto(prisoner, inmateDetail, prisonerBookingSummary, visitBalances)

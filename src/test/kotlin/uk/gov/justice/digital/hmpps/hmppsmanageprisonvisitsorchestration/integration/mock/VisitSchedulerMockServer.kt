@@ -35,10 +35,10 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     )
   }
 
-  fun stubGetVisits(visitStatus: String, prisonerId: String, page: Int, size: Int, visits: List<VisitDto>) {
+  fun stubGetVisits(visitStatus: List<String>, prisonerId: String, page: Int, size: Int, visits: List<VisitDto>) {
     val restPage = RestPage(content = visits, page = 0, size = size, total = visits.size.toLong())
     stubFor(
-      get("/visits/search?prisonerId=$prisonerId&visitStatus=$visitStatus&page=$page&size=$size")
+      get("/visits/search?prisonerId=$prisonerId&visitStatus=${visitStatus.joinToString(",")}&page=$page&size=$size")
         .willReturn(
           createJsonResponseBuilder()
             .withStatus(HttpStatus.OK.value()).withBody(

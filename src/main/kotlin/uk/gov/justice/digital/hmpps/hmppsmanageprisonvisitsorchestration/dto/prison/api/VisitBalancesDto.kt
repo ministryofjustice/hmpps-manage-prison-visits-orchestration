@@ -6,14 +6,16 @@ import java.time.LocalDate
 @Schema(description = "Balances of visit orders and privilege visit orders")
 data class VisitBalancesDto(
   @Schema(required = true, description = "Balance of visit orders remaining")
-  var remainingVo: Int,
+  val remainingVo: Int,
 
   @Schema(required = true, description = "Balance of privilege visit orders remaining")
-  var remainingPvo: Int,
+  val remainingPvo: Int,
 
   @Schema(description = "Date of last IEP adjustment for Visit orders")
-  var latestIepAdjustDate: LocalDate? = null,
+  val latestIepAdjustDate: LocalDate? = null,
 
   @Schema(description = "Date of last IEP adjustment for Privilege Visit orders")
-  var latestPrivIepAdjustDate: LocalDate? = null
+  val latestPrivIepAdjustDate: LocalDate? = null,
+
+  val isNotFound: Boolean = false
 )

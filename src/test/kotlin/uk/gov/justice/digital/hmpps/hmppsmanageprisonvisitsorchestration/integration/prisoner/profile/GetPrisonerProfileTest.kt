@@ -113,7 +113,7 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
     responseSpec.expectStatus().isNotFound
   }
   @Test
-  fun `when prison API get visit balances returns NOT_FOUND prisoner profile call returns NOT_FOUND status`() {
+  fun `when prison API get visit balances returns NOT_FOUND prisoner profile call returns a profile profile with visitBalances as null`() {
     // Given
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetailDto)
@@ -124,7 +124,14 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
     val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, prisonerId)
 
     // Then
-    responseSpec.expectStatus().isNotFound
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val prisonerProfile = getResults(returnResult)
+
+    assertPrisonerDtoDetails(prisonerProfile, prisonerDto)
+    Assertions.assertThat(prisonerProfile.incentiveLevel).isEqualTo(prisonerDto.currentIncentive!!.level.description)
+    assertInmateDetails(prisonerProfile, inmateDetailDto)
+    Assertions.assertThat(prisonerProfile.convictedStatus).isEqualTo(prisonerBookingSummaryDto.convictedStatus)
+    Assertions.assertThat(prisonerProfile.visitBalances).isNull()
   }
 
   @Test

@@ -1,8 +1,8 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.8.3"
-  kotlin("plugin.spring") version "1.8.0"
-  kotlin("plugin.jpa") version "1.8.0"
-  id("org.jetbrains.kotlin.plugin.noarg") version "1.8.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.8.4-beta-1"
+  kotlin("plugin.spring") version "1.8.10"
+  kotlin("plugin.jpa") version "1.8.10"
+  id("org.jetbrains.kotlin.plugin.noarg") version "1.8.10"
 }
 
 configurations {
