@@ -17,6 +17,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.PrisonerBookingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.VisitBalancesDto
 import java.time.Duration
+import java.util.Optional
+import kotlin.collections.ArrayList
 
 @Component
 class PrisonApiClient(
@@ -42,15 +44,15 @@ class PrisonApiClient(
       .bodyToMono()
   }
 
-  fun getVisitBalances(prisonerId: String): Mono<VisitBalancesDto> {
+  fun getVisitBalances(prisonerId: String): Mono<Optional<VisitBalancesDto>> {
     return webClient.get()
       .uri("/api/bookings/offenderNo/$prisonerId/visit/balances")
       .retrieve()
-      .bodyToMono<VisitBalancesDto>()
+      .bodyToMono<Optional<VisitBalancesDto>>()
       .onErrorResume { e ->
         if (e is WebClientResponseException && e.statusCode == HttpStatus.NOT_FOUND) {
-          // cannot return null hence return a VisitBalancesDto with isNotFound as true
-          Mono.just(VisitBalancesDto(0, 0, isNotFound = true))
+          // return an Optional.empty element if 404 is thrown
+          return@onErrorResume Mono.just(Optional.empty())
         } else {
           Mono.error(e)
         }

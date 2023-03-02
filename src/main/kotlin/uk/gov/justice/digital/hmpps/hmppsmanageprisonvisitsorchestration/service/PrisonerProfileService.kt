@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
 import java.time.Duration
+import java.util.Optional
 
 @Service
 class PrisonerProfileService(
@@ -29,24 +30,24 @@ class PrisonerProfileService(
   }
 
   fun getPrisonerProfile(prisonId: String, prisonerId: String): PrisonerProfileDto? {
-    val prisoner = prisonerOffenderSearchClient.getPrisonerById(prisonerId)
-    val inmateDetail = prisonApiClient.getInmateDetails(prisonerId)
-    val visitBalances = prisonApiClient.getVisitBalances(prisonerId)
-    val prisonerBookingSummaryList = prisonApiClient.getBookings(prisonId, prisonerId)
+    val prisonerPromise = prisonerOffenderSearchClient.getPrisonerById(prisonerId)
+    val inmateDetailPromise = prisonApiClient.getInmateDetails(prisonerId)
+    val visitBalancesPromise = prisonApiClient.getVisitBalances(prisonerId)
+    val prisonerBookingSummaryPromise = prisonApiClient.getBookings(prisonId, prisonerId)
 
     val prisonerProfileTuple =
-      Mono.zip(prisoner, inmateDetail, visitBalances, prisonerBookingSummaryList).block(apiTimeout)
+      Mono.zip(prisonerPromise, inmateDetailPromise, visitBalancesPromise, prisonerBookingSummaryPromise).block(apiTimeout)
     val prisonerProfile = getPrisonerProfileDto(prisonerProfileTuple)
     validatePrisonersPrisonId(prisonerProfile, prisonId)
     return prisonerProfile
   }
 
   fun getPrisonerProfileDto(
-    prisonerProfileTuple: Tuple4<PrisonerDto, InmateDetailDto, VisitBalancesDto, RestPage<PrisonerBookingSummaryDto>>?
+    prisonerProfileTuple: Tuple4<PrisonerDto, InmateDetailDto, Optional<VisitBalancesDto>, RestPage<PrisonerBookingSummaryDto>>?
   ): PrisonerProfileDto {
     val prisoner = prisonerProfileTuple?.t1 ?: throw InvalidPrisonerProfileException("Unable to retrieve offender details from Prison Offender Search API")
     val inmateDetail = prisonerProfileTuple.t2 ?: throw InvalidPrisonerProfileException("Unable to retrieve inmate details from Prison API")
-    val visitBalances = if (prisonerProfileTuple.t3.isNotFound) null else prisonerProfileTuple.t3
+    val visitBalances = if (prisonerProfileTuple.t3.isEmpty) null else prisonerProfileTuple.t3
     val prisonerBookingSummaryList = prisonerProfileTuple.t4.content
     val prisonerBookingSummary = prisonerBookingSummaryList.firstOrNull()
     return PrisonerProfileDto(prisoner, inmateDetail, prisonerBookingSummary, visitBalances)
