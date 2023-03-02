@@ -121,7 +121,7 @@ workflows:
           filters:
             branches:
               only:
-                - main
+                - develop
           requires:
             - validate
             - build_docker
