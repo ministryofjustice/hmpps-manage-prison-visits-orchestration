@@ -2,10 +2,12 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client
 
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
@@ -15,22 +17,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.PrisonerBookingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.VisitBalancesDto
 import java.time.Duration
+import java.util.Optional
+import kotlin.collections.ArrayList
 
 @Component
 class PrisonApiClient(
   @Qualifier("prisonApiWebClient") private val webClient: WebClient,
   @Value("\${prison.api.timeout:10s}") private val apiTimeout: Duration
 ) {
-  // TODO - keep this till we do the performance tests
-/*
-  fun getInmateDetails(offenderNo: String): InmateDetailDto? {
-    return webClient.get()
-      .uri("/api/offenders/$offenderNo")
-      .retrieve()
-      .bodyToMono<InmateDetailDto>()
-      .block(apiTimeout)
-  }
-*/
 
   fun getInmateDetails(prisonerId: String): Mono<InmateDetailDto> {
     return webClient.get()
@@ -38,20 +32,6 @@ class PrisonApiClient(
       .retrieve()
       .bodyToMono()
   }
-
-  /*
-  // TODO - keep this till we do the performance tests
-  fun getBookings(offenderNo: String, prisonId: String): RestPage<PrisonerBookingSummaryDto>? {
-    return webClient.get()
-      .uri("/api/bookings/v2") {
-        it.queryParam("prisonId", prisonId)
-          .queryParam("offenderNo", offenderNo)
-          .queryParam("legalInfo", true).build()
-      }
-      .retrieve()
-      .bodyToMono<RestPage<PrisonerBookingSummaryDto>>()
-      .block(apiTimeout)
-  }*/
 
   fun getBookings(prisonId: String, prisonerId: String): Mono<RestPage<PrisonerBookingSummaryDto>> {
     return webClient.get()
@@ -64,20 +44,19 @@ class PrisonApiClient(
       .bodyToMono()
   }
 
-  // TODO - keep this till we do the performance tests
-  /*fun getVisitBalances(offenderNo: String): VisitBalancesDto? {
-    return webClient.get()
-      .uri("/api/bookings/offenderNo/$offenderNo/visit/balances")
-      .retrieve()
-      .bodyToMono<VisitBalancesDto>()
-      .block(apiTimeout)
-  }*/
-
-  fun getVisitBalances(prisonerId: String): Mono<VisitBalancesDto> {
+  fun getVisitBalances(prisonerId: String): Mono<Optional<VisitBalancesDto>> {
     return webClient.get()
       .uri("/api/bookings/offenderNo/$prisonerId/visit/balances")
       .retrieve()
-      .bodyToMono()
+      .bodyToMono<Optional<VisitBalancesDto>>()
+      .onErrorResume { e ->
+        if (e is WebClientResponseException && e.statusCode == HttpStatus.NOT_FOUND) {
+          // return an Optional.empty element if 404 is thrown
+          return@onErrorResume Mono.just(Optional.empty())
+        } else {
+          Mono.error(e)
+        }
+      }
   }
 
   fun getOffenderRestrictions(prisonerId: String): OffenderRestrictionsDto? {

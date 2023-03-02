@@ -15,15 +15,6 @@ class PrisonerOffenderSearchClient(
   @Qualifier("prisonerOffenderSearchWebClient") private val webClient: WebClient,
   @Value("\${prisoner-offender.search.timeout:10s}") private val apiTimeout: Duration
 ) {
-/*
-  TODO - keep this till we do the performance tests
-  fun getPrisonerById(id: String): PrisonerDto? {
-    return webClient.get().uri("/prisoner/$id")
-      .retrieve()
-      .bodyToMono<PrisonerDto>()
-      .block(apiTimeout)
-  }*/
-
   fun getPrisonerById(prisonerId: String): Mono<PrisonerDto> {
     return webClient.get().uri("/prisoner/$prisonerId")
       .retrieve()

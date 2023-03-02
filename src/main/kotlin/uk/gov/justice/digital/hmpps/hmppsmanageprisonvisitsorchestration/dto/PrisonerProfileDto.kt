@@ -53,8 +53,8 @@ data class PrisonerProfileDto(
   constructor(
     prisoner: PrisonerDto,
     inmateDetail: InmateDetailDto,
+    visitBalances: VisitBalancesDto?,
     prisonerBookingSummary: PrisonerBookingSummaryDto?,
-    visitBalances: VisitBalancesDto?
   ) : this(
     prisonerId = prisoner.prisonerNumber,
     prisonId = prisoner.prisonId,

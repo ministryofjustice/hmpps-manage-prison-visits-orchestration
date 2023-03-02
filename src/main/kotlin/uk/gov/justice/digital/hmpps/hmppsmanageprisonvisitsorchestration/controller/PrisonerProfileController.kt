@@ -51,8 +51,6 @@ class PrisonerProfileController(
     ]
   )
   fun getPrisonerProfile(@PathVariable prisonId: String, @PathVariable prisonerId: String): PrisonerProfileDto? {
-    // TODO - keep this till we do the performance tests
-    // return prisonerProfileService.getPrisonerProfile(prisonerId)
     return prisonerProfileService.getPrisonerProfile(prisonId, prisonerId)
   }
 }
