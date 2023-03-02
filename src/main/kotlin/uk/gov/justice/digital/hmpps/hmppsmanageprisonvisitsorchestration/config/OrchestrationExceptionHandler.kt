@@ -6,22 +6,47 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.reactive.function.client.WebClientException
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
 
 @RestControllerAdvice
 class OrchestrationExceptionHandler {
   @ExceptionHandler(InvalidPrisonerProfileException::class)
   fun handleInvalidPrisonerProfileException(e: InvalidPrisonerProfileException): ResponseEntity<ErrorResponse?>? {
-    log.debug("Visit not found exception caught: {}", e.message)
+    log.error("Prisoner profile not found exception caught: {}", e.message)
     return ResponseEntity
       .status(HttpStatus.NOT_FOUND)
       .body(
         ErrorResponse(
           status = HttpStatus.NOT_FOUND,
-          userMessage = "Visit not found: ${e.cause?.message}",
+          userMessage = "Prisoner profile not found: ${e.cause?.message}",
           developerMessage = e.message
         )
       )
+  }
+
+  @ExceptionHandler(WebClientResponseException::class)
+  fun handleWebClientResponseException(e: WebClientResponseException): ResponseEntity<ByteArray> {
+    if (e.statusCode.is4xxClientError) {
+      log.debug("Unexpected client exception with message {}", e.message)
+    } else {
+      log.error("Unexpected server exception", e)
+    }
+    return ResponseEntity
+      .status(e.rawStatusCode)
+      .body(e.responseBodyAsByteArray)
+  }
+
+  @ExceptionHandler(WebClientException::class)
+  fun handleWebClientException(e: WebClientException): ResponseEntity<ErrorResponse> {
+    log.error("Unexpected exception", e)
+    val error = ErrorResponse(
+      status = HttpStatus.INTERNAL_SERVER_ERROR,
+      developerMessage = e.message
+    )
+
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error)
   }
 
   companion object {

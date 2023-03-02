@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.VisitBalancesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import java.time.LocalDate
-import java.util.Optional
 
 data class PrisonerProfileDto(
   @Schema(required = true, description = "Prisoner Number", example = "A1234AA")
@@ -54,8 +53,8 @@ data class PrisonerProfileDto(
   constructor(
     prisoner: PrisonerDto,
     inmateDetail: InmateDetailDto,
+    visitBalances: VisitBalancesDto?,
     prisonerBookingSummary: PrisonerBookingSummaryDto?,
-    visitBalances: Optional<VisitBalancesDto>?
   ) : this(
     prisonerId = prisoner.prisonerNumber,
     prisonId = prisoner.prisonId,
@@ -68,6 +67,6 @@ data class PrisonerProfileDto(
     convictedStatus = prisonerBookingSummary?.convictedStatus,
     incentiveLevel = prisoner.currentIncentive?.level?.description,
     alerts = inmateDetail.alerts,
-    visitBalances = visitBalances?.get()
+    visitBalances = visitBalances
   )
 }

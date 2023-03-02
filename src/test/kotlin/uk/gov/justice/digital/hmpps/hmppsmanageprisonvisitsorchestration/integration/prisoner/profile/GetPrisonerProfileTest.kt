@@ -112,6 +112,31 @@ class GetPrisonerProfileTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isNotFound
   }
+
+  @Test
+  fun `when prison returned by prison API does not match prison id passed to endpoint prisoner profile call returns internal server error`() {
+    // Given prisoner's prison ID is different to the prison ID passed in endpoint
+    val prisonerDto = createPrisoner(
+      prisonerId = prisonerId,
+      prisonId = "XYZ",
+      firstName = firstName,
+      lastName = lastName,
+      dateOfBirth = dateOfBirth,
+      currentIncentive = currentIncentive,
+    )
+
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetailDto)
+    prisonApiMockServer.stubGetBookings(prisonId, prisonerId, listOf(prisonerBookingSummaryDto))
+    prisonApiMockServer.stubGetVisitBalances(prisonerId, visitBalancesDto)
+
+    // When
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, prisonerId)
+
+    // Then
+    responseSpec.expectStatus().is5xxServerError
+  }
+
   @Test
   fun `when prison API get visit balances returns NOT_FOUND prisoner profile call returns a profile profile with visitBalances as null`() {
     // Given
