@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler
 
 import io.swagger.v3.oas.annotations.media.Schema
-import javax.validation.constraints.NotNull
+import jakarta.validation.constraints.NotNull
 
 @Schema(description = "Visitor")
 class VisitorDto(

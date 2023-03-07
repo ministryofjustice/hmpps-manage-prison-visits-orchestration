@@ -1,17 +1,6 @@
 version: "3"
+
 services:
-  hmpps-manage-prison-visits-orchestration:
-    build:
-      context: .
-    network_mode: "host"
-    container_name: hmpps-manage-prison-visits-orchestration
-    ports:
-      - "8081:8080"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ping"]
-    environment:
-      - SERVER_PORT=8080
-      - SPRING_PROFILES_ACTIVE=dev
 
   localstack:
     image: localstack/localstack:1.3

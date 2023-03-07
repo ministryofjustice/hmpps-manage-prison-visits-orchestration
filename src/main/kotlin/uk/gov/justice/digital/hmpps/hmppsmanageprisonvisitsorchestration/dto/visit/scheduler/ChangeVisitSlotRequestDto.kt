@@ -1,8 +1,8 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler
 
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.Valid
 import java.time.LocalDateTime
-import javax.validation.Valid
 
 data class ChangeVisitSlotRequestDto(
   @Schema(description = "Visit Restriction", example = "OPEN", required = false)
