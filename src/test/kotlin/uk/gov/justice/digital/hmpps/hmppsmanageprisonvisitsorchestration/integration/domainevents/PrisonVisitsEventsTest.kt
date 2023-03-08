@@ -2,11 +2,13 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integr
 
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
-import org.awaitility.kotlin.untilAsserted
 import org.awaitility.kotlin.untilCallTo
 import org.junit.jupiter.api.Test
+
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
+
+import org.mockito.kotlin.times
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue
 import software.amazon.awssdk.services.sns.model.PublishRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.DomainEvent
@@ -25,7 +27,7 @@ class PrisonVisitsEventsTest : PrisonVisitsEventsIntegrationTestBase() {
 
     // Then
     await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
-    await untilAsserted { verify(prisonerIncentivesInsertedNotifierSpy).processEvent(any()) }
+    verify(prisonerIncentivesInsertedNotifierSpy, times(1)).processEvent(any())
   }
 
   @Test
@@ -39,7 +41,7 @@ class PrisonVisitsEventsTest : PrisonVisitsEventsIntegrationTestBase() {
 
     // Then
     await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
-    await untilAsserted { verify(prisonerIncentivesDeletedNotifierSpy).processEvent(any()) }
+    verify(prisonerIncentivesDeletedNotifierSpy, times(1)).processEvent(any())
   }
 
   @Test
@@ -53,7 +55,7 @@ class PrisonVisitsEventsTest : PrisonVisitsEventsIntegrationTestBase() {
 
     // Then
     await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
-    await untilAsserted { verify(prisonerIncentivesUpdatedNotifierSpy).processEvent(any()) }
+    verify(prisonerIncentivesUpdatedNotifierSpy, times(1)).processEvent(any())
   }
 
   private fun createDomainEventPublishRequest(eventType: String): PublishRequest? {

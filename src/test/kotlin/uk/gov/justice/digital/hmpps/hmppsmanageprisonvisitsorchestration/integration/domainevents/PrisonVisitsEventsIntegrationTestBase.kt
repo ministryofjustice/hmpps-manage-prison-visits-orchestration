@@ -61,9 +61,14 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
 
   @BeforeEach
   fun cleanQueue() {
-    sqsPrisonVisitsEventsClient.purgeQueue(prisonVisitsEventsQueueUrl).get()
-    sqsPrisonVisitsEventsDlqClient?.purgeQueue(prisonVisitsEventsDlqUrl)?.get()
+    purgeQueue(sqsPrisonVisitsEventsClient, prisonVisitsEventsQueueUrl)
+    purgeQueue(sqsPrisonVisitsEventsDlqClient!!, prisonVisitsEventsDlqUrl!!)
   }
+
+  fun purgeQueue(client : SqsAsyncClient, url : String) {
+    client.purgeQueue(PurgeQueueRequest.builder().queueUrl(url).build()).get()
+  }
+
 }
 
-private fun SqsAsyncClient.purgeQueue(queueUrl: String?) = purgeQueue(PurgeQueueRequest.builder().queueUrl(queueUrl!!).build())
+
