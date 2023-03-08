@@ -37,10 +37,12 @@ hmpps.sqs:
   provider: localstack
   queues:
     prisonvisitsevents:
-      queueName: hmpps_prison_visits_event_queue
-      dlqName: hmpps_prison_visits_event_dlq
+      queueName: ${random.uuid}
+      dlqName: ${random.uuid}
       subscribeTopicId: domainevents
       subscribeFilter: '{"eventType":["incentives.iep-review.inserted", "incentives.iep-review.updated", "incentives.iep-review.deleted"]}'
+      dlqMaxReceiveCount: 2
+      visibilityTimeout: 2
   topics:
     domainevents:
       arn: arn:aws:sns:eu-west-2:000000000000:${random.uuid}
