@@ -19,6 +19,7 @@ jobs:
       localstack_tag: "1.3"
     steps:
       - checkout
+      - hmpps/wait_till_ready
       - restore_cache:
           keys:
             - gradle-{{ checksum "build.gradle.kts" }}
