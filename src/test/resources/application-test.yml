@@ -40,9 +40,14 @@ hmpps.sqs:
       queueName: ${random.uuid}
       dlqName: ${random.uuid}
       subscribeTopicId: domainevents
-      subscribeFilter: '{"eventType":["incentives.iep-review.inserted", "incentives.iep-review.updated", "incentives.iep-review.deleted"]}'
+      subscribeFilter: '{"eventType":["incentives.iep-review.test","incentives.iep-review.inserted", "incentives.iep-review.updated", "incentives.iep-review.deleted"]}'
       dlqMaxReceiveCount: 2
       visibilityTimeout: 2
   topics:
     domainevents:
       arn: arn:aws:sns:eu-west-2:000000000000:${random.uuid}
+
+feature:
+  event:
+    incentives:
+      iep-review.test: false
