@@ -65,10 +65,7 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     purgeQueue(sqsPrisonVisitsEventsDlqClient!!, prisonVisitsEventsDlqUrl!!)
   }
 
-  fun purgeQueue(client : SqsAsyncClient, url : String) {
+  fun purgeQueue(client: SqsAsyncClient, url: String) {
     client.purgeQueue(PurgeQueueRequest.builder().queueUrl(url).build()).get()
   }
-
 }
-
-
