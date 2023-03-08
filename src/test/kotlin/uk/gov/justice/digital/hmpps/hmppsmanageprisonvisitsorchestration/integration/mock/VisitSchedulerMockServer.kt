@@ -17,7 +17,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
+import kotlin.collections.ArrayList
 
 class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper) : WireMockServer(8092) {
   fun stubGetVisit(reference: String, visitDto: VisitDto?) {
@@ -35,10 +37,18 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     )
   }
 
-  fun stubGetVisits(visitStatus: List<String>, prisonerId: String, page: Int, size: Int, visits: List<VisitDto>) {
+  fun stubGetVisits(
+    prisonerId: String,
+    visitStatus: List<String>,
+    startDateTime: LocalDateTime?,
+    endDateTime: LocalDateTime?,
+    page: Int,
+    size: Int,
+    visits: List<VisitDto>
+  ) {
     val restPage = RestPage(content = visits, page = 0, size = size, total = visits.size.toLong())
     stubFor(
-      get("/visits/search?prisonerId=$prisonerId&visitStatus=${visitStatus.joinToString(",")}&page=$page&size=$size")
+      get("/visits/search?${getVisitsQueryParams(prisonerId, visitStatus, startDateTime, endDateTime, page, size).joinToString("&")}")
         .willReturn(
           createJsonResponseBuilder()
             .withStatus(HttpStatus.OK.value()).withBody(
@@ -46,6 +56,30 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
             )
         )
     )
+  }
+
+  private fun getVisitsQueryParams(
+    prisonerId: String,
+    visitStatus: List<String>,
+    startDateTime: LocalDateTime? = null,
+    endDateTime: LocalDateTime? = null,
+    page: Int,
+    size: Int
+  ): List<String> {
+    val queryParams = ArrayList<String>()
+    queryParams.add("prisonerId=$prisonerId")
+    visitStatus.forEach {
+      queryParams.add("visitStatus=$it")
+    }
+    startDateTime?.let {
+      queryParams.add("startDateTime=$it")
+    }
+    endDateTime?.let {
+      queryParams.add("endDateTime=$it")
+    }
+    queryParams.add("page=$page")
+    queryParams.add("size=$size")
+    return queryParams
   }
 
   fun stubReserveVisitSlot(visitDto: VisitDto?) {

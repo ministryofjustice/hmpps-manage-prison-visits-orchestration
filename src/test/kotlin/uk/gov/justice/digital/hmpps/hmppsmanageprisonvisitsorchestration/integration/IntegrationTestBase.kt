@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonOffenderSearchMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.VisitSchedulerMockServer
 import java.time.LocalDateTime
+import java.util.ArrayList
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
@@ -66,7 +67,47 @@ abstract class IntegrationTestBase {
     scopes: List<String> = listOf()
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles, scopes)
 
-  fun createVisitDto(
+  fun callGetVisits(
+    webTestClient: WebTestClient,
+    prisonerId: String,
+    visitStatus: List<String>,
+    startDateTime: LocalDateTime? = null,
+    endDateTime: LocalDateTime? = null,
+    page: Int,
+    size: Int,
+    authHttpHeaders: (HttpHeaders) -> Unit
+  ): WebTestClient.ResponseSpec {
+    return webTestClient.get()
+      .uri("/visits/search?${getVisitsQueryParams(prisonerId, visitStatus, startDateTime, endDateTime, page, size).joinToString("&")}")
+      .headers(authHttpHeaders)
+      .exchange()
+  }
+
+  private fun getVisitsQueryParams(
+    prisonerId: String,
+    visitStatus: List<String>,
+    startDateTime: LocalDateTime? = null,
+    endDateTime: LocalDateTime? = null,
+    page: Int,
+    size: Int
+  ): List<String> {
+    val queryParams = ArrayList<String>()
+    queryParams.add("prisonerId=$prisonerId")
+    visitStatus.forEach {
+      queryParams.add("visitStatus=$it")
+    }
+    startDateTime?.let {
+      queryParams.add("startDateTime=$it")
+    }
+    endDateTime?.let {
+      queryParams.add("endDateTime=$it")
+    }
+    queryParams.add("page=$page")
+    queryParams.add("size=$size")
+    return queryParams
+  }
+
+  final fun createVisitDto(
     reference: String = "aa-bb-cc-dd",
     applicationReference: String = "aaa-bbb-ccc-ddd",
     prisonerId: String = "AB12345DS",

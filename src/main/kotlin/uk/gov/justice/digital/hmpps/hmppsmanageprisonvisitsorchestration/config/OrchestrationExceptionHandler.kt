@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.reactive.function.client.WebClientException
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
+import javax.validation.ValidationException
 
 @RestControllerAdvice
 class OrchestrationExceptionHandler {
@@ -33,9 +34,8 @@ class OrchestrationExceptionHandler {
     } else {
       log.error("Unexpected server exception", e)
     }
-    return ResponseEntity
-      .status(e.rawStatusCode)
-      .body(e.responseBodyAsByteArray)
+
+    return ResponseEntity.status(e.rawStatusCode).body(e.responseBodyAsByteArray)
   }
 
   @ExceptionHandler(WebClientException::class)
@@ -47,6 +47,18 @@ class OrchestrationExceptionHandler {
     )
 
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error)
+  }
+
+  @ExceptionHandler(ValidationException::class)
+  fun handleValidationException(e: Exception): ResponseEntity<ErrorResponse> {
+    log.debug("Validation exception: {}", e.message)
+    val error = ErrorResponse(
+      status = HttpStatus.BAD_REQUEST,
+      userMessage = "Validation failure: ${e.cause?.message}",
+      developerMessage = e.message
+    )
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error)
   }
 
   companion object {

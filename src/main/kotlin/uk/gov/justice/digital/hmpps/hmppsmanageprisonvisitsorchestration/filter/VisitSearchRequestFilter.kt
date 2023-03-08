@@ -10,7 +10,7 @@ data class VisitSearchRequestFilter(
     description = "Filter results by prison id/code",
     example = "MDI"
   )
-  val prisonCode: String?,
+  val prisonCode: String? = null,
 
   @Parameter(
     description = "Filter results by prisoner id",
