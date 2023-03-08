@@ -1,9 +1,9 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter
 
 import io.swagger.v3.oas.annotations.Parameter
+import jakarta.validation.constraints.NotEmpty
+import jakarta.validation.constraints.NotNull
 import java.time.LocalDateTime
-import javax.validation.constraints.NotEmpty
-import javax.validation.constraints.NotNull
 
 data class VisitSearchRequestFilter(
   @Parameter(

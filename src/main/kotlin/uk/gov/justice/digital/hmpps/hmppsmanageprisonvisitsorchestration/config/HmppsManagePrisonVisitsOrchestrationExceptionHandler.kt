@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config
 
+import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatus.BAD_REQUEST
@@ -9,7 +10,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.reactive.function.client.WebClientException
 import org.springframework.web.reactive.function.client.WebClientResponseException
-import javax.validation.ValidationException
 
 @RestControllerAdvice
 class HmppsManagePrisonVisitsOrchestrationExceptionHandler {
@@ -49,7 +49,7 @@ class HmppsManagePrisonVisitsOrchestrationExceptionHandler {
       log.error("Unexpected server exception", e)
     }
     return ResponseEntity
-      .status(e.rawStatusCode)
+      .status(e.statusCode)
       .body(e.responseBodyAsByteArray)
   }
 

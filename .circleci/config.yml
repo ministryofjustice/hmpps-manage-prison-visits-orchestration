@@ -14,10 +14,12 @@ parameters:
 jobs:
   validate:
     executor:
-      name: hmpps/java
-      tag: "19.0"
+      name: hmpps/localstack
+      jdk_tag: "19.0"
+      localstack_tag: "1.3"
     steps:
       - checkout
+      - hmpps/wait_till_ready
       - restore_cache:
           keys:
             - gradle-{{ checksum "build.gradle.kts" }}
