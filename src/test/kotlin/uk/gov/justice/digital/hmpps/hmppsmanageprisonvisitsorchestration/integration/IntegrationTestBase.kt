@@ -63,7 +63,7 @@ abstract class IntegrationTestBase {
   internal fun setAuthorisation(
     user: String = "AUTH_ADM",
     roles: List<String> = listOf(),
-    scopes: List<String> = listOf()
+    scopes: List<String> = listOf(),
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles, scopes)
 
   fun createVisitDto(
@@ -79,7 +79,7 @@ abstract class IntegrationTestBase {
     endTimestamp: LocalDateTime = startTimestamp.plusHours(1),
     outcomeStatus: String? = null,
     createdTimestamp: LocalDateTime = LocalDateTime.now(),
-    modifiedTimestamp: LocalDateTime = LocalDateTime.now()
+    modifiedTimestamp: LocalDateTime = LocalDateTime.now(),
   ): VisitDto {
     return VisitDto(
       applicationReference = applicationReference,
@@ -94,7 +94,7 @@ abstract class IntegrationTestBase {
       endTimestamp = endTimestamp,
       outcomeStatus = outcomeStatus,
       createdTimestamp = createdTimestamp,
-      modifiedTimestamp = modifiedTimestamp
+      modifiedTimestamp = modifiedTimestamp,
     )
   }
 
@@ -133,7 +133,7 @@ abstract class IntegrationTestBase {
       closedVisitCapacity = 5,
       openVisitCapacity = 30,
       startTimestamp = LocalDateTime.now(),
-      endTimestamp = LocalDateTime.now().plusHours(1)
+      endTimestamp = LocalDateTime.now().plusHours(1),
     )
   }
 }

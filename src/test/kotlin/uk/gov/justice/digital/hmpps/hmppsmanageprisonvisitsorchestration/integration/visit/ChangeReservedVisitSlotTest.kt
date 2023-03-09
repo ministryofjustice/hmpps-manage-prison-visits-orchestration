@@ -14,9 +14,8 @@ class ChangeReservedVisitSlotTest : IntegrationTestBase() {
     webTestClient: WebTestClient,
     applicationReference: String,
     changeVisitSlotRequestDto: ChangeVisitSlotRequestDto,
-    authHttpHeaders: (HttpHeaders) -> Unit
+    authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
-
     return webTestClient.put().uri("/visits/$applicationReference/slot/change")
       .headers(authHttpHeaders)
       .body(BodyInserters.fromValue(changeVisitSlotRequestDto))

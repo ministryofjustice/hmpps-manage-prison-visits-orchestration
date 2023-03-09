@@ -11,5 +11,5 @@ class RestPage<T> @JsonCreator(mode = JsonCreator.Mode.PROPERTIES) constructor(
   @JsonProperty("content") content: List<T>?,
   @JsonProperty("number") page: Int,
   @JsonProperty("size") size: Int,
-  @JsonProperty("totalElements") total: Long
+  @JsonProperty("totalElements") total: Long,
 ) : PageImpl<T>(content as MutableList<T>, PageRequest.of(page, size), total)

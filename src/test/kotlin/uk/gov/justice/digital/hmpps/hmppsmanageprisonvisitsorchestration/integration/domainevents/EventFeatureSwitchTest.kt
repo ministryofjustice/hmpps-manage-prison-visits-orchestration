@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
   properties = [
     "feature.event.$DELETE_INCENTIVES_EVENT_TYPE=true",
     "feature.event.$INSERTED_INCENTIVES_EVENT_TYPE=false",
-  ]
+  ],
 )
 internal class EventFeatureSwitchTest : IntegrationTestBase() {
 

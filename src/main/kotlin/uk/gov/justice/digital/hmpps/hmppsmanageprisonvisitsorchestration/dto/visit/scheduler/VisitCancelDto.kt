@@ -7,5 +7,5 @@ data class VisitCancelDto(
   val reference: String,
 
   @Schema(description = "Outcome details - includes status and description.", required = true)
-  val outcome: OutcomeDto
+  val outcome: OutcomeDto,
 )

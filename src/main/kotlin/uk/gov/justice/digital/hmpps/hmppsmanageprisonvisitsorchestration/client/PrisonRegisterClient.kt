@@ -11,7 +11,7 @@ import java.time.Duration
 @Component
 class PrisonRegisterClient(
   @Qualifier("prisonRegisterWebClient") private val webClient: WebClient,
-  @Value("\${prison-register.api.timeout:10s}") private val apiTimeout: Duration
+  @Value("\${prison-register.api.timeout:10s}") private val apiTimeout: Duration,
 ) {
   fun getPrisons(): List<PrisonDto>? {
     return webClient.get().uri("/prisons")
@@ -21,7 +21,7 @@ class PrisonRegisterClient(
   }
 
   fun getPrison(
-    prisonId: String
+    prisonId: String,
   ): PrisonDto? {
     return webClient.get().uri("/prisons/id/$prisonId")
       .retrieve()

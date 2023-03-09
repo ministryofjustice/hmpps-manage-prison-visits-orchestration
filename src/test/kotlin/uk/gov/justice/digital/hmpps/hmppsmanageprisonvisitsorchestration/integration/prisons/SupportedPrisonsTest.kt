@@ -16,7 +16,7 @@ class SupportedPrisonsTest : IntegrationTestBase() {
 
   fun callGetSupportedPrisons(
     webTestClient: WebTestClient,
-    authHttpHeaders: (HttpHeaders) -> Unit
+    authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     return webTestClient.get().uri("/config/prisons/supported")
       .headers(authHttpHeaders)

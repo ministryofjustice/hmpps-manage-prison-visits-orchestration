@@ -10,5 +10,5 @@ class VisitorDto(
   val nomisPersonId: Long,
 
   @Schema(description = "true if visitor is the contact for the visit otherwise false", example = "true", required = false)
-  val visitContact: Boolean?
+  val visitContact: Boolean?,
 )

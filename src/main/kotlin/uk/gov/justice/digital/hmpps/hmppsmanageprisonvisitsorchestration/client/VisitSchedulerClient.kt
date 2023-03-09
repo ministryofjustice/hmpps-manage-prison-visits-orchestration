@@ -27,7 +27,7 @@ import java.util.Optional
 class VisitSchedulerClient(
 
   @Qualifier("visitSchedulerWebClient") private val webClient: WebClient,
-  @Value("\${visit-scheduler.api.timeout:10s}") val apiTimeout: Duration
+  @Value("\${visit-scheduler.api.timeout:10s}") val apiTimeout: Duration,
 ) {
   fun getVisitByReference(reference: String): VisitDto? {
     return webClient.get()
@@ -121,7 +121,7 @@ class VisitSchedulerClient(
     prisonCode: String,
     sessionDate: LocalDate,
     sessionStartTime: LocalTime,
-    sessionEndTime: LocalTime
+    sessionEndTime: LocalTime,
   ): SessionCapacityDto? {
     return webClient.get()
       .uri("/visit-sessions/capacity") {
@@ -134,7 +134,7 @@ class VisitSchedulerClient(
 
   fun getSessionSchedule(
     prisonCode: String,
-    sessionDate: LocalDate
+    sessionDate: LocalDate,
   ): List<SessionScheduleDto>? {
     return webClient.get()
       .uri("/visit-sessions/schedule") {
@@ -172,7 +172,7 @@ class VisitSchedulerClient(
     sessionDate: LocalDate,
     sessionStartTime: LocalTime,
     sessionEndTime: LocalTime,
-    uriBuilder: UriBuilder
+    uriBuilder: UriBuilder,
   ): UriBuilder {
     uriBuilder.queryParam("prisonId", prisonCode)
     uriBuilder.queryParam("sessionDate", sessionDate)

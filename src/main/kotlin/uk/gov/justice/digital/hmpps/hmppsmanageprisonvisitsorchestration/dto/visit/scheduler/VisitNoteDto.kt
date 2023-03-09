@@ -7,5 +7,5 @@ class VisitNoteDto(
   @Schema(description = "Note type", example = "VISITOR_CONCERN", required = true)
   val type: String,
   @Schema(description = "Note text", example = "Visitor is concerned that his mother in-law is coming!", required = true)
-  val text: String
+  val text: String,
 )

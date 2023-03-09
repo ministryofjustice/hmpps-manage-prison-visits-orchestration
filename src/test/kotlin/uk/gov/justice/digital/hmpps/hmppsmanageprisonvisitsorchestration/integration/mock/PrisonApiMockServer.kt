@@ -27,8 +27,8 @@ class PrisonApiMockServer(@Autowired private val objectMapper: ObjectMapper) : W
             responseBuilder
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(inmateDetail))
-          }
-        )
+          },
+        ),
     )
   }
 
@@ -42,9 +42,9 @@ class PrisonApiMockServer(@Autowired private val objectMapper: ObjectMapper) : W
             .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
             .withStatus(200)
             .withBody(
-              getJsonString(restPage)
-            )
-        )
+              getJsonString(restPage),
+            ),
+        ),
     )
   }
 
@@ -62,8 +62,8 @@ class PrisonApiMockServer(@Autowired private val objectMapper: ObjectMapper) : W
             responseBuilder
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(visitBalances))
-          }
-        )
+          },
+        ),
     )
   }
 

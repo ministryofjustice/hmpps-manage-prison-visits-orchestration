@@ -23,7 +23,7 @@ import kotlin.collections.ArrayList
 @Component
 class PrisonApiClient(
   @Qualifier("prisonApiWebClient") private val webClient: WebClient,
-  @Value("\${prison.api.timeout:10s}") private val apiTimeout: Duration
+  @Value("\${prison.api.timeout:10s}") private val apiTimeout: Duration,
 ) {
 
   fun getInmateDetails(prisonerId: String): Mono<InmateDetailDto> {

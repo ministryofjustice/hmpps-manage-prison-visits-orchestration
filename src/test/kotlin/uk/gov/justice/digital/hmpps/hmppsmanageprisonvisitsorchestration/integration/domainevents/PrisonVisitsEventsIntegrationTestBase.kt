@@ -37,10 +37,13 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
 
   @SpyBean
   lateinit var eventFeatureSwitch: EventFeatureSwitch
+
   @SpyBean
   lateinit var prisonerIncentivesUpdatedNotifierSpy: PrisonerIncentivesUpdatedNotifier
+
   @SpyBean
   lateinit var prisonerIncentivesInsertedNotifierSpy: PrisonerIncentivesInsertedNotifier
+
   @SpyBean
   lateinit var prisonerIncentivesDeletedNotifierSpy: PrisonerIncentivesDeletedNotifier
 

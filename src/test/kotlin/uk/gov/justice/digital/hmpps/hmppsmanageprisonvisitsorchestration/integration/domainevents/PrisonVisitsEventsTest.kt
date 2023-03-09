@@ -18,7 +18,6 @@ class PrisonVisitsEventsTest : PrisonVisitsEventsIntegrationTestBase() {
 
   @Test
   fun `Test incentives-iep-review-inserted is processed`() {
-
     // Given
     val publishRequest = createDomainEventPublishRequest("incentives.iep-review.inserted")
 
@@ -32,7 +31,6 @@ class PrisonVisitsEventsTest : PrisonVisitsEventsIntegrationTestBase() {
 
   @Test
   fun `Test incentives-iep-review-deleted is processed`() {
-
     // Given
     val publishRequest = createDomainEventPublishRequest("incentives.iep-review.deleted")
 
@@ -46,7 +44,6 @@ class PrisonVisitsEventsTest : PrisonVisitsEventsIntegrationTestBase() {
 
   @Test
   fun `Test incentives-iep-review-updated is processed`() {
-
     // Given
     val publishRequest = createDomainEventPublishRequest("incentives.iep-review.updated")
 
@@ -60,7 +57,6 @@ class PrisonVisitsEventsTest : PrisonVisitsEventsIntegrationTestBase() {
 
   @Test
   fun `Test event switch set to false stops processing`() {
-
     // Given
     val publishRequest = createDomainEventPublishRequest("incentives.iep-review.test")
 

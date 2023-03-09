@@ -9,5 +9,5 @@ data class SQSMessage(
   @JsonProperty("Message")
   val message: String,
   @JsonProperty("MessageId")
-  val messageId: String? = null
+  val messageId: String? = null,
 )
