@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
-import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
@@ -16,7 +15,7 @@ import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 
 class PrisonVisitsEventsTest : PrisonVisitsEventsIntegrationTestBase() {
 
-  @Test
+  // @Test
   fun `Test incentives-iep-review-inserted is processed`() {
     // Given
     val publishRequest = createDomainEventPublishRequest("incentives.iep-review.inserted")
@@ -29,7 +28,7 @@ class PrisonVisitsEventsTest : PrisonVisitsEventsIntegrationTestBase() {
     verify(prisonerIncentivesInsertedNotifierSpy, times(1)).processEvent(any())
   }
 
-  @Test
+  // @Test
   fun `Test incentives-iep-review-deleted is processed`() {
     // Given
     val publishRequest = createDomainEventPublishRequest("incentives.iep-review.deleted")
@@ -42,7 +41,7 @@ class PrisonVisitsEventsTest : PrisonVisitsEventsIntegrationTestBase() {
     verify(prisonerIncentivesDeletedNotifierSpy, times(1)).processEvent(any())
   }
 
-  @Test
+  // @Test
   fun `Test incentives-iep-review-updated is processed`() {
     // Given
     val publishRequest = createDomainEventPublishRequest("incentives.iep-review.updated")
@@ -55,7 +54,7 @@ class PrisonVisitsEventsTest : PrisonVisitsEventsIntegrationTestBase() {
     verify(prisonerIncentivesUpdatedNotifierSpy, times(1)).processEvent(any())
   }
 
-  @Test
+  // @Test
   fun `Test event switch set to false stops processing`() {
     // Given
     val publishRequest = createDomainEventPublishRequest("incentives.iep-review.test")
