@@ -53,5 +53,5 @@ generic-service:
     cloudplatform-live-2: "3.8.51.207/32"
     cloudplatform-live-3: "35.177.252.54/32"
 
-generic-prometheus-alerts:
-  targetApplication: hmpps-manage-prison-visits-orchestration
+#generic-prometheus-alerts:
+#  targetApplication: hmpps-manage-prison-visits-orchestration
