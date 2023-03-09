@@ -29,7 +29,7 @@ class DomainEventListenerService(
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  @SqsListener(PRISON_VISITS_QUEUE_CONFIG_KEY, factory = "hmppsQueueContainerFactoryProxy")
+ // @SqsListener(PRISON_VISITS_QUEUE_CONFIG_KEY, factory = "hmppsQueueContainerFactoryProxy")
   fun onDomainEvent(
     rawMessage: String,
   ): CompletableFuture<Void> {
