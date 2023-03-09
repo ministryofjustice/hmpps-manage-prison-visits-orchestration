@@ -37,7 +37,7 @@ data class PrisonerProfileDto(
     description = "Convicted Status",
     name = "convictedStatus",
     example = "Convicted",
-    allowableValues = ["Convicted", "Remand"]
+    allowableValues = ["Convicted", "Remand"],
   )
   val convictedStatus: String?,
 
@@ -48,7 +48,7 @@ data class PrisonerProfileDto(
   val alerts: List<AlertDto>?,
 
   @Schema(description = "Balances of visit orders and privilege visit orders")
-  val visitBalances: VisitBalancesDto? = null
+  val visitBalances: VisitBalancesDto? = null,
 ) {
   constructor(
     prisoner: PrisonerDto,
@@ -67,6 +67,6 @@ data class PrisonerProfileDto(
     convictedStatus = prisonerBookingSummary?.convictedStatus,
     incentiveLevel = prisoner.currentIncentive?.level?.description,
     alerts = inmateDetail.alerts,
-    visitBalances = visitBalances
+    visitBalances = visitBalances,
   )
 }

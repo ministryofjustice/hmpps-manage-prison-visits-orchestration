@@ -35,7 +35,7 @@ class WebClientConfiguration(
   private val prisonerContactRegistryBaseUrl: String,
 
   @Value("\${whereabouts.api.url}")
-  private val whereAboutsApiUrl: String
+  private val whereAboutsApiUrl: String,
 ) {
   @Bean
   fun visitSchedulerWebClient(): WebClient {
@@ -148,7 +148,7 @@ class WebClientConfiguration(
   @Bean
   fun authorizedClientManager(
     clientRegistrationRepository: ClientRegistrationRepository?,
-    oAuth2AuthorizedClientService: OAuth2AuthorizedClientService?
+    oAuth2AuthorizedClientService: OAuth2AuthorizedClientService?,
   ): OAuth2AuthorizedClientManager? {
     val authorizedClientProvider = OAuth2AuthorizedClientProviderBuilder.builder().clientCredentials().build()
     val authorizedClientManager =
@@ -167,7 +167,7 @@ class WebClientConfiguration(
       next.exchange(
         ClientRequest.from(request)
           .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-          .build()
+          .build(),
       )
     }
 }

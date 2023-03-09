@@ -7,5 +7,5 @@ class VisitorSupportDto(
   @Schema(description = "Support type", example = "OTHER", required = true)
   val type: String,
   @Schema(description = "Support text description", example = "visually impaired assistance", required = false)
-  val text: String? = null
+  val text: String? = null,
 )

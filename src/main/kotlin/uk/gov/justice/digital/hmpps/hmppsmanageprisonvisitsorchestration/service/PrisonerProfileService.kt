@@ -15,7 +15,7 @@ import java.time.Duration
 class PrisonerProfileService(
   private val prisonApiClient: PrisonApiClient,
   private val prisonerOffenderSearchClient: PrisonerOffenderSearchClient,
-  @Value("\${prisoner.profile.timeout:10s}") private val apiTimeout: Duration
+  @Value("\${prisoner.profile.timeout:10s}") private val apiTimeout: Duration,
 
 ) {
   companion object {
@@ -35,7 +35,7 @@ class PrisonerProfileService(
             it.t1 ?: throw InvalidPrisonerProfileException("Unable to retrieve offender details from Prison Offender Search API"),
             it.t2 ?: throw InvalidPrisonerProfileException("Unable to retrieve inmate details from Prison API"),
             if (it.t3.isEmpty) null else it.t3.get(),
-            it.t4.content.firstOrNull()
+            it.t4.content.firstOrNull(),
           )
         }.block(apiTimeout)
     validatePrisonersPrisonId(prisonerProfile, prisonId)

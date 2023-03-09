@@ -8,5 +8,5 @@ class OutcomeDto(
   val outcomeStatus: String,
 
   @Schema(description = "Outcome text", example = "Because he got covid", required = false)
-  val text: String? = null
+  val text: String? = null,
 )

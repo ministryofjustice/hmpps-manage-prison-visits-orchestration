@@ -15,7 +15,7 @@ class VisitsByFilterTest : IntegrationTestBase() {
     visitStatus: String,
     page: Int,
     size: Int,
-    authHttpHeaders: (HttpHeaders) -> Unit
+    authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     return webTestClient.get().uri("/visits/search?prisonerId=$prisonerId&visitStatus=$visitStatus&page=$page&size=$size")
       .headers(authHttpHeaders)

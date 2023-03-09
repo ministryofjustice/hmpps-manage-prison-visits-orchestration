@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 class VisitSupportTest : IntegrationTestBase() {
   fun callGetVisitSupport(
     webTestClient: WebTestClient,
-    authHttpHeaders: (HttpHeaders) -> Unit
+    authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     return webTestClient.get().uri("/visit-support")
       .headers(authHttpHeaders)

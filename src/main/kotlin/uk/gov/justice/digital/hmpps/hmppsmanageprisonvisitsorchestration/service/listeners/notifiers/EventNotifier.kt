@@ -12,7 +12,7 @@ interface IEventNotifier {
 }
 
 abstract class EventNotifier(
-  private val objectMapper: ObjectMapper
+  private val objectMapper: ObjectMapper,
 ) : IEventNotifier {
 
   protected fun getDomainEvent(sqsMessage: SQSMessage) {

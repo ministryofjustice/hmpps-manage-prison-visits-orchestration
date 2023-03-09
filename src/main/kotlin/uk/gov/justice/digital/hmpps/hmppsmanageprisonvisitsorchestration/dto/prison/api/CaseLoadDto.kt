@@ -14,21 +14,21 @@ class CaseLoadDto(
     required = true,
     description = "Type of case load. Note: Reference Code CSLD_TYPE",
     example = "INST",
-    allowableValues = ["COMM", "INST", "APP"]
+    allowableValues = ["COMM", "INST", "APP"],
   )
   val type: String,
 
   @Schema(
     description = "Functional Use of the case load",
     example = "GENERAL",
-    allowableValues = ["GENERAL", "ADMIN"]
+    allowableValues = ["GENERAL", "ADMIN"],
   )
   val caseloadFunction: String? = null,
 
   @Schema(
     required = true,
     description = "Indicates that this caseload in the context of a staff member is the current active",
-    example = "false"
+    example = "false",
   )
-  val currentlyActive: Boolean
+  val currentlyActive: Boolean,
 )

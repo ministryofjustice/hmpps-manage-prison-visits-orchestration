@@ -22,7 +22,7 @@ const val PRISON_VISITS_QUEUE_CONFIG_KEY = "prisonvisitsevents"
 class DomainEventListenerService(
   val context: ApplicationContext,
   val objectMapper: ObjectMapper,
-  val eventFeatureSwitch: EventFeatureSwitch
+  val eventFeatureSwitch: EventFeatureSwitch,
 ) {
 
   private companion object {
@@ -31,7 +31,7 @@ class DomainEventListenerService(
 
   @SqsListener(PRISON_VISITS_QUEUE_CONFIG_KEY, factory = "hmppsQueueContainerFactoryProxy")
   fun onDomainEvent(
-    rawMessage: String
+    rawMessage: String,
   ): CompletableFuture<Void> {
     LOG.debug("Received message: $rawMessage")
     val sqsMessage: SQSMessage = objectMapper.readValue(rawMessage)
@@ -57,7 +57,7 @@ class DomainEventListenerService(
 }
 
 private fun asCompletableFuture(
-  process: suspend () -> Unit
+  process: suspend () -> Unit,
 ): CompletableFuture<Void> {
   return CoroutineScope(Dispatchers.Default).future {
     process()

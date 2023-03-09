@@ -47,5 +47,5 @@ class VisitDto(
   val createdTimestamp: LocalDateTime,
   @Schema(description = "The visit modified date and time", example = "2018-12-01T13:45:00", required = true)
   @field:NotBlank
-  val modifiedTimestamp: LocalDateTime
+  val modifiedTimestamp: LocalDateTime,
 )

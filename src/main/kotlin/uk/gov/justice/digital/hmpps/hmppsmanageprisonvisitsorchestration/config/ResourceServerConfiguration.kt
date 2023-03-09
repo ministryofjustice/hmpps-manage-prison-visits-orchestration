@@ -24,12 +24,14 @@ class ResourceServerConfiguration {
       csrf { disable() }
       authorizeHttpRequests {
         listOf(
-          "/health/**", "/info",
+          "/health/**",
+          "/info",
           "/v3/api-docs/**",
-          "/swagger-ui/**", "/swagger-ui.html",
+          "/swagger-ui/**",
+          "/swagger-ui.html",
           "/swagger-resources",
           "/swagger-resources/configuration/ui",
-          "/swagger-resources/configuration/security"
+          "/swagger-resources/configuration/security",
         ).forEach { authorize(it, permitAll) }
         authorize(anyRequest, authenticated)
       }

@@ -16,7 +16,7 @@ const val ORCHESTRATION_PRISONER_CONTROLLER_PATH: String = "/prisoner"
 
 @RestController
 class PrisonerProfileController(
-  private val prisonerProfileService: PrisonerProfileService
+  private val prisonerProfileService: PrisonerProfileService,
 ) {
   @PreAuthorize("hasRole('VISIT_SCHEDULER')")
   @GetMapping("$ORCHESTRATION_PRISONER_CONTROLLER_PATH/{prisonId}/{prisonerId}/profile")
@@ -26,29 +26,29 @@ class PrisonerProfileController(
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "Prisoner Profile Returned"
+        description = "Prisoner Profile Returned",
       ),
       ApiResponse(
         responseCode = "500",
         description = "Incorrect request to the prisoner profile page",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))]
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
         responseCode = "401",
         description = "Unauthorized to access this endpoint",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))]
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
         responseCode = "403",
         description = "Incorrect permissions to retrieve a prisoner's profile",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))]
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
         responseCode = "404",
         description = "Prisoner profile not found",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))]
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
-    ]
+    ],
   )
   fun getPrisonerProfile(@PathVariable prisonId: String, @PathVariable prisonerId: String): PrisonerProfileDto? {
     return prisonerProfileService.getPrisonerProfile(prisonId, prisonerId)

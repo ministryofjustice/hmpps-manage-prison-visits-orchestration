@@ -21,7 +21,7 @@ import java.time.LocalTime
 
 @Service
 class VisitSchedulerService(
-  private val visitSchedulerClient: VisitSchedulerClient
+  private val visitSchedulerClient: VisitSchedulerClient,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)

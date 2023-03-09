@@ -15,5 +15,5 @@ data class VisitBalancesDto(
   val latestIepAdjustDate: LocalDate? = null,
 
   @Schema(description = "Date of last IEP adjustment for Privilege Visit orders")
-  val latestPrivIepAdjustDate: LocalDate? = null
+  val latestPrivIepAdjustDate: LocalDate? = null,
 )

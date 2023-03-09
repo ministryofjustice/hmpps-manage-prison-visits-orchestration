@@ -13,7 +13,7 @@ import java.time.Duration
 @Component
 class PrisonerOffenderSearchClient(
   @Qualifier("prisonerOffenderSearchWebClient") private val webClient: WebClient,
-  @Value("\${prisoner-offender.search.timeout:10s}") private val apiTimeout: Duration
+  @Value("\${prisoner-offender.search.timeout:10s}") private val apiTimeout: Duration,
 ) {
   fun getPrisonerById(prisonerId: String): Mono<PrisonerDto> {
     return webClient.get().uri("/prisoner/$prisonerId")
@@ -25,7 +25,7 @@ class PrisonerOffenderSearchClient(
     search: String,
     prisonId: String,
     page: Int? = 0,
-    size: Int? = 10
+    size: Int? = 10,
   ): RestPage<PrisonerDto>? {
     return webClient.get().uri("/prison/$prisonId/prisoners") {
       it.queryParam("term", search)

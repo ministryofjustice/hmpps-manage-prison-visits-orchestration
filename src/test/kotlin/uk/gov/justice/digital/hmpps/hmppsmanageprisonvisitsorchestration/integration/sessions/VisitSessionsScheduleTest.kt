@@ -16,7 +16,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     webTestClient: WebTestClient,
     prisonCode: String,
     sessionDate: LocalDate,
-    authHttpHeaders: (HttpHeaders) -> Unit
+    authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     return webTestClient.get().uri("/visit-sessions/schedule?prisonId=$prisonCode&date=$sessionDate")
       .headers(authHttpHeaders)
@@ -30,16 +30,20 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     val sessionDate = LocalDate.now().plusDays(1)
     val sessionScheduleDto1 = createSessionScheduleDto(
       reference = "reference-1",
-      startTime = LocalTime.of(9, 0), endTime = LocalTime.of(10, 0), enhanced = true
+      startTime = LocalTime.of(9, 0),
+      endTime = LocalTime.of(10, 0),
+      enhanced = true,
     )
     val sessionScheduleDto2 = createSessionScheduleDto(
       reference = "reference-2",
-      startTime = LocalTime.of(10, 0), endTime = LocalTime.of(11, 0), enhanced = false
+      startTime = LocalTime.of(10, 0),
+      endTime = LocalTime.of(11, 0),
+      enhanced = false,
     )
     visitSchedulerMockServer.stubGetSessionSchedule(
       prisonCode,
       sessionDate,
-      mutableListOf(sessionScheduleDto1, sessionScheduleDto2)
+      mutableListOf(sessionScheduleDto1, sessionScheduleDto2),
     )
 
     // When
@@ -83,13 +87,17 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     sessionCapacityDto: SessionCapacityDto = SessionCapacityDto(2, 30),
     sessionTemplateFrequency: String = "WEEKLY",
     sessionTemplateEndDate: LocalDate? = null,
-    enhanced: Boolean
+    enhanced: Boolean,
   ): SessionScheduleDto {
     return SessionScheduleDto(
-      sessionTemplateReference = reference, startTime = startTime, endTime = endTime,
-      capacity = sessionCapacityDto, sessionTemplateFrequency = sessionTemplateFrequency,
-      prisonerLocationGroupNames = mutableListOf(), sessionTemplateEndDate = sessionTemplateEndDate,
-      enhanced = enhanced
+      sessionTemplateReference = reference,
+      startTime = startTime,
+      endTime = endTime,
+      capacity = sessionCapacityDto,
+      sessionTemplateFrequency = sessionTemplateFrequency,
+      prisonerLocationGroupNames = mutableListOf(),
+      sessionTemplateEndDate = sessionTemplateEndDate,
+      enhanced = enhanced,
     )
   }
 }

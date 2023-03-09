@@ -21,8 +21,8 @@ class OrchestrationExceptionHandler {
         ErrorResponse(
           status = HttpStatus.NOT_FOUND,
           userMessage = "Prisoner profile not found: ${e.cause?.message}",
-          developerMessage = e.message
-        )
+          developerMessage = e.message,
+        ),
       )
   }
 
@@ -43,7 +43,7 @@ class OrchestrationExceptionHandler {
     log.error("Unexpected exception", e)
     val error = ErrorResponse(
       status = HttpStatus.INTERNAL_SERVER_ERROR,
-      developerMessage = e.message
+      developerMessage = e.message,
     )
 
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error)

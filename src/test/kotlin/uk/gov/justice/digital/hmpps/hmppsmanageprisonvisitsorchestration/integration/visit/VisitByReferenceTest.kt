@@ -11,7 +11,7 @@ class VisitByReferenceTest : IntegrationTestBase() {
   fun callVisitByReference(
     webTestClient: WebTestClient,
     reference: String,
-    authHttpHeaders: (HttpHeaders) -> Unit
+    authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     return webTestClient.get().uri("/visits/$reference")
       .headers(authHttpHeaders)
