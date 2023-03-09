@@ -17,7 +17,10 @@ generic-service:
     WHEREABOUTS_API_URL: https://whereabouts-api-preprod.service.justice.gov.uk/
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
 
-# CloudPlatform AlertManager receiver to route prometheus alerts to slack
-# See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:
-  alertSeverity: digital-prison-service-dev
+  alertSeverity: prison-visit-booking-alerts-nonprod
+  sqsAlertsQueueNames:
+    - "Digital-Prison-Services-dev-hmpps_prison_visits_event_queue"
+    - "Digital-Prison-Services-dev-hmpps_prison_visits_event_dlq"
+  sqsAlertsOldestThreshold: 1
+  sqsAlertsTotalMessagesThreshold: 1
