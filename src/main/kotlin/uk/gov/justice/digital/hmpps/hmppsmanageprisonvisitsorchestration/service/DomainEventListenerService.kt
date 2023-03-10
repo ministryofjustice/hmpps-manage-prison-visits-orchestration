@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.IEventNotifier
 import java.util.concurrent.CompletableFuture
 
-const val PRISON_VISITS_QUEUE_CONFIG_KEY = "prisonvisitsevents"
+const val PRISON_VISITS_QUEUE_CONFIG_KEY = "visits-event"
 
 @Service
 class DomainEventListenerService(
