@@ -36,7 +36,7 @@ whereabouts:
 hmpps.sqs:
   provider: localstack
   queues:
-    visits-event:
+    prisonvisitsevents:
       queueName: ${random.uuid}
       dlqName: ${random.uuid}
       subscribeTopicId: domainevents

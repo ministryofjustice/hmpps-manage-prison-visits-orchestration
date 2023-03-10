@@ -4,7 +4,7 @@ server:
 hmpps.sqs:
   provider: localstack
   queues:
-    visits-event:
+    prisonvisitsevents:
       queueName: hmpps_prison_visits_event_queue
       dlqName: hmpps_prison_visits_event_dlq
       subscribeTopicId: domainevents
