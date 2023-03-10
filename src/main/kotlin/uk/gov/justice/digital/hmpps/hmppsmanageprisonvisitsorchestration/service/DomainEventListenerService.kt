@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.future.future
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.DomainEvent
@@ -19,6 +20,7 @@ import java.util.concurrent.CompletableFuture
 const val PRISON_VISITS_QUEUE_CONFIG_KEY = "prisonvisitsevents"
 
 @Service
+@ConditionalOnExpression("\${hmpps.sqs.enabled:true}")
 class DomainEventListenerService(
   val context: ApplicationContext,
   val objectMapper: ObjectMapper,
