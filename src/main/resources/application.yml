@@ -78,7 +78,7 @@ visit-scheduler:
 
 hmpps:
   auth:
-    url: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
+    url: https://localhost:8090/auth
 
 prison:
   api:

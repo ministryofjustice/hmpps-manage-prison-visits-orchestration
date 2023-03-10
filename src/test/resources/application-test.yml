@@ -33,6 +33,10 @@ whereabouts:
   api:
     url: https://prison-register-dev.hmpps.service.justice.gov.uk
 
+hmpps:
+  auth:
+    url: http://localhost:8090/auth
+
 hmpps.sqs:
   provider: localstack
   queues:
