@@ -15,7 +15,7 @@ import software.amazon.awssdk.services.sns.model.PublishRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.DomainEvent
 import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 
-//@Disabled
+// @Disabled
 class PrisonVisitsEventsTest : PrisonVisitsEventsIntegrationTestBase() {
 
   @Test
@@ -41,7 +41,7 @@ class PrisonVisitsEventsTest : PrisonVisitsEventsIntegrationTestBase() {
 
     // Then
     await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
-    await untilAsserted {verify(prisonerIncentivesDeletedNotifierSpy, times(1)).processEvent(any())}
+    await untilAsserted { verify(prisonerIncentivesDeletedNotifierSpy, times(1)).processEvent(any()) }
   }
 
   @Test
@@ -54,7 +54,7 @@ class PrisonVisitsEventsTest : PrisonVisitsEventsIntegrationTestBase() {
 
     // Then
     await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
-    await untilAsserted {verify(prisonerIncentivesUpdatedNotifierSpy, times(1)).processEvent(any())}
+    await untilAsserted { verify(prisonerIncentivesUpdatedNotifierSpy, times(1)).processEvent(any()) }
   }
 
   @Test
@@ -66,8 +66,8 @@ class PrisonVisitsEventsTest : PrisonVisitsEventsIntegrationTestBase() {
     awsSnsClient.publish(publishRequest).get()
 
     // Then
-    await untilAsserted {verify(prisonerIncentivesUpdatedNotifierSpy, never()).processEvent(any())}
-    await untilAsserted {Assertions.assertThat(eventFeatureSwitch.isEnabled("incentives.iep-review.test")).isFalse}
+    await untilAsserted { verify(prisonerIncentivesUpdatedNotifierSpy, never()).processEvent(any()) }
+    await untilAsserted { Assertions.assertThat(eventFeatureSwitch.isEnabled("incentives.iep-review.test")).isFalse }
   }
 
   private fun createDomainEventPublishRequest(eventType: String): PublishRequest? {
