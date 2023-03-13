@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpHeaders
 import org.springframework.http.codec.ClientCodecConfigurer
+import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager
@@ -48,8 +49,8 @@ class WebClientConfiguration(
 
     return WebClient.builder()
       .baseUrl(visitSchedulerBaseUrl)
+      .filter(addUserNameHeaderFilterFunction())
       .apply(oauth2Client.oauth2Configuration())
-      // .filter(addAuthHeaderFilterFunction())
       .exchangeStrategies(exchangeStrategies)
       .build()
   }
@@ -163,7 +164,7 @@ class WebClientConfiguration(
 
   private fun addAuthHeaderFilterFunction() =
     ExchangeFilterFunction { request: ClientRequest, next: ExchangeFunction ->
-      val token = when (val authentication = SecurityContextHolder.getContext().authentication) {
+      val token = when (val authentication = getSecurityContextAuthentication()) {
         is AuthAwareAuthenticationToken -> authentication.token.tokenValue
         else -> throw IllegalStateException("Auth token not present")
       }
@@ -173,5 +174,25 @@ class WebClientConfiguration(
           .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
           .build(),
       )
+    }
+
+  private fun addUserNameHeaderFilterFunction() =
+    ExchangeFilterFunction { request: ClientRequest, next: ExchangeFunction ->
+      next.exchange(
+        ClientRequest.from(request)
+          .header("user-name", currentUserName)
+          .build(),
+      )
+    }
+
+  private fun getSecurityContextAuthentication(): Authentication {
+    return SecurityContextHolder.getContext().authentication
+  }
+
+  val currentUserName: String?
+    get() {
+      val authentication: Authentication = getSecurityContextAuthentication()
+      val userPrincipal = authentication.principal
+      return if (userPrincipal is String) userPrincipal else null
     }
 }
