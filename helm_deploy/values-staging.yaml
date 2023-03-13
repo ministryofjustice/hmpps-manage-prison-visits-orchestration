@@ -24,8 +24,3 @@ generic-prometheus-alerts:
     - "Digital-Prison-Services-staging-hmpps_prison_visits_event_dlq"
   sqsAlertsOldestThreshold: 1
   sqsAlertsTotalMessagesThreshold: 1
-
-  hmpps:
-    sqs:
-      enabled: false
-
