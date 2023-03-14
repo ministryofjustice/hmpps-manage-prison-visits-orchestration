@@ -79,7 +79,7 @@ class GetPrisonerProfileTest(
     webTestClient: WebTestClient,
     authHttpHeaders: (HttpHeaders) -> Unit,
     prisonId: String,
-    prisonerId: String
+    prisonerId: String,
   ): WebTestClient.ResponseSpec {
     return webTestClient.get().uri("/prisoner/$prisonId/$prisonerId/profile")
       .headers(authHttpHeaders)
@@ -350,7 +350,7 @@ class GetPrisonerProfileTest(
     prisonId: String = "MDI",
     prisonName: String = "HMP Leeds",
     cellLocation: String? = null,
-    currentIncentive: CurrentIncentive? = null
+    currentIncentive: CurrentIncentive? = null,
   ): PrisonerDto {
     return PrisonerDto(
       prisonerNumber = prisonerId,
@@ -360,14 +360,14 @@ class GetPrisonerProfileTest(
       prisonId = prisonId,
       prisonName = prisonName,
       cellLocation = cellLocation,
-      currentIncentive = currentIncentive
+      currentIncentive = currentIncentive,
     )
   }
 
   private fun createInmateDetails(
     prisonerId: String,
     category: String? = null,
-    alerts: List<AlertDto>? = null
+    alerts: List<AlertDto>? = null,
   ): InmateDetailDto {
     return InmateDetailDto(offenderNo = prisonerId, category = category, alerts = alerts)
   }

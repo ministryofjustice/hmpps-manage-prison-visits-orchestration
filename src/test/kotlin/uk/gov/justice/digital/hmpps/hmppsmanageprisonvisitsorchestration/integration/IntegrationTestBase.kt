@@ -5,6 +5,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -17,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.helper.JwtAuthHelper
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.HmppsAuthExtension
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonOffenderSearchMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.VisitSchedulerMockServer
@@ -25,6 +27,7 @@ import java.util.ArrayList
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
+@ExtendWith(HmppsAuthExtension::class)
 abstract class IntegrationTestBase {
   companion object {
     val visitSchedulerMockServer = VisitSchedulerMockServer(ObjectMapper().registerModule(JavaTimeModule()))
@@ -64,7 +67,7 @@ abstract class IntegrationTestBase {
   internal fun setAuthorisation(
     user: String = "AUTH_ADM",
     roles: List<String> = listOf(),
-    scopes: List<String> = listOf()
+    scopes: List<String> = listOf(),
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles, scopes)
 
   fun callGetVisits(
@@ -120,7 +123,7 @@ abstract class IntegrationTestBase {
     endTimestamp: LocalDateTime = startTimestamp.plusHours(1),
     outcomeStatus: String? = null,
     createdTimestamp: LocalDateTime = LocalDateTime.now(),
-    modifiedTimestamp: LocalDateTime = LocalDateTime.now()
+    modifiedTimestamp: LocalDateTime = LocalDateTime.now(),
   ): VisitDto {
     return VisitDto(
       applicationReference = applicationReference,
@@ -135,7 +138,7 @@ abstract class IntegrationTestBase {
       endTimestamp = endTimestamp,
       outcomeStatus = outcomeStatus,
       createdTimestamp = createdTimestamp,
-      modifiedTimestamp = modifiedTimestamp
+      modifiedTimestamp = modifiedTimestamp,
     )
   }
 
@@ -174,7 +177,7 @@ abstract class IntegrationTestBase {
       closedVisitCapacity = 5,
       openVisitCapacity = 30,
       startTimestamp = LocalDateTime.now(),
-      endTimestamp = LocalDateTime.now().plusHours(1)
+      endTimestamp = LocalDateTime.now().plusHours(1),
     )
   }
 }

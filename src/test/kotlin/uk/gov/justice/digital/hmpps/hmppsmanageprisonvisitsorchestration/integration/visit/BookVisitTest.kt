@@ -11,9 +11,8 @@ class BookVisitTest : IntegrationTestBase() {
   fun callBookVisit(
     webTestClient: WebTestClient,
     applicationReference: String,
-    authHttpHeaders: (HttpHeaders) -> Unit
+    authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
-
     return webTestClient.put().uri("/visits/$applicationReference/book")
       .headers(authHttpHeaders)
       .exchange()

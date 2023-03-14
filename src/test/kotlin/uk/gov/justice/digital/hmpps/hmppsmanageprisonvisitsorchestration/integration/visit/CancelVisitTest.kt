@@ -14,9 +14,8 @@ class CancelVisitTest : IntegrationTestBase() {
     webTestClient: WebTestClient,
     reference: String,
     outcomeDto: OutcomeDto,
-    authHttpHeaders: (HttpHeaders) -> Unit
+    authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
-
     return webTestClient.put().uri("/visits/$reference/cancel")
       .headers(authHttpHeaders)
       .body(BodyInserters.fromValue(outcomeDto))

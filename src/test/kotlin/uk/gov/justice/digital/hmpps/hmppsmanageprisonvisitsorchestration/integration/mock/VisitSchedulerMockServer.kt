@@ -32,8 +32,8 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
           } else {
             responseBuilder.withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(visitDto))
-          }
-        )
+          },
+        ),
     )
   }
 
@@ -52,9 +52,9 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
         .willReturn(
           createJsonResponseBuilder()
             .withStatus(HttpStatus.OK.value()).withBody(
-              getJsonString(restPage)
-            )
-        )
+              getJsonString(restPage),
+            ),
+        ),
     )
   }
 
@@ -95,8 +95,8 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
             responseBuilder
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(visitDto))
-          }
-        )
+          },
+        ),
     )
   }
 
@@ -111,8 +111,8 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
           } else {
             responseBuilder.withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(visitDto))
-          }
-        )
+          },
+        ),
     )
   }
 
@@ -128,8 +128,8 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
             responseBuilder
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(visitDto))
-          }
-        )
+          },
+        ),
     )
   }
 
@@ -146,8 +146,8 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
             responseBuilder
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(visitDto))
-          }
-        )
+          },
+        ),
     )
   }
 
@@ -162,8 +162,8 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
           } else {
             responseBuilder.withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(visitDto))
-          }
-        )
+          },
+        ),
     )
   }
 
@@ -173,8 +173,8 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
         .willReturn(
           createJsonResponseBuilder()
             .withStatus(HttpStatus.OK.value())
-            .withBody(getJsonString(visitSessions))
-        )
+            .withBody(getJsonString(visitSessions)),
+        ),
     )
   }
 
@@ -184,8 +184,8 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
         .willReturn(
           createJsonResponseBuilder()
             .withStatus(HttpStatus.OK.value())
-            .withBody(getJsonString(visitSupportList))
-        )
+            .withBody(getJsonString(visitSupportList)),
+        ),
     )
   }
 
@@ -195,8 +195,8 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
         .willReturn(
           createJsonResponseBuilder()
             .withStatus(HttpStatus.OK.value())
-            .withBody(getJsonString(supportedPrisonsList))
-        )
+            .withBody(getJsonString(supportedPrisonsList)),
+        ),
     )
   }
 
@@ -205,7 +205,7 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     sessionDate: LocalDate,
     sessionStartTime: LocalTime,
     sessionEndTime: LocalTime,
-    sessionCapacityDto: SessionCapacityDto?
+    sessionCapacityDto: SessionCapacityDto?,
   ) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
@@ -216,23 +216,23 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
           } else {
             responseBuilder.withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(sessionCapacityDto))
-          }
-        )
+          },
+        ),
     )
   }
 
   fun stubGetSessionSchedule(
     prisonCode: String,
     sessionDate: LocalDate,
-    sessionSchedules: List<SessionScheduleDto>
+    sessionSchedules: List<SessionScheduleDto>,
   ) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
       get("/visit-sessions/schedule?prisonId=$prisonCode&date=$sessionDate")
         .willReturn(
           responseBuilder.withStatus(HttpStatus.OK.value())
-            .withBody(getJsonString(sessionSchedules))
-        )
+            .withBody(getJsonString(sessionSchedules)),
+        ),
     )
   }
 

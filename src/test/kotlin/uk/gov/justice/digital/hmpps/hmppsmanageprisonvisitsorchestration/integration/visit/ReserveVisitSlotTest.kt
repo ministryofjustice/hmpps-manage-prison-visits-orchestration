@@ -13,9 +13,8 @@ class ReserveVisitSlotTest : IntegrationTestBase() {
   fun callVisitReserveSlot(
     webTestClient: WebTestClient,
     reserveVisitSlotDto: ReserveVisitSlotDto,
-    authHttpHeaders: (HttpHeaders) -> Unit
+    authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
-
     return webTestClient.post().uri("/visits/slot/reserve")
       .headers(authHttpHeaders)
       .body(BodyInserters.fromValue(reserveVisitSlotDto))

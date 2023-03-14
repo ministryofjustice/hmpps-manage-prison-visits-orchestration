@@ -38,7 +38,7 @@ data class PrisonerProfileDto(
     description = "Convicted Status",
     name = "convictedStatus",
     example = "Convicted",
-    allowableValues = ["Convicted", "Remand"]
+    allowableValues = ["Convicted", "Remand"],
   )
   val convictedStatus: String?,
 

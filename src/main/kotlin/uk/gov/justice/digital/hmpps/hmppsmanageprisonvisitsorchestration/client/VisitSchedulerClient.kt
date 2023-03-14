@@ -170,7 +170,7 @@ class VisitSchedulerClient(
     sessionDate: LocalDate,
     sessionStartTime: LocalTime,
     sessionEndTime: LocalTime,
-    uriBuilder: UriBuilder
+    uriBuilder: UriBuilder,
   ): UriBuilder {
     uriBuilder.queryParam("prisonId", prisonCode)
     uriBuilder.queryParam("sessionDate", sessionDate)

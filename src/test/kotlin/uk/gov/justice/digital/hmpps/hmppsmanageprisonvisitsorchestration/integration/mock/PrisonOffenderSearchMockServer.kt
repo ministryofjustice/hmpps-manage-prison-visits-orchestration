@@ -24,8 +24,8 @@ class PrisonOffenderSearchMockServer(@Autowired private val objectMapper: Object
             responseBuilder
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(prisoner))
-          }
-        )
+          },
+        ),
     )
   }
 

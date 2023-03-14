@@ -5,12 +5,14 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpHeaders
 import org.springframework.http.codec.ClientCodecConfigurer
+import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
+import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction
 import org.springframework.web.reactive.function.client.ExchangeFunction
@@ -35,17 +37,20 @@ class WebClientConfiguration(
   private val prisonerContactRegistryBaseUrl: String,
 
   @Value("\${whereabouts.api.url}")
-  private val whereAboutsApiUrl: String
+  private val whereAboutsApiUrl: String,
 ) {
   @Bean
-  fun visitSchedulerWebClient(): WebClient {
+  fun visitSchedulerWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+    val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
+    oauth2Client.setDefaultClientRegistrationId("visit-scheduler")
     val exchangeStrategies = ExchangeStrategies.builder()
       .codecs { configurer: ClientCodecConfigurer -> configurer.defaultCodecs().maxInMemorySize(-1) }
       .build()
 
     return WebClient.builder()
       .baseUrl(visitSchedulerBaseUrl)
-      .filter(addAuthHeaderFilterFunction())
+      .filter(addUserNameHeaderFilterFunction())
+      .apply(oauth2Client.oauth2Configuration())
       .exchangeStrategies(exchangeStrategies)
       .build()
   }
@@ -148,7 +153,7 @@ class WebClientConfiguration(
   @Bean
   fun authorizedClientManager(
     clientRegistrationRepository: ClientRegistrationRepository?,
-    oAuth2AuthorizedClientService: OAuth2AuthorizedClientService?
+    oAuth2AuthorizedClientService: OAuth2AuthorizedClientService?,
   ): OAuth2AuthorizedClientManager? {
     val authorizedClientProvider = OAuth2AuthorizedClientProviderBuilder.builder().clientCredentials().build()
     val authorizedClientManager =
@@ -159,7 +164,7 @@ class WebClientConfiguration(
 
   private fun addAuthHeaderFilterFunction() =
     ExchangeFilterFunction { request: ClientRequest, next: ExchangeFunction ->
-      val token = when (val authentication = SecurityContextHolder.getContext().authentication) {
+      val token = when (val authentication = getSecurityContextAuthentication()) {
         is AuthAwareAuthenticationToken -> authentication.token.tokenValue
         else -> throw IllegalStateException("Auth token not present")
       }
@@ -167,7 +172,27 @@ class WebClientConfiguration(
       next.exchange(
         ClientRequest.from(request)
           .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-          .build()
+          .build(),
       )
+    }
+
+  private fun addUserNameHeaderFilterFunction() =
+    ExchangeFilterFunction { request: ClientRequest, next: ExchangeFunction ->
+      next.exchange(
+        ClientRequest.from(request)
+          .header("user-name", currentUserName)
+          .build(),
+      )
+    }
+
+  private fun getSecurityContextAuthentication(): Authentication {
+    return SecurityContextHolder.getContext().authentication
+  }
+
+  val currentUserName: String?
+    get() {
+      val authentication: Authentication = getSecurityContextAuthentication()
+      val userPrincipal = authentication.principal
+      return if (userPrincipal is String) userPrincipal else null
     }
 }
