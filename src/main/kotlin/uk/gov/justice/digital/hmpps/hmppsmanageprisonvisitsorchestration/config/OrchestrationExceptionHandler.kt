@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config
 
+import jakarta.validation.ValidationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -9,7 +10,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.reactive.function.client.WebClientException
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
-import javax.validation.ValidationException
 
 @RestControllerAdvice
 class OrchestrationExceptionHandler {
@@ -35,7 +35,7 @@ class OrchestrationExceptionHandler {
       log.error("Unexpected server exception", e)
     }
 
-    return ResponseEntity.status(e.rawStatusCode).body(e.responseBodyAsByteArray)
+    return ResponseEntity.status(e.statusCode).body(e.responseBodyAsByteArray)
   }
 
   @ExceptionHandler(WebClientException::class)
@@ -55,7 +55,7 @@ class OrchestrationExceptionHandler {
     val error = ErrorResponse(
       status = HttpStatus.BAD_REQUEST,
       userMessage = "Validation failure: ${e.cause?.message}",
-      developerMessage = e.message
+      developerMessage = e.message,
     )
 
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error)

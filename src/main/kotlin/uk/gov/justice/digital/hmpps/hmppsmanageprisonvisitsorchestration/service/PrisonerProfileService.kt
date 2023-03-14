@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 
+import jakarta.validation.ValidationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -16,7 +17,6 @@ import java.time.LocalDateTime
 import java.time.Period
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
-import javax.validation.ValidationException
 
 @Service
 class PrisonerProfileService(
@@ -39,7 +39,7 @@ class PrisonerProfileService(
     val visitBalancesPromise = prisonApiClient.getVisitBalances(prisonerId)
     val prisonerBookingSummaryPromise = prisonApiClient.getBookings(prisonId, prisonerId)
     val visitSchedulerPromise = visitSchedulerClient.getVisits(
-      createVisitSearchFilterForProfile(prisonerId, getStartDate(LocalDateTime.now(), pastVisitsPeriod), getEndDate(LocalDateTime.now(), futureVisitsPeriod))
+      createVisitSearchFilterForProfile(prisonerId, getStartDate(LocalDateTime.now(), pastVisitsPeriod), getEndDate(LocalDateTime.now(), futureVisitsPeriod)),
     )
 
     val prisonerProfile =
@@ -50,7 +50,7 @@ class PrisonerProfileService(
             it.t2 ?: throw InvalidPrisonerProfileException("Unable to retrieve inmate details from Prison API"),
             if (it.t3.isEmpty) null else it.t3.get(),
             it.t4.content.firstOrNull(),
-            it.t5.content
+            it.t5.content,
           )
         }.block(apiTimeout)
     validatePrisonersPrisonId(prisonerProfile, prisonId)
@@ -76,16 +76,15 @@ class PrisonerProfileService(
   private fun createVisitSearchFilterForProfile(
     prisonerId: String,
     startDateTime: LocalDateTime,
-    endDateTime: LocalDateTime
+    endDateTime: LocalDateTime,
   ): VisitSearchRequestFilter {
-
     return VisitSearchRequestFilter(
       prisonerId = prisonerId,
       startDateTime = startDateTime,
       endDateTime = endDateTime,
       visitStatusList = listOf("BOOKED", "CANCELLED"),
       page = PAGE,
-      size = MAX_RECORDS
+      size = MAX_RECORDS,
     )
   }
 }

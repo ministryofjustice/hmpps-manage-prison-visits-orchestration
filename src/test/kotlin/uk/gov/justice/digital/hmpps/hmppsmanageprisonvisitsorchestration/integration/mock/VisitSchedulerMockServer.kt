@@ -44,7 +44,7 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     endDateTime: LocalDateTime?,
     page: Int,
     size: Int,
-    visits: List<VisitDto>
+    visits: List<VisitDto>,
   ) {
     val restPage = RestPage(content = visits, page = 0, size = size, total = visits.size.toLong())
     stubFor(
@@ -64,7 +64,7 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     startDateTime: LocalDateTime? = null,
     endDateTime: LocalDateTime? = null,
     page: Int,
-    size: Int
+    size: Int,
   ): List<String> {
     val queryParams = ArrayList<String>()
     queryParams.add("prisonerId=$prisonerId")

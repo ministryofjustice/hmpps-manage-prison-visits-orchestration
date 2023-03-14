@@ -393,7 +393,7 @@ class GetPrisonerProfileTest(
       LocalDateTime.now().plus(futureVisitsPeriod).with(TemporalAdjusters.lastDayOfMonth()).truncatedTo(ChronoUnit.DAYS),
       0,
       1000,
-      visits
+      visits,
     )
   }
 

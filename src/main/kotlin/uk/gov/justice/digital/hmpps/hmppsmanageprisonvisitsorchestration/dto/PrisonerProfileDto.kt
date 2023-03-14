@@ -52,7 +52,7 @@ data class PrisonerProfileDto(
   val visitBalances: VisitBalancesDto? = null,
 
   @Schema(description = "Past and future visits for the prisoner based on configured duration.")
-  val visits: List<VisitDto>
+  val visits: List<VisitDto>,
 ) {
   constructor(
     prisoner: PrisonerDto,
@@ -73,6 +73,6 @@ data class PrisonerProfileDto(
     incentiveLevel = prisoner.currentIncentive?.level?.description,
     alerts = inmateDetail.alerts,
     visitBalances = visitBalances,
-    visits = visits
+    visits = visits,
   )
 }

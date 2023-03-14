@@ -78,7 +78,7 @@ abstract class IntegrationTestBase {
     endDateTime: LocalDateTime? = null,
     page: Int,
     size: Int,
-    authHttpHeaders: (HttpHeaders) -> Unit
+    authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     return webTestClient.get()
       .uri("/visits/search?${getVisitsQueryParams(prisonerId, visitStatus, startDateTime, endDateTime, page, size).joinToString("&")}")
@@ -92,7 +92,7 @@ abstract class IntegrationTestBase {
     startDateTime: LocalDateTime? = null,
     endDateTime: LocalDateTime? = null,
     page: Int,
-    size: Int
+    size: Int,
   ): List<String> {
     val queryParams = ArrayList<String>()
     queryParams.add("prisonerId=$prisonerId")

@@ -119,7 +119,7 @@ class VisitSchedulerClient(
     prisonCode: String,
     sessionDate: LocalDate,
     sessionStartTime: LocalTime,
-    sessionEndTime: LocalTime
+    sessionEndTime: LocalTime,
   ): Mono<SessionCapacityDto> {
     return webClient.get()
       .uri("/visit-sessions/capacity") {
@@ -132,7 +132,7 @@ class VisitSchedulerClient(
 
   fun getSessionSchedule(
     prisonCode: String,
-    sessionDate: LocalDate
+    sessionDate: LocalDate,
   ): Mono<List<SessionScheduleDto>> {
     return webClient.get()
       .uri("/visit-sessions/schedule") {
