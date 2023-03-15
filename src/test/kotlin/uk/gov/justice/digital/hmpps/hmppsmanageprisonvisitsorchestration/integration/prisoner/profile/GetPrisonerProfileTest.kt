@@ -398,10 +398,10 @@ class GetPrisonerProfileTest(
   }
 
   private fun verifyExternalAPIClientCalls() {
-    verify(visitSchedulerClientSpy, times(1)).getVisits(any())
-    verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerById(any())
-    verify(prisonAPiClientSpy, times(1)).getInmateDetails(any())
-    verify(prisonAPiClientSpy, times(1)).getVisitBalances(any())
-    verify(prisonAPiClientSpy, times(1)).getBookings(any(), any())
+    verify(visitSchedulerClientSpy, times(1)).getVisitsAsMono(any())
+    verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerByIdAsMono(any())
+    verify(prisonAPiClientSpy, times(1)).getInmateDetailsAsMono(any())
+    verify(prisonAPiClientSpy, times(1)).getVisitBalancesAsMono(any())
+    verify(prisonAPiClientSpy, times(1)).getBookingsAsMono(any(), any())
   }
 }

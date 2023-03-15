@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.servic
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -17,26 +16,24 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
-import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 
 @Service
 class VisitSchedulerService(
   private val visitSchedulerClient: VisitSchedulerClient,
-  @Value("\${visit-scheduler.api.timeout:10s}") val apiTimeout: Duration,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
   fun getVisitByReference(reference: String): VisitDto? {
-    return visitSchedulerClient.getVisitByReference(reference).block(apiTimeout)
+    return visitSchedulerClient.getVisitByReference(reference)
   }
 
   fun visitsSearch(visitSearchRequestFilter: VisitSearchRequestFilter): Page<VisitDto>? {
     try {
-      return visitSchedulerClient.getVisits(visitSearchRequestFilter).block(apiTimeout)
+      return visitSchedulerClient.getVisits(visitSearchRequestFilter)
     } catch (e: WebClientResponseException) {
       if (e.statusCode != HttpStatus.NOT_FOUND) {
         LOG.error("Exception thrown on visit-scheduler call - /visits/search - with parameters - $visitSearchRequestFilter", e)
@@ -48,42 +45,42 @@ class VisitSchedulerService(
   }
 
   fun reserveVisitSlot(reserveVisitSlotDto: ReserveVisitSlotDto): VisitDto? {
-    return visitSchedulerClient.reserveVisitSlot(reserveVisitSlotDto).block(apiTimeout)
+    return visitSchedulerClient.reserveVisitSlot(reserveVisitSlotDto)
   }
 
   fun getVisitSupport(): List<SupportTypeDto>? {
-    return visitSchedulerClient.getVisitSupport().block(apiTimeout)
+    return visitSchedulerClient.getVisitSupport()
   }
 
   fun bookVisit(applicationReference: String): VisitDto? {
-    return visitSchedulerClient.bookVisitSlot(applicationReference).block(apiTimeout)
+    return visitSchedulerClient.bookVisitSlot(applicationReference)
   }
 
   fun cancelVisit(visitCancelDto: VisitCancelDto): VisitDto? {
-    return visitSchedulerClient.cancelVisit(visitCancelDto).block(apiTimeout)
+    return visitSchedulerClient.cancelVisit(visitCancelDto)
   }
 
   fun changeReservedVisitSlot(applicationReference: String, changeVisitSlotRequestDto: ChangeVisitSlotRequestDto): VisitDto? {
-    return visitSchedulerClient.changeVisitSlot(applicationReference, changeVisitSlotRequestDto).block(apiTimeout)
+    return visitSchedulerClient.changeVisitSlot(applicationReference, changeVisitSlotRequestDto)
   }
 
   fun changeBookedVisit(reference: String, reserveVisitSlotDto: ReserveVisitSlotDto): VisitDto? {
-    return visitSchedulerClient.changeBookedVisit(reference, reserveVisitSlotDto).block(apiTimeout)
+    return visitSchedulerClient.changeBookedVisit(reference, reserveVisitSlotDto)
   }
 
   fun getVisitSessions(prisonCode: String, prisonerId: String?, min: Long?, max: Long?): List<VisitSessionDto>? {
-    return visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max).block(apiTimeout)
+    return visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max)
   }
 
   fun getSupportedPrisons(): List<String>? {
-    return visitSchedulerClient.getSupportedPrisons().block(apiTimeout)
+    return visitSchedulerClient.getSupportedPrisons()
   }
 
   fun getSessionCapacity(prisonCode: String, sessionDate: LocalDate, sessionStartTime: LocalTime, sessionEndTime: LocalTime): SessionCapacityDto? {
-    return visitSchedulerClient.getSessionCapacity(prisonCode, sessionDate, sessionStartTime, sessionEndTime).block(apiTimeout)
+    return visitSchedulerClient.getSessionCapacity(prisonCode, sessionDate, sessionStartTime, sessionEndTime)
   }
 
   fun getSessionSchedule(prisonCode: String, sessionDate: LocalDate): List<SessionScheduleDto>? {
-    return visitSchedulerClient.getSessionSchedule(prisonCode, sessionDate).block(apiTimeout)
+    return visitSchedulerClient.getSessionSchedule(prisonCode, sessionDate)
   }
 }

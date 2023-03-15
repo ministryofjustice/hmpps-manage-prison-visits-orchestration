@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client
 
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
@@ -18,6 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.Optional
@@ -26,16 +28,21 @@ import java.util.Optional
 class VisitSchedulerClient(
 
   @Qualifier("visitSchedulerWebClient") private val webClient: WebClient,
+  @Value("\${visit-scheduler.api.timeout:10s}") val apiTimeout: Duration,
 ) {
-  fun getVisitByReference(reference: String): Mono<VisitDto> {
+  fun getVisitByReference(reference: String): VisitDto? {
     return webClient.get()
       .uri("/visits/$reference")
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono()
+      .bodyToMono<VisitDto>().block(apiTimeout)
   }
 
-  fun getVisits(visitSearchRequestFilter: VisitSearchRequestFilter): Mono<RestPage<VisitDto>> {
+  fun getVisits(visitSearchRequestFilter: VisitSearchRequestFilter): RestPage<VisitDto>? {
+    return getVisitsAsMono(visitSearchRequestFilter).block(apiTimeout)
+  }
+
+  fun getVisitsAsMono(visitSearchRequestFilter: VisitSearchRequestFilter): Mono<RestPage<VisitDto>> {
     return webClient.get()
       .uri("/visits/search") {
         visitSearchUriBuilder(visitSearchRequestFilter, it).build()
@@ -45,74 +52,74 @@ class VisitSchedulerClient(
       .bodyToMono()
   }
 
-  fun reserveVisitSlot(reserveVisitSlotDto: ReserveVisitSlotDto): Mono<VisitDto> {
+  fun reserveVisitSlot(reserveVisitSlotDto: ReserveVisitSlotDto): VisitDto? {
     return webClient.post()
       .uri("/visits/slot/reserve")
       .body(BodyInserters.fromValue(reserveVisitSlotDto))
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono()
+      .bodyToMono<VisitDto>().block(apiTimeout)
   }
 
-  fun bookVisitSlot(applicationReference: String): Mono<VisitDto> {
+  fun bookVisitSlot(applicationReference: String): VisitDto? {
     return webClient.put()
       .uri("/visits/$applicationReference/book")
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono()
+      .bodyToMono<VisitDto>().block(apiTimeout)
   }
 
-  fun changeVisitSlot(applicationReference: String, changeVisitSlotRequestDto: ChangeVisitSlotRequestDto): Mono<VisitDto> {
+  fun changeVisitSlot(applicationReference: String, changeVisitSlotRequestDto: ChangeVisitSlotRequestDto): VisitDto? {
     return webClient.put()
       .uri("/visits/$applicationReference/slot/change")
       .body(BodyInserters.fromValue(changeVisitSlotRequestDto))
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono()
+      .bodyToMono<VisitDto>().block(apiTimeout)
   }
 
-  fun changeBookedVisit(reference: String, reserveVisitSlotDto: ReserveVisitSlotDto): Mono<VisitDto> {
+  fun changeBookedVisit(reference: String, reserveVisitSlotDto: ReserveVisitSlotDto): VisitDto? {
     return webClient.put()
       .uri("/visits/$reference/change")
       .body(BodyInserters.fromValue(reserveVisitSlotDto))
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono()
+      .bodyToMono<VisitDto>().block(apiTimeout)
   }
 
-  fun cancelVisit(visitCancelDto: VisitCancelDto): Mono<VisitDto> {
+  fun cancelVisit(visitCancelDto: VisitCancelDto): VisitDto? {
     return webClient.put()
       .uri("/visits/${visitCancelDto.reference}/cancel")
       .body(BodyInserters.fromValue(visitCancelDto.outcome))
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono()
+      .bodyToMono<VisitDto>().block(apiTimeout)
   }
 
-  fun getVisitSupport(): Mono<List<SupportTypeDto>> {
+  fun getVisitSupport(): List<SupportTypeDto>? {
     return webClient.get()
       .uri("/visit-support")
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono()
+      .bodyToMono<List<SupportTypeDto>>().block(apiTimeout)
   }
 
-  fun getVisitSessions(prisonId: String, prisonerId: String?, min: Long?, max: Long?): Mono<List<VisitSessionDto>> {
+  fun getVisitSessions(prisonId: String, prisonerId: String?, min: Long?, max: Long?): List<VisitSessionDto>? {
     return webClient.get()
       .uri("/visit-sessions") {
         visitSessionsUriBuilder(prisonId, prisonerId, min, max, it).build()
       }
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono()
+      .bodyToMono<List<VisitSessionDto>>().block(apiTimeout)
   }
 
-  fun getSupportedPrisons(): Mono<List<String>> {
+  fun getSupportedPrisons(): List<String>? {
     return webClient.get()
       .uri("/config/prisons/supported")
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono()
+      .bodyToMono<List<String>>().block(apiTimeout)
   }
 
   fun getSessionCapacity(
@@ -120,20 +127,20 @@ class VisitSchedulerClient(
     sessionDate: LocalDate,
     sessionStartTime: LocalTime,
     sessionEndTime: LocalTime,
-  ): Mono<SessionCapacityDto> {
+  ): SessionCapacityDto? {
     return webClient.get()
       .uri("/visit-sessions/capacity") {
         visitSessionsCapacityUriBuilder(prisonCode, sessionDate, sessionStartTime, sessionEndTime, it).build()
       }
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono()
+      .bodyToMono<SessionCapacityDto>().block(apiTimeout)
   }
 
   fun getSessionSchedule(
     prisonCode: String,
     sessionDate: LocalDate,
-  ): Mono<List<SessionScheduleDto>> {
+  ): List<SessionScheduleDto>? {
     return webClient.get()
       .uri("/visit-sessions/schedule") {
         it.queryParam("prisonId", prisonCode)
@@ -142,7 +149,7 @@ class VisitSchedulerClient(
       }
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono()
+      .bodyToMono<List<SessionScheduleDto>>().block(apiTimeout)
   }
 
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {
