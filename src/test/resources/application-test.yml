@@ -33,6 +33,14 @@ whereabouts:
   api:
     url: https://prison-register-dev.hmpps.service.justice.gov.uk
 
+prisoner:
+  profile:
+    timeout: 10s
+    past-visits:
+      duration-in-months: P6M
+    future-visits:
+      duration-in-months: P2M
+
 hmpps:
   auth:
     url: http://localhost:8090/auth

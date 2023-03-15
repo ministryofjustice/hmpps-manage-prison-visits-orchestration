@@ -25,15 +25,24 @@ class PrisonApiClient(
   @Qualifier("prisonApiWebClient") private val webClient: WebClient,
   @Value("\${prison.api.timeout:10s}") private val apiTimeout: Duration,
 ) {
+  fun getInmateDetails(prisonerId: String): InmateDetailDto? {
+    return getInmateDetailsAsMono(prisonerId)
+      .block(apiTimeout)
+  }
 
-  fun getInmateDetails(prisonerId: String): Mono<InmateDetailDto> {
+  fun getInmateDetailsAsMono(prisonerId: String): Mono<InmateDetailDto> {
     return webClient.get()
       .uri("/api/offenders/$prisonerId")
       .retrieve()
       .bodyToMono()
   }
 
-  fun getBookings(prisonId: String, prisonerId: String): Mono<RestPage<PrisonerBookingSummaryDto>> {
+  fun getBookings(prisonId: String, prisonerId: String): RestPage<PrisonerBookingSummaryDto>? {
+    return getBookingsAsMono(prisonId, prisonerId)
+      .block(apiTimeout)
+  }
+
+  fun getBookingsAsMono(prisonId: String, prisonerId: String): Mono<RestPage<PrisonerBookingSummaryDto>> {
     return webClient.get()
       .uri("/api/bookings/v2") {
         it.queryParam("prisonId", prisonId)
@@ -44,7 +53,11 @@ class PrisonApiClient(
       .bodyToMono()
   }
 
-  fun getVisitBalances(prisonerId: String): Mono<Optional<VisitBalancesDto>> {
+  fun getVisitBalances(prisonerId: String): Optional<VisitBalancesDto>? {
+    return getVisitBalancesAsMono(prisonerId).block(apiTimeout)
+  }
+
+  fun getVisitBalancesAsMono(prisonerId: String): Mono<Optional<VisitBalancesDto>> {
     return webClient.get()
       .uri("/api/bookings/offenderNo/$prisonerId/visit/balances")
       .retrieve()

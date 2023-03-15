@@ -106,3 +106,7 @@ whereabouts:
 prisoner:
   profile:
     timeout: 10s
+    past-visits:
+      duration-in-months: P6M
+    future-visits:
+      duration-in-months: P2M

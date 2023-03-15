@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config
 
+import jakarta.validation.ValidationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -33,9 +34,8 @@ class OrchestrationExceptionHandler {
     } else {
       log.error("Unexpected server exception", e)
     }
-    return ResponseEntity
-      .status(e.rawStatusCode)
-      .body(e.responseBodyAsByteArray)
+
+    return ResponseEntity.status(e.statusCode).body(e.responseBodyAsByteArray)
   }
 
   @ExceptionHandler(WebClientException::class)
@@ -47,6 +47,18 @@ class OrchestrationExceptionHandler {
     )
 
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error)
+  }
+
+  @ExceptionHandler(ValidationException::class)
+  fun handleValidationException(e: Exception): ResponseEntity<ErrorResponse> {
+    log.debug("Validation exception: {}", e.message)
+    val error = ErrorResponse(
+      status = HttpStatus.BAD_REQUEST,
+      userMessage = "Validation failure: ${e.cause?.message}",
+      developerMessage = e.message,
+    )
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error)
   }
 
   companion object {

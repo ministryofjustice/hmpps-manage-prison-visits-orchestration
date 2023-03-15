@@ -8,6 +8,7 @@ import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.util.UriBuilder
+import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ChangeVisitSlotRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ReserveVisitSlotDto
@@ -38,13 +39,17 @@ class VisitSchedulerClient(
   }
 
   fun getVisits(visitSearchRequestFilter: VisitSearchRequestFilter): RestPage<VisitDto>? {
+    return getVisitsAsMono(visitSearchRequestFilter).block(apiTimeout)
+  }
+
+  fun getVisitsAsMono(visitSearchRequestFilter: VisitSearchRequestFilter): Mono<RestPage<VisitDto>> {
     return webClient.get()
       .uri("/visits/search") {
         visitSearchUriBuilder(visitSearchRequestFilter, it).build()
       }
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono<RestPage<VisitDto>>().block(apiTimeout)
+      .bodyToMono()
   }
 
   fun reserveVisitSlot(reserveVisitSlotDto: ReserveVisitSlotDto): VisitDto? {
