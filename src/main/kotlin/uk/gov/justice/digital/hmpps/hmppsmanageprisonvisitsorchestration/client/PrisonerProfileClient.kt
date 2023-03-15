@@ -20,13 +20,13 @@ class PrisonerProfileClient(
     prisonerId: String,
     visitSearchRequestFilter: VisitSearchRequestFilter,
   ): PrisonerProfileDto? {
-    val prisonerPromise = prisonerOffenderSearchClient.getPrisonerByIdAsMono(prisonerId)
-    val inmateDetailPromise = prisonApiClient.getInmateDetailsAsMono(prisonerId)
-    val visitBalancesPromise = prisonApiClient.getVisitBalancesAsMono(prisonerId)
-    val prisonerBookingSummaryPromise = prisonApiClient.getBookingsAsMono(prisonId, prisonerId)
-    val visitSchedulerPromise = visitSchedulerClient.getVisitsAsMono(visitSearchRequestFilter)
+    val prisonerMono = prisonerOffenderSearchClient.getPrisonerByIdAsMono(prisonerId)
+    val inmateDetailMono = prisonApiClient.getInmateDetailsAsMono(prisonerId)
+    val visitBalancesMono = prisonApiClient.getVisitBalancesAsMono(prisonerId)
+    val prisonerBookingSummaryMono = prisonApiClient.getBookingsAsMono(prisonId, prisonerId)
+    val visitSchedulerMono = visitSchedulerClient.getVisitsAsMono(visitSearchRequestFilter)
 
-    return Mono.zip(prisonerPromise, inmateDetailPromise, visitBalancesPromise, prisonerBookingSummaryPromise, visitSchedulerPromise)
+    return Mono.zip(prisonerMono, inmateDetailMono, visitBalancesMono, prisonerBookingSummaryMono, visitSchedulerMono)
       .map {
         PrisonerProfileDto(
           it.t1 ?: throw InvalidPrisonerProfileException("Unable to retrieve offender details from Prison Offender Search API"),
