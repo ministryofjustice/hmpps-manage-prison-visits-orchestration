@@ -37,7 +37,7 @@ Ports
 |--------------------|------|
 | visit-scheduler    | 8081 |
 | visit-scheduler-db | 5432 |
-
+| hmpps-auth         | 8090 |
 
 Call info endpoint:
 ```
