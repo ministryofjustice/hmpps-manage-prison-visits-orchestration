@@ -1,44 +1,111 @@
-# hmpps-manage-prison-visits-orchestration
-[![repo standards badge](https://img.shields.io/badge/dynamic/json?color=blue&style=flat&logo=github&label=MoJ%20Compliant&query=%24.result&url=https%3A%2F%2Foperations-engineering-reports.cloud-platform.service.justice.gov.uk%2Fapi%2Fv1%2Fcompliant_public_repositories%2Fhmpps-manage-prison-visits-orchestration)](https://operations-engineering-reports.cloud-platform.service.justice.gov.uk/public-github-repositories.html#hmpps-manage-prison-visits-orchestration "Link to report")
-[![CircleCI](https://circleci.com/gh/ministryofjustice/hmpps-manage-prison-visits-orchestration/tree/main.svg?style=svg)](https://circleci.com/gh/ministryofjustice/hmpps-manage-prison-visits-orchestration)
-[![Docker Repository on Quay](https://quay.io/repository/hmpps/hmpps-manage-prison-visits-orchestration/status "Docker Repository on Quay")](https://quay.io/repository/hmpps/hmpps-manage-prison-visits-orchestration)
-[![API docs](https://img.shields.io/badge/API_docs_-view-85EA2D.svg?logo=swagger)](https://hmpps-manage-prison-visits-orchestration-dev.hmpps.service.justice.gov.uk/webjars/swagger-ui/index.html?configUrl=/v3/api-docs)
+# HMPPS Manage Prison Visits Orchestration API
 
-This is a skeleton project from which to create new kotlin projects from.
+[![CircleCI](https://circleci.com/gh/ministryofjustice/hmpps-manage-prison-visits-orchestration/tree/main.svg?style=shield)](https://app.circleci.com/pipelines/github/ministryofjustice/visit-scheduler)
 
-# Instructions
+This is a Spring Boot application, written in Kotlin, used as an orchestration layer between the Visit Someone In Prison front end and external API calls like visit-scheduler, prison-api, prisoner-offender-search. Used by [Visit Someone in Prison](https://github.com/ministryofjustice/book-a-prison-visit-staff-ui).
 
-If this is a HMPPS project then the project will be created as part of bootstrapping - 
-see https://github.com/ministryofjustice/dps-project-bootstrap.
+## Building
 
-## Creating a CloudPlatform namespace
+To build the project (without tests):
+```
+./gradlew clean build -x test
+```
 
-When deploying to a new namespace, you may wish to use this template kotlin project namespace as the basis for your new namespace:
+## Testing
 
-<https://github.com/ministryofjustice/cloud-platform-environments/tree/main/namespaces/live.cloud-platform.service.justice.gov.uk/hmpps-manage-prison-visits-orchestration>
+Run:
+```
+./gradlew test 
+```
 
-Copy this folder, update all the existing namespace references, and submit a PR to the CloudPlatform team. Further instructions from the CloudPlatform team can be found here: <https://user-guide.cloud-platform.service.justice.gov.uk/#cloud-platform-user-guide>
+## Running
 
-## Renaming from Hmpps Manage Prison Visits Orchestration - github Actions
+Create a Spring Boot run configuration with active profile of dev, to run against te development environment.
 
-Once the new repository is deployed. Navigate to the repository in github, and select the `Actions` tab.
-Click the link to `Enable Actions on this repository`.
 
-Find the Action workflow named: `rename-project-create-pr` and click `Run workflow`.  This workflow will
-execute the `rename-project.bash` and create Pull Request for you to review.  Review the PR and merge.
+Alternatively the service can be run using docker-compose with client 'book-a-prison-visit-client' and the usual dev secret.
+```
+docker-compose up -d
+```
+or for particular compose files
+```
+docker-compose -f docker-compose-local.yml up -d
+```
+Ports
 
-Note: ideally this workflow would run automatically however due to a recent change github Actions are not
-enabled by default on newly created repos. There is no way to enable Actions other then to click the button in the UI.
-If this situation changes we will update this project so that the workflow is triggered during the bootstrap project.
-Further reading: <https://github.community/t/workflow-isnt-enabled-in-repos-generated-from-template/136421>
+| Service            | Port |  
+|--------------------|------|
+| visit-scheduler    | 8081 |
+| visit-scheduler-db | 5432 |
+| hmpps-auth         | 8090 |
 
-## Manually renaming from Hmpps Manage Prison Visits Orchestration
+Call info endpoint:
+```
+$ curl 'http://localhost:8080/info' -i -X GET
+```
 
-Run the `rename-project.bash` and create a PR.
+## Swagger v3
+Manage Prison Visits Orchestration
+```
+http://localhost:8080/swagger-ui/index.html
+```
 
-The `rename-project.bash` script takes a single argument - the name of the project and calculates from it:
-* The main class name (project name converted to pascal case) 
-* The project description (class name with spaces between the words)
-* The main package name (project name with hyphens removed)
+Export Spec
+```
+http://localhost:8080/v3/api-docs?group=full-api
+```
 
-It then performs a search and replace and directory renames so the project is ready to be used.
+## Common gradle tasks
+
+To list project dependencies, run:
+
+```
+./gradlew dependencies
+``` 
+
+To check for dependency updates, run:
+```
+./gradlew dependencyUpdates --warning-mode all
+```
+
+To run an OWASP dependency check, run:
+```
+./gradlew clean dependencyCheckAnalyze --info
+```
+
+To upgrade the gradle wrapper version, run:
+```
+./gradlew wrapper --gradle-version=<VERSION>
+```
+
+To automatically update project dependencies, run:
+```
+./gradlew useLatestVersions
+```
+
+#### Ktlint Gradle Tasks
+
+To run Ktlint check:
+```
+./gradlew ktlintCheck
+```
+
+To run Ktlint format:
+```
+./gradlew ktlintFormat
+```
+
+To apply ktlint styles to intellij
+```
+./gradlew ktlintApplyToIdea
+```
+
+To register pre-commit check to run Ktlint format:
+```
+./gradlew ktlintApplyToIdea addKtlintFormatGitPreCommitHook 
+```
+
+...or to register pre-commit check to only run Ktlint check:
+```
+./gradlew ktlintApplyToIdea addKtlintCheckGitPreCommitHook
+```

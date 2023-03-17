@@ -73,35 +73,15 @@ management:
 
 visit-scheduler:
   api:
-    url: http://localhost:8081
     timeout: 10s
-
-hmpps:
-  auth:
-    url: https://localhost:8090/auth
 
 prison:
   api:
-    #url: http://localhost:8091
-    url: https://api-dev.prison.service.justice.gov.uk
     timeout: 10s
 
 prisoner-offender:
     search:
-      url: https://prisoner-offender-search-dev.prison.service.justice.gov.uk
       timeout: 10s
-
-prisoner-contact:
-  registry:
-      url: https://prisoner-contact-registry-dev.prison.service.justice.gov.uk
-
-prison-register:
-  api:
-    url: https://prison-register-dev.hmpps.service.justice.gov.uk
-
-whereabouts:
-  api:
-    url: https://whereabouts-api-dev.service.justice.gov.uk
 
 prisoner:
   profile:
