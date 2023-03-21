@@ -60,6 +60,9 @@ abstract class IntegrationTestBase {
   @Autowired
   protected lateinit var jwtAuthHelper: JwtAuthHelper
 
+  @Autowired
+  protected lateinit var objectMapper: ObjectMapper
+
   @BeforeEach
   internal fun setUp() {
     roleVisitSchedulerHttpHeaders = setAuthorisation(roles = listOf("ROLE_VISIT_SCHEDULER"))
@@ -123,6 +126,9 @@ abstract class IntegrationTestBase {
     startTimestamp: LocalDateTime = LocalDateTime.now(),
     endTimestamp: LocalDateTime = startTimestamp.plusHours(1),
     outcomeStatus: String? = null,
+    createdBy: String = "created-by",
+    updatedBy: String? = null,
+    cancelledBy: String? = null,
     createdTimestamp: LocalDateTime = LocalDateTime.now(),
     modifiedTimestamp: LocalDateTime = LocalDateTime.now(),
   ): VisitDto {
@@ -138,6 +144,9 @@ abstract class IntegrationTestBase {
       startTimestamp = startTimestamp,
       endTimestamp = endTimestamp,
       outcomeStatus = outcomeStatus,
+      createdBy = createdBy,
+      updatedBy = updatedBy,
+      cancelledBy = cancelledBy,
       createdTimestamp = createdTimestamp,
       modifiedTimestamp = modifiedTimestamp,
     )
