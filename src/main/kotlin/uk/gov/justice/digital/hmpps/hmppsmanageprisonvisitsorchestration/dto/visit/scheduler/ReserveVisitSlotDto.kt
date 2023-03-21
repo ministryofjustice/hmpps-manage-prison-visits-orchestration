@@ -8,14 +8,14 @@ import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.NotNull
 import java.time.LocalDateTime
 
-class ReserveVisitSlotDto(
+open class ReserveVisitSlotDto(
   @Schema(description = "Prisoner Id", example = "AF34567G", required = true)
   @field:NotBlank
   val prisonerId: String,
   @JsonProperty("prisonId")
   @Schema(description = "Prison Id", example = "MDI", required = true)
   @field:NotBlank
-  val prisonCode: String,
+  open val prisonCode: String,
   @Schema(description = "Visit Room", example = "A1", required = true)
   @field:NotBlank
   val visitRoom: String,
@@ -39,4 +39,4 @@ class ReserveVisitSlotDto(
   val visitors: Set<@Valid VisitorDto>,
   @Schema(description = "List of additional support associated with the visit", required = false)
   val visitorSupport: Set<@Valid VisitorSupportDto>? = setOf(),
-)
+  )

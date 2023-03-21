@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ReserveVisitSlotDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
 @DisplayName("Change a booked Visit Slot tests")
@@ -13,7 +13,7 @@ class ChangeBookedVisitSlotTest : IntegrationTestBase() {
   fun callChangeBookedVisitSlot(
     webTestClient: WebTestClient,
     reference: String,
-    reserveVisitSlotDto: ReserveVisitSlotDto,
+    reserveVisitSlotDto: VisitSchedulerReserveVisitSlotDto,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     return webTestClient.put().uri("/visits/$reference/change")

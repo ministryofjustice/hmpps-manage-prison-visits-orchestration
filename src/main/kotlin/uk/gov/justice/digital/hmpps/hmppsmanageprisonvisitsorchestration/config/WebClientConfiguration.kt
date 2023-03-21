@@ -49,7 +49,6 @@ class WebClientConfiguration(
 
     return WebClient.builder()
       .baseUrl(visitSchedulerBaseUrl)
-      .filter(addUserNameHeaderFilterFunction())
       .apply(oauth2Client.oauth2Configuration())
       .exchangeStrategies(exchangeStrategies)
       .build()
@@ -176,23 +175,8 @@ class WebClientConfiguration(
       )
     }
 
-  private fun addUserNameHeaderFilterFunction() =
-    ExchangeFilterFunction { request: ClientRequest, next: ExchangeFunction ->
-      next.exchange(
-        ClientRequest.from(request)
-          .header("user-name", currentUserName)
-          .build(),
-      )
-    }
 
   private fun getSecurityContextAuthentication(): Authentication {
     return SecurityContextHolder.getContext().authentication
   }
-
-  val currentUserName: String?
-    get() {
-      val authentication: Authentication = getSecurityContextAuthentication()
-      val userPrincipal = authentication.principal
-      return if (userPrincipal is String) userPrincipal else null
-    }
 }

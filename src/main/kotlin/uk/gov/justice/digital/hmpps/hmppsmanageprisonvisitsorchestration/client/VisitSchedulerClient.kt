@@ -10,13 +10,13 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ChangeVisitSlotRequestDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SupportTypeDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitCancelDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import java.time.Duration
@@ -52,7 +52,7 @@ class VisitSchedulerClient(
       .bodyToMono()
   }
 
-  fun reserveVisitSlot(reserveVisitSlotDto: ReserveVisitSlotDto): VisitDto? {
+  fun reserveVisitSlot(reserveVisitSlotDto: VisitSchedulerReserveVisitSlotDto): VisitDto? {
     return webClient.post()
       .uri("/visits/slot/reserve")
       .body(BodyInserters.fromValue(reserveVisitSlotDto))
@@ -78,7 +78,7 @@ class VisitSchedulerClient(
       .bodyToMono<VisitDto>().block(apiTimeout)
   }
 
-  fun changeBookedVisit(reference: String, reserveVisitSlotDto: ReserveVisitSlotDto): VisitDto? {
+  fun changeBookedVisit(reference: String, reserveVisitSlotDto: VisitSchedulerReserveVisitSlotDto): VisitDto? {
     return webClient.put()
       .uri("/visits/$reference/change")
       .body(BodyInserters.fromValue(reserveVisitSlotDto))
@@ -87,10 +87,10 @@ class VisitSchedulerClient(
       .bodyToMono<VisitDto>().block(apiTimeout)
   }
 
-  fun cancelVisit(visitCancelDto: VisitCancelDto): VisitDto? {
+  fun cancelVisit(reference: String, cancelVisitDto: CancelVisitDto): VisitDto? {
     return webClient.put()
-      .uri("/visits/${visitCancelDto.reference}/cancel")
-      .body(BodyInserters.fromValue(visitCancelDto.outcome))
+      .uri("/visits/$reference/cancel")
+      .body(BodyInserters.fromValue(cancelVisitDto))
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono<VisitDto>().block(apiTimeout)

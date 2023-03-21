@@ -15,6 +15,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ChangeVisitSlotRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.helper.JwtAuthHelper
@@ -142,18 +143,21 @@ abstract class IntegrationTestBase {
     )
   }
 
-  fun createReserveVisitSlotDto(prisonerId: String): ReserveVisitSlotDto {
+  fun createReserveVisitSlotDto(prisonerId: String): VisitSchedulerReserveVisitSlotDto {
     val visitor = VisitorDto(1, false)
-    return ReserveVisitSlotDto(
-      prisonerId = prisonerId,
-      prisonCode = "MDI",
-      visitRoom = "A1 L3",
-      visitType = "SOCIAL",
-      visitRestriction = "OPEN",
-      startTimestamp = LocalDateTime.now(),
-      endTimestamp = LocalDateTime.now().plusHours(1),
-      visitContact = null,
-      visitors = setOf(visitor),
+    return VisitSchedulerReserveVisitSlotDto(
+      ReserveVisitSlotDto(
+        prisonerId = prisonerId,
+        prisonCode = "MDI",
+        visitRoom = "A1 L3",
+        visitType = "SOCIAL",
+        visitRestriction = "OPEN",
+        startTimestamp = LocalDateTime.now(),
+        endTimestamp = LocalDateTime.now().plusHours(1),
+        visitContact = null,
+        visitors = setOf(visitor),
+      ),
+      actionedBy = "user -1",
     )
   }
 

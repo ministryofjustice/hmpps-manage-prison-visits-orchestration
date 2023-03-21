@@ -23,7 +23,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.OutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SupportTypeDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitCancelDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
@@ -378,7 +377,7 @@ class OrchestrationVisitsController(
     ],
   )
   fun cancelVisit(@PathVariable reference: String, @RequestBody outcomeDto: OutcomeDto): VisitDto? {
-    return visitSchedulerService.cancelVisit(VisitCancelDto(reference, outcomeDto))
+    return visitSchedulerService.cancelVisit(reference, outcomeDto)
   }
 
   @PreAuthorize("hasRole('VISIT_SCHEDULER')")
