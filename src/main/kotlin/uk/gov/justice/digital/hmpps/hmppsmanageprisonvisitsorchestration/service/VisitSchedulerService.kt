@@ -7,13 +7,15 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ChangeVisitSlotRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.OutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SupportTypeDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitCancelDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import java.time.LocalDate
@@ -22,6 +24,7 @@ import java.time.LocalTime
 @Service
 class VisitSchedulerService(
   private val visitSchedulerClient: VisitSchedulerClient,
+  private val authenticationHelperService: AuthenticationHelperService,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -45,7 +48,7 @@ class VisitSchedulerService(
   }
 
   fun reserveVisitSlot(reserveVisitSlotDto: ReserveVisitSlotDto): VisitDto? {
-    return visitSchedulerClient.reserveVisitSlot(reserveVisitSlotDto)
+    return visitSchedulerClient.reserveVisitSlot(VisitSchedulerReserveVisitSlotDto(reserveVisitSlotDto, authenticationHelperService.currentUserName))
   }
 
   fun getVisitSupport(): List<SupportTypeDto>? {
@@ -56,8 +59,8 @@ class VisitSchedulerService(
     return visitSchedulerClient.bookVisitSlot(applicationReference)
   }
 
-  fun cancelVisit(visitCancelDto: VisitCancelDto): VisitDto? {
-    return visitSchedulerClient.cancelVisit(visitCancelDto)
+  fun cancelVisit(reference: String, outcomeDto: OutcomeDto): VisitDto? {
+    return visitSchedulerClient.cancelVisit(reference, CancelVisitDto(outcomeDto, authenticationHelperService.currentUserName))
   }
 
   fun changeReservedVisitSlot(applicationReference: String, changeVisitSlotRequestDto: ChangeVisitSlotRequestDto): VisitDto? {
@@ -65,7 +68,7 @@ class VisitSchedulerService(
   }
 
   fun changeBookedVisit(reference: String, reserveVisitSlotDto: ReserveVisitSlotDto): VisitDto? {
-    return visitSchedulerClient.changeBookedVisit(reference, reserveVisitSlotDto)
+    return visitSchedulerClient.changeBookedVisit(reference, VisitSchedulerReserveVisitSlotDto(reserveVisitSlotDto, authenticationHelperService.currentUserName))
   }
 
   fun getVisitSessions(prisonCode: String, prisonerId: String?, min: Long?, max: Long?): List<VisitSessionDto>? {
