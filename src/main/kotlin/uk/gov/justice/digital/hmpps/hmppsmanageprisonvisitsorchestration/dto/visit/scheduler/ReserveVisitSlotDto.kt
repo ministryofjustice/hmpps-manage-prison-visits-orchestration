@@ -39,4 +39,4 @@ open class ReserveVisitSlotDto(
   val visitors: Set<@Valid VisitorDto>,
   @Schema(description = "List of additional support associated with the visit", required = false)
   val visitorSupport: Set<@Valid VisitorSupportDto>? = setOf(),
-  )
+)

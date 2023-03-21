@@ -175,7 +175,6 @@ class WebClientConfiguration(
       )
     }
 
-
   private fun getSecurityContextAuthentication(): Authentication {
     return SecurityContextHolder.getContext().authentication
   }
