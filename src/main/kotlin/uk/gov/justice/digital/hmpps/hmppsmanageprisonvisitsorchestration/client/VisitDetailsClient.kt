@@ -1,14 +1,18 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client
 
-import org.springframework.http.HttpStatus
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.client.WebClientResponseException
+import reactor.core.publisher.Mono
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.hmpps.auth.UserDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import java.time.Duration
+import java.util.Optional
 
 @Component
 class VisitDetailsClient(
   private val visitSchedulerClient: VisitSchedulerClient,
   private val hmppsAuthClient: HmppsAuthClient,
+  @Value("\${hmpps.auth.timeout:10s}") private val apiTimeout: Duration,
 ) {
   companion object {
     const val NOT_KNOWN = "NOT_KNOWN"
@@ -18,26 +22,32 @@ class VisitDetailsClient(
   ): VisitDto? {
     val visitDto = visitSchedulerClient.getVisitByReference(reference)
     visitDto?.also {
-      // TODO - move this into Mono.zip call so that the calls are made in parallel to improve performance
-      it.createdByFullName = getFullName(it.createdBy)
-      it.updatedByFullName = getFullName(it.updatedBy)
-      it.cancelledByFullName = getFullName(it.cancelledBy)
+      val createdByMono = getUserDetails(visitDto.createdBy)
+      val updatedByMono = getUserDetails(visitDto.updatedBy)
+      val cancelledByMono = getUserDetails(visitDto.cancelledBy)
+
+      val userDetails = Mono.zip(createdByMono, updatedByMono, cancelledByMono).block(apiTimeout)
+      visitDto.createdByFullName = getFullName(userDetails?.t1)
+      visitDto.updatedByFullName = getFullName(userDetails?.t2)
+      visitDto.cancelledByFullName = getFullName(userDetails?.t3)
     }
     return visitDto
   }
 
-  private fun getFullName(actionedBy: String?): String? {
-    return actionedBy?.let {
+  private fun getUserDetails(actionedBy: String?): Mono<Optional<UserDetails>> {
+    actionedBy?.let {
       // for past visits or some exceptional circumstances actionedBy will be NOT_KNOWN
-      return if (actionedBy == NOT_KNOWN) {
-        actionedBy
+      if (actionedBy == NOT_KNOWN) {
+        return Mono.just(Optional.of(UserDetails(actionedBy, NOT_KNOWN)))
       } else {
-        try {
-          hmppsAuthClient.getUserDetails(actionedBy)?.name
-        } catch (e: Exception) {
-          if (e is WebClientResponseException && e.statusCode == HttpStatus.NOT_FOUND) null else throw e
-        }
+        return hmppsAuthClient.getUserDetails(actionedBy)
       }
     }
+
+    return Mono.just(Optional.empty())
+  }
+
+  private fun getFullName(userDetails: Optional<UserDetails>?): String? {
+    return if (userDetails?.isEmpty == true) null else userDetails?.get()?.name
   }
 }

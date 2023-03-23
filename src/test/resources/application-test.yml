@@ -44,6 +44,7 @@ prisoner:
 hmpps:
   auth:
     url: http://localhost:8090/auth
+    timeout: 10s
 
 hmpps.sqs:
   provider: localstack
