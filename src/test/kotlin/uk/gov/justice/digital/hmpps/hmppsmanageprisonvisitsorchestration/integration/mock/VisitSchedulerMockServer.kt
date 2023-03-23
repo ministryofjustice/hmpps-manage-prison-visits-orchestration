@@ -120,7 +120,7 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     val responseBuilder = createJsonResponseBuilder()
 
     stubFor(
-      put("/visits/$reference/cancel")
+      put("/v2/visits/$reference/cancel")
         .willReturn(
           if (visitDto == null) {
             responseBuilder.withStatus(HttpStatus.NOT_FOUND.value())
