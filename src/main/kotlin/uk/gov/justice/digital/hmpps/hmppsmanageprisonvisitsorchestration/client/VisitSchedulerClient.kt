@@ -89,7 +89,7 @@ class VisitSchedulerClient(
 
   fun cancelVisit(reference: String, cancelVisitDto: CancelVisitDto): VisitDto? {
     return webClient.put()
-      .uri("/visits/$reference/cancel")
+      .uri("/v2/visits/$reference/cancel")
       .body(BodyInserters.fromValue(cancelVisitDto))
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
