@@ -37,8 +37,11 @@ class VisitByReferenceTest : IntegrationTestBase() {
     val visitDtoResponse = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, VisitDto::class.java)
     Assertions.assertThat(visitDtoResponse.reference).isEqualTo(visitDto.reference)
     Assertions.assertThat(visitDtoResponse.createdBy).isEqualTo(createdBy)
+    Assertions.assertThat(visitDtoResponse.createdByFullName).isNull()
     Assertions.assertThat(visitDtoResponse.updatedBy).isEqualTo(lastUpdatedBy)
+    Assertions.assertThat(visitDtoResponse.updatedByFullName).isNull()
     Assertions.assertThat(visitDtoResponse.cancelledBy).isNull()
+    Assertions.assertThat(visitDtoResponse.cancelledByFullName).isNull()
   }
 
   @Test

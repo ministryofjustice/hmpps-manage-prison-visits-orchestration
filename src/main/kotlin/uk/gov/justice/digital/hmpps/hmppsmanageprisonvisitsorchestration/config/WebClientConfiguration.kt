@@ -38,6 +38,9 @@ class WebClientConfiguration(
 
   @Value("\${whereabouts.api.url}")
   private val whereAboutsApiUrl: String,
+
+  @Value("\${hmpps.auth.url}")
+  private val hmppsAuthUrl: String,
 ) {
   @Bean
   fun visitSchedulerWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
@@ -114,6 +117,19 @@ class WebClientConfiguration(
 
     return WebClient.builder()
       .baseUrl(whereAboutsApiUrl)
+      .filter(addAuthHeaderFilterFunction())
+      .exchangeStrategies(exchangeStrategies)
+      .build()
+  }
+
+  @Bean
+  fun hmppsAuthWebClient(): WebClient {
+    val exchangeStrategies = ExchangeStrategies.builder()
+      .codecs { configurer: ClientCodecConfigurer -> configurer.defaultCodecs().maxInMemorySize(-1) }
+      .build()
+
+    return WebClient.builder()
+      .baseUrl(hmppsAuthUrl)
       .filter(addAuthHeaderFilterFunction())
       .exchangeStrategies(exchangeStrategies)
       .build()

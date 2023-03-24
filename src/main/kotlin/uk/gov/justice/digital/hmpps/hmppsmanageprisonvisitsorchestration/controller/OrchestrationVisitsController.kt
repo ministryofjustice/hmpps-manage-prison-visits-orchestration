@@ -71,6 +71,12 @@ class OrchestrationVisitsController(
   }
 
   @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @GetMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/{reference}/full-details")
+  fun getFullVisitDetailsByReference(@PathVariable reference: String): VisitDto? {
+    return visitSchedulerService.getFullVisitDetailsByReference(reference)
+  }
+
+  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
   @GetMapping(params = ["page", "size"], path = ["$ORCHESTRATION_VISIT_CONTROLLER_PATH/search"])
   @Operation(
     summary = "Get visits",

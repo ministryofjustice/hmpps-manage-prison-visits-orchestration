@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitDetailsClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ChangeVisitSlotRequestDto
@@ -24,6 +25,7 @@ import java.time.LocalTime
 @Service
 class VisitSchedulerService(
   private val visitSchedulerClient: VisitSchedulerClient,
+  private val visitDetailsClient: VisitDetailsClient,
   private val authenticationHelperService: AuthenticationHelperService,
 ) {
   companion object {
@@ -32,6 +34,13 @@ class VisitSchedulerService(
 
   fun getVisitByReference(reference: String): VisitDto? {
     return visitSchedulerClient.getVisitByReference(reference)
+  }
+
+  /**
+   * Gets further visit details like usernames, contact details etc for a given visit reference.
+   */
+  fun getFullVisitDetailsByReference(reference: String): VisitDto? {
+    return visitDetailsClient.getFullVisitDetailsByReference(reference)
   }
 
   fun visitsSearch(visitSearchRequestFilter: VisitSearchRequestFilter): Page<VisitDto>? {

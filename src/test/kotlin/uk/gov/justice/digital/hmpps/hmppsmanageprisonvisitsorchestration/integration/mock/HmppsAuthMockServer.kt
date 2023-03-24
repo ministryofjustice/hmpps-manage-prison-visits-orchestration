@@ -11,6 +11,8 @@ import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
+import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 
 class HmppsAuthExtension : BeforeAllCallback, AfterAllCallback, BeforeEachCallback {
 
@@ -22,7 +24,9 @@ class HmppsAuthExtension : BeforeAllCallback, AfterAllCallback, BeforeEachCallba
   override fun beforeAll(context: ExtensionContext) {
     hmppsAuthApi.start()
     hmppsAuthApi.stubGrantToken()
-    hmppsAuthApi.stubGetUserDetails()
+    hmppsAuthApi.stubGetUserDetails("created-user")
+    hmppsAuthApi.stubGetUserDetails("updated-user")
+    hmppsAuthApi.stubGetUserDetails("cancelled-user")
   }
 
   override fun beforeEach(context: ExtensionContext) {
@@ -56,49 +60,24 @@ class HmppsAuthMockServer : WireMockServer(WIREMOCK_PORT) {
         ),
     )
   }
-  fun stubGetUserDetails() {
+  fun stubGetUserDetails(userId: String) {
+    val responseBuilder = aResponse()
+      .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+
     stubFor(
-      get(WireMock.urlEqualTo("/auth/api/user/me"))
+      get("/auth/api/user/$userId")
         .willReturn(
-          aResponse()
-            .withHeaders(HttpHeaders(HttpHeader("Content-Type", "application/json")))
+          responseBuilder
+            .withStatus(HttpStatus.OK.value())
             .withBody(
               """
               {
-                "activeCaseLoadId": "LEI"
-              }
+                 "username": "$userId",
+                 "name": "$userId-name"
+                }
               """.trimIndent(),
             ),
         ),
-    )
-  }
-
-  // If the user is not known then this endpoint still returns the username, just not the active caseload
-  fun stubFailToGetUserDetails() {
-    stubFor(
-      get(WireMock.urlEqualTo("/auth/api/user/me"))
-        .willReturn(
-          aResponse()
-            .withHeaders(HttpHeaders(HttpHeader("Content-Type", "application/json")))
-            .withBody(
-              """
-              {
-                "username": "you"
-              }
-              """.trimIndent(),
-            ),
-        ),
-    )
-  }
-
-  fun stubHealthPing(status: Int) {
-    stubFor(
-      get("/auth/health/ping").willReturn(
-        aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withBody(if (status == 200) "pong" else "some error")
-          .withStatus(status),
-      ),
     )
   }
 }

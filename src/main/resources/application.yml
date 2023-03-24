@@ -90,3 +90,7 @@ prisoner:
       duration-in-months: P6M
     future-visits:
       duration-in-months: P2M
+
+hmpps:
+  auth:
+    timeout: 10s
