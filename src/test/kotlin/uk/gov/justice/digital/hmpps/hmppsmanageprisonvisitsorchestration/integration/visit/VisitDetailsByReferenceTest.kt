@@ -10,13 +10,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
 @DisplayName("Get visits by reference")
-class VisitDetailsTest : IntegrationTestBase() {
+class VisitDetailsByReferenceTest : IntegrationTestBase() {
   fun callVisitDetailsByReference(
     webTestClient: WebTestClient,
     reference: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
-    return webTestClient.get().uri("/visits/full-details/$reference")
+    return webTestClient.get().uri("/visits/$reference/full-details")
       .headers(authHttpHeaders)
       .exchange()
   }

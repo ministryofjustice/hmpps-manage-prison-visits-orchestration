@@ -36,8 +36,11 @@ class VisitSchedulerService(
     return visitSchedulerClient.getVisitByReference(reference)
   }
 
-  fun getExtendedVisitDetailsByReference(reference: String): VisitDto? {
-    return visitDetailsClient.getExtendedVisitDetailsByReference(reference)
+  /**
+   * Gets further visit details like usernames, contact details etc for a given visit reference.
+   */
+  fun getFullVisitDetailsByReference(reference: String): VisitDto? {
+    return visitDetailsClient.getFullVisitDetailsByReference(reference)
   }
 
   fun visitsSearch(visitSearchRequestFilter: VisitSearchRequestFilter): Page<VisitDto>? {

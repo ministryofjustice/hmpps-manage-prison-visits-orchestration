@@ -17,7 +17,7 @@ class VisitDetailsClient(
   companion object {
     const val NOT_KNOWN = "NOT_KNOWN"
   }
-  fun getExtendedVisitDetailsByReference(
+  fun getFullVisitDetailsByReference(
     reference: String,
   ): VisitDto? {
     val visitDto = visitSchedulerClient.getVisitByReference(reference)
