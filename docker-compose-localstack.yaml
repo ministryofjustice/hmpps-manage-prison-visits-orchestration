@@ -1,0 +1,19 @@
+version: "3"
+
+services:
+
+  localstack:
+    image: localstack/localstack:1.3
+    networks:
+      - hmpps
+    container_name: localstack-external-vsip-orc
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=sqs,sns
+      - DEFAULT_REGION=eu-west-2
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+
+networks:
+  hmpps:

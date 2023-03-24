@@ -5,17 +5,16 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ReserveVisitSlotDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
 @DisplayName("Reserve Visit Slot tests")
 class ReserveVisitSlotTest : IntegrationTestBase() {
   fun callVisitReserveSlot(
     webTestClient: WebTestClient,
-    reserveVisitSlotDto: ReserveVisitSlotDto,
-    authHttpHeaders: (HttpHeaders) -> Unit
+    reserveVisitSlotDto: VisitSchedulerReserveVisitSlotDto,
+    authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
-
     return webTestClient.post().uri("/visits/slot/reserve")
       .headers(authHttpHeaders)
       .body(BodyInserters.fromValue(reserveVisitSlotDto))

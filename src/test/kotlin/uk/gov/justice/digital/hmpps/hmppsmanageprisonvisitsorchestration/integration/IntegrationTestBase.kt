@@ -5,6 +5,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -14,16 +15,20 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ChangeVisitSlotRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.helper.JwtAuthHelper
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.HmppsAuthExtension
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonOffenderSearchMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.VisitSchedulerMockServer
 import java.time.LocalDateTime
+import java.util.ArrayList
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
+@ExtendWith(HmppsAuthExtension::class)
 abstract class IntegrationTestBase {
   companion object {
     val visitSchedulerMockServer = VisitSchedulerMockServer(ObjectMapper().registerModule(JavaTimeModule()))
@@ -55,6 +60,9 @@ abstract class IntegrationTestBase {
   @Autowired
   protected lateinit var jwtAuthHelper: JwtAuthHelper
 
+  @Autowired
+  protected lateinit var objectMapper: ObjectMapper
+
   @BeforeEach
   internal fun setUp() {
     roleVisitSchedulerHttpHeaders = setAuthorisation(roles = listOf("ROLE_VISIT_SCHEDULER"))
@@ -63,10 +71,50 @@ abstract class IntegrationTestBase {
   internal fun setAuthorisation(
     user: String = "AUTH_ADM",
     roles: List<String> = listOf(),
-    scopes: List<String> = listOf()
+    scopes: List<String> = listOf(),
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles, scopes)
 
-  fun createVisitDto(
+  fun callGetVisits(
+    webTestClient: WebTestClient,
+    prisonerId: String,
+    visitStatus: List<String>,
+    startDateTime: LocalDateTime? = null,
+    endDateTime: LocalDateTime? = null,
+    page: Int,
+    size: Int,
+    authHttpHeaders: (HttpHeaders) -> Unit,
+  ): WebTestClient.ResponseSpec {
+    return webTestClient.get()
+      .uri("/visits/search?${getVisitsQueryParams(prisonerId, visitStatus, startDateTime, endDateTime, page, size).joinToString("&")}")
+      .headers(authHttpHeaders)
+      .exchange()
+  }
+
+  private fun getVisitsQueryParams(
+    prisonerId: String,
+    visitStatus: List<String>,
+    startDateTime: LocalDateTime? = null,
+    endDateTime: LocalDateTime? = null,
+    page: Int,
+    size: Int,
+  ): List<String> {
+    val queryParams = ArrayList<String>()
+    queryParams.add("prisonerId=$prisonerId")
+    visitStatus.forEach {
+      queryParams.add("visitStatus=$it")
+    }
+    startDateTime?.let {
+      queryParams.add("startDateTime=$it")
+    }
+    endDateTime?.let {
+      queryParams.add("endDateTime=$it")
+    }
+    queryParams.add("page=$page")
+    queryParams.add("size=$size")
+    return queryParams
+  }
+
+  final fun createVisitDto(
     reference: String = "aa-bb-cc-dd",
     applicationReference: String = "aaa-bbb-ccc-ddd",
     prisonerId: String = "AB12345DS",
@@ -78,8 +126,11 @@ abstract class IntegrationTestBase {
     startTimestamp: LocalDateTime = LocalDateTime.now(),
     endTimestamp: LocalDateTime = startTimestamp.plusHours(1),
     outcomeStatus: String? = null,
+    createdBy: String = "created-by",
+    updatedBy: String? = null,
+    cancelledBy: String? = null,
     createdTimestamp: LocalDateTime = LocalDateTime.now(),
-    modifiedTimestamp: LocalDateTime = LocalDateTime.now()
+    modifiedTimestamp: LocalDateTime = LocalDateTime.now(),
   ): VisitDto {
     return VisitDto(
       applicationReference = applicationReference,
@@ -93,23 +144,29 @@ abstract class IntegrationTestBase {
       startTimestamp = startTimestamp,
       endTimestamp = endTimestamp,
       outcomeStatus = outcomeStatus,
+      createdBy = createdBy,
+      updatedBy = updatedBy,
+      cancelledBy = cancelledBy,
       createdTimestamp = createdTimestamp,
-      modifiedTimestamp = modifiedTimestamp
+      modifiedTimestamp = modifiedTimestamp,
     )
   }
 
-  fun createReserveVisitSlotDto(prisonerId: String): ReserveVisitSlotDto {
+  fun createReserveVisitSlotDto(prisonerId: String): VisitSchedulerReserveVisitSlotDto {
     val visitor = VisitorDto(1, false)
-    return ReserveVisitSlotDto(
-      prisonerId = prisonerId,
-      prisonCode = "MDI",
-      visitRoom = "A1 L3",
-      visitType = "SOCIAL",
-      visitRestriction = "OPEN",
-      startTimestamp = LocalDateTime.now(),
-      endTimestamp = LocalDateTime.now().plusHours(1),
-      visitContact = null,
-      visitors = setOf(visitor),
+    return VisitSchedulerReserveVisitSlotDto(
+      ReserveVisitSlotDto(
+        prisonerId = prisonerId,
+        prisonCode = "MDI",
+        visitRoom = "A1 L3",
+        visitType = "SOCIAL",
+        visitRestriction = "OPEN",
+        startTimestamp = LocalDateTime.now(),
+        endTimestamp = LocalDateTime.now().plusHours(1),
+        visitContact = null,
+        visitors = setOf(visitor),
+      ),
+      actionedBy = "user -1",
     )
   }
 
@@ -133,7 +190,7 @@ abstract class IntegrationTestBase {
       closedVisitCapacity = 5,
       openVisitCapacity = 30,
       startTimestamp = LocalDateTime.now(),
-      endTimestamp = LocalDateTime.now().plusHours(1)
+      endTimestamp = LocalDateTime.now().plusHours(1),
     )
   }
 }

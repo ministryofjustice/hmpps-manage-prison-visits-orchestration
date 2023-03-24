@@ -12,7 +12,7 @@ class VisitSessionsTest : IntegrationTestBase() {
     webTestClient: WebTestClient,
     prisonCode: String,
     prisonerId: String,
-    authHttpHeaders: (HttpHeaders) -> Unit
+    authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     return webTestClient.get().uri("/visit-sessions?prisonId=$prisonCode&prisonerId=$prisonerId")
       .headers(authHttpHeaders)

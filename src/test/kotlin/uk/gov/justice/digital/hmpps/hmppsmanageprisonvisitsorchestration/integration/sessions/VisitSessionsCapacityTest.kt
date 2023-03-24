@@ -18,7 +18,7 @@ class VisitSessionsCapacityTest : IntegrationTestBase() {
     sessionStartTime: LocalTime,
     sessionEndTime: LocalTime,
     sessionCapacityDto: SessionCapacityDto?,
-    authHttpHeaders: (HttpHeaders) -> Unit
+    authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     return webTestClient.get().uri("/visit-sessions/capacity?prisonId=$prisonCode&sessionDate=$sessionDate&sessionStartTime=$sessionStartTime&sessionEndTime=$sessionEndTime")
       .headers(authHttpHeaders)

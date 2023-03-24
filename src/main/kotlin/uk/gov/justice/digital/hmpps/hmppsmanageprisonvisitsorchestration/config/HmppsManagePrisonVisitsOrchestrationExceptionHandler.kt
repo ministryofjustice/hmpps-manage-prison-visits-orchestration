@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config
 
+import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatus.BAD_REQUEST
@@ -9,7 +10,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.reactive.function.client.WebClientException
 import org.springframework.web.reactive.function.client.WebClientResponseException
-import javax.validation.ValidationException
 
 @RestControllerAdvice
 class HmppsManagePrisonVisitsOrchestrationExceptionHandler {
@@ -22,8 +22,8 @@ class HmppsManagePrisonVisitsOrchestrationExceptionHandler {
         ErrorResponse(
           status = BAD_REQUEST,
           userMessage = "Validation failure: ${e.message}",
-          developerMessage = e.message
-        )
+          developerMessage = e.message,
+        ),
       )
   }
 
@@ -36,8 +36,8 @@ class HmppsManagePrisonVisitsOrchestrationExceptionHandler {
         ErrorResponse(
           status = INTERNAL_SERVER_ERROR,
           userMessage = "Unexpected error: ${e.message}",
-          developerMessage = e.message
-        )
+          developerMessage = e.message,
+        ),
       )
   }
 
@@ -49,7 +49,7 @@ class HmppsManagePrisonVisitsOrchestrationExceptionHandler {
       log.error("Unexpected server exception", e)
     }
     return ResponseEntity
-      .status(e.rawStatusCode)
+      .status(e.statusCode)
       .body(e.responseBodyAsByteArray)
   }
 
@@ -58,7 +58,7 @@ class HmppsManagePrisonVisitsOrchestrationExceptionHandler {
     log.error("Unexpected exception", e)
     val error = ErrorResponse(
       status = INTERNAL_SERVER_ERROR,
-      developerMessage = e.message
+      developerMessage = e.message,
     )
     return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(error)
   }
@@ -73,14 +73,14 @@ data class ErrorResponse(
   val errorCode: Int? = null,
   val userMessage: String? = null,
   val developerMessage: String? = null,
-  val moreInfo: String? = null
+  val moreInfo: String? = null,
 ) {
   constructor(
     status: HttpStatus,
     errorCode: Int? = null,
     userMessage: String? = null,
     developerMessage: String? = null,
-    moreInfo: String? = null
+    moreInfo: String? = null,
   ) :
     this(status.value(), errorCode, userMessage, developerMessage, moreInfo)
 }

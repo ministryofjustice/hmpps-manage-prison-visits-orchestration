@@ -7,7 +7,7 @@
     <springProperty scope="context" name="app" source="spring.application.name"/>
 
 
-    <springProfile name="dev || stdout">
+    <springProfile name="test || local || dev || stdout">
         <appender name="consoleAppender" class="ch.qos.logback.core.helpers.NOPAppender"/>
         <appender name="logAppender" class="ch.qos.logback.core.ConsoleAppender">
             <layout class="ch.qos.logback.classic.PatternLayout">
@@ -16,13 +16,12 @@
         </appender>
     </springProfile>
 
-    <springProfile name="!(dev || stdout)">
+    <springProfile name="!(test || local || dev || stdout)">
         <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
             <layout class="ch.qos.logback.classic.PatternLayout">
                 <Pattern>${LOG_PATTERN}</Pattern>
             </layout>
         </appender>
-        <appender name="logAppender" class="com.microsoft.applicationinsights.logback.ApplicationInsightsAppender"/>
     </springProfile>
 
     <logger name="uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.HmppsManagePrisonVisitsOrchestrationKt" additivity="false"

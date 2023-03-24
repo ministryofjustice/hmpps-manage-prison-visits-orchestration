@@ -26,5 +26,5 @@ data class PrisonerDto(
   val cellLocation: String? = null,
 
   @Schema(description = "Incentive level")
-  val currentIncentive: CurrentIncentive? = null
+  val currentIncentive: CurrentIncentive? = null,
 )

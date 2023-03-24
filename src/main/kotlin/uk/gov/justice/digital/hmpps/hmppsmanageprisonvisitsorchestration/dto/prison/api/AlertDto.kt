@@ -23,7 +23,7 @@ data class AlertDto(
   @Schema(
     required = true,
     description = "Date of the alert, which might differ to the date it was created",
-    example = "2019-08-20"
+    example = "2019-08-20",
   )
   val dateCreated: LocalDate,
 

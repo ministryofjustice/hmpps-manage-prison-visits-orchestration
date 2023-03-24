@@ -8,5 +8,5 @@ data class OffenderRestrictionsDto(
   val bookingId: Long? = null,
 
   @Schema(description = "Offender restrictions")
-  val offenderRestrictions: List<OffenderRestrictionDto>? = null
+  val offenderRestrictions: List<OffenderRestrictionDto>? = null,
 )

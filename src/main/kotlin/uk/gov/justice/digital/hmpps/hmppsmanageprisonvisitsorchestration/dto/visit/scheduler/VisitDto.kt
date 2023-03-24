@@ -3,8 +3,8 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.constraints.NotBlank
 import java.time.LocalDateTime
-import javax.validation.constraints.NotBlank
 
 @Schema(description = "Visit")
 class VisitDto(
@@ -42,10 +42,22 @@ class VisitDto(
   val visitors: List<VisitorDto>? = listOf(),
   @Schema(description = "List of additional support associated with the visit", required = false)
   val visitorSupport: List<VisitorSupportDto>? = listOf(),
+  @Schema(description = "Created By ID - user id for the user who created the visit", example = "AB12345A", required = true)
+  val createdBy: String,
+  @Schema(description = "Created By Name - full name for the user who created the visit", example = "John Smith", required = false)
+  var createdByFullName: String? = null,
+  @Schema(description = "Updated By ID - user id for the user who last updated the visit", example = "AB12345A", required = false)
+  val updatedBy: String? = null,
+  @Schema(description = "Updated By Name - full name for the user who last updated the visit", example = "John Smith", required = false)
+  var updatedByFullName: String? = null,
+  @Schema(description = "Cancelled By ID - user id for the user who cancelled the visit", example = "AB12345A", required = false)
+  val cancelledBy: String? = null,
+  @Schema(description = "Cancelled By Name - full name for the user who cancelled the visit", example = "John Smith", required = false)
+  var cancelledByFullName: String? = null,
   @Schema(description = "The visit created date and time", example = "2018-12-01T13:45:00", required = true)
   @field:NotBlank
   val createdTimestamp: LocalDateTime,
   @Schema(description = "The visit modified date and time", example = "2018-12-01T13:45:00", required = true)
   @field:NotBlank
-  val modifiedTimestamp: LocalDateTime
+  val modifiedTimestamp: LocalDateTime,
 )

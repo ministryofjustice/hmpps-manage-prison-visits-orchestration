@@ -16,7 +16,7 @@ const val ORCHESTRATION_CONFIG_CONTROLLER_PATH: String = "/config"
 
 @RestController
 class OrchestrationPrisonsConfigController(
-  private val visitSchedulerService: VisitSchedulerService
+  private val visitSchedulerService: VisitSchedulerService,
 ) {
   @PreAuthorize("hasRole('VISIT_SCHEDULER')")
   @GetMapping("$ORCHESTRATION_CONFIG_CONTROLLER_PATH/prisons/supported")
@@ -32,22 +32,22 @@ class OrchestrationPrisonsConfigController(
             mediaType = "application/json",
             array = ArraySchema(schema = Schema(implementation = String::class)),
             examples = [
-              ExampleObject(value = "[\"HEI\", \"MDI\"]")
-            ]
-          )
+              ExampleObject(value = "[\"HEI\", \"MDI\"]"),
+            ],
+          ),
         ],
       ),
       ApiResponse(
         responseCode = "401",
         description = "Unauthorized to access this endpoint",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))]
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
         responseCode = "403",
         description = "Incorrect permissions to view session templates",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))]
-      )
-    ]
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
   )
   fun getSupportedPrisons(): List<String>? {
     return visitSchedulerService.getSupportedPrisons()

@@ -34,7 +34,7 @@ spring:
             client-id: ${system.client.id}
             client-secret: ${system.client.secret}
             authorization-grant-type: client_credentials
-            scope: read
+            scope: read, write
         provider:
           hmpps-auth:
             token-uri: ${hmpps.auth.url}/oauth/token
@@ -73,36 +73,24 @@ management:
 
 visit-scheduler:
   api:
-    url: http://localhost:8081
     timeout: 10s
-
-hmpps:
-  auth:
-    url: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
 
 prison:
   api:
-    #url: http://localhost:8091
-    url: https://api-dev.prison.service.justice.gov.uk
     timeout: 10s
 
 prisoner-offender:
     search:
-      url: https://prisoner-offender-search-dev.prison.service.justice.gov.uk
       timeout: 10s
-
-prisoner-contact:
-  registry:
-      url: https://prisoner-contact-registry-dev.prison.service.justice.gov.uk
-
-prison-register:
-  api:
-    url: https://prison-register-dev.hmpps.service.justice.gov.uk
-
-whereabouts:
-  api:
-    url: https://whereabouts-api-dev.service.justice.gov.uk
 
 prisoner:
   profile:
+    timeout: 10s
+    past-visits:
+      duration-in-months: P6M
+    future-visits:
+      duration-in-months: P2M
+
+hmpps:
+  auth:
     timeout: 10s
