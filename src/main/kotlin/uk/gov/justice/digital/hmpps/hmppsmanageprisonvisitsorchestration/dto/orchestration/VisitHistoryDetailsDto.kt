@@ -1,10 +1,13 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration
 
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonInclude.Include
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import java.time.LocalDateTime
 
+@JsonInclude(Include.NON_NULL)
 @Schema(description = "Visit")
 class VisitHistoryDetailsDto(
   @Schema(description = "Created By - user details  for the user who created the visit, NOT_KNOWN is used for historical cases", example = "AB12345A", required = true)
