@@ -24,6 +24,9 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.Optional
 
+const val VISIT_CONTROLLER_PATH: String = "/visits"
+const val GET_VISIT_HISTORY_CONTROLLER_PATH: String = "$VISIT_CONTROLLER_PATH/{reference}/history"
+
 @Component
 class VisitSchedulerClient(
 
@@ -36,6 +39,14 @@ class VisitSchedulerClient(
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono<VisitDto>().block(apiTimeout)
+  }
+
+  fun getVisitHistoryByReference(reference: String): List<VisitDto> {
+    return webClient.get()
+      .uri(GET_VISIT_HISTORY_CONTROLLER_PATH.replace("{reference}", reference))
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<List<VisitDto>>().block(apiTimeout)
   }
 
   fun getVisits(visitSearchRequestFilter: VisitSearchRequestFilter): RestPage<VisitDto>? {
