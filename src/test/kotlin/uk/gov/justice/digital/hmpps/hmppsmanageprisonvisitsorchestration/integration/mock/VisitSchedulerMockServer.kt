@@ -37,6 +37,25 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     )
   }
 
+  fun stubGetVisitHistory(reference: String, visit: VisitDto) {
+    return stubGetVisitHistory(reference, listOf(visit))
+  }
+
+  fun stubGetVisitHistory(reference: String, visits: List<VisitDto>) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      get("/visits/$reference/history")
+        .willReturn(
+          if (visits.isEmpty()) {
+            responseBuilder.withStatus(HttpStatus.NOT_FOUND.value())
+          } else {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(visits))
+          },
+        ),
+    )
+  }
+
   fun stubGetVisits(
     prisonerId: String,
     visitStatus: List<String>,
