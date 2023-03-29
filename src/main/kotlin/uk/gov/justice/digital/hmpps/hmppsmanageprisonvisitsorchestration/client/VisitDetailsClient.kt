@@ -23,9 +23,9 @@ class VisitDetailsClient(
     reference: String,
   ): VisitHistoryDetailsDto? {
     val visits = visitSchedulerClient.getVisitHistoryByReference(reference)
-    val lastVisit = visits.last()
+    if (visits.isNotEmpty()) {
+      val lastVisit = visits.last()
 
-    lastVisit?.also {
       val firstVisit = visits.first()
       val userNames = getUserDetails(lastVisit)
 
@@ -39,14 +39,13 @@ class VisitDetailsClient(
         visit = lastVisit,
       )
     }
-
     return null
   }
 
   private fun getLastUpdatedVisitDateAndTime(visits: List<VisitDto>): LocalDateTime? {
     val lastVisitDto = visits.last()
     if (visits.size > 1) {
-      return lastVisitDto?.let { it.createdTimestamp }
+      return lastVisitDto.let { it.createdTimestamp }
     }
     return null
   }
@@ -72,14 +71,14 @@ class VisitDetailsClient(
     }
 
     if (monoCallsList.size > 1) {
-      var zipResults: MutableList<UserDetailsDto> = mutableListOf()
+      var zipResults: List<UserDetailsDto> = mutableListOf()
       if (monoCallsList.size == 2) {
-        val userDetailsTuples = Mono.zip(monoCallsList[0], monoCallsList[1]).block(apiTimeout)
-        zipResults = userDetailsTuples.toList() as MutableList<UserDetailsDto>
+        val iterable = Mono.zip(monoCallsList[0], monoCallsList[1]).block(apiTimeout)
+        zipResults = iterable.toList() as List<UserDetailsDto>
       }
       if (monoCallsList.size == 3) {
         val userDetailsTuples = Mono.zip(monoCallsList[0], monoCallsList[1], monoCallsList[2]).block(apiTimeout)
-        zipResults = userDetailsTuples.toList() as MutableList<UserDetailsDto>
+        zipResults = userDetailsTuples.toList() as List<UserDetailsDto>
       }
       zipResults?.forEach { userDetails -> userDetails.fullName?.let { results[userDetails.username] = userDetails.fullName } }
     }
@@ -90,8 +89,7 @@ class VisitDetailsClient(
   private fun createUserMonoCalls(
     visitDto: VisitDto,
   ): List<Mono<UserDetailsDto>> {
-    val userNames = mutableSetOf(visitDto.createdBy, visitDto.updatedBy, visitDto.cancelledBy)
-    userNames.remove(null)
+    val userNames = mutableSetOf(visitDto.createdBy, visitDto.updatedBy, visitDto.cancelledBy).filterNotNull()
     return userNames.map {
       getUserDetails(it!!)
     }
