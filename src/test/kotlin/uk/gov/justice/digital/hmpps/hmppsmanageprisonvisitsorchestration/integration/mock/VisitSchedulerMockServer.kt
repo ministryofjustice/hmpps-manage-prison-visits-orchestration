@@ -56,6 +56,7 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     )
   }
 
+
   fun stubGetVisits(
     prisonerId: String,
     visitStatus: List<String>,

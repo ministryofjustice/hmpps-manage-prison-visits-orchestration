@@ -19,6 +19,8 @@ class VisitDetailsClient(
   companion object {
     const val NOT_KNOWN = "NOT_KNOWN"
   }
+
+
   fun getVisitHistoryByReference(
     reference: String,
   ): VisitHistoryDetailsDto? {
@@ -103,4 +105,5 @@ class VisitDetailsClient(
       hmppsAuthClient.getUserDetails(actionedBy)
     }
   }
+  
 }

@@ -61,6 +61,7 @@ class HmppsAuthMockServer : WireMockServer(WIREMOCK_PORT) {
     )
   }
   fun stubGetUserDetails(userId: String, fullName: String ? = "$userId-name") {
+
     val responseBuilder = aResponse()
       .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
 
