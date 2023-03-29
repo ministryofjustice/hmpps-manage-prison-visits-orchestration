@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitDetailsClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ChangeVisitSlotRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.OutcomeDto
@@ -39,8 +40,8 @@ class VisitSchedulerService(
   /**
    * Gets further visit details like usernames, contact details etc for a given visit reference.
    */
-  fun getFullVisitDetailsByReference(reference: String): VisitDto? {
-    return visitDetailsClient.getFullVisitDetailsByReference(reference)
+  fun getVisitHistoryByReference(reference: String): VisitHistoryDetailsDto? {
+    return visitDetailsClient.getVisitHistoryByReference(reference)
   }
 
   fun visitsSearch(visitSearchRequestFilter: VisitSearchRequestFilter): Page<VisitDto>? {

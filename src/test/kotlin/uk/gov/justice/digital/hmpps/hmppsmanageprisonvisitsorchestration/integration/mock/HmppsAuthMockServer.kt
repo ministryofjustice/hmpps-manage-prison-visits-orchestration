@@ -60,7 +60,7 @@ class HmppsAuthMockServer : WireMockServer(WIREMOCK_PORT) {
         ),
     )
   }
-  fun stubGetUserDetails(userId: String) {
+  fun stubGetUserDetails(userId: String, fullName: String ? = "$userId-name") {
     val responseBuilder = aResponse()
       .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
 
@@ -73,7 +73,7 @@ class HmppsAuthMockServer : WireMockServer(WIREMOCK_PORT) {
               """
               {
                  "username": "$userId",
-                 "name": "$userId-name"
+                 "name": "$fullName"
                 }
               """.trimIndent(),
             ),

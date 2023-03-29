@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 
 @DisplayName("Change a reserved Visit Slot")
 class ChangeReservedVisitSlotTest : IntegrationTestBase() {
+
   fun callChangeReservedVisitSlot(
     webTestClient: WebTestClient,
     applicationReference: String,

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ChangeVisitSlotRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.OutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ReserveVisitSlotDto
@@ -71,9 +72,39 @@ class OrchestrationVisitsController(
   }
 
   @PreAuthorize("hasRole('VISIT_SCHEDULER')")
-  @GetMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/{reference}/full-details")
-  fun getFullVisitDetailsByReference(@PathVariable reference: String): VisitDto? {
-    return visitSchedulerService.getFullVisitDetailsByReference(reference)
+  @GetMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/{reference}/history")
+  @Operation(
+    summary = "Get visit history",
+    description = "Retrieve visit history by visit reference",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Visit History Information Returned",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to Get visit history",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions retrieve visit history",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Visit not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getVisitHistoryByReference(@PathVariable reference: String): VisitHistoryDetailsDto? {
+    return visitSchedulerService.getVisitHistoryByReference(reference)
   }
 
   @PreAuthorize("hasRole('VISIT_SCHEDULER')")
