@@ -151,23 +151,23 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
     val cancelDateAndTime = LocalDateTime.of(2023, 1, 5, 21, 10, 20)
 
     val visitBookedDto = createVisitDto(
-      visitStatus = "CANCELED",
+      visitStatus = "CANCELLED",
       outcomeStatus = "SUPERSEDED_CANCELLATION",
       reference = reference,
       createdTimestamp = createDateAndTime,
     )
-    val visitUpdateDto1 = createVisitDto(visitStatus = "CANCELED", outcomeStatus = "SUPERSEDED_CANCELLATION", reference = reference)
-    val visitUpdateDto2 = createVisitDto(visitStatus = "CANCELED", outcomeStatus = "SUPERSEDED_CANCELLATION", reference = reference)
+    val visitUpdateDto1 = createVisitDto(visitStatus = "CANCELLED", outcomeStatus = "SUPERSEDED_CANCELLATION", reference = reference)
+    val visitUpdateDto2 = createVisitDto(visitStatus = "CANCELLED", outcomeStatus = "SUPERSEDED_CANCELLATION", reference = reference)
 
-    val visitCanceledDto = createVisitDto(
-      visitStatus = "CANCELED",
+    val visitCancelledDto = createVisitDto(
+      visitStatus = "CANCELLED",
       reference = reference,
       createdTimestamp = updateDateAndTime,
       modifiedTimestamp = cancelDateAndTime,
       cancelledBy = "Cancel Boy",
     )
 
-    visitSchedulerMockServer.stubGetVisitHistory(reference, listOf(visitBookedDto, visitUpdateDto1, visitUpdateDto2, visitCanceledDto))
+    visitSchedulerMockServer.stubGetVisitHistory(reference, listOf(visitBookedDto, visitUpdateDto1, visitUpdateDto2, visitCancelledDto))
 
     // When
     val responseSpec = callVisitHistoryByReference(webTestClient, reference, roleVisitSchedulerHttpHeaders)
@@ -187,7 +187,7 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
     // Given
     val reference = "aa-bb-cc-dd"
 
-    val visitOriginalDto = createVisitDto(visitStatus = "CANCELED", outcomeStatus = "SUPERSEDED_CANCELLATION", reference = reference)
+    val visitOriginalDto = createVisitDto(visitStatus = "CANCELLED", outcomeStatus = "SUPERSEDED_CANCELLATION", reference = reference)
     val visitBookedDto = createVisitDto(visitStatus = "BOOKED", reference = reference)
 
     visitSchedulerMockServer.stubGetVisitHistory(reference, listOf(visitOriginalDto, visitBookedDto))

@@ -36,7 +36,7 @@ class VisitDetailsClient(
         updatedBy = userNames[lastVisit.updatedBy] ?: lastVisit.updatedBy,
         createdDateAndTime = firstVisit.createdTimestamp,
         updatedDateAndTime = getLastUpdatedVisitDateAndTime(visits),
-        cancelledDateAndTime = getCanceledVisitDateAndTime(lastVisit),
+        cancelledDateAndTime = getCancelledVisitDateAndTime(lastVisit),
         visit = lastVisit,
       )
     }
@@ -46,13 +46,13 @@ class VisitDetailsClient(
   private fun getLastUpdatedVisitDateAndTime(visits: List<VisitDto>): LocalDateTime? {
     val lastVisitDto = visits.last()
     if (visits.size > 1) {
-      return lastVisitDto.let { it.createdTimestamp }
+      return lastVisitDto.createdTimestamp
     }
     return null
   }
 
-  private fun getCanceledVisitDateAndTime(lastVisit: VisitDto): LocalDateTime? {
-    return if (lastVisit.visitStatus == "CANCELED") {
+  private fun getCancelledVisitDateAndTime(lastVisit: VisitDto): LocalDateTime? {
+    return if (lastVisit.visitStatus == "CANCELLED") {
       lastVisit.modifiedTimestamp
     } else {
       null
@@ -65,23 +65,29 @@ class VisitDetailsClient(
   }
 
   private fun executeMonoCalls(monoCallsList: List<Mono<UserDetailsDto>>): Map<String, String> {
-    var results: MutableMap<String, String> = mutableMapOf()
+    val results: MutableMap<String, String> = mutableMapOf()
     if (monoCallsList.size == 1) {
       val userDetails = monoCallsList[0].block(apiTimeout)
-      userDetails.fullName?.let { results[userDetails.username] = userDetails.fullName }
+      userDetails?.let {
+        userDetails.fullName?.let { results[userDetails.username] = userDetails.fullName }
+      }
     }
 
     if (monoCallsList.size > 1) {
       var zipResults: List<UserDetailsDto> = mutableListOf()
       if (monoCallsList.size == 2) {
         val iterable = Mono.zip(monoCallsList[0], monoCallsList[1]).block(apiTimeout)
-        zipResults = iterable.toList() as List<UserDetailsDto>
+        iterable?.let {
+          zipResults = iterable.toList() as List<UserDetailsDto>
+        }
       }
       if (monoCallsList.size == 3) {
         val userDetailsTuples = Mono.zip(monoCallsList[0], monoCallsList[1], monoCallsList[2]).block(apiTimeout)
-        zipResults = userDetailsTuples.toList() as List<UserDetailsDto>
+        userDetailsTuples?.let {
+          zipResults = userDetailsTuples.toList() as List<UserDetailsDto>
+        }
       }
-      zipResults?.forEach { userDetails -> userDetails.fullName?.let { results[userDetails.username] = userDetails.fullName } }
+      zipResults.forEach { userDetails -> userDetails.fullName?.let { results[userDetails.username] = userDetails.fullName } }
     }
 
     return results.toMap()
@@ -92,7 +98,7 @@ class VisitDetailsClient(
   ): List<Mono<UserDetailsDto>> {
     val userNames = mutableSetOf(visitDto.createdBy, visitDto.updatedBy, visitDto.cancelledBy).filterNotNull()
     return userNames.map {
-      getUserDetails(it!!)
+      getUserDetails(it)
     }
   }
 
