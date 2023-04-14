@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.sessions
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
@@ -33,6 +34,8 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
       startTime = LocalTime.of(9, 0),
       endTime = LocalTime.of(10, 0),
       enhanced = true,
+      prisonerLocationGroupNames = listOf("Location Group 1", "Location Group 2"),
+      prisonerCategoryGroupNames = listOf("Category Group 1", "Category Group 2", "Category Group 3"),
     )
     val sessionScheduleDto2 = createSessionScheduleDto(
       reference = "reference-2",
@@ -50,17 +53,22 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     val responseSpec = callVisitsSessionsSchedule(webTestClient, prisonCode, sessionDate, roleVisitSchedulerHttpHeaders)
 
     // Then
-    responseSpec.expectStatus().isOk
-      .expectBody()
-      .jsonPath("$.size()").isEqualTo(2)
-      .jsonPath("$[0].sessionTemplateReference").isEqualTo(sessionScheduleDto1.sessionTemplateReference)
-      .jsonPath("$[0].startTime").isEqualTo("09:00:00")
-      .jsonPath("$[0].endTime").isEqualTo("10:00:00")
-      .jsonPath("$[0].enhanced").isEqualTo(true)
-      .jsonPath("$[1].sessionTemplateReference").isEqualTo(sessionScheduleDto2.sessionTemplateReference)
-      .jsonPath("$[1].startTime").isEqualTo("10:00:00")
-      .jsonPath("$[1].endTime").isEqualTo("11:00:00")
-      .jsonPath("$[1].enhanced").isEqualTo(false)
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val sessionScheduleResults = getResults(returnResult)
+    assertThat(sessionScheduleResults.size).isEqualTo(2)
+    assertThat(sessionScheduleResults[0].sessionTemplateReference).isEqualTo(sessionScheduleDto1.sessionTemplateReference)
+    assertThat(sessionScheduleResults[0].startTime).isEqualTo(LocalTime.parse("09:00:00"))
+    assertThat(sessionScheduleResults[0].endTime).isEqualTo(LocalTime.parse("10:00:00"))
+    assertThat(sessionScheduleResults[0].enhanced).isTrue
+    assertThat(sessionScheduleResults[0].prisonerLocationGroupNames.size).isEqualTo(2)
+    assertThat(sessionScheduleResults[0].prisonerCategoryGroupNames.size).isEqualTo(3)
+
+    assertThat(sessionScheduleResults[1].sessionTemplateReference).isEqualTo(sessionScheduleDto2.sessionTemplateReference)
+    assertThat(sessionScheduleResults[1].startTime).isEqualTo(LocalTime.parse("10:00"))
+    assertThat(sessionScheduleResults[1].endTime).isEqualTo(LocalTime.parse("11:00"))
+    assertThat(sessionScheduleResults[1].enhanced).isFalse
+    assertThat(sessionScheduleResults[1].prisonerLocationGroupNames.size).isEqualTo(0)
+    assertThat(sessionScheduleResults[1].prisonerCategoryGroupNames.size).isEqualTo(0)
   }
 
   @Test
@@ -88,6 +96,8 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     sessionTemplateFrequency: String = "WEEKLY",
     sessionTemplateEndDate: LocalDate? = null,
     enhanced: Boolean,
+    prisonerLocationGroupNames: List<String> = mutableListOf(),
+    prisonerCategoryGroupNames: List<String> = mutableListOf(),
   ): SessionScheduleDto {
     return SessionScheduleDto(
       sessionTemplateReference = reference,
@@ -95,9 +105,14 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
       endTime = endTime,
       capacity = sessionCapacityDto,
       sessionTemplateFrequency = sessionTemplateFrequency,
-      prisonerLocationGroupNames = mutableListOf(),
+      prisonerLocationGroupNames = prisonerLocationGroupNames,
+      prisonerCategoryGroupNames = prisonerCategoryGroupNames,
       sessionTemplateEndDate = sessionTemplateEndDate,
       enhanced = enhanced,
     )
+  }
+
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<SessionScheduleDto> {
+    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<SessionScheduleDto>::class.java)
   }
 }
