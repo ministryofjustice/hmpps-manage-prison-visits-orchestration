@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler
 
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateFrequency
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -32,7 +33,7 @@ data class SessionScheduleDto(
   val prisonerLocationGroupNames: List<String>,
 
   @Schema(description = "The session template frequency", example = "BI_WEEKLY", required = true)
-  val sessionTemplateFrequency: String,
+  val sessionTemplateFrequency: SessionTemplateFrequency,
 
   @Schema(description = "The end date of sessionTemplate", example = "2020-11-01", required = false)
   val sessionTemplateEndDate: LocalDate?,

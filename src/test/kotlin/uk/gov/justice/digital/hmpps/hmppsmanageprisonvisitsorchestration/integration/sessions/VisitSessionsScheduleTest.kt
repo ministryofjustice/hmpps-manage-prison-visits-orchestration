@@ -6,6 +6,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateFrequency
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 import java.time.LocalTime
@@ -94,7 +95,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
       startTime = startTime,
       endTime = endTime,
       capacity = sessionCapacityDto,
-      sessionTemplateFrequency = sessionTemplateFrequency,
+      sessionTemplateFrequency = SessionTemplateFrequency.WEEKLY,
       prisonerLocationGroupNames = mutableListOf(),
       sessionTemplateEndDate = sessionTemplateEndDate,
       enhanced = enhanced,
