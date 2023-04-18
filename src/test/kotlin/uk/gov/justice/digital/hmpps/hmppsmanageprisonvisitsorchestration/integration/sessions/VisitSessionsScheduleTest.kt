@@ -94,7 +94,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     startTime: LocalTime,
     endTime: LocalTime,
     sessionCapacityDto: SessionCapacityDto = SessionCapacityDto(2, 30),
-    sessionTemplateFrequency: String = "WEEKLY",
+    sessionTemplateFrequency: SessionTemplateFrequency = SessionTemplateFrequency.WEEKLY,
     sessionTemplateEndDate: LocalDate? = null,
     enhanced: Boolean,
     prisonerLocationGroupNames: List<String> = mutableListOf(),
