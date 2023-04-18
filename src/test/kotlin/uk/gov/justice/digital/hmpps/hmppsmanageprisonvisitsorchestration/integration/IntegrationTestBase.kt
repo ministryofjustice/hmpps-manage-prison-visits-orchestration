@@ -18,6 +18,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.OutcomeStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.HmppsAuthExtension
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonApiMockServer
@@ -120,12 +124,12 @@ abstract class IntegrationTestBase {
     prisonerId: String = "AB12345DS",
     prisonCode: String = "MDI",
     visitRoom: String = "A1 L3",
-    visitType: String = "SOCIAL",
-    visitStatus: String = "BOOKED",
-    visitRestriction: String = "OPEN",
+    visitType: VisitType = VisitType.SOCIAL,
+    visitStatus: VisitStatus = VisitStatus.BOOKED,
+    visitRestriction: VisitRestriction = VisitRestriction.OPEN,
     startTimestamp: LocalDateTime = LocalDateTime.now(),
     endTimestamp: LocalDateTime = startTimestamp.plusHours(1),
-    outcomeStatus: String? = null,
+    outcomeStatus: OutcomeStatus? = null,
     createdBy: String = "created-by",
     updatedBy: String? = null,
     cancelledBy: String? = null,
@@ -159,8 +163,8 @@ abstract class IntegrationTestBase {
         prisonerId = prisonerId,
         prisonCode = "MDI",
         visitRoom = "A1 L3",
-        visitType = "SOCIAL",
-        visitRestriction = "OPEN",
+        visitType = VisitType.SOCIAL,
+        visitRestriction = VisitRestriction.OPEN,
         startTimestamp = LocalDateTime.now(),
         endTimestamp = LocalDateTime.now().plusHours(1),
         visitContact = null,
@@ -173,7 +177,7 @@ abstract class IntegrationTestBase {
   fun createChangeVisitSlotRequestDto(): ChangeVisitSlotRequestDto {
     val visitor = VisitorDto(1, false)
     return ChangeVisitSlotRequestDto(
-      visitRestriction = "OPEN",
+      visitRestriction = VisitRestriction.OPEN,
       startTimestamp = LocalDateTime.now(),
       endTimestamp = LocalDateTime.now().plusHours(1),
       visitContact = null,

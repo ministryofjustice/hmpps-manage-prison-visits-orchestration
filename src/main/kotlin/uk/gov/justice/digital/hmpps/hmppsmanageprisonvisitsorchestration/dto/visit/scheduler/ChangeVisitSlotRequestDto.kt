@@ -2,11 +2,12 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.Valid
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import java.time.LocalDateTime
 
 data class ChangeVisitSlotRequestDto(
   @Schema(description = "Visit Restriction", example = "OPEN", required = false)
-  val visitRestriction: String? = null,
+  val visitRestriction: VisitRestriction? = null,
   @Schema(description = "The date and time of the visit", example = "2018-12-01T13:45:00", required = false)
   val startTimestamp: LocalDateTime? = null,
   @Schema(description = "The finishing date and time of the visit", example = "2018-12-01T13:45:00", required = false)
