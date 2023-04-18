@@ -13,6 +13,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.HmppsAuthClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.OutcomeStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.HmppsAuthExtension.Companion.hmppsAuthApi
 import java.time.LocalDateTime
@@ -151,16 +153,16 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
     val cancelDateAndTime = LocalDateTime.of(2023, 1, 5, 21, 10, 20)
 
     val visitBookedDto = createVisitDto(
-      visitStatus = "CANCELLED",
-      outcomeStatus = "SUPERSEDED_CANCELLATION",
+      visitStatus = VisitStatus.CANCELLED,
+      outcomeStatus = OutcomeStatus.SUPERSEDED_CANCELLATION,
       reference = reference,
       createdTimestamp = createDateAndTime,
     )
-    val visitUpdateDto1 = createVisitDto(visitStatus = "CANCELLED", outcomeStatus = "SUPERSEDED_CANCELLATION", reference = reference)
-    val visitUpdateDto2 = createVisitDto(visitStatus = "CANCELLED", outcomeStatus = "SUPERSEDED_CANCELLATION", reference = reference)
+    val visitUpdateDto1 = createVisitDto(visitStatus = VisitStatus.CANCELLED, outcomeStatus = OutcomeStatus.SUPERSEDED_CANCELLATION, reference = reference)
+    val visitUpdateDto2 = createVisitDto(visitStatus = VisitStatus.CANCELLED, outcomeStatus = OutcomeStatus.SUPERSEDED_CANCELLATION, reference = reference)
 
     val visitCancelledDto = createVisitDto(
-      visitStatus = "CANCELLED",
+      visitStatus = VisitStatus.CANCELLED,
       reference = reference,
       createdTimestamp = updateDateAndTime,
       modifiedTimestamp = cancelDateAndTime,
@@ -187,8 +189,8 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
     // Given
     val reference = "aa-bb-cc-dd"
 
-    val visitOriginalDto = createVisitDto(visitStatus = "CANCELLED", outcomeStatus = "SUPERSEDED_CANCELLATION", reference = reference)
-    val visitBookedDto = createVisitDto(visitStatus = "BOOKED", reference = reference)
+    val visitOriginalDto = createVisitDto(visitStatus = VisitStatus.CANCELLED, outcomeStatus = OutcomeStatus.SUPERSEDED_CANCELLATION, reference = reference)
+    val visitBookedDto = createVisitDto(visitStatus = VisitStatus.BOOKED, reference = reference)
 
     visitSchedulerMockServer.stubGetVisitHistory(reference, listOf(visitOriginalDto, visitBookedDto))
 
@@ -208,7 +210,7 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
     // Given
     val reference = "aa-bb-cc-dd"
 
-    val visitOriginalDto = createVisitDto(visitStatus = "BOOKED", reference = reference)
+    val visitOriginalDto = createVisitDto(visitStatus = VisitStatus.BOOKED, reference = reference)
 
     visitSchedulerMockServer.stubGetVisitHistory(reference, listOf(visitOriginalDto))
 
@@ -228,7 +230,7 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
     // Given
     val reference = "aa-bb-cc-dd"
 
-    val visitOriginalDto = createVisitDto(visitStatus = "BOOKED", reference = reference)
+    val visitOriginalDto = createVisitDto(visitStatus = VisitStatus.BOOKED, reference = reference)
 
     visitSchedulerMockServer.stubGetVisitHistory(reference, listOf(visitOriginalDto))
 
