@@ -32,6 +32,9 @@ data class SessionScheduleDto(
   @Schema(description = "prisoner location group", example = "Wing C", required = false)
   val prisonerLocationGroupNames: List<String>,
 
+  @Schema(description = "prisoner category groups", example = "Category A Prisoners", required = false)
+  val prisonerCategoryGroupNames: List<String>,
+
   @Schema(description = "The session template frequency", example = "BI_WEEKLY", required = true)
   val sessionTemplateFrequency: SessionTemplateFrequency,
 
