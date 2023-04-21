@@ -18,7 +18,7 @@ data class VisitSchedulerReserveVisitSlotDto(
 ) : ReserveVisitSlotDto(
   reserveVisitSlotDto.prisonerId,
   reserveVisitSlotDto.prisonCode,
-  reserveVisitSlotDto.visitRoom,
+  reserveVisitSlotDto.capacityGroup,
   reserveVisitSlotDto.visitType,
   reserveVisitSlotDto.visitRestriction,
   reserveVisitSlotDto.startTimestamp,
