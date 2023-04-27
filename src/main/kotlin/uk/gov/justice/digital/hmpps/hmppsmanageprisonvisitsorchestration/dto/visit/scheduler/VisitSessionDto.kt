@@ -4,24 +4,31 @@ import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.Valid
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionConflict
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
 import java.time.LocalDateTime
 
 @Schema(description = "Visit Session")
 data class VisitSessionDto(
 
-  @Schema(description = "session id", example = "123", required = true)
-  val sessionTemplateId: Long,
+  @Schema(description = "Session Template Reference", example = "v9d.7ed.7u", required = true)
+  @field:NotBlank
+  val sessionTemplateReference: String,
 
-  @Schema(description = "Capacity group", example = "Main Group", required = false)
-  val capacityGroup: String? = null,
+  @Schema(description = "Visit Room", example = "Visits Main Hall", required = true)
+  @field:NotBlank
+  val visitRoom: String,
 
   @Schema(description = "The type of visits taking place within this session", example = "SOCIAL", required = true)
-  val visitType: String,
+  @field:NotNull
+  val visitType: VisitType,
 
   @JsonProperty("prisonId")
   @JsonAlias("prisonCode")
   @Schema(description = "The prison id", example = "LEI", required = true)
+  @field:NotBlank
   val prisonCode: String,
 
   @Schema(
@@ -29,6 +36,7 @@ data class VisitSessionDto(
     example = "1",
     required = true,
   )
+  @field:NotNull
   val openVisitCapacity: Int,
 
   @Schema(
@@ -43,6 +51,7 @@ data class VisitSessionDto(
     example = "1",
     required = true,
   )
+  @field:NotNull
   val closedVisitCapacity: Int,
 
   @Schema(
@@ -53,9 +62,11 @@ data class VisitSessionDto(
   var closedVisitBookedCount: Int? = 0,
 
   @Schema(description = "The start timestamp for this visit session", example = "2020-11-01T12:00:00", required = true)
+  @field:NotNull
   val startTimestamp: LocalDateTime,
 
   @Schema(description = "The end timestamp for this visit session", example = "2020-11-01T14:30:00", required = true)
+  @field:NotNull
   val endTimestamp: LocalDateTime,
 
   @Schema(description = "Session conflicts", required = false)

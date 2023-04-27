@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 
@@ -17,16 +16,11 @@ data class VisitSchedulerReserveVisitSlotDto(
   val actionedBy: String,
 ) : ReserveVisitSlotDto(
   reserveVisitSlotDto.prisonerId,
-  reserveVisitSlotDto.prisonCode,
-  reserveVisitSlotDto.capacityGroup,
-  reserveVisitSlotDto.visitType,
+  reserveVisitSlotDto.sessionTemplateReference,
   reserveVisitSlotDto.visitRestriction,
   reserveVisitSlotDto.startTimestamp,
   reserveVisitSlotDto.endTimestamp,
   reserveVisitSlotDto.visitContact,
   reserveVisitSlotDto.visitors,
   reserveVisitSlotDto.visitorSupport,
-) {
-  @JsonProperty("prisonId")
-  override val prisonCode = reserveVisitSlotDto.prisonCode
-}
+)
