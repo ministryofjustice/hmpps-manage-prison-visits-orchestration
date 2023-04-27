@@ -123,7 +123,7 @@ abstract class IntegrationTestBase {
     applicationReference: String = "aaa-bbb-ccc-ddd",
     prisonerId: String = "AB12345DS",
     prisonCode: String = "MDI",
-    capacityGroup: String = "A1 L3",
+    visitRoom: String = "A1 L3",
     visitType: VisitType = VisitType.SOCIAL,
     visitStatus: VisitStatus = VisitStatus.BOOKED,
     visitRestriction: VisitRestriction = VisitRestriction.OPEN,
@@ -135,13 +135,15 @@ abstract class IntegrationTestBase {
     cancelledBy: String? = null,
     createdTimestamp: LocalDateTime = LocalDateTime.now(),
     modifiedTimestamp: LocalDateTime = LocalDateTime.now(),
+    sessionTemplateReference: String = "ref.ref.ref",
   ): VisitDto {
     return VisitDto(
       applicationReference = applicationReference,
+      sessionTemplateReference = sessionTemplateReference,
       reference = reference,
       prisonerId = prisonerId,
       prisonCode = prisonCode,
-      capacityGroup = capacityGroup,
+      visitRoom = visitRoom,
       visitType = visitType,
       visitStatus = visitStatus,
       visitRestriction = visitRestriction,
@@ -156,14 +158,12 @@ abstract class IntegrationTestBase {
     )
   }
 
-  fun createReserveVisitSlotDto(prisonerId: String): VisitSchedulerReserveVisitSlotDto {
+  fun createReserveVisitSlotDto(prisonerId: String, sessionTemplateReference: String = "ref.ref.ref"): VisitSchedulerReserveVisitSlotDto {
     val visitor = VisitorDto(1, false)
     return VisitSchedulerReserveVisitSlotDto(
       ReserveVisitSlotDto(
         prisonerId = prisonerId,
-        prisonCode = "MDI",
-        capacityGroup = "A1 L3",
-        visitType = VisitType.SOCIAL,
+        sessionTemplateReference = sessionTemplateReference,
         visitRestriction = VisitRestriction.OPEN,
         startTimestamp = LocalDateTime.now(),
         endTimestamp = LocalDateTime.now().plusHours(1),
@@ -185,12 +185,12 @@ abstract class IntegrationTestBase {
     )
   }
 
-  fun createVisitSessionDto(prisonCode: String, sessionTemplateId: Long): VisitSessionDto {
+  fun createVisitSessionDto(prisonCode: String, sessionTemplateReference: String): VisitSessionDto {
     return VisitSessionDto(
-      sessionTemplateId = sessionTemplateId,
+      sessionTemplateReference = sessionTemplateReference,
       prisonCode = prisonCode,
-      capacityGroup = "Visit Group",
-      visitType = "Social",
+      visitRoom = "Visit Main Hall",
+      visitType = VisitType.SOCIAL,
       closedVisitCapacity = 5,
       openVisitCapacity = 30,
       startTimestamp = LocalDateTime.now(),

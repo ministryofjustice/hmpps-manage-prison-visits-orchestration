@@ -24,11 +24,11 @@ class VisitSessionsTest : IntegrationTestBase() {
     // Given
     val prisonCode = "MDI"
     val prisonerId = "ABC"
-    val visitSessionDto1 = createVisitSessionDto(prisonCode, 1)
-    val visitSessionDto2 = createVisitSessionDto(prisonCode, 2)
-    val visitSessionDto3 = createVisitSessionDto(prisonCode, 3)
-    val visitSessionDto4 = createVisitSessionDto(prisonCode, 4)
-    val visitSessionDto5 = createVisitSessionDto(prisonCode, 5)
+    val visitSessionDto1 = createVisitSessionDto(prisonCode, "1")
+    val visitSessionDto2 = createVisitSessionDto(prisonCode, "2")
+    val visitSessionDto3 = createVisitSessionDto(prisonCode, "3")
+    val visitSessionDto4 = createVisitSessionDto(prisonCode, "4")
+    val visitSessionDto5 = createVisitSessionDto(prisonCode, "5")
 
     visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2, visitSessionDto3, visitSessionDto4, visitSessionDto5))
 
