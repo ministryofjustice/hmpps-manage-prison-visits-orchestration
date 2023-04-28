@@ -23,9 +23,8 @@ class VisitDto(
   @JsonAlias("prisonCode")
   @Schema(description = "Prison Id", example = "MDI", required = true)
   val prisonCode: String,
-  @Schema(description = "Session Template Reference", example = "v9d.7ed.7u", required = true)
-  @field:NotBlank
-  val sessionTemplateReference: String,
+  @Schema(description = "Session Template Reference", example = "v9d.7ed.7u", required = false)
+  val sessionTemplateReference: String? = null,
   @Schema(description = "Visit Room", example = "Visits Main Hall", required = true)
   @field:NotBlank
   val visitRoom: String,
