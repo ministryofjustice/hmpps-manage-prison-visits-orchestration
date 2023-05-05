@@ -95,9 +95,9 @@ prisoner:
   profile:
     timeout: 10s
     past-visits:
-      duration-in-months: P6M
+      duration-in-months: P3M
     future-visits:
-      duration-in-months: P2M
+      duration-in-months: P12M
 
 hmpps:
   auth:
