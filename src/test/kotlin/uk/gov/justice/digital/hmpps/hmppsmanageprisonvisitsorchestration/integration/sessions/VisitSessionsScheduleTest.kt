@@ -37,6 +37,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
       enhanced = true,
       prisonerLocationGroupNames = listOf("Location Group 1", "Location Group 2"),
       prisonerCategoryGroupNames = listOf("Category Group 1", "Category Group 2", "Category Group 3"),
+      prisonerIncentiveLevelGroupNames = listOf("Incentive Group 1", "Incentive Group 2", "Incentive Group 3", "Incentive Group 4"),
     )
     val sessionScheduleDto2 = createSessionScheduleDto(
       reference = "reference-2",
@@ -63,6 +64,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     assertThat(sessionScheduleResults[0].enhanced).isTrue
     assertThat(sessionScheduleResults[0].prisonerLocationGroupNames.size).isEqualTo(2)
     assertThat(sessionScheduleResults[0].prisonerCategoryGroupNames.size).isEqualTo(3)
+    assertThat(sessionScheduleResults[0].prisonerIncentiveLevelGroupNames.size).isEqualTo(4)
 
     assertThat(sessionScheduleResults[1].sessionTemplateReference).isEqualTo(sessionScheduleDto2.sessionTemplateReference)
     assertThat(sessionScheduleResults[1].startTime).isEqualTo(LocalTime.parse("10:00"))
@@ -70,6 +72,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     assertThat(sessionScheduleResults[1].enhanced).isFalse
     assertThat(sessionScheduleResults[1].prisonerLocationGroupNames.size).isEqualTo(0)
     assertThat(sessionScheduleResults[1].prisonerCategoryGroupNames.size).isEqualTo(0)
+    assertThat(sessionScheduleResults[1].prisonerIncentiveLevelGroupNames.size).isEqualTo(0)
   }
 
   @Test
@@ -99,6 +102,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     enhanced: Boolean,
     prisonerLocationGroupNames: List<String> = mutableListOf(),
     prisonerCategoryGroupNames: List<String> = mutableListOf(),
+    prisonerIncentiveLevelGroupNames: List<String> = mutableListOf(),
   ): SessionScheduleDto {
     return SessionScheduleDto(
       sessionTemplateReference = reference,
@@ -108,6 +112,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
       sessionTemplateFrequency = sessionTemplateFrequency,
       prisonerLocationGroupNames = prisonerLocationGroupNames,
       prisonerCategoryGroupNames = prisonerCategoryGroupNames,
+      prisonerIncentiveLevelGroupNames = prisonerIncentiveLevelGroupNames,
       sessionTemplateEndDate = sessionTemplateEndDate,
       enhanced = enhanced,
     )
