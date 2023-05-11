@@ -34,7 +34,6 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
       reference = "reference-1",
       startTime = LocalTime.of(9, 0),
       endTime = LocalTime.of(10, 0),
-      enhanced = true,
       prisonerLocationGroupNames = listOf("Location Group 1", "Location Group 2"),
       prisonerCategoryGroupNames = listOf("Category Group 1", "Category Group 2", "Category Group 3"),
       prisonerIncentiveLevelGroupNames = listOf("Incentive Group 1", "Incentive Group 2", "Incentive Group 3", "Incentive Group 4"),
@@ -43,7 +42,6 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
       reference = "reference-2",
       startTime = LocalTime.of(10, 0),
       endTime = LocalTime.of(11, 0),
-      enhanced = false,
     )
     visitSchedulerMockServer.stubGetSessionSchedule(
       prisonCode,
@@ -61,7 +59,6 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     assertThat(sessionScheduleResults[0].sessionTemplateReference).isEqualTo(sessionScheduleDto1.sessionTemplateReference)
     assertThat(sessionScheduleResults[0].startTime).isEqualTo(LocalTime.parse("09:00:00"))
     assertThat(sessionScheduleResults[0].endTime).isEqualTo(LocalTime.parse("10:00:00"))
-    assertThat(sessionScheduleResults[0].enhanced).isTrue
     assertThat(sessionScheduleResults[0].prisonerLocationGroupNames.size).isEqualTo(2)
     assertThat(sessionScheduleResults[0].prisonerCategoryGroupNames.size).isEqualTo(3)
     assertThat(sessionScheduleResults[0].prisonerIncentiveLevelGroupNames.size).isEqualTo(4)
@@ -69,7 +66,6 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     assertThat(sessionScheduleResults[1].sessionTemplateReference).isEqualTo(sessionScheduleDto2.sessionTemplateReference)
     assertThat(sessionScheduleResults[1].startTime).isEqualTo(LocalTime.parse("10:00"))
     assertThat(sessionScheduleResults[1].endTime).isEqualTo(LocalTime.parse("11:00"))
-    assertThat(sessionScheduleResults[1].enhanced).isFalse
     assertThat(sessionScheduleResults[1].prisonerLocationGroupNames.size).isEqualTo(0)
     assertThat(sessionScheduleResults[1].prisonerCategoryGroupNames.size).isEqualTo(0)
     assertThat(sessionScheduleResults[1].prisonerIncentiveLevelGroupNames.size).isEqualTo(0)
@@ -99,7 +95,6 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     sessionCapacityDto: SessionCapacityDto = SessionCapacityDto(2, 30),
     sessionTemplateFrequency: SessionTemplateFrequency = SessionTemplateFrequency.WEEKLY,
     sessionTemplateEndDate: LocalDate? = null,
-    enhanced: Boolean,
     prisonerLocationGroupNames: List<String> = mutableListOf(),
     prisonerCategoryGroupNames: List<String> = mutableListOf(),
     prisonerIncentiveLevelGroupNames: List<String> = mutableListOf(),
@@ -114,7 +109,6 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
       prisonerCategoryGroupNames = prisonerCategoryGroupNames,
       prisonerIncentiveLevelGroupNames = prisonerIncentiveLevelGroupNames,
       sessionTemplateEndDate = sessionTemplateEndDate,
-      enhanced = enhanced,
     )
   }
 
