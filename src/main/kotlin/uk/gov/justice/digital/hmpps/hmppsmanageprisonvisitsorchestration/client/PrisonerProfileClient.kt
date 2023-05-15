@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
@@ -13,8 +15,13 @@ class PrisonerProfileClient(
   private val prisonApiClient: PrisonApiClient,
   private val prisonerOffenderSearchClient: PrisonerOffenderSearchClient,
   private val visitSchedulerClient: VisitSchedulerClient,
+  private val prisonerContactRegistryClient: PrisonerContactRegistryClient,
   @Value("\${prisoner.profile.timeout:10s}") private val apiTimeout: Duration,
 ) {
+  companion object {
+    val LOG: Logger = LoggerFactory.getLogger(this::class.java)
+  }
+
   fun getPrisonerProfile(
     prisonId: String,
     prisonerId: String,
@@ -29,12 +36,35 @@ class PrisonerProfileClient(
     return Mono.zip(prisonerMono, inmateDetailMono, visitBalancesMono, prisonerBookingSummaryMono, visitSchedulerMono)
       .map {
         PrisonerProfileDto(
-          it.t1 ?: throw InvalidPrisonerProfileException("Unable to retrieve offender details from Prison Offender Search API"),
+          it.t1
+            ?: throw InvalidPrisonerProfileException("Unable to retrieve offender details from Prison Offender Search API"),
           it.t2 ?: throw InvalidPrisonerProfileException("Unable to retrieve inmate details from Prison API"),
           if (it.t3.isEmpty) null else it.t3.get(),
           it.t4.content.firstOrNull(),
           it.t5.content,
         )
-      }.block(apiTimeout)
+      }
+      .block(apiTimeout)?.also { prisonerProfile ->
+        setVisitorNamesFromContacts(prisonerProfile)
+      }
+  }
+
+  private fun setVisitorNamesFromContacts(prisonerProfile: PrisonerProfileDto) {
+    try {
+      val contacts = prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerProfile.prisonerId)
+
+      contacts?.let {
+        val contactsMap = contacts.associateBy { it.personId }
+        prisonerProfile.visits.forEach { visit ->
+          visit.visitors?.forEach { visitor ->
+            visitor.firstName = contactsMap[visitor.nomisPersonId]?.firstName
+            visitor.lastName = contactsMap[visitor.nomisPersonId]?.lastName
+          }
+        }
+      }
+    } catch (e: Exception) {
+      // log a message if there is an error but do not terminate the call
+      LOG.warn("Exception thrown on prisoner contact registry call - /prisoners/${prisonerProfile.prisonerId}/contacts", e)
+    }
   }
 }

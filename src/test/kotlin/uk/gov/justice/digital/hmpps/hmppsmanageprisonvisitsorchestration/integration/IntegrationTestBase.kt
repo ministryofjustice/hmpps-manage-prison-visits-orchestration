@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.helper.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.HmppsAuthExtension
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonOffenderSearchMockServer
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonerContactRegistryMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.VisitSchedulerMockServer
 import java.time.LocalDateTime
 import java.util.ArrayList
@@ -38,6 +39,7 @@ abstract class IntegrationTestBase {
     val visitSchedulerMockServer = VisitSchedulerMockServer(ObjectMapper().registerModule(JavaTimeModule()))
     val prisonApiMockServer = PrisonApiMockServer(ObjectMapper().registerModule(JavaTimeModule()))
     val prisonOffenderSearchMockServer = PrisonOffenderSearchMockServer(ObjectMapper().registerModule(JavaTimeModule()))
+    val prisonerContactRegistryMockServer = PrisonerContactRegistryMockServer(ObjectMapper().registerModule(JavaTimeModule()))
 
     @BeforeAll
     @JvmStatic
@@ -45,6 +47,7 @@ abstract class IntegrationTestBase {
       visitSchedulerMockServer.start()
       prisonApiMockServer.start()
       prisonOffenderSearchMockServer.start()
+      prisonerContactRegistryMockServer.start()
     }
 
     @AfterAll
@@ -53,6 +56,7 @@ abstract class IntegrationTestBase {
       visitSchedulerMockServer.stop()
       prisonApiMockServer.stop()
       prisonOffenderSearchMockServer.stop()
+      prisonerContactRegistryMockServer.stop()
     }
   }
 
@@ -136,6 +140,7 @@ abstract class IntegrationTestBase {
     createdTimestamp: LocalDateTime = LocalDateTime.now(),
     modifiedTimestamp: LocalDateTime = LocalDateTime.now(),
     sessionTemplateReference: String = "ref.ref.ref",
+    visitors: List<VisitorDto>? = null,
   ): VisitDto {
     return VisitDto(
       applicationReference = applicationReference,
@@ -155,6 +160,7 @@ abstract class IntegrationTestBase {
       cancelledBy = cancelledBy,
       createdTimestamp = createdTimestamp,
       modifiedTimestamp = modifiedTimestamp,
+      visitors = visitors,
     )
   }
 
