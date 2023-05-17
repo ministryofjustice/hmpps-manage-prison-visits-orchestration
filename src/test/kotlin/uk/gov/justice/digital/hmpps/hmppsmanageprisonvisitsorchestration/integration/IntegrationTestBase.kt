@@ -18,6 +18,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.OutcomeStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.HmppsAuthExtension
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonApiMockServer
@@ -120,20 +124,22 @@ abstract class IntegrationTestBase {
     prisonerId: String = "AB12345DS",
     prisonCode: String = "MDI",
     visitRoom: String = "A1 L3",
-    visitType: String = "SOCIAL",
-    visitStatus: String = "BOOKED",
-    visitRestriction: String = "OPEN",
+    visitType: VisitType = VisitType.SOCIAL,
+    visitStatus: VisitStatus = VisitStatus.BOOKED,
+    visitRestriction: VisitRestriction = VisitRestriction.OPEN,
     startTimestamp: LocalDateTime = LocalDateTime.now(),
     endTimestamp: LocalDateTime = startTimestamp.plusHours(1),
-    outcomeStatus: String? = null,
+    outcomeStatus: OutcomeStatus? = null,
     createdBy: String = "created-by",
     updatedBy: String? = null,
     cancelledBy: String? = null,
     createdTimestamp: LocalDateTime = LocalDateTime.now(),
     modifiedTimestamp: LocalDateTime = LocalDateTime.now(),
+    sessionTemplateReference: String = "ref.ref.ref",
   ): VisitDto {
     return VisitDto(
       applicationReference = applicationReference,
+      sessionTemplateReference = sessionTemplateReference,
       reference = reference,
       prisonerId = prisonerId,
       prisonCode = prisonCode,
@@ -152,15 +158,13 @@ abstract class IntegrationTestBase {
     )
   }
 
-  fun createReserveVisitSlotDto(prisonerId: String): VisitSchedulerReserveVisitSlotDto {
+  fun createReserveVisitSlotDto(prisonerId: String, sessionTemplateReference: String = "ref.ref.ref"): VisitSchedulerReserveVisitSlotDto {
     val visitor = VisitorDto(1, false)
     return VisitSchedulerReserveVisitSlotDto(
       ReserveVisitSlotDto(
         prisonerId = prisonerId,
-        prisonCode = "MDI",
-        visitRoom = "A1 L3",
-        visitType = "SOCIAL",
-        visitRestriction = "OPEN",
+        sessionTemplateReference = sessionTemplateReference,
+        visitRestriction = VisitRestriction.OPEN,
         startTimestamp = LocalDateTime.now(),
         endTimestamp = LocalDateTime.now().plusHours(1),
         visitContact = null,
@@ -173,7 +177,7 @@ abstract class IntegrationTestBase {
   fun createChangeVisitSlotRequestDto(): ChangeVisitSlotRequestDto {
     val visitor = VisitorDto(1, false)
     return ChangeVisitSlotRequestDto(
-      visitRestriction = "OPEN",
+      visitRestriction = VisitRestriction.OPEN,
       startTimestamp = LocalDateTime.now(),
       endTimestamp = LocalDateTime.now().plusHours(1),
       visitContact = null,
@@ -181,12 +185,12 @@ abstract class IntegrationTestBase {
     )
   }
 
-  fun createVisitSessionDto(prisonCode: String, sessionTemplateId: Long): VisitSessionDto {
+  fun createVisitSessionDto(prisonCode: String, sessionTemplateReference: String): VisitSessionDto {
     return VisitSessionDto(
-      sessionTemplateId = sessionTemplateId,
+      sessionTemplateReference = sessionTemplateReference,
       prisonCode = prisonCode,
-      visitRoomName = "Visit Room",
-      visitType = "Social",
+      visitRoom = "Visit Main Hall",
+      visitType = VisitType.SOCIAL,
       closedVisitCapacity = 5,
       openVisitCapacity = 30,
       startTimestamp = LocalDateTime.now(),

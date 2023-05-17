@@ -3,19 +3,13 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.http.HttpHeaders
 import org.springframework.http.codec.ClientCodecConfigurer
-import org.springframework.security.core.Authentication
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction
-import org.springframework.web.reactive.function.client.ClientRequest
-import org.springframework.web.reactive.function.client.ExchangeFilterFunction
-import org.springframework.web.reactive.function.client.ExchangeFunction
 import org.springframework.web.reactive.function.client.ExchangeStrategies
 import org.springframework.web.reactive.function.client.WebClient
 
@@ -42,96 +36,75 @@ class WebClientConfiguration(
   @Value("\${hmpps.auth.url}")
   private val hmppsAuthUrl: String,
 ) {
+  private enum class HmppsAuthClientRegistrationId(val clientRegistrationId: String) {
+    VISIT_SCHEDULER("visit-scheduler"),
+    PRISON_API("other-hmpps-apis"),
+    PRISONER_OFFENDER_SEARCH("other-hmpps-apis"),
+    HMPPS_AUTH_CLIENT("other-hmpps-apis"),
+    PRISON_REGISTER_CLIENT("other-hmpps-apis"),
+    PRISON_CONTACT_REGISTRY_CLIENT("other-hmpps-apis"),
+    WHEREABOUTS_API_CLIENT("other-hmpps-apis"),
+  }
+
   @Bean
   fun visitSchedulerWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+    val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.VISIT_SCHEDULER.clientRegistrationId)
+    return getWebClient(visitSchedulerBaseUrl, oauth2Client)
+  }
+
+  @Bean
+  fun prisonApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+    val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.PRISON_API.clientRegistrationId)
+    return getWebClient(prisonApiBaseUrl, oauth2Client)
+  }
+
+  @Bean
+  fun prisonerOffenderSearchWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+    val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.PRISONER_OFFENDER_SEARCH.clientRegistrationId)
+    return getWebClient(prisonOffenderSearchBaseUrl, oauth2Client)
+  }
+
+  @Bean
+  fun hmppsAuthWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+    val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.HMPPS_AUTH_CLIENT.clientRegistrationId)
+    return getWebClient(hmppsAuthUrl, oauth2Client)
+  }
+
+  @Bean
+  fun prisonRegisterWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+    val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.PRISON_REGISTER_CLIENT.clientRegistrationId)
+    return getWebClient(prisonRegisterBaseUrl, oauth2Client)
+  }
+
+  @Bean
+  fun prisonerContactRegistryWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+    val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.PRISON_CONTACT_REGISTRY_CLIENT.clientRegistrationId)
+    return getWebClient(prisonerContactRegistryBaseUrl, oauth2Client)
+  }
+
+  @Bean
+  fun whereAboutsApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+    val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.WHEREABOUTS_API_CLIENT.clientRegistrationId)
+    return getWebClient(whereAboutsApiUrl, oauth2Client)
+  }
+
+  private fun getOauth2Client(authorizedClientManager: OAuth2AuthorizedClientManager, clientRegistrationId: String): ServletOAuth2AuthorizedClientExchangeFilterFunction {
     val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
-    oauth2Client.setDefaultClientRegistrationId("visit-scheduler")
-    val exchangeStrategies = ExchangeStrategies.builder()
+    oauth2Client.setDefaultClientRegistrationId(clientRegistrationId)
+    return oauth2Client
+  }
+
+  private fun getExchangeStrategies(): ExchangeStrategies {
+    return ExchangeStrategies.builder()
       .codecs { configurer: ClientCodecConfigurer -> configurer.defaultCodecs().maxInMemorySize(-1) }
       .build()
+  }
 
+  private fun getWebClient(baseUrl: String, oauth2Client: ServletOAuth2AuthorizedClientExchangeFilterFunction): WebClient {
     return WebClient.builder()
-      .baseUrl(visitSchedulerBaseUrl)
+      .baseUrl(baseUrl)
       .apply(oauth2Client.oauth2Configuration())
-      .exchangeStrategies(exchangeStrategies)
-      .build()
-  }
-
-  @Bean
-  fun prisonApiWebClient(): WebClient {
-    val exchangeStrategies = ExchangeStrategies.builder()
-      .codecs { configurer: ClientCodecConfigurer -> configurer.defaultCodecs().maxInMemorySize(-1) }
-      .build()
-
-    return WebClient.builder()
-      .baseUrl(prisonApiBaseUrl)
-      .filter(addAuthHeaderFilterFunction())
-      .exchangeStrategies(exchangeStrategies)
-      .build()
-  }
-
-  @Bean
-  fun prisonerOffenderSearchWebClient(): WebClient {
-    val exchangeStrategies = ExchangeStrategies.builder()
-      .codecs { configurer: ClientCodecConfigurer -> configurer.defaultCodecs().maxInMemorySize(-1) }
-      .build()
-
-    return WebClient.builder()
-      .baseUrl(prisonOffenderSearchBaseUrl)
-      .filter(addAuthHeaderFilterFunction())
-      .exchangeStrategies(exchangeStrategies)
-      .build()
-  }
-
-  @Bean
-  fun prisonRegisterWebClient(): WebClient {
-    val exchangeStrategies = ExchangeStrategies.builder()
-      .codecs { configurer: ClientCodecConfigurer -> configurer.defaultCodecs().maxInMemorySize(-1) }
-      .build()
-
-    return WebClient.builder()
-      .baseUrl(prisonRegisterBaseUrl)
-      .filter(addAuthHeaderFilterFunction())
-      .exchangeStrategies(exchangeStrategies)
-      .build()
-  }
-
-  @Bean
-  fun prisonerContactRegistryWebClient(): WebClient {
-    val exchangeStrategies = ExchangeStrategies.builder()
-      .codecs { configurer: ClientCodecConfigurer -> configurer.defaultCodecs().maxInMemorySize(-1) }
-      .build()
-
-    return WebClient.builder()
-      .baseUrl(prisonerContactRegistryBaseUrl)
-      .filter(addAuthHeaderFilterFunction())
-      .exchangeStrategies(exchangeStrategies)
-      .build()
-  }
-
-  @Bean
-  fun whereAboutsApiWebClient(): WebClient {
-    val exchangeStrategies = ExchangeStrategies.builder()
-      .codecs { configurer: ClientCodecConfigurer -> configurer.defaultCodecs().maxInMemorySize(-1) }
-      .build()
-
-    return WebClient.builder()
-      .baseUrl(whereAboutsApiUrl)
-      .filter(addAuthHeaderFilterFunction())
-      .exchangeStrategies(exchangeStrategies)
-      .build()
-  }
-
-  @Bean
-  fun hmppsAuthWebClient(): WebClient {
-    val exchangeStrategies = ExchangeStrategies.builder()
-      .codecs { configurer: ClientCodecConfigurer -> configurer.defaultCodecs().maxInMemorySize(-1) }
-      .build()
-
-    return WebClient.builder()
-      .baseUrl(hmppsAuthUrl)
-      .filter(addAuthHeaderFilterFunction())
-      .exchangeStrategies(exchangeStrategies)
+      .exchangeStrategies(getExchangeStrategies())
       .build()
   }
 
@@ -175,23 +148,5 @@ class WebClientConfiguration(
       AuthorizedClientServiceOAuth2AuthorizedClientManager(clientRegistrationRepository, oAuth2AuthorizedClientService)
     authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider)
     return authorizedClientManager
-  }
-
-  private fun addAuthHeaderFilterFunction() =
-    ExchangeFilterFunction { request: ClientRequest, next: ExchangeFunction ->
-      val token = when (val authentication = getSecurityContextAuthentication()) {
-        is AuthAwareAuthenticationToken -> authentication.token.tokenValue
-        else -> throw IllegalStateException("Auth token not present")
-      }
-
-      next.exchange(
-        ClientRequest.from(request)
-          .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-          .build(),
-      )
-    }
-
-  private fun getSecurityContextAuthentication(): Authentication {
-    return SecurityContextHolder.getContext().authentication
   }
 }

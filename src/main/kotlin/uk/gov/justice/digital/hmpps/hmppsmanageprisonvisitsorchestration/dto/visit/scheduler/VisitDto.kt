@@ -5,6 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.OutcomeStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
 import java.time.LocalDateTime
 
 @Schema(description = "Visit")
@@ -19,16 +23,19 @@ class VisitDto(
   @JsonAlias("prisonCode")
   @Schema(description = "Prison Id", example = "MDI", required = true)
   val prisonCode: String,
-  @Schema(description = "Visit Room", example = "A1 L3", required = true)
+  @Schema(description = "Session Template Reference", example = "v9d.7ed.7u", required = false)
+  val sessionTemplateReference: String? = null,
+  @Schema(description = "Visit Room", example = "Visits Main Hall", required = true)
+  @field:NotBlank
   val visitRoom: String,
   @Schema(description = "Visit Type", example = "SOCIAL", required = true)
-  val visitType: String,
+  val visitType: VisitType,
   @Schema(description = "Visit Status", example = "RESERVED", required = true)
-  val visitStatus: String,
+  val visitStatus: VisitStatus,
   @Schema(description = "Outcome Status", example = "VISITOR_CANCELLED", required = false)
-  val outcomeStatus: String?,
+  val outcomeStatus: OutcomeStatus?,
   @Schema(description = "Visit Restriction", example = "OPEN", required = true)
-  val visitRestriction: String,
+  val visitRestriction: VisitRestriction,
   @Schema(description = "The date and time of the visit", example = "2018-12-01T13:45:00", required = true)
   @field:NotBlank
   val startTimestamp: LocalDateTime,
