@@ -140,7 +140,18 @@ workflows:
             - hmpps-manage-prison-visits-orchestration-stage
           requires:
             - request-staging-approval
-
+      - request-preprod-approval:
+          type: approval
+          requires:
+            - deploy_staging
+      - hmpps/deploy_env:
+          name: deploy_preprod
+          env: "preprod"
+          context:
+            - hmpps-common-vars
+            - hmpps-manage-prison-visits-orchestration-preprod
+          requires:
+            - request-preprod-approval
   security:
     triggers:
       - schedule:

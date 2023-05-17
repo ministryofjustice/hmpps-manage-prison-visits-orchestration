@@ -6,9 +6,9 @@ import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.hmpps.auth.UserDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import java.time.Duration
 import java.time.LocalDateTime
-import java.util.*
 
 @Component
 class VisitDetailsClient(
@@ -52,7 +52,7 @@ class VisitDetailsClient(
   }
 
   private fun getCancelledVisitDateAndTime(lastVisit: VisitDto): LocalDateTime? {
-    return if (lastVisit.visitStatus == "CANCELLED") {
+    return if (lastVisit.visitStatus == VisitStatus.CANCELLED) {
       lastVisit.modifiedTimestamp
     } else {
       null
