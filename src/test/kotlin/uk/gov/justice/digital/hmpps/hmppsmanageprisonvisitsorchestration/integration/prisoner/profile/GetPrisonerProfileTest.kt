@@ -9,8 +9,10 @@ import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonApiClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonRegisterClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerOffenderSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
@@ -62,6 +64,11 @@ class GetPrisonerProfileTest(
   private val visitor2 = VisitorDetails(2, "Second", "VisitorB")
   private val visitor3 = VisitorDetails(3, "Third", "VisitorC")
 
+  private val prison1 = createPrisonDto("ABC", "ABC Prison")
+  private val prison2 = createPrisonDto("DEF", "DEF Prison")
+  private val prison3 = createPrisonDto("MDI", "MDI Prison", active = false)
+  private val prisons = listOf(prison1, prison2, prison3)
+
   private final val alerts = listOf(alert)
   private final val inmateDetailDto = createInmateDetails(prisonerId, category, alerts)
   private final val visitBalancesDto = createVisitBalancesDto()
@@ -81,7 +88,7 @@ class GetPrisonerProfileTest(
   private final val visit1 = createVisitDto(reference = "visit-1", prisonerId = prisonerId, visitors = visit1Visitors)
 
   // visit2 has 1 visitors in visitors list
-  private final val visit2 = createVisitDto(reference = "visit-2", prisonerId = prisonerId, visitors = visit2Visitors)
+  private final val visit2 = createVisitDto(reference = "visit-2", prisonerId = prisonerId, visitors = visit2Visitors, prisonCode = "ABC")
 
   @SpyBean
   lateinit var visitSchedulerClientSpy: VisitSchedulerClient
@@ -94,6 +101,9 @@ class GetPrisonerProfileTest(
 
   @SpyBean
   lateinit var prisonerContactRegistryClientSpy: PrisonerContactRegistryClient
+
+  @SpyBean
+  lateinit var prisonRegisterClientSpy: PrisonRegisterClient
 
   fun callGetPrisonerProfile(
     webTestClient: WebTestClient,
@@ -160,7 +170,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(prisonerId, null)
     prisonApiMockServer.stubGetBookings(prisonId, prisonerId, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(prisonerId, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsDto, HttpStatus.NOT_FOUND)
     stubGetVisits(listOf(visit1, visit2))
 
     // When
@@ -356,64 +366,20 @@ class GetPrisonerProfileTest(
     val prisonerProfile = getResults(returnResult)
 
     assertPrisonerDtoDetails(prisonerProfile, prisonerDto)
-    Assertions.assertThat(prisonerProfile.incentiveLevel).isEqualTo(prisonerDto.currentIncentive!!.level.description)
-    assertInmateDetails(prisonerProfile, inmateDetailDto)
-    Assertions.assertThat(prisonerProfile.convictedStatus).isEqualTo(prisonerBookingSummaryDto.convictedStatus)
-    Assertions.assertThat(prisonerProfile.visitBalances).isEqualTo(visitBalancesDto)
     Assertions.assertThat(prisonerProfile.visits).isNotEmpty
 
     val visit1Visitors = prisonerProfile.visits[0].visitors
-    Assertions.assertThat(visit1Visitors).isNotNull
     Assertions.assertThat(visit1Visitors?.size).isEqualTo(3)
-    Assertions.assertThat(visit1Visitors?.get(0)?.firstName).isEqualTo(visitor1.firstName)
-    Assertions.assertThat(visit1Visitors?.get(0)?.lastName).isEqualTo(visitor1.lastName)
-    Assertions.assertThat(visit1Visitors?.get(1)?.firstName).isEqualTo(visitor2.firstName)
-    Assertions.assertThat(visit1Visitors?.get(1)?.lastName).isEqualTo(visitor2.lastName)
-    Assertions.assertThat(visit1Visitors?.get(2)?.firstName).isEqualTo(visitor3.firstName)
-    Assertions.assertThat(visit1Visitors?.get(2)?.lastName).isEqualTo(visitor3.lastName)
+    assertVisitorDetails(visit1Visitors?.get(0)!!, visitor1.personId, visitor1.firstName, visitor1.lastName)
+    assertVisitorDetails(visit1Visitors[1], visitor2.personId, visitor2.firstName, visitor2.lastName)
+    assertVisitorDetails(visit1Visitors[2], visitor3.personId, visitor3.firstName, visitor3.lastName)
 
     val visit2Visitors = prisonerProfile.visits[1].visitors
     Assertions.assertThat(visit2Visitors).isNotNull
-    Assertions.assertThat(visit2Visitors?.size).isEqualTo(1)
-    Assertions.assertThat(visit2Visitors?.get(0)?.firstName).isEqualTo(visitor3.firstName)
-    Assertions.assertThat(visit2Visitors?.get(0)?.lastName).isEqualTo(visitor3.lastName)
+    assertVisitorDetails(visit2Visitors?.get(0)!!, visitor3.personId, visitor3.firstName, visitor3.lastName)
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is only done once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any())
-  }
-
-  @Test
-  fun `when visit has no visitors prisoner contact registry call is not made`() {
-    // Given
-
-    // visit does not have a visitors list
-    val visit3 = createVisitDto(reference = "visit-3", prisonerId = prisonerId, visitors = null)
-    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
-    prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetailDto)
-    prisonApiMockServer.stubGetBookings(prisonId, prisonerId, listOf(prisonerBookingSummaryDto))
-    prisonApiMockServer.stubGetVisitBalances(prisonerId, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsDto)
-    stubGetVisits(listOf(visit3))
-
-    // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, prisonerId)
-
-    // Then
-    val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val prisonerProfile = getResults(returnResult)
-
-    assertPrisonerDtoDetails(prisonerProfile, prisonerDto)
-    Assertions.assertThat(prisonerProfile.incentiveLevel).isEqualTo(prisonerDto.currentIncentive!!.level.description)
-    assertInmateDetails(prisonerProfile, inmateDetailDto)
-    Assertions.assertThat(prisonerProfile.convictedStatus).isEqualTo(prisonerBookingSummaryDto.convictedStatus)
-    Assertions.assertThat(prisonerProfile.visitBalances).isEqualTo(visitBalancesDto)
-    Assertions.assertThat(prisonerProfile.visits).isNotEmpty
-
-    Assertions.assertThat(prisonerProfile.visits[0].visitors).isNull()
-    verifyExternalAPIClientCalls()
-
-    // verify the call to prisoner contact registry is made once
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any())
   }
 
@@ -444,10 +410,6 @@ class GetPrisonerProfileTest(
     val prisonerProfile = getResults(returnResult)
 
     assertPrisonerDtoDetails(prisonerProfile, prisonerDto)
-    Assertions.assertThat(prisonerProfile.incentiveLevel).isEqualTo(prisonerDto.currentIncentive!!.level.description)
-    assertInmateDetails(prisonerProfile, inmateDetailDto)
-    Assertions.assertThat(prisonerProfile.convictedStatus).isEqualTo(prisonerBookingSummaryDto.convictedStatus)
-    Assertions.assertThat(prisonerProfile.visitBalances).isEqualTo(visitBalancesDto)
     Assertions.assertThat(prisonerProfile.visits).isNotEmpty
 
     val visitors = prisonerProfile.visits[0].visitors
@@ -456,9 +418,7 @@ class GetPrisonerProfileTest(
     Assertions.assertThat(visitors?.size).isEqualTo(1)
 
     // the nomisPersonId should be set to what's on the visit's visitor list
-    Assertions.assertThat(visitors?.get(0)?.nomisPersonId).isEqualTo(visitorNotInContactRegistry.nomisPersonId)
-    Assertions.assertThat(visitors?.get(0)?.firstName).isNull()
-    Assertions.assertThat(visitors?.get(0)?.lastName).isNull()
+    assertVisitorDetails(visitors?.get(0)!!, visitorNotInContactRegistry.nomisPersonId, null, null)
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is made once
@@ -466,7 +426,7 @@ class GetPrisonerProfileTest(
   }
 
   @Test
-  fun `when visit has visitors but call to prisoner contact registry returns 404 visitors first and last name are returned as null`() {
+  fun `when visit has visitors but call to prisoner contact registry returns NOT_FOUND visitors first and last name are not populated`() {
     // Given
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetailDto)
@@ -485,35 +445,181 @@ class GetPrisonerProfileTest(
     val prisonerProfile = getResults(returnResult)
 
     assertPrisonerDtoDetails(prisonerProfile, prisonerDto)
-    Assertions.assertThat(prisonerProfile.incentiveLevel).isEqualTo(prisonerDto.currentIncentive!!.level.description)
-    assertInmateDetails(prisonerProfile, inmateDetailDto)
-    Assertions.assertThat(prisonerProfile.convictedStatus).isEqualTo(prisonerBookingSummaryDto.convictedStatus)
-    Assertions.assertThat(prisonerProfile.visitBalances).isEqualTo(visitBalancesDto)
     Assertions.assertThat(prisonerProfile.visits).isNotEmpty
 
     val visit1Visitors = prisonerProfile.visits[0].visitors
-    Assertions.assertThat(visit1Visitors).isNotNull
-    Assertions.assertThat(visit1Visitors?.size).isEqualTo(3)
-    Assertions.assertThat(visit1Visitors?.get(0)?.nomisPersonId).isEqualTo(visitor1.personId)
-    Assertions.assertThat(visit1Visitors?.get(0)?.firstName).isNull()
-    Assertions.assertThat(visit1Visitors?.get(0)?.lastName).isNull()
-    Assertions.assertThat(visit1Visitors?.get(1)?.nomisPersonId).isEqualTo(visitor2.personId)
-    Assertions.assertThat(visit1Visitors?.get(1)?.firstName).isNull()
-    Assertions.assertThat(visit1Visitors?.get(1)?.lastName).isNull()
-    Assertions.assertThat(visit1Visitors?.get(2)?.nomisPersonId).isEqualTo(visitor3.personId)
-    Assertions.assertThat(visit1Visitors?.get(2)?.firstName).isNull()
-    Assertions.assertThat(visit1Visitors?.get(2)?.lastName).isNull()
+    assertVisitorDetails(visit1Visitors?.get(0)!!, visitor1.personId, null, null)
+    assertVisitorDetails(visit1Visitors[1], visitor2.personId, null, null)
+    assertVisitorDetails(visit1Visitors[2], visitor3.personId, null, null)
 
     val visit2Visitors = prisonerProfile.visits[1].visitors
-    Assertions.assertThat(visit2Visitors).isNotNull
     Assertions.assertThat(visit2Visitors?.size).isEqualTo(1)
-    Assertions.assertThat(visit2Visitors?.get(0)?.nomisPersonId).isEqualTo(visitor3.personId)
-    Assertions.assertThat(visit2Visitors?.get(0)?.firstName).isNull()
-    Assertions.assertThat(visit2Visitors?.get(0)?.lastName).isNull()
+    assertVisitorDetails(visit2Visitors?.get(0)!!, visitor3.personId, null, null)
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is made once
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any())
+  }
+
+  @Test
+  fun `when visit has visitors but call to prisoner contact registry returns BAD_REQUEST visitors first and last name are not populated`() {
+    // Given
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetailDto)
+    prisonApiMockServer.stubGetBookings(prisonId, prisonerId, listOf(prisonerBookingSummaryDto))
+    prisonApiMockServer.stubGetVisitBalances(prisonerId, visitBalancesDto)
+
+    // as we are passing null as contacts parameter a 404 will be returned
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, null, HttpStatus.BAD_REQUEST)
+    stubGetVisits(listOf(visit1, visit2))
+
+    // When
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, prisonerId)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val prisonerProfile = getResults(returnResult)
+
+    assertPrisonerDtoDetails(prisonerProfile, prisonerDto)
+    Assertions.assertThat(prisonerProfile.visits).isNotEmpty
+
+    val visit1Visitors = prisonerProfile.visits[0].visitors
+    assertVisitorDetails(visit1Visitors?.get(0)!!, visitor1.personId, null, null)
+    assertVisitorDetails(visit1Visitors[1], visitor2.personId, null, null)
+    assertVisitorDetails(visit1Visitors[2], visitor3.personId, null, null)
+
+    val visit2Visitors = prisonerProfile.visits[1].visitors
+    Assertions.assertThat(visit2Visitors?.size).isEqualTo(1)
+    assertVisitorDetails(visit2Visitors?.get(0)!!, visitor3.personId, null, null)
+
+    verifyExternalAPIClientCalls()
+    // verify the call to prisoner contact registry is made once
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any())
+  }
+
+  @Test
+  fun `when visits have valid prisons then prison names are correctly populated from prison register`() {
+    // Given
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetailDto)
+    prisonApiMockServer.stubGetBookings(prisonId, prisonerId, listOf(prisonerBookingSummaryDto))
+    prisonApiMockServer.stubGetVisitBalances(prisonerId, visitBalancesDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsDto)
+    prisonRegisterMockServer.stubGetPrisons(prisons)
+    stubGetVisits(listOf(visit1, visit2))
+
+    // When
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, prisonerId)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val prisonerProfile = getResults(returnResult)
+
+    assertPrisonerDtoDetails(prisonerProfile, prisonerDto)
+    Assertions.assertThat(prisonerProfile.visits).isNotEmpty
+
+    val visits = prisonerProfile.visits
+    assertPrisonDetails(visits[0], visit1.prisonCode, "MDI Prison")
+    assertPrisonDetails(visits[1], visit2.prisonCode, "ABC Prison")
+    verifyExternalAPIClientCalls()
+
+    // verify the call to prison register is only done once
+    verify(prisonRegisterClientSpy, times(1)).getPrisons()
+  }
+
+  @Test
+  fun `when visits have invalid prisons then prison names are not populated from prison register`() {
+    // Given
+    val incorrectPrisonVisit = createVisitDto(reference = "invalid-prison", prisonerId = prisonerId, visitors = visit1Visitors, prisonCode = "NONE")
+
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetailDto)
+    prisonApiMockServer.stubGetBookings(prisonId, prisonerId, listOf(prisonerBookingSummaryDto))
+    prisonApiMockServer.stubGetVisitBalances(prisonerId, visitBalancesDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsDto)
+    prisonRegisterMockServer.stubGetPrisons(prisons)
+    stubGetVisits(listOf(incorrectPrisonVisit))
+
+    // When
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, prisonerId)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val prisonerProfile = getResults(returnResult)
+
+    assertPrisonerDtoDetails(prisonerProfile, prisonerDto)
+    Assertions.assertThat(prisonerProfile.visits).isNotEmpty
+
+    val visits = prisonerProfile.visits
+    assertPrisonDetails(visits[0], incorrectPrisonVisit.prisonCode, null)
+
+    verifyExternalAPIClientCalls()
+    // verify the call to prison register is only done once
+    verify(prisonRegisterClientSpy, times(1)).getPrisons()
+  }
+
+  @Test
+  fun `when call to prisoner register returns NOT_FOUND prison names are not populated`() {
+    // Given
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetailDto)
+    prisonApiMockServer.stubGetBookings(prisonId, prisonerId, listOf(prisonerBookingSummaryDto))
+    prisonApiMockServer.stubGetVisitBalances(prisonerId, visitBalancesDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsDto)
+
+    // as we are passing null as prisons parameter a 404 will be returned
+    prisonRegisterMockServer.stubGetPrisons(null)
+    stubGetVisits(listOf(visit1, visit2))
+
+    // When
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, prisonerId)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val prisonerProfile = getResults(returnResult)
+
+    assertPrisonerDtoDetails(prisonerProfile, prisonerDto)
+
+    val visits = prisonerProfile.visits
+    assertPrisonDetails(visits[0], visit1.prisonCode, null)
+    assertPrisonDetails(visits[1], visit2.prisonCode, null)
+
+    verifyExternalAPIClientCalls()
+    // verify the call to prison register is only done once
+    verify(prisonRegisterClientSpy, times(1)).getPrisons()
+  }
+
+  @Test
+  fun `when call to prisoner register returns BAD_REQUEST prison names are not populated`() {
+    // Given
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetailDto)
+    prisonApiMockServer.stubGetBookings(prisonId, prisonerId, listOf(prisonerBookingSummaryDto))
+    prisonApiMockServer.stubGetVisitBalances(prisonerId, visitBalancesDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsDto)
+
+    // as we are passing null as prisons parameter a BAD_REQUEST will be returned
+    prisonRegisterMockServer.stubGetPrisons(null)
+    stubGetVisits(listOf(visit1, visit2))
+
+    // When
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, prisonId, prisonerId)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val prisonerProfile = getResults(returnResult)
+
+    assertPrisonerDtoDetails(prisonerProfile, prisonerDto)
+
+    val visits = prisonerProfile.visits
+    Assertions.assertThat(visits[0].prisonCode).isEqualTo(visit1.prisonCode)
+    Assertions.assertThat(visits[0].prisonName).isNull()
+    Assertions.assertThat(visits[1].prisonCode).isEqualTo(visit2.prisonCode)
+    Assertions.assertThat(visits[1].prisonName).isNull()
+
+    verifyExternalAPIClientCalls()
+    // verify the call to prison register is only done once
+    verify(prisonRegisterClientSpy, times(1)).getPrisons()
   }
 
   private fun assertPrisonerDtoDetails(prisonerProfile: PrisonerProfileDto, prisonerDto: PrisonerDto) {
@@ -531,12 +637,23 @@ class GetPrisonerProfileTest(
     Assertions.assertThat(prisonerProfile.alerts).isEqualTo(inmateDetails.alerts)
   }
 
+  private fun assertVisitorDetails(visitorDto: VisitorDto, personId: Long, firstName: String?, lastName: String?) {
+    Assertions.assertThat(visitorDto.nomisPersonId).isEqualTo(personId)
+    Assertions.assertThat(visitorDto.firstName).isEqualTo(firstName)
+    Assertions.assertThat(visitorDto.lastName).isEqualTo(lastName)
+  }
+
   private fun assertVisits(prisonerProfile: PrisonerProfileDto, visits: List<VisitDto>) {
     val visitReferences = prisonerProfile.visits.stream().map { it.reference }.toList()
     Assertions.assertThat(prisonerProfile.visits.size).isEqualTo(visits.size)
     visits.forEach {
       Assertions.assertThat(visitReferences).contains(it.reference)
     }
+  }
+
+  private fun assertPrisonDetails(visit: VisitDto, prisonCode: String, prisonName: String?) {
+    Assertions.assertThat(visit.prisonCode).isEqualTo(prisonCode)
+    Assertions.assertThat(visit.prisonName).isEqualTo(prisonName)
   }
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): PrisonerProfileDto {
@@ -587,11 +704,9 @@ class GetPrisonerProfileTest(
   }
 
   private fun createContactsList(visitorDetails: List<VisitorDetails>): List<ContactDto> {
-    val contacts = visitorDetails.stream().map { createContactDto(it.personId, it.firstName, it.lastName) }.collect(
-      Collectors.toList(),
-    )
-
-    return contacts
+    return visitorDetails.stream().map {
+      createContactDto(it.personId, it.firstName, it.lastName)
+    }.collect(Collectors.toList())
   }
 
   private fun createContactDto(personId: Long, firstName: String, lastName: String): ContactDto {
