@@ -182,6 +182,7 @@ abstract class IntegrationTestBase {
       endTimestamp = LocalDateTime.now().plusHours(1),
       visitContact = null,
       visitors = setOf(visitor),
+      sessionTemplateReference = "aa-bb-cc-dd",
     )
   }
 
