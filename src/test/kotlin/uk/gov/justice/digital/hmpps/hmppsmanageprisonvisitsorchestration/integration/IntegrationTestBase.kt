@@ -38,11 +38,12 @@ import java.util.ArrayList
 @ExtendWith(HmppsAuthExtension::class)
 abstract class IntegrationTestBase {
   companion object {
-    val visitSchedulerMockServer = VisitSchedulerMockServer(ObjectMapper().registerModule(JavaTimeModule()))
-    val prisonApiMockServer = PrisonApiMockServer(ObjectMapper().registerModule(JavaTimeModule()))
-    val prisonOffenderSearchMockServer = PrisonOffenderSearchMockServer(ObjectMapper().registerModule(JavaTimeModule()))
-    val prisonerContactRegistryMockServer = PrisonerContactRegistryMockServer(ObjectMapper().registerModule(JavaTimeModule()))
-    val prisonRegisterMockServer = PrisonRegisterMockServer(ObjectMapper().registerModule(JavaTimeModule()))
+    val objectMapper: ObjectMapper = ObjectMapper().registerModule(JavaTimeModule())
+    val visitSchedulerMockServer = VisitSchedulerMockServer(objectMapper)
+    val prisonApiMockServer = PrisonApiMockServer(objectMapper)
+    val prisonOffenderSearchMockServer = PrisonOffenderSearchMockServer(objectMapper)
+    val prisonerContactRegistryMockServer = PrisonerContactRegistryMockServer(objectMapper)
+    val prisonRegisterMockServer = PrisonRegisterMockServer(objectMapper)
 
     @BeforeAll
     @JvmStatic

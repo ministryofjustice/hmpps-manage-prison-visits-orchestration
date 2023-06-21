@@ -58,7 +58,7 @@ class PrisonerProfileClient(
 
     prisonerProfile.visits.forEach { visit ->
       contactsMap?.let { setVisitorNames(visit, contactsMap) }
-      prisonsMap?.let { setPrisonNames(visit, prisonsMap) }
+      prisonsMap?.let { setPrisonName(visit, prisonsMap) }
     }
   }
 
@@ -97,7 +97,7 @@ class PrisonerProfileClient(
     }
   }
 
-  private fun setPrisonNames(visit: VisitDto, prisonsMap: Map<String, PrisonDto>) {
+  private fun setPrisonName(visit: VisitDto, prisonsMap: Map<String, PrisonDto>) {
     visit.prisonName = prisonsMap[visit.prisonCode]?.prisonName
   }
 }
