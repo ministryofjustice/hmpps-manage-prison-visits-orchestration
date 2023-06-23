@@ -116,6 +116,8 @@ workflows:
             branches:
               only:
                 - develop
+      - request-dev-approval:
+          type: approval
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
@@ -128,6 +130,7 @@ workflows:
             - validate
             - build_docker
             - helm_lint
+            - request-dev-approval
       - request-staging-approval:
           type: approval
           requires:
