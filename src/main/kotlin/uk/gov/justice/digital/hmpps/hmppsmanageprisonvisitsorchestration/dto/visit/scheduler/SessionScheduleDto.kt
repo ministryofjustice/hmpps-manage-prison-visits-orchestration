@@ -2,9 +2,8 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateFrequency
-import java.time.LocalDate
-import java.time.LocalTime
+import uk.gov.justice.digital.hmpps.visitscheduler.dto.sessions.SessionDateRangeDto
+import uk.gov.justice.digital.hmpps.visitscheduler.dto.sessions.SessionTimeSlotDto
 
 @Schema(description = "Session schedule")
 data class SessionScheduleDto(
@@ -13,11 +12,11 @@ data class SessionScheduleDto(
   @field:NotBlank
   val sessionTemplateReference: String,
 
-  @Schema(description = "The start time for this visit session", example = "12:00:00", required = true)
-  val startTime: LocalTime,
+  @Schema(description = "The time slot of the generated visit session(s)", required = true)
+  val sessionTimeSlot: SessionTimeSlotDto,
 
-  @Schema(description = "The end timestamp for this visit session", example = "14:30:00", required = true)
-  val endTime: LocalTime,
+  @Schema(description = "Validity period for the session template", required = true)
+  val sessionDateRange: SessionDateRangeDto,
 
   @Schema(
     description = "The capacity for the session",
@@ -34,9 +33,6 @@ data class SessionScheduleDto(
   @Schema(description = "prisoner incentive level groups", example = "Enhanced Incentive Level Prisoners", required = false)
   val prisonerIncentiveLevelGroupNames: List<String>,
 
-  @Schema(description = "The session template frequency", example = "BI_WEEKLY", required = true)
-  val sessionTemplateFrequency: SessionTemplateFrequency,
-
-  @Schema(description = "The end date of sessionTemplate", example = "2020-11-01", required = false)
-  val sessionTemplateEndDate: LocalDate?,
+  @Schema(description = "number of weeks until the weekly day is repeated", example = "1", required = true)
+  val weeklyFrequency: Int,
 )
