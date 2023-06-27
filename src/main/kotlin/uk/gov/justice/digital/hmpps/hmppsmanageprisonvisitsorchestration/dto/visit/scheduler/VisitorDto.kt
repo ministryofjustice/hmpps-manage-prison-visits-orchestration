@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "Visitor")
-open class VisitorDto(
+class VisitorDto(
   @Schema(description = "Person ID (nomis) of the visitor", example = "1234", required = true)
   @field:NotNull
   val nomisPersonId: Long,
