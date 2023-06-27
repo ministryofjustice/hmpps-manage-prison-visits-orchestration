@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.PrisonerBookingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.VisitBalancesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.FullVisitDetailsDto
 import java.time.LocalDate
 
 data class PrisonerProfileDto(
@@ -52,14 +52,14 @@ data class PrisonerProfileDto(
   val visitBalances: VisitBalancesDto? = null,
 
   @Schema(description = "Past and future visits for the prisoner based on configured duration.")
-  val visits: List<VisitDto>,
+  val visits: List<FullVisitDetailsDto>,
 ) {
   constructor(
     prisoner: PrisonerDto,
     inmateDetail: InmateDetailDto,
     visitBalances: VisitBalancesDto?,
     prisonerBookingSummary: PrisonerBookingSummaryDto?,
-    visits: List<VisitDto>,
+    visits: List<FullVisitDetailsDto>,
   ) : this(
     prisonerId = prisoner.prisonerNumber,
     prisonId = prisoner.prisonId,

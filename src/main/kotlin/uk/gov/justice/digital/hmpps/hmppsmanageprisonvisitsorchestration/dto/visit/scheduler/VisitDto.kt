@@ -14,7 +14,7 @@ import java.time.LocalDateTime
 
 @Schema(description = "Visit")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-class VisitDto(
+open class VisitDto(
   @Schema(description = "Application Reference", example = "dfs-wjs-eqr", required = true)
   val applicationReference: String,
   @Schema(description = "Visit Reference", example = "v9-d7-ed-7u", required = true)
@@ -25,8 +25,6 @@ class VisitDto(
   @JsonAlias("prisonCode")
   @Schema(description = "Prison Id", example = "MDI", required = true)
   val prisonCode: String,
-  @Schema(description = "Prison Name", example = "Moorland (HMP & YOI)", required = false)
-  var prisonName: String? = null,
   @Schema(description = "Session Template Reference", example = "v9d.7ed.7u", required = false)
   val sessionTemplateReference: String? = null,
   @Schema(description = "Visit Room", example = "Visits Main Hall", required = true)
@@ -51,7 +49,7 @@ class VisitDto(
   @Schema(description = "Contact associated with the visit", required = false)
   val visitContact: ContactDto? = null,
   @Schema(description = "List of visitors associated with the visit", required = false)
-  val visitors: List<VisitorDto>? = listOf(),
+  open val visitors: List<VisitorDto>? = listOf(),
   @Schema(description = "List of additional support associated with the visit", required = false)
   val visitorSupport: List<VisitorSupportDto>? = listOf(),
   @Schema(description = "Created By ID - user id for the user who created the visit", example = "AB12345A", required = true)
