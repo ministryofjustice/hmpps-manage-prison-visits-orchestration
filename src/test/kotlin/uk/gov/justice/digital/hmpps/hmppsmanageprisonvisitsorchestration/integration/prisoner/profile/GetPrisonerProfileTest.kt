@@ -25,10 +25,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.CurrentIncentive
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.IncentiveLevel
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.FullVisitDetailsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.FullVisitorDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -639,7 +639,7 @@ class GetPrisonerProfileTest(
     Assertions.assertThat(prisonerProfile.alerts).isEqualTo(inmateDetails.alerts)
   }
 
-  private fun assertVisitorDetails(visitorDto: FullVisitorDetailsDto, personId: Long, firstName: String?, lastName: String?) {
+  private fun assertVisitorDetails(visitorDto: VisitorSummaryDto, personId: Long, firstName: String?, lastName: String?) {
     Assertions.assertThat(visitorDto.nomisPersonId).isEqualTo(personId)
     Assertions.assertThat(visitorDto.firstName).isEqualTo(firstName)
     Assertions.assertThat(visitorDto.lastName).isEqualTo(lastName)
@@ -653,9 +653,9 @@ class GetPrisonerProfileTest(
     }
   }
 
-  private fun assertPrisonDetails(visit: FullVisitDetailsDto, prisonCode: String, prisonName: String?) {
-    Assertions.assertThat(visit.prisonCode).isEqualTo(prisonCode)
-    Assertions.assertThat(visit.prisonName).isEqualTo(prisonName)
+  private fun assertPrisonDetails(visitSummary: VisitSummaryDto, prisonCode: String, prisonName: String?) {
+    Assertions.assertThat(visitSummary.prisonCode).isEqualTo(prisonCode)
+    Assertions.assertThat(visitSummary.prisonName).isEqualTo(prisonName)
   }
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): PrisonerProfileDto {

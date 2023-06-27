@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.PrisonerProfileDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.FullVisitDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import java.time.Duration
@@ -44,7 +44,7 @@ class PrisonerProfileClient(
           it.t2 ?: throw InvalidPrisonerProfileException("Unable to retrieve inmate details from Prison API"),
           if (it.t3.isEmpty) null else it.t3.get(),
           it.t4.content.firstOrNull(),
-          it.t5.content.map { visitDto -> FullVisitDetailsDto(visitDto = visitDto) },
+          it.t5.content.map { visitDto -> VisitSummaryDto(visitDto = visitDto) },
         )
       }
       .block(apiTimeout)?.also { prisonerProfile ->
@@ -90,14 +90,14 @@ class PrisonerProfileClient(
     return null
   }
 
-  private fun setVisitorNames(visit: FullVisitDetailsDto, contactsMap: Map<Long?, ContactDto>) {
-    visit.visitors?.forEach { visitor ->
+  private fun setVisitorNames(visitSummary: VisitSummaryDto, contactsMap: Map<Long?, ContactDto>) {
+    visitSummary.visitors?.forEach { visitor ->
       visitor.firstName = contactsMap[visitor.nomisPersonId]?.firstName
       visitor.lastName = contactsMap[visitor.nomisPersonId]?.lastName
     }
   }
 
-  private fun setPrisonName(visit: FullVisitDetailsDto, prisonsMap: Map<String, PrisonDto>) {
-    visit.prisonName = prisonsMap[visit.prisonCode]?.prisonName
+  private fun setPrisonName(visitSummary: VisitSummaryDto, prisonsMap: Map<String, PrisonDto>) {
+    visitSummary.prisonName = prisonsMap[visitSummary.prisonCode]?.prisonName
   }
 }
