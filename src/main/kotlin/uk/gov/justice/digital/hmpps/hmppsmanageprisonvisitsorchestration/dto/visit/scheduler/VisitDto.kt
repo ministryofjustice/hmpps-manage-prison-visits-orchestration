@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler
 
 import com.fasterxml.jackson.annotation.JsonAlias
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
@@ -12,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import java.time.LocalDateTime
 
 @Schema(description = "Visit")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 class VisitDto(
   @Schema(description = "Application Reference", example = "dfs-wjs-eqr", required = true)
   val applicationReference: String,
@@ -23,6 +25,8 @@ class VisitDto(
   @JsonAlias("prisonCode")
   @Schema(description = "Prison Id", example = "MDI", required = true)
   val prisonCode: String,
+  @Schema(description = "Prison Name", example = "Moorland (HMP & YOI)", required = false)
+  var prisonName: String? = null,
   @Schema(description = "Session Template Reference", example = "v9d.7ed.7u", required = false)
   val sessionTemplateReference: String? = null,
   @Schema(description = "Visit Room", example = "Visits Main Hall", required = true)
