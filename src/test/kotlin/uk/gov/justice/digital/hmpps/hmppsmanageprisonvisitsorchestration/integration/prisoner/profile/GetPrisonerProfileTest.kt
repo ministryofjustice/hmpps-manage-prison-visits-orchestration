@@ -653,7 +653,6 @@ class GetPrisonerProfileTest(
     }
   }
 
-
   private fun assertPrisonDetails(visitSummary: VisitSummaryDto, prisonCode: String, prisonName: String?) {
     Assertions.assertThat(visitSummary.prisonCode).isEqualTo(prisonCode)
     Assertions.assertThat(visitSummary.prisonName).isEqualTo(prisonName)
