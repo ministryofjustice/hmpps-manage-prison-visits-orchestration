@@ -97,6 +97,7 @@ class PrisonerProfileClient(
     }
   }
 
+
   private fun setPrisonName(visitSummary: VisitSummaryDto, prisonsMap: Map<String, PrisonDto>) {
     visitSummary.prisonName = prisonsMap[visitSummary.prisonCode]?.prisonName
   }

@@ -25,6 +25,8 @@ class VisitDto(
   @JsonAlias("prisonCode")
   @Schema(description = "Prison Id", example = "MDI", required = true)
   val prisonCode: String,
+  @Schema(description = "Prison Name", example = "Moorland (HMP & YOI)", required = false)
+  var prisonName: String? = null,
   @Schema(description = "Session Template Reference", example = "v9d.7ed.7u", required = false)
   val sessionTemplateReference: String? = null,
   @Schema(description = "Visit Room", example = "Visits Main Hall", required = true)
