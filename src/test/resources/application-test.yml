@@ -23,11 +23,11 @@ prisoner-offender:
 
 prisoner-contact:
   registry:
-    url: https://prisoner-contact-registry-dev.prison.service.justice.gov.uk
+    url: http://localhost:8095
 
 prison-register:
   api:
-    url: https://prison-register-dev.hmpps.service.justice.gov.uk
+    url: http://localhost:8096
 
 whereabouts:
   api:

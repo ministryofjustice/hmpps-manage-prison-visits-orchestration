@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDO
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ChangeVisitSlotRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
@@ -26,6 +27,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.helper.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.HmppsAuthExtension
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonOffenderSearchMockServer
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonRegisterMockServer
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonerContactRegistryMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.VisitSchedulerMockServer
 import java.time.LocalDateTime
 import java.util.ArrayList
@@ -35,9 +38,12 @@ import java.util.ArrayList
 @ExtendWith(HmppsAuthExtension::class)
 abstract class IntegrationTestBase {
   companion object {
-    val visitSchedulerMockServer = VisitSchedulerMockServer(ObjectMapper().registerModule(JavaTimeModule()))
-    val prisonApiMockServer = PrisonApiMockServer(ObjectMapper().registerModule(JavaTimeModule()))
-    val prisonOffenderSearchMockServer = PrisonOffenderSearchMockServer(ObjectMapper().registerModule(JavaTimeModule()))
+    val objectMapper: ObjectMapper = ObjectMapper().registerModule(JavaTimeModule())
+    val visitSchedulerMockServer = VisitSchedulerMockServer(objectMapper)
+    val prisonApiMockServer = PrisonApiMockServer(objectMapper)
+    val prisonOffenderSearchMockServer = PrisonOffenderSearchMockServer(objectMapper)
+    val prisonerContactRegistryMockServer = PrisonerContactRegistryMockServer(objectMapper)
+    val prisonRegisterMockServer = PrisonRegisterMockServer(objectMapper)
 
     @BeforeAll
     @JvmStatic
@@ -45,6 +51,8 @@ abstract class IntegrationTestBase {
       visitSchedulerMockServer.start()
       prisonApiMockServer.start()
       prisonOffenderSearchMockServer.start()
+      prisonerContactRegistryMockServer.start()
+      prisonRegisterMockServer.start()
     }
 
     @AfterAll
@@ -53,6 +61,8 @@ abstract class IntegrationTestBase {
       visitSchedulerMockServer.stop()
       prisonApiMockServer.stop()
       prisonOffenderSearchMockServer.stop()
+      prisonerContactRegistryMockServer.stop()
+      prisonRegisterMockServer.stop()
     }
   }
 
@@ -136,6 +146,7 @@ abstract class IntegrationTestBase {
     createdTimestamp: LocalDateTime = LocalDateTime.now(),
     modifiedTimestamp: LocalDateTime = LocalDateTime.now(),
     sessionTemplateReference: String = "ref.ref.ref",
+    visitors: List<VisitorDto>? = null,
   ): VisitDto {
     return VisitDto(
       applicationReference = applicationReference,
@@ -155,6 +166,7 @@ abstract class IntegrationTestBase {
       cancelledBy = cancelledBy,
       createdTimestamp = createdTimestamp,
       modifiedTimestamp = modifiedTimestamp,
+      visitors = visitors,
     )
   }
 
@@ -196,6 +208,17 @@ abstract class IntegrationTestBase {
       openVisitCapacity = 30,
       startTimestamp = LocalDateTime.now(),
       endTimestamp = LocalDateTime.now().plusHours(1),
+    )
+  }
+
+  final fun createPrisonDto(prisonCode: String, name: String, active: Boolean = false): PrisonDto {
+    return PrisonDto(
+      prisonId = prisonCode,
+      prisonName = name,
+      active = active,
+      male = false,
+      female = false,
+      contracted = false,
     )
   }
 }
