@@ -118,6 +118,10 @@ workflows:
                 - develop
       - request-dev-approval:
           type: approval
+          filters:
+            branches:
+              only:
+                - develop
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
