@@ -15,7 +15,7 @@ class PrisonerContactRegistryMockServer(@Autowired private val objectMapper: Obj
       .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
 
     stubFor(
-      get("/prisoners/$prisonerId/contacts?type=S")
+      get("/prisoners/$prisonerId/contacts?type=S&withAddress=false")
         .willReturn(
           if (contactsList == null) {
             responseBuilder

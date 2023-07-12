@@ -380,7 +380,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is only done once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContactsWithoutAddress(any())
   }
 
   @Test
@@ -422,7 +422,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is made once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContactsWithoutAddress(any())
   }
 
   @Test
@@ -458,7 +458,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is made once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContactsWithoutAddress(any())
   }
 
   @Test
@@ -494,7 +494,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is made once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContactsWithoutAddress(any())
   }
 
   @Test
