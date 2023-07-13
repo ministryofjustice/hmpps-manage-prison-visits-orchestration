@@ -5,10 +5,8 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.hmpps.auth.UserDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import java.time.Duration
-import java.time.LocalDateTime
 
 @Component
 class VisitDetailsClient(
@@ -23,44 +21,41 @@ class VisitDetailsClient(
   fun getVisitHistoryByReference(
     reference: String,
   ): VisitHistoryDetailsDto? {
-    val visits = visitSchedulerClient.getVisitHistoryByReference(reference)
-    if (visits.isNotEmpty()) {
-      val lastVisit = visits.last()
+    val visit = visitSchedulerClient.getVisitByReference(reference)
 
-      val firstVisit = visits.first()
-      val userNames = getUserDetails(lastVisit)
+    visit?.let {
+      val eventAuditList = visitSchedulerClient.getVisitHistoryByReference(reference)
+      eventAuditList?.let {
+        if (eventAuditList.isNotEmpty()) {
+          eventAuditList.filter { it.actionedBy != null }
 
-      return VisitHistoryDetailsDto(
-        createdBy = userNames[firstVisit.createdBy] ?: firstVisit.createdBy,
-        cancelledBy = userNames[lastVisit.cancelledBy] ?: lastVisit.cancelledBy,
-        updatedBy = userNames[lastVisit.updatedBy] ?: lastVisit.updatedBy,
-        createdDateAndTime = firstVisit.createdTimestamp,
-        updatedDateAndTime = getLastUpdatedVisitDateAndTime(visits),
-        cancelledDateAndTime = getCancelledVisitDateAndTime(lastVisit),
-        visit = lastVisit,
-      )
+          val userNames = eventAuditList.filter { it.actionedBy != null }.map { it.actionedBy!! }.toSet()
+          val names = getUserDetails(userNames)
+
+          val eventAuditListWithNames = eventAuditList.map {
+            EventAuditDto(
+              type = it.type,
+              applicationMethodType = it.applicationMethodType,
+              actionedBy = names[it.actionedBy] ?: it.actionedBy,
+              sessionTemplateReference = it.sessionTemplateReference,
+              createTimestamp = it.createTimestamp,
+            )
+          }
+          return VisitHistoryDetailsDto(
+            eventsAudit = eventAuditListWithNames,
+            visit = visit,
+          )
+        }
+        return VisitHistoryDetailsDto(
+          visit = visit,
+        )
+      }
     }
     return null
   }
 
-  private fun getLastUpdatedVisitDateAndTime(visits: List<VisitDto>): LocalDateTime? {
-    val lastVisitDto = visits.last()
-    if (visits.size > 1) {
-      return lastVisitDto.createdTimestamp
-    }
-    return null
-  }
-
-  private fun getCancelledVisitDateAndTime(lastVisit: VisitDto): LocalDateTime? {
-    return if (lastVisit.visitStatus == VisitStatus.CANCELLED) {
-      lastVisit.modifiedTimestamp
-    } else {
-      null
-    }
-  }
-
-  private fun getUserDetails(visitDto: VisitDto): Map<String, String> {
-    val monoCallsList = createUserMonoCalls(visitDto)
+  private fun getUserDetails(userNames: Set<String>): Map<String, String> {
+    val monoCallsList = createUserMonoCalls(userNames)
     return executeMonoCalls(monoCallsList)
   }
 
@@ -94,9 +89,8 @@ class VisitDetailsClient(
   }
 
   private fun createUserMonoCalls(
-    visitDto: VisitDto,
+    userNames: Set<String>,
   ): List<Mono<UserDetailsDto>> {
-    val userNames = mutableSetOf(visitDto.createdBy, visitDto.updatedBy, visitDto.cancelledBy).filterNotNull()
     return userNames.map {
       getUserDetails(it)
     }

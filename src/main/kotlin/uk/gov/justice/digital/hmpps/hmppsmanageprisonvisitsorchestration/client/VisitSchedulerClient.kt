@@ -10,8 +10,10 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ChangeVisitSlotRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SupportTypeDto
@@ -41,12 +43,12 @@ class VisitSchedulerClient(
       .bodyToMono<VisitDto>().block(apiTimeout)
   }
 
-  fun getVisitHistoryByReference(reference: String): List<VisitDto> {
+  fun getVisitHistoryByReference(reference: String): List<EventAuditDto>? {
     return webClient.get()
       .uri(GET_VISIT_HISTORY_CONTROLLER_PATH.replace("{reference}", reference))
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono<List<VisitDto>>().block(apiTimeout)
+      .bodyToMono<List<EventAuditDto>>().block(apiTimeout)
   }
 
   fun getVisits(visitSearchRequestFilter: VisitSearchRequestFilter): RestPage<VisitDto>? {
@@ -72,9 +74,10 @@ class VisitSchedulerClient(
       .bodyToMono<VisitDto>().block(apiTimeout)
   }
 
-  fun bookVisitSlot(applicationReference: String): VisitDto? {
+  fun bookVisitSlot(applicationReference: String, requestDto: BookingRequestDto): VisitDto? {
     return webClient.put()
       .uri("/visits/$applicationReference/book")
+      .body(BodyInserters.fromValue(requestDto))
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono<VisitDto>().block(apiTimeout)
