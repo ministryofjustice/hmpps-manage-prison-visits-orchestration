@@ -5,8 +5,10 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.OutcomeDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.OutcomeStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType.PHONE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.OutcomeStatus.CANCELLATION
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
 @DisplayName("Cancel a visit")
@@ -14,12 +16,12 @@ class CancelVisitTest : IntegrationTestBase() {
   fun callCancelVisit(
     webTestClient: WebTestClient,
     reference: String,
-    outcomeDto: OutcomeDto,
+    cancelVisitOrchestrationDto: CancelVisitOrchestrationDto,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     return webTestClient.put().uri("/visits/$reference/cancel")
       .headers(authHttpHeaders)
-      .body(BodyInserters.fromValue(outcomeDto))
+      .body(BodyInserters.fromValue(cancelVisitOrchestrationDto))
       .exchange()
   }
 
@@ -27,12 +29,12 @@ class CancelVisitTest : IntegrationTestBase() {
   fun `when cancel visit is successful then OK status is returned`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val outcomeDto = OutcomeDto(OutcomeStatus.CANCELLATION)
+    val cancelVisitOrchestrationDto = CancelVisitOrchestrationDto(OutcomeDto(CANCELLATION), PHONE)
     val visitDto = createVisitDto(reference = reference)
     visitSchedulerMockServer.stubCancelVisit(reference, visitDto)
 
     // When
-    val responseSpec = callCancelVisit(webTestClient, reference, outcomeDto, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callCancelVisit(webTestClient, reference, cancelVisitOrchestrationDto, roleVisitSchedulerHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -44,12 +46,12 @@ class CancelVisitTest : IntegrationTestBase() {
   fun `when cancel visit is unsuccessful then NOT_FOUND status is returned`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val outcomeDto = OutcomeDto(OutcomeStatus.CANCELLATION)
+    val cancelVisitOrchestrationDto = CancelVisitOrchestrationDto(OutcomeDto(CANCELLATION), PHONE)
     val visitDto = null
     visitSchedulerMockServer.stubCancelVisit(reference, visitDto)
 
     // When
-    val responseSpec = callCancelVisit(webTestClient, reference, outcomeDto, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callCancelVisit(webTestClient, reference, cancelVisitOrchestrationDto, roleVisitSchedulerHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
