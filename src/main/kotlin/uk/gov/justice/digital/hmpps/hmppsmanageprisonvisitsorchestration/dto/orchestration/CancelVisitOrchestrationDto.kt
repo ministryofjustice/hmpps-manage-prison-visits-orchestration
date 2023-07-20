@@ -13,5 +13,5 @@ data class CancelVisitOrchestrationDto(
 
   @Schema(description = "application method", required = true)
   @field:NotNull
-  val applicationMethod: ApplicationMethodType,
+  val applicationMethodType: ApplicationMethodType,
 )
