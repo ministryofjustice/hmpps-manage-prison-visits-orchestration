@@ -80,7 +80,7 @@ class VisitSchedulerService(
       CancelVisitDto(
         cancelVisitDto.cancelOutcome,
         authenticationHelperService.currentUserName,
-        cancelVisitDto.applicationMethod,
+        cancelVisitDto.applicationMethodType,
       ),
     )
   }
