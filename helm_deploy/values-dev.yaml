@@ -19,8 +19,8 @@ generic-service:
     HMPPS_SQS_USE_WEB_TOKEN: "true"
 
   namespace_secrets:
-    HMPPS_SQS_QUEUES_PRISONVISITSEVENTS_ARN: "topic_arn"
-
+    hmpps-domain-events-topic:
+      HMPPS_SQS_TOPICS_DOMAINEVENTS_ARN: "topic_arn"
 
 generic-prometheus-alerts:
   alertSeverity: prison-visit-booking-alerts-nonprod
