@@ -2,5 +2,5 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 
 @Suppress("unused")
 enum class ApplicationMethodType {
-  PHONE, WEBSITE, EMAIL, IN_PERSON, NOT_KNOWN
+  PHONE, WEBSITE, EMAIL, IN_PERSON, NOT_KNOWN, NOT_APPLICABLE
 }
