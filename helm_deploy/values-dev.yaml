@@ -22,6 +22,7 @@ generic-service:
     hmpps-domain-events-topic:
       HMPPS_SQS_TOPICS_DOMAINEVENTS_ARN: "topic_arn"
 
+
 generic-prometheus-alerts:
   alertSeverity: prison-visit-booking-alerts-nonprod
   sqsAlertsQueueNames:
