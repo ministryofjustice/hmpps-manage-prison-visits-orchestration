@@ -34,6 +34,10 @@ generic-service:
       APPINSIGHTS_INSTRUMENTATIONKEY: "APPINSIGHTS_INSTRUMENTATIONKEY"
       SYSTEM_CLIENT_ID: "SYSTEM_CLIENT_ID"
       SYSTEM_CLIENT_SECRET: "SYSTEM_CLIENT_SECRET"
+    sqs-prison-visits-event-secret:
+      HMPPS_SQS_QUEUES_PRISONVISITSEVENTS_QUEUE_NAME: "sqs_queue_name"
+    sqs-prison-visits-event-dlq-secret:
+      HMPPS_SQS_QUEUES_PRISONVISITSEVENTS_DLQ_NAME: "sqs_queue_name"
 
   allowlist:
     office: "217.33.148.210/32"
