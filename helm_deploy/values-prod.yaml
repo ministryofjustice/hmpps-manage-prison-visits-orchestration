@@ -17,6 +17,14 @@ generic-service:
     WHEREABOUTS_API_URL: https://whereabouts-api.service.justice.gov.uk
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
 
+  namespace_secrets:
+    sqs-prison-visits-event-secret:
+          HMPPS_SQS_QUEUES_PRISONVISITSEVENTS_QUEUE_ACCESS_KEY_ID: "access_key_id"
+          HMPPS_SQS_QUEUES_PRISONVISITSEVENTS_QUEUE_SECRET_ACCESS_KEY: "secret_access_key"
+    sqs-prison-visits-event-dlq-secret:
+        HMPPS_SQS_QUEUES_PRISONVISITSEVENTS_DLQ_ACCESS_KEY_ID: "access_key_id"
+        HMPPS_SQS_QUEUES_PRISONVISITSEVENTS_DLQ_SECRET_ACCESS_KEY: "secret_access_key"
+
 generic-prometheus-alerts:
   alertSeverity: prison-visit-booking-alerts
   sqsAlertsQueueNames:
