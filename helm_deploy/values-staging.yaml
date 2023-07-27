@@ -22,11 +22,5 @@ generic-service:
     hmpps-domain-events-topic:
       HMPPS_SQS_TOPICS_DOMAINEVENTS_ARN: "topic_arn"
 
-
 generic-prometheus-alerts:
   alertSeverity: prison-visit-booking-alerts-nonprod
-  sqsAlertsQueueNames:
-    - "Digital-Prison-Services-staging-hmpps_prison_visits_event_queue"
-    - "Digital-Prison-Services-staging-hmpps_prison_visits_event_dlq"
-  sqsAlertsOldestThreshold: 1
-  sqsAlertsTotalMessagesThreshold: 1
