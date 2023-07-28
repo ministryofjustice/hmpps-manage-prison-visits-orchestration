@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Value
@@ -382,7 +383,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is only done once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContactsWithoutAddress(any())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false))
   }
 
   @Test
@@ -424,7 +425,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is made once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContactsWithoutAddress(any())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false))
   }
 
   @Test
@@ -460,7 +461,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is made once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContactsWithoutAddress(any())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false))
   }
 
   @Test
@@ -496,7 +497,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is made once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContactsWithoutAddress(any())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false))
   }
 
   @Test
