@@ -26,7 +26,7 @@ class PrisonerProfileService(
   }
 
   fun getPrisonerProfile(prisonId: String, prisonerId: String): PrisonerProfileDto? {
-    LOG.debug("Entered getPrisonerProfile prisonId:${prisonId} , prisonerId:${prisonerId}")
+    LOG.debug("Entered getPrisonerProfile prisonId:$prisonId , prisonerId:$prisonerId")
     val prisonerProfile = prisonerProfileClient.getPrisonerProfile(
       prisonId,
       prisonerId,
