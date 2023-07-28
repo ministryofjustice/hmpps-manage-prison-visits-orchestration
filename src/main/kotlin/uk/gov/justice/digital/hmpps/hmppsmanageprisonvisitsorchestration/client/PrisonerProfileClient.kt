@@ -64,7 +64,7 @@ class PrisonerProfileClient(
 
   private fun getContactsForPrisoner(prisonerProfile: PrisonerProfileDto): Map<Long?, ContactDto>? {
     try {
-      val contacts = prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerProfile.prisonerId)
+      val contacts = prisonerContactRegistryClient.getPrisonersSocialContactsWithoutAddress(prisonerProfile.prisonerId)
       contacts?.let {
         return contacts.associateBy { it.personId }
       }
