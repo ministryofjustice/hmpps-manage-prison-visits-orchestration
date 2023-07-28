@@ -50,7 +50,7 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
     val eventList = mutableListOf(
       EventAuditDto(type = EventAuditType.BOOKED_VISIT, actionedBy = createdBy, applicationMethodType = EMAIL),
       EventAuditDto(type = EventAuditType.UPDATED_VISIT, actionedBy = lastUpdatedBy, applicationMethodType = EMAIL),
-      EventAuditDto(type = EventAuditType.CANCELED_VISIT, actionedBy = cancelledBy, applicationMethodType = EMAIL),
+      EventAuditDto(type = EventAuditType.CANCELLED_VISIT, actionedBy = cancelledBy, applicationMethodType = EMAIL),
     )
 
     visitSchedulerMockServer.stubGetVisitHistory(reference, eventList)
@@ -87,7 +87,7 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
     val eventList = mutableListOf(
       EventAuditDto(type = EventAuditType.BOOKED_VISIT, actionedBy = actionedBy, applicationMethodType = EMAIL),
       EventAuditDto(type = EventAuditType.UPDATED_VISIT, actionedBy = actionedBy, applicationMethodType = EMAIL),
-      EventAuditDto(type = EventAuditType.CANCELED_VISIT, actionedBy = actionedBy, applicationMethodType = EMAIL),
+      EventAuditDto(type = EventAuditType.CANCELLED_VISIT, actionedBy = actionedBy, applicationMethodType = EMAIL),
     )
 
     visitSchedulerMockServer.stubGetVisitHistory(reference, eventList)
@@ -139,7 +139,7 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
     val eventList = mutableListOf(
       EventAuditDto(type = EventAuditType.BOOKED_VISIT, actionedBy = createdBy, applicationMethodType = EMAIL),
       EventAuditDto(type = EventAuditType.UPDATED_VISIT, actionedBy = null, applicationMethodType = EMAIL),
-      EventAuditDto(type = EventAuditType.CANCELED_VISIT, actionedBy = null, applicationMethodType = EMAIL),
+      EventAuditDto(type = EventAuditType.CANCELLED_VISIT, actionedBy = null, applicationMethodType = EMAIL),
     )
 
     visitSchedulerMockServer.stubGetVisitHistory(reference, eventList)
