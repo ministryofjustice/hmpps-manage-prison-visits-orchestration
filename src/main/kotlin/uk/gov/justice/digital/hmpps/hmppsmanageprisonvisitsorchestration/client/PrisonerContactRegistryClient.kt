@@ -17,10 +17,10 @@ class PrisonerContactRegistryClient(
     const val SOCIAL_VISITOR_TYPE = "S"
   }
 
-  fun getPrisonersSocialContactsWithoutAddress(prisonerId: String): List<ContactDto>? {
+  fun getPrisonersSocialContacts(prisonerId: String, withAddress: Boolean): List<ContactDto>? {
     return webClient.get().uri("/prisoners/$prisonerId/contacts") {
       it.queryParam("type", SOCIAL_VISITOR_TYPE)
-        .queryParam("withAddress", false).build()
+        .queryParam("withAddress", withAddress).build()
     }
       .retrieve()
       .bodyToMono<List<ContactDto>>()
