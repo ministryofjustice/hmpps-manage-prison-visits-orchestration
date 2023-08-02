@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Value
@@ -26,7 +27,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.IncentiveLevel
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -380,7 +383,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is only done once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContactsWithoutAddress(any())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false))
   }
 
   @Test
@@ -422,7 +425,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is made once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContactsWithoutAddress(any())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false))
   }
 
   @Test
@@ -458,7 +461,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is made once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContactsWithoutAddress(any())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false))
   }
 
   @Test
@@ -494,7 +497,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is made once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContactsWithoutAddress(any())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false))
   }
 
   @Test
@@ -637,7 +640,7 @@ class GetPrisonerProfileTest(
     Assertions.assertThat(prisonerProfile.alerts).isEqualTo(inmateDetails.alerts)
   }
 
-  private fun assertVisitorDetails(visitorDto: VisitorDto, personId: Long, firstName: String?, lastName: String?) {
+  private fun assertVisitorDetails(visitorDto: VisitorSummaryDto, personId: Long, firstName: String?, lastName: String?) {
     Assertions.assertThat(visitorDto.nomisPersonId).isEqualTo(personId)
     Assertions.assertThat(visitorDto.firstName).isEqualTo(firstName)
     Assertions.assertThat(visitorDto.lastName).isEqualTo(lastName)
@@ -651,9 +654,9 @@ class GetPrisonerProfileTest(
     }
   }
 
-  private fun assertPrisonDetails(visit: VisitDto, prisonCode: String, prisonName: String?) {
-    Assertions.assertThat(visit.prisonCode).isEqualTo(prisonCode)
-    Assertions.assertThat(visit.prisonName).isEqualTo(prisonName)
+  private fun assertPrisonDetails(visitSummary: VisitSummaryDto, prisonCode: String, prisonName: String?) {
+    Assertions.assertThat(visitSummary.prisonCode).isEqualTo(prisonCode)
+    Assertions.assertThat(visitSummary.prisonName).isEqualTo(prisonName)
   }
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): PrisonerProfileDto {

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SupportTypeDto
@@ -37,20 +38,16 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     )
   }
 
-  fun stubGetVisitHistory(reference: String, visit: VisitDto) {
-    return stubGetVisitHistory(reference, listOf(visit))
-  }
-
-  fun stubGetVisitHistory(reference: String, visits: List<VisitDto>) {
+  fun stubGetVisitHistory(reference: String, eventsAudit: List<EventAuditDto>) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
       get("/visits/$reference/history")
         .willReturn(
-          if (visits.isEmpty()) {
+          if (eventsAudit.isEmpty()) {
             responseBuilder.withStatus(HttpStatus.NOT_FOUND.value())
           } else {
             responseBuilder.withStatus(HttpStatus.OK.value())
-              .withBody(getJsonString(visits))
+              .withBody(getJsonString(eventsAudit))
           },
         ),
     )

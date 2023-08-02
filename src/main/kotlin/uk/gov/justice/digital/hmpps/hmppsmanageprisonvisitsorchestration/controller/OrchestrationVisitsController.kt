@@ -19,9 +19,10 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.BookingOrchestrationRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ChangeVisitSlotRequestDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.OutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SupportTypeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
@@ -274,8 +275,10 @@ class OrchestrationVisitsController(
     @Schema(description = "applicationReference", example = "dfs-wjs-eqr", required = true)
     @PathVariable
     applicationReference: String,
+    @RequestBody @Valid
+    bookingRequestDto: BookingOrchestrationRequestDto,
   ): VisitDto? {
-    return visitSchedulerService.bookVisit(applicationReference)
+    return visitSchedulerService.bookVisit(applicationReference, bookingRequestDto)
   }
 
   @PreAuthorize("hasRole('VISIT_SCHEDULER')")
@@ -382,7 +385,7 @@ class OrchestrationVisitsController(
       content = [
         Content(
           mediaType = "application/json",
-          schema = Schema(implementation = OutcomeDto::class),
+          schema = Schema(implementation = CancelVisitOrchestrationDto::class),
         ),
       ],
     ),
@@ -413,8 +416,8 @@ class OrchestrationVisitsController(
       ),
     ],
   )
-  fun cancelVisit(@PathVariable reference: String, @RequestBody outcomeDto: OutcomeDto): VisitDto? {
-    return visitSchedulerService.cancelVisit(reference, outcomeDto)
+  fun cancelVisit(@PathVariable reference: String, @RequestBody cancelVisitDto: CancelVisitOrchestrationDto): VisitDto? {
+    return visitSchedulerService.cancelVisit(reference, cancelVisitDto)
   }
 
   @PreAuthorize("hasRole('VISIT_SCHEDULER')")

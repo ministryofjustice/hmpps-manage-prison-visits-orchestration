@@ -8,10 +8,12 @@ import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitDetailsClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.BookingOrchestrationRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ChangeVisitSlotRequestDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.OutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
@@ -65,12 +67,22 @@ class VisitSchedulerService(
     return visitSchedulerClient.getVisitSupport()
   }
 
-  fun bookVisit(applicationReference: String): VisitDto? {
-    return visitSchedulerClient.bookVisitSlot(applicationReference)
+  fun bookVisit(applicationReference: String, requestDto: BookingOrchestrationRequestDto): VisitDto? {
+    return visitSchedulerClient.bookVisitSlot(
+      applicationReference,
+      BookingRequestDto(authenticationHelperService.currentUserName, requestDto.applicationMethodType),
+    )
   }
 
-  fun cancelVisit(reference: String, outcomeDto: OutcomeDto): VisitDto? {
-    return visitSchedulerClient.cancelVisit(reference, CancelVisitDto(outcomeDto, authenticationHelperService.currentUserName))
+  fun cancelVisit(reference: String, cancelVisitDto: CancelVisitOrchestrationDto): VisitDto? {
+    return visitSchedulerClient.cancelVisit(
+      reference,
+      CancelVisitDto(
+        cancelVisitDto.cancelOutcome,
+        authenticationHelperService.currentUserName,
+        cancelVisitDto.applicationMethodType,
+      ),
+    )
   }
 
   fun changeReservedVisitSlot(applicationReference: String, changeVisitSlotRequestDto: ChangeVisitSlotRequestDto): VisitDto? {

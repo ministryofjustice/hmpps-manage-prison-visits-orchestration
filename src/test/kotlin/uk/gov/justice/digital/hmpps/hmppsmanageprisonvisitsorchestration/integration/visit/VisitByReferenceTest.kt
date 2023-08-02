@@ -24,9 +24,7 @@ class VisitByReferenceTest : IntegrationTestBase() {
   fun `when visit exists search by reference returns that visit`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val createdBy = "created-user"
-    val lastUpdatedBy = "updated-user"
-    val visitDto = createVisitDto(reference = reference, createdBy = createdBy, updatedBy = lastUpdatedBy, cancelledBy = null)
+    val visitDto = createVisitDto(reference = reference)
     visitSchedulerMockServer.stubGetVisit(reference, visitDto)
 
     // When
@@ -36,9 +34,6 @@ class VisitByReferenceTest : IntegrationTestBase() {
     responseSpec.expectStatus().isOk
     val visitDtoResponse = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, VisitDto::class.java)
     Assertions.assertThat(visitDtoResponse.reference).isEqualTo(visitDto.reference)
-    Assertions.assertThat(visitDtoResponse.createdBy).isEqualTo(createdBy)
-    Assertions.assertThat(visitDtoResponse.updatedBy).isEqualTo(lastUpdatedBy)
-    Assertions.assertThat(visitDtoResponse.cancelledBy).isNull()
   }
 
   @Test
