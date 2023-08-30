@@ -30,6 +30,7 @@ class VisitSchedulerService(
   private val visitSchedulerClient: VisitSchedulerClient,
   private val visitDetailsClient: VisitDetailsClient,
   private val authenticationHelperService: AuthenticationHelperService,
+  private val notificationService: NotificationService,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -40,7 +41,7 @@ class VisitSchedulerService(
   }
 
   /**
-   * Gets further visit details like usernames, contact details etc for a given visit reference.
+   * Gets further visit details like usernames, contact details etc. for a given visit reference.
    */
   fun getVisitHistoryByReference(reference: String): VisitHistoryDetailsDto? {
     return visitDetailsClient.getVisitHistoryByReference(reference)
@@ -71,7 +72,12 @@ class VisitSchedulerService(
     return visitSchedulerClient.bookVisitSlot(
       applicationReference,
       BookingRequestDto(authenticationHelperService.currentUserName, requestDto.applicationMethodType),
-    )
+    ).also { visit ->
+      visit?.let {
+        LOG.info("Successfully booked visit with reference - ${visit.reference}")
+        sendConfirmation(NotificationService.NotificationEvent.VISIT_BOOKING, visit)
+      }
+    }
   }
 
   fun cancelVisit(reference: String, cancelVisitDto: CancelVisitOrchestrationDto): VisitDto? {
@@ -82,7 +88,11 @@ class VisitSchedulerService(
         authenticationHelperService.currentUserName,
         cancelVisitDto.applicationMethodType,
       ),
-    )
+    ).also { visit ->
+      visit?.let {
+        LOG.info("Successfully cancelled visit with reference - ${visit.reference}")
+      }
+    }
   }
 
   fun changeReservedVisitSlot(applicationReference: String, changeVisitSlotRequestDto: ChangeVisitSlotRequestDto): VisitDto? {
@@ -107,5 +117,14 @@ class VisitSchedulerService(
 
   fun getSessionSchedule(prisonCode: String, sessionDate: LocalDate): List<SessionScheduleDto>? {
     return visitSchedulerClient.getSessionSchedule(prisonCode, sessionDate)
+  }
+
+  fun sendConfirmation(notificationEvent: NotificationService.NotificationEvent, visit: VisitDto) {
+    try {
+      notificationService.sendConfirmation(notificationEvent, visit)
+      LOG.info("${notificationEvent.description} SMS sent for ${visit.reference}")
+    } catch (e: Exception) {
+      LOG.error("Failed to send SMS for ${notificationEvent.description} event with reference - ${visit.reference}")
+    }
   }
 }

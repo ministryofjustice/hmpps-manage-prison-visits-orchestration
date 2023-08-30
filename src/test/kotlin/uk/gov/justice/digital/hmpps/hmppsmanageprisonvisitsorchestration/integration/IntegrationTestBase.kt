@@ -14,6 +14,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ChangeVisitSlotRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerReserveVisitSlotDto
@@ -63,6 +64,44 @@ abstract class IntegrationTestBase {
       prisonOffenderSearchMockServer.stop()
       prisonerContactRegistryMockServer.stop()
       prisonRegisterMockServer.stop()
+    }
+
+    fun createVisitDto(
+      reference: String = "aa-bb-cc-dd",
+      applicationReference: String = "aaa-bbb-ccc-ddd",
+      prisonerId: String = "AB12345DS",
+      prisonCode: String = "MDI",
+      visitRoom: String = "A1 L3",
+      visitType: VisitType = VisitType.SOCIAL,
+      visitStatus: VisitStatus = VisitStatus.BOOKED,
+      visitRestriction: VisitRestriction = VisitRestriction.OPEN,
+      startTimestamp: LocalDateTime = LocalDateTime.now(),
+      endTimestamp: LocalDateTime = startTimestamp.plusHours(1),
+      outcomeStatus: OutcomeStatus? = null,
+      createdTimestamp: LocalDateTime = LocalDateTime.now(),
+      modifiedTimestamp: LocalDateTime = LocalDateTime.now(),
+      sessionTemplateReference: String = "ref.ref.ref",
+      visitors: List<VisitorDto>? = null,
+      visitContact: ContactDto = ContactDto("John Smith", "01111111111"),
+    ): VisitDto {
+      return VisitDto(
+        applicationReference = applicationReference,
+        sessionTemplateReference = sessionTemplateReference,
+        reference = reference,
+        prisonerId = prisonerId,
+        prisonCode = prisonCode,
+        visitRoom = visitRoom,
+        visitType = visitType,
+        visitStatus = visitStatus,
+        visitRestriction = visitRestriction,
+        startTimestamp = startTimestamp,
+        endTimestamp = endTimestamp,
+        outcomeStatus = outcomeStatus,
+        createdTimestamp = createdTimestamp,
+        modifiedTimestamp = modifiedTimestamp,
+        visitors = visitors,
+        visitContact = visitContact,
+      )
     }
   }
 
@@ -126,42 +165,6 @@ abstract class IntegrationTestBase {
     queryParams.add("page=$page")
     queryParams.add("size=$size")
     return queryParams
-  }
-
-  final fun createVisitDto(
-    reference: String = "aa-bb-cc-dd",
-    applicationReference: String = "aaa-bbb-ccc-ddd",
-    prisonerId: String = "AB12345DS",
-    prisonCode: String = "MDI",
-    visitRoom: String = "A1 L3",
-    visitType: VisitType = VisitType.SOCIAL,
-    visitStatus: VisitStatus = VisitStatus.BOOKED,
-    visitRestriction: VisitRestriction = VisitRestriction.OPEN,
-    startTimestamp: LocalDateTime = LocalDateTime.now(),
-    endTimestamp: LocalDateTime = startTimestamp.plusHours(1),
-    outcomeStatus: OutcomeStatus? = null,
-    createdTimestamp: LocalDateTime = LocalDateTime.now(),
-    modifiedTimestamp: LocalDateTime = LocalDateTime.now(),
-    sessionTemplateReference: String = "ref.ref.ref",
-    visitors: List<VisitorDto>? = null,
-  ): VisitDto {
-    return VisitDto(
-      applicationReference = applicationReference,
-      sessionTemplateReference = sessionTemplateReference,
-      reference = reference,
-      prisonerId = prisonerId,
-      prisonCode = prisonCode,
-      visitRoom = visitRoom,
-      visitType = visitType,
-      visitStatus = visitStatus,
-      visitRestriction = visitRestriction,
-      startTimestamp = startTimestamp,
-      endTimestamp = endTimestamp,
-      outcomeStatus = outcomeStatus,
-      createdTimestamp = createdTimestamp,
-      modifiedTimestamp = modifiedTimestamp,
-      visitors = visitors,
-    )
   }
 
   fun createReserveVisitSlotDto(prisonerId: String, sessionTemplateReference: String = "ref.ref.ref"): VisitSchedulerReserveVisitSlotDto {
