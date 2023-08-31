@@ -103,8 +103,8 @@ hmpps:
   auth:
     timeout: 10s
 
-gov-uk-notify:
-  enabled: true
+notify:
+  apikey: ${notify.api.key}
   template-id:
     visit-booking: 85904166-e539-43f5-9f51-7ba106cc61bd
     visit-update: 386e83ff-5734-4d99-8279-b3eacb7cc8b8

@@ -65,5 +65,6 @@ feature:
     incentives:
       iep-review.test: false
 
-gov-uk-notify:
-  enabled: false
+notify:
+  apikey: notify-apikey
+  enabled: true

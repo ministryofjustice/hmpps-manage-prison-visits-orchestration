@@ -26,3 +26,7 @@ prisoner-contact.registry.url: https://prisoner-contact-registry-dev.prison.serv
 prison-register.api.url: https://prison-register-dev.hmpps.service.justice.gov.uk
 
 whereabouts.api.url: https://whereabouts-api-dev.service.justice.gov.uk
+
+notify:
+  apikey: notify-apikey
+  enabled: true

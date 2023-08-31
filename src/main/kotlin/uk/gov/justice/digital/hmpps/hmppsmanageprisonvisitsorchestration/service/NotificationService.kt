@@ -15,10 +15,10 @@ import java.time.format.DateTimeFormatter
 class NotificationService(
   val client: NotificationClient,
   val prisonRegisterClient: PrisonRegisterClient,
-  @Value("\${gov-uk-notify.enabled:}") private val enabled: Boolean,
-  @Value("\${gov-uk-notify.template-id.visit-booking:}") private val visitBookingTemplateId: String,
-  @Value("\${gov-uk-notify.template-id.visit-update:}") private val visitUpdateTemplateId: String,
-  @Value("\${gov-uk-notify.template-id.visit-cancel:}") private val visitCancelTemplateId: String,
+  @Value("\${notify.enabled:}") private val enabled: Boolean,
+  @Value("\${notify.template-id.visit-booking:}") private val visitBookingTemplateId: String,
+  @Value("\${notify.template-id.visit-update:}") private val visitUpdateTemplateId: String,
+  @Value("\${notify.template-id.visit-cancel:}") private val visitCancelTemplateId: String,
 ) {
 
   companion object {
@@ -74,7 +74,7 @@ class NotificationService(
               "date" to getFormattedVisitDate(visit.startTimestamp.toLocalDate()),
               "ref number" to visit.reference,
               // TODO - this is blocked till story to save a prison's phone number is implemented
-              // "prison phone number" to "",
+              "prison phone number" to "",
             ),
           )
         }
