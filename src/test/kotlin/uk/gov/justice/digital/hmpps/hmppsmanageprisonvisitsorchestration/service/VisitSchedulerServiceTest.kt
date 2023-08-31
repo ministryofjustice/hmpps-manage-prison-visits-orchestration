@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration
+package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -15,9 +15,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AuthenticationHelperService
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.NotificationService
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
 
 @ExtendWith(MockitoExtension::class)
 class VisitSchedulerServiceTest {

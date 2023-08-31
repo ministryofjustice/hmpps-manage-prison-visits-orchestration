@@ -103,6 +103,17 @@ abstract class IntegrationTestBase {
         visitContact = visitContact,
       )
     }
+
+    fun createPrisonDto(
+      prisonId: String = "HEI",
+      prisonName: String = "Hewell",
+      active: Boolean = true,
+      male: Boolean = true,
+      female: Boolean = false,
+      contracted: Boolean = false,
+    ): PrisonDto {
+      return PrisonDto(prisonId, prisonName, active, male, female, contracted)
+    }
   }
 
   @Autowired

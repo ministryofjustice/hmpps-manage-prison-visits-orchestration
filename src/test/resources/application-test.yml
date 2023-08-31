@@ -64,3 +64,6 @@ feature:
   event:
     incentives:
       iep-review.test: false
+
+gov-uk-notify:
+  enabled: false
