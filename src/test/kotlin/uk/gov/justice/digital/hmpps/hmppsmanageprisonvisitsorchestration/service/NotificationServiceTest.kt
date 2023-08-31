@@ -53,7 +53,7 @@ class NotificationServiceTest {
       visit.visitContact!!.telephone,
       mapOf(
         "prison" to prison.prisonName,
-        "time" to "11:00 am",
+        "time" to "11:00 AM",
         "dayofweek" to "Friday",
         "date" to "01 September 2023",
         "ref number" to visit.reference,
@@ -82,7 +82,7 @@ class NotificationServiceTest {
       visit.visitContact!!.telephone,
       mapOf(
         "prison" to prison.prisonName,
-        "time" to "11:00 am",
+        "time" to "11:00 AM",
         "dayofweek" to "Friday",
         "date" to "01 September 2023",
         "ref number" to visit.reference,
@@ -111,7 +111,7 @@ class NotificationServiceTest {
       visit.visitContact!!.telephone,
       mapOf(
         "prison" to prison.prisonName,
-        "time" to "11:00 am",
+        "time" to "11:00 AM",
         "date" to "01 September 2023",
         "ref number" to visit.reference,
         // TODO - this is blocked till story to save a prison's phone number is implemented

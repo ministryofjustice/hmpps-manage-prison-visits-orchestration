@@ -87,7 +87,7 @@ class NotificationService(
   }
 
   fun getFormattedVisitTime(visitStartTime: LocalTime): String {
-    return visitStartTime.format(DateTimeFormatter.ofPattern(SMS_TIME_PATTERN))
+    return visitStartTime.format(DateTimeFormatter.ofPattern(SMS_TIME_PATTERN)).uppercase()
   }
 
   fun getFormattedDayOfWeek(visitDate: LocalDate): String {
