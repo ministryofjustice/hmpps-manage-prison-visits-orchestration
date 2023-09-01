@@ -14,7 +14,7 @@ parameters:
 feature_branch: &feature_branch
   filters:
     branches:
-      ignore: main, develop
+      ignore: main
 
 jobs:
   validate:
