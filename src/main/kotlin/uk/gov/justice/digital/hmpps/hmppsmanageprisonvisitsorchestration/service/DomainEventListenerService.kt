@@ -35,8 +35,9 @@ class DomainEventListenerService(
   fun onDomainEvent(
     rawMessage: String,
   ): CompletableFuture<Void> {
-    LOG.debug("Received message: $rawMessage")
+    LOG.debug("Enter onDomainEvent")
     val sqsMessage: SQSMessage = objectMapper.readValue(rawMessage)
+    LOG.debug("Received message: ${sqsMessage.message}")
     return asCompletableFuture {
       when (sqsMessage.type) {
         "Notification" -> {
@@ -46,7 +47,7 @@ class DomainEventListenerService(
           if (enabled) {
             if (context.containsBean(domainEvent.eventType)) {
               val eventNotifier = context.getBean(domainEvent.eventType) as IEventNotifier
-              eventNotifier.process(sqsMessage)
+              eventNotifier.process(domainEvent)
             } else {
               LOG.info("EventNotifier dose not exist for Type: ${domainEvent.eventType}")
             }

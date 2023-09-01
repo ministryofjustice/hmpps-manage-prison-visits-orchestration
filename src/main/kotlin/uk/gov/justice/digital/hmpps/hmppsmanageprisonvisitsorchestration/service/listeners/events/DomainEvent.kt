@@ -2,4 +2,5 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.servic
 
 data class DomainEvent(
   val eventType: String,
+  val additionalInformation: String,
 )

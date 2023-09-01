@@ -1,85 +1,31 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.domainevents
 
-import org.assertj.core.api.Assertions
 import org.awaitility.kotlin.await
-import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilAsserted
-import org.awaitility.kotlin.untilCallTo
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
-import org.mockito.kotlin.never
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import software.amazon.awssdk.services.sns.model.MessageAttributeValue
-import software.amazon.awssdk.services.sns.model.PublishRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.DomainEvent
-import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.NonAssociationChangedInfo
 
-// @Disabled
-class PrisonVisitsEventsTest : PrisonVisitsEventsIntegrationTestBase() {
+class PrisonVisitsEventsTest() : PrisonVisitsEventsIntegrationTestBase() {
 
   @Test
-  fun `Test incentives-iep-review-inserted is processed`() {
+  fun `Test prisoner non association detail changed is processed correctly`() {
     // Given
-    val publishRequest = createDomainEventPublishRequest("incentives.iep-review.inserted")
+    val nonAssociationChangedInfo = NonAssociationChangedInfo("1", "2", validFromDate = "2023-10-03", "2023-12-03")
+    val nonAssociationChangedInfoDto = NonAssociationChangedNotificationDto(nonAssociationChangedInfo)
+    val domainEvent = createDomainEvent("prisoner.non-association-detail.changed", objectMapper.writeValueAsString(nonAssociationChangedInfo))
+    val jsonSqsMessage = createSQSMessage(domainEvent)
+
+    visitSchedulerMockServer.stubPostNotificationNonAssociationChanged()
 
     // When
-    awsSnsClient.publish(publishRequest).get()
-
+    domainEventListenerService.onDomainEvent(jsonSqsMessage)
     // Then
-    await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
-    await untilAsserted { verify(prisonerIncentivesInsertedNotifierSpy, times(1)).processEvent(any()) }
-  }
-
-  @Test
-  fun `Test incentives-iep-review-deleted is processed`() {
-    // Given
-    val publishRequest = createDomainEventPublishRequest("incentives.iep-review.deleted")
-
-    // When
-    awsSnsClient.publish(publishRequest).get()
-
-    // Then
-    await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
-    await untilAsserted { verify(prisonerIncentivesDeletedNotifierSpy, times(1)).processEvent(any()) }
-  }
-
-  @Test
-  fun `Test incentives-iep-review-updated is processed`() {
-    // Given
-    val publishRequest = createDomainEventPublishRequest("incentives.iep-review.updated")
-
-    // When
-    awsSnsClient.publish(publishRequest).get()
-
-    // Then
-    await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
-    await untilAsserted { verify(prisonerIncentivesUpdatedNotifierSpy, times(1)).processEvent(any()) }
-  }
-
-  @Test
-  fun `Test event switch set to false stops processing`() {
-    // Given
-    val publishRequest = createDomainEventPublishRequest("incentives.iep-review.test")
-
-    // When
-    awsSnsClient.publish(publishRequest).get()
-
-    // Then
-    await untilAsserted { verify(prisonerIncentivesUpdatedNotifierSpy, never()).processEvent(any()) }
-    await untilAsserted { Assertions.assertThat(eventFeatureSwitch.isEnabled("incentives.iep-review.test")).isFalse }
-  }
-
-  private fun createDomainEventPublishRequest(eventType: String): PublishRequest? {
-    val domainEvent = DomainEvent(eventType = eventType)
-    val domainEventJson = objectMapper.writeValueAsString(domainEvent)
-    val messageAttributes = mapOf(
-      "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(domainEvent.eventType).build(),
-    )
-
-    return PublishRequest.builder()
-      .topicArn(topicArn)
-      .message(domainEventJson)
-      .messageAttributes(messageAttributes).build()
+    await untilAsserted { verify(nonAssociationChangedNotifier, times(1)).processEvent(any()) }
+    await untilAsserted { verify(visitSchedulerClient, times(1)).processNonAssociations(eq(nonAssociationChangedInfoDto)) }
   }
 }
