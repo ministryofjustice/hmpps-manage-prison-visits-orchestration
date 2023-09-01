@@ -14,7 +14,7 @@ parameters:
 feature_branch: &feature_branch
   filters:
     branches:
-      ignore: main
+      ignore: main, develop
 
 jobs:
   validate:
@@ -169,9 +169,6 @@ workflows:
     jobs:
       - validate:
           <<: *feature_branch
-          filters:
-            tags:
-              ignore: /.*/
       - hmpps/helm_lint:
           <<: *feature_branch
           name: helm_lint
