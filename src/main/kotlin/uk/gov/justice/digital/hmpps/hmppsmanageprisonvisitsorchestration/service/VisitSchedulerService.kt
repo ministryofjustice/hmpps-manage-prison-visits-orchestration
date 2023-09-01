@@ -21,7 +21,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.NonAssociationChangedInfo
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -107,5 +109,9 @@ class VisitSchedulerService(
 
   fun getSessionSchedule(prisonCode: String, sessionDate: LocalDate): List<SessionScheduleDto>? {
     return visitSchedulerClient.getSessionSchedule(prisonCode, sessionDate)
+  }
+
+  fun processNonAssociations(nonAssociationChangedInfo: NonAssociationChangedInfo) {
+    visitSchedulerClient.processNonAssociations(NonAssociationChangedNotificationDto(nonAssociationChangedInfo))
   }
 }

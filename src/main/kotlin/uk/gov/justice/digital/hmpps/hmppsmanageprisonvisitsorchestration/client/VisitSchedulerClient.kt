@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
@@ -20,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import java.time.Duration
 import java.time.LocalDate
@@ -35,6 +38,11 @@ class VisitSchedulerClient(
   @Qualifier("visitSchedulerWebClient") private val webClient: WebClient,
   @Value("\${visit-scheduler.api.timeout:10s}") val apiTimeout: Duration,
 ) {
+
+  companion object {
+    val LOG: Logger = LoggerFactory.getLogger(this::class.java)
+  }
+
   fun getVisitByReference(reference: String): VisitDto? {
     return webClient.get()
       .uri("/visits/$reference")
@@ -164,6 +172,15 @@ class VisitSchedulerClient(
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono<List<SessionScheduleDto>>().block(apiTimeout)
+  }
+
+  fun processNonAssociations(sendDto: NonAssociationChangedNotificationDto) {
+    webClient.post()
+      .uri("/visits/notification/nonAssociation/changed")
+      .body(BodyInserters.fromValue(sendDto))
+      .retrieve()
+      .toBodilessEntity()
+      .block(apiTimeout)
   }
 
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {
