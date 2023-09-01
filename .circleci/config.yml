@@ -11,11 +11,6 @@ parameters:
     type: string
     default: prison-visit-booking-alerts
 
-feature_branch: &feature_branch
-  filters:
-    branches:
-      ignore: main
-
 jobs:
   validate:
     executor:
@@ -168,21 +163,31 @@ workflows:
   build-test-deploy-feature-branch:
     jobs:
       - validate:
-          <<: *feature_branch
+          filters:
+            tags:
+              ignore: /.*/
       - hmpps/helm_lint:
-          <<: *feature_branch
           name: helm_lint
       - hmpps/build_multiplatform_docker:
-          <<: *feature_branch
           name: build_docker
+          filters:
+            branches:
+              only:
+                - VB-2693-integrate-backend-with-gov-uk-notify
       - request-dev-preview-approval:
-        <<: *feature_branch
-        type: approval
+          type: approval
+          filters:
+            branches:
+              only:
+                - VB-2693-integrate-backend-with-gov-uk-notify
       - hmpps/deploy_env:
-          <<: *feature_branch
-          name: deploy_dev_preview
+          name: deploy_dev
           env: "dev"
           context: hmpps-common-vars
+          filters:
+            branches:
+              only:
+                - VB-2693-integrate-backend-with-gov-uk-notify
           requires:
             - validate
             - helm_lint
