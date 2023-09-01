@@ -11,6 +11,11 @@ parameters:
     type: string
     default: prison-visit-booking-alerts
 
+feature_branch: &feature_branch
+  filters:
+    branches:
+      ignore: main, develop
+
 jobs:
   validate:
     executor:
@@ -159,6 +164,34 @@ workflows:
             - hmpps-manage-prison-visits-orchestration-preprod
           requires:
             - request-preprod-approval
+
+  build-test-deploy-feature-branch:
+    jobs:
+      - validate:
+          <<: *feature_branch
+          filters:
+            tags:
+              ignore: /.*/
+      - hmpps/helm_lint:
+          <<: *feature_branch
+          name: helm_lint
+      - hmpps/build_multiplatform_docker:
+          <<: *feature_branch
+          name: build_docker
+      - request-dev-preview-approval:
+        <<: *feature_branch
+        type: approval
+      - hmpps/deploy_env:
+          <<: *feature_branch
+          name: deploy_dev_preview
+          env: "dev"
+          context: hmpps-common-vars
+          requires:
+            - validate
+            - helm_lint
+            - build_docker
+            - request-dev-preview-approval
+
   security:
     triggers:
       - schedule:
