@@ -17,7 +17,7 @@ import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
 
   @Test
-  fun `Test incentives-iep-review-inserted is processed`() {
+  fun `test incentives-iep-review-inserted is processed`() {
     // Given
     val publishRequest = createDomainEventPublishRequest("incentives.iep-review.inserted")
 
@@ -30,7 +30,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
   }
 
   @Test
-  fun `Test incentives-iep-review-deleted is processed`() {
+  fun `test incentives-iep-review-deleted is processed`() {
     // Given
     val publishRequest = createDomainEventPublishRequest("incentives.iep-review.deleted")
 
@@ -43,7 +43,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
   }
 
   @Test
-  fun `Test incentives-iep-review-updated is processed`() {
+  fun `test incentives-iep-review-updated is processed`() {
     // Given
     val publishRequest = createDomainEventPublishRequest("incentives.iep-review.updated")
 
@@ -56,7 +56,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
   }
 
   @Test
-  fun `Test prisoner non association detail changed is processed`() {
+  fun `test prisoner non association detail changed is processed`() {
     // Given
     val additionalInformation = NonAssociationChangedInfo("1", "2", validFromDate = "2023-10-03", "2023-12-03")
     val publishRequest = createDomainEventPublishRequest("prisoner.non-association-detail.changed", objectMapper.writeValueAsString(additionalInformation))
@@ -69,7 +69,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
   }
 
   @Test
-  fun `Test prisoner non association detail changed is processed when no validToDate`() {
+  fun `test prisoner non association detail changed is processed when no valid to date`() {
     // Given
     val additionalInformation = NonAssociationChangedInfo("1", "2", validFromDate = "2023-10-03")
     val publishRequest = createDomainEventPublishRequest("prisoner.non-association-detail.changed", objectMapper.writeValueAsString(additionalInformation))
@@ -82,7 +82,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
   }
 
   @Test
-  fun `Test event switch set to false stops processing`() {
+  fun `test event switch set to false stops processing`() {
     // Given
     val publishRequest = createDomainEventPublishRequest("incentives.iep-review.test")
 
