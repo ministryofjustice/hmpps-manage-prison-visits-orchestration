@@ -23,7 +23,7 @@ class PrisonerNonAssociationChangedNotifier(
 
   override fun processEvent(domainEvent: DomainEvent) {
     val nonAssociationChangedInfo: NonAssociationChangedInfo = objectMapper.readValue(domainEvent.additionalInformation)
-    LOG.debug("NonAssociationChangedInfo Info:$nonAssociationChangedInfo")
+    LOG.debug("Enter NonAssociationChangedInfo Info:$nonAssociationChangedInfo")
 
     visitSchedulerService.processNonAssociations(nonAssociationChangedInfo)
   }

@@ -15,6 +15,6 @@ data class NonAssociationChangedNotificationDto(
     info.prisonerNumber,
     info.nonAssociationPrisonerNumber,
     LocalDate.parse(info.validFromDate, DateTimeFormatter.ISO_DATE),
-    LocalDate.parse(info.validToDate, DateTimeFormatter.ISO_DATE),
+    info.validToDate?.let { LocalDate.parse(info.validToDate, DateTimeFormatter.ISO_DATE) },
   )
 }
