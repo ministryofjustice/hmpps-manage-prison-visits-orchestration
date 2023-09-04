@@ -176,7 +176,7 @@ class VisitSchedulerClient(
 
   fun processNonAssociations(sendDto: NonAssociationChangedNotificationDto) {
     webClient.post()
-      .uri("/visits/notification/nonAssociation/changed")
+      .uri("/visits/notification/non-association/changed")
       .body(BodyInserters.fromValue(sendDto))
       .retrieve()
       .toBodilessEntity()

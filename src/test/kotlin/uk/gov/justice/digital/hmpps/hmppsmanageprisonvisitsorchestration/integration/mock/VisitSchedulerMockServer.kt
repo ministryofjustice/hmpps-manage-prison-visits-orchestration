@@ -41,7 +41,7 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
   fun stubPostNotificationNonAssociationChanged() {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
-      post("/visits/notification/nonAssociation/changed")
+      post("/visits/notification/non-association/changed")
         .willReturn(
           responseBuilder.withStatus(
             HttpStatus.OK.value(),
