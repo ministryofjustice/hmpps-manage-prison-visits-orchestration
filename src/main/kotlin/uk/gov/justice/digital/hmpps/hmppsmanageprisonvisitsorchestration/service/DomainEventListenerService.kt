@@ -37,7 +37,7 @@ class DomainEventListenerService(
   ): CompletableFuture<Void> {
     LOG.debug("Enter onDomainEvent")
     val sqsMessage: SQSMessage = objectMapper.readValue(rawMessage)
-    LOG.debug("Received message: ${sqsMessage.message}")
+    LOG.debug("Received message: type:${sqsMessage.type} message:${sqsMessage.message}")
     return asCompletableFuture {
       when (sqsMessage.type) {
         "Notification" -> {

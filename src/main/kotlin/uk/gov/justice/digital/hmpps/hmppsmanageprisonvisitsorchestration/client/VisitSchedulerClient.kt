@@ -180,6 +180,7 @@ class VisitSchedulerClient(
       .body(BodyInserters.fromValue(sendDto))
       .retrieve()
       .toBodilessEntity()
+      .doOnError { e -> LOG.error("Could not processNonAssociations :", e) }
       .block(apiTimeout)
   }
 
