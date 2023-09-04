@@ -8,4 +8,7 @@ data class BookingOrchestrationRequestDto(
   @Schema(description = "application method", required = true)
   @field:NotNull
   val applicationMethodType: ApplicationMethodType,
+
+  @Schema(description = "true if update to an existing booking, false if its a new booking", required = true)
+  val isUpdate: Boolean
 )

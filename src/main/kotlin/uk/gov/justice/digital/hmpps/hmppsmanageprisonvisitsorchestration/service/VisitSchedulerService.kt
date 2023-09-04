@@ -74,9 +74,13 @@ class VisitSchedulerService(
       BookingRequestDto(authenticationHelperService.currentUserName, requestDto.applicationMethodType),
     ).also { visit ->
       visit?.let {
-        // TODO - add check for create or update
-        LOG.info("Successfully booked visit with reference - ${visit.reference}")
-        sendConfirmation(NotificationService.NotificationEvent.VISIT_BOOKING, visit)
+        if (requestDto.isUpdate) {
+          LOG.info("Successfully updated an existing visit with reference - ${visit.reference}")
+          sendConfirmation(NotificationService.NotificationEvent.VISIT_UPDATE, visit)
+        } else {
+          LOG.info("Successfully booked a new visit with reference - ${visit.reference}")
+          sendConfirmation(NotificationService.NotificationEvent.VISIT_BOOKING, visit)
+        }
       }
     }
   }
