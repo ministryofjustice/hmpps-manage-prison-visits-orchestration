@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.DomainEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.NonAssociationChangedInfo
 
-const val PRISONER_NON_ASSOCIATION_DETAIL_CHANGED = "prisoner.non-association-detail.changed"
+const val PRISONER_NON_ASSOCIATION_DETAIL_CHANGED = "prison-offender-events.prisoner.non-association-detail.changed"
 
 @Component(value = PRISONER_NON_ASSOCIATION_DETAIL_CHANGED)
 class PrisonerNonAssociationChangedNotifier(

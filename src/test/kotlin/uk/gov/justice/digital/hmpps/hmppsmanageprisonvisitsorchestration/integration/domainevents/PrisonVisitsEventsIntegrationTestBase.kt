@@ -112,8 +112,8 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     return DomainEvent(eventType = eventType, additionalInformation)
   }
 
-  fun createSQSMessage(domainEvent: DomainEvent): String {
-    val sqaMessage = SQSMessage(type = "Notification", messageId = "123", message = objectMapper.writeValueAsString(domainEvent))
+  fun createSQSMessage(domainEventJson: String): String {
+    val sqaMessage = SQSMessage(type = "Notification", messageId = "123", message = domainEventJson)
     return objectMapper.writeValueAsString(sqaMessage)
   }
 

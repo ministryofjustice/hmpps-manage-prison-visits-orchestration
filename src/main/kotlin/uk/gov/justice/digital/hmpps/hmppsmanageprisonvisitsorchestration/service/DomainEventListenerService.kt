@@ -35,25 +35,30 @@ class DomainEventListenerService(
   fun onDomainEvent(
     rawMessage: String,
   ): CompletableFuture<Void> {
-    LOG.debug("Enter onDomainEvent")
-    val sqsMessage: SQSMessage = objectMapper.readValue(rawMessage)
-    LOG.debug("Received message: type:${sqsMessage.type} message:${sqsMessage.message}")
     return asCompletableFuture {
-      when (sqsMessage.type) {
-        "Notification" -> {
-          val domainEvent = objectMapper.readValue<DomainEvent>(sqsMessage.message)
-          val enabled = eventFeatureSwitch.isEnabled(domainEvent.eventType)
-          LOG.debug("Type: ${domainEvent.eventType} Enabled:$enabled")
-          if (enabled) {
-            if (context.containsBean(domainEvent.eventType)) {
-              val eventNotifier = context.getBean(domainEvent.eventType) as IEventNotifier
-              eventNotifier.process(domainEvent)
-            } else {
-              LOG.info("EventNotifier dose not exist for Type: ${domainEvent.eventType}")
+      try {
+        LOG.debug("Enter onDomainEvent")
+        val sqsMessage: SQSMessage = objectMapper.readValue(rawMessage)
+        LOG.debug("Received message: type:${sqsMessage.type} message:${sqsMessage.message}")
+
+        when (sqsMessage.type) {
+          "Notification" -> {
+            val domainEvent = objectMapper.readValue<DomainEvent>(sqsMessage.message)
+            val enabled = eventFeatureSwitch.isEnabled(domainEvent.eventType)
+            LOG.debug("Type: ${domainEvent.eventType} Enabled:$enabled")
+            if (enabled) {
+              if (context.containsBean(domainEvent.eventType)) {
+                val eventNotifier = context.getBean(domainEvent.eventType) as IEventNotifier
+                eventNotifier.process(domainEvent)
+              } else {
+                LOG.info("EventNotifier dose not exist for Type: ${domainEvent.eventType}")
+              }
             }
           }
+          else -> LOG.info("Received a message I wasn't expecting Type: ${sqsMessage.type}")
         }
-        else -> LOG.info("Received a message I wasn't expecting Type: ${sqsMessage.type}")
+      } catch (e: Exception) {
+        LOG.error("Fail to process domain event", e)
       }
     }
   }
