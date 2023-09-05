@@ -59,7 +59,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
   fun `test prisoner non association detail changed is processed`() {
     // Given
     val additionalInformation = NonAssociationChangedInfo("1", "2", validFromDate = "2023-10-03", "2023-12-03")
-    val publishRequest = createDomainEventPublishRequest("prisoner.non-association-detail.changed", objectMapper.writeValueAsString(additionalInformation))
+    val publishRequest = createDomainEventPublishRequest("prison-offender-events.prisoner.non-association-detail.changed", objectMapper.writeValueAsString(additionalInformation))
 
     // When
     awsSnsClient.publish(publishRequest).get()
@@ -72,7 +72,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
   fun `test prisoner non association detail changed is processed when no valid to date`() {
     // Given
     val additionalInformation = NonAssociationChangedInfo("1", "2", validFromDate = "2023-10-03")
-    val publishRequest = createDomainEventPublishRequest("prisoner.non-association-detail.changed", objectMapper.writeValueAsString(additionalInformation))
+    val publishRequest = createDomainEventPublishRequest("prison-offender-events.prisoner.non-association-detail.changed", objectMapper.writeValueAsString(additionalInformation))
 
     // When
     awsSnsClient.publish(publishRequest).get()
