@@ -47,7 +47,7 @@ class VisitSchedulerServiceTest {
     ).thenReturn(actionedBy)
 
     // When
-    visitSchedulerService.bookVisit(applicationReference, BookingOrchestrationRequestDto(bookingRequestDto.applicationMethodType))
+    visitSchedulerService.bookVisit(applicationReference, BookingOrchestrationRequestDto(bookingRequestDto.applicationMethodType, false))
 
     // Then
     verify(notificationService, times(1)).sendConfirmation(NotificationService.NotificationEvent.VISIT_BOOKING, visitDto)
@@ -69,9 +69,32 @@ class VisitSchedulerServiceTest {
     ).thenReturn(actionedBy)
 
     // When
-    visitSchedulerService.bookVisit(applicationReference, BookingOrchestrationRequestDto(bookingRequestDto.applicationMethodType))
+    visitSchedulerService.bookVisit(applicationReference, BookingOrchestrationRequestDto(bookingRequestDto.applicationMethodType, false))
 
     // Then
     verify(notificationService, times(0)).sendConfirmation(any(), any())
+  }
+
+  @Test
+  fun `when visit is successfully updated then a confirmation SMS is sent`() {
+    // Given
+    val visitDto = IntegrationTestBase.createVisitDto()
+    val applicationReference = "dummy-reference"
+    val actionedBy = "dummy-user"
+    val bookingRequestDto = BookingRequestDto(actionedBy, ApplicationMethodType.NOT_APPLICABLE)
+
+    whenever(
+      visitSchedulerClient.bookVisitSlot(applicationReference, bookingRequestDto),
+    ).thenReturn(visitDto)
+
+    whenever(
+      authenticationHelperService.currentUserName,
+    ).thenReturn(actionedBy)
+
+    // When
+    visitSchedulerService.bookVisit(applicationReference, BookingOrchestrationRequestDto(bookingRequestDto.applicationMethodType, true))
+
+    // Then
+    verify(notificationService, times(1)).sendConfirmation(NotificationService.NotificationEvent.VISIT_UPDATE, visitDto)
   }
 }
