@@ -51,7 +51,7 @@ class DomainEventListenerService(
                 val eventNotifier = context.getBean(domainEvent.eventType) as IEventNotifier
                 eventNotifier.process(domainEvent)
               } else {
-                LOG.info("EventNotifier dose not exist for Type: ${domainEvent.eventType}")
+                LOG.info("EventNotifier does not exist for Type: ${domainEvent.eventType}")
               }
             }
           }
