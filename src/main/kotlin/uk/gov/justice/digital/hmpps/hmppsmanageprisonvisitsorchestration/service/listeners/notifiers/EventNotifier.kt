@@ -13,12 +13,12 @@ abstract class EventNotifier(
   private val objectMapper: ObjectMapper,
 ) : IEventNotifier {
 
-  private companion object {
+  companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
   final override fun process(domainEvent: DomainEvent) {
-    LOG.debug("Entered process for ${this::class.java.name} ")
+    LOG.debug("Entered process for ${this::class.java.name} type: ${domainEvent.eventType}")
     this.processEvent(domainEvent)
   }
 
