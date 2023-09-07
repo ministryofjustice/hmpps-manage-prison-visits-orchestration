@@ -17,7 +17,7 @@ visit-scheduler.api.url: http://localhost:8081
 
 hmpps.auth.url: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
 
-prison.api.url: https://api-dev.prison.service.justice.gov.uk
+prison.api.url: https://prison-api-dev.prison.service.justice.gov.uk
 
 prisoner-offender.search.url: https://prisoner-offender-search-dev.prison.service.justice.gov.uk
 
