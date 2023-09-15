@@ -15,7 +15,7 @@ jobs:
   validate:
     executor:
       name: hmpps/localstack
-      jdk_tag: "19.0"
+      jdk_tag: "20.0"
       localstack_tag: "1.3"
     steps:
       - checkout
