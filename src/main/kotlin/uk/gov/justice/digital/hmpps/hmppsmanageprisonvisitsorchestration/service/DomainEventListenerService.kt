@@ -47,11 +47,8 @@ class DomainEventListenerService(
             val enabled = eventFeatureSwitch.isEnabled(domainEvent.eventType)
             LOG.debug("Type: ${domainEvent.eventType} Enabled:$enabled")
             if (enabled) {
-              if (context.containsBean(domainEvent.eventType)) {
-                val eventNotifier = context.getBean(domainEvent.eventType) as IEventNotifier
-                eventNotifier.process(domainEvent)
-              } else {
-                LOG.info("EventNotifier does not exist for Type:'${domainEvent.eventType}'")
+              getNotifier(domainEvent)?.let {
+                it.process(domainEvent)
               }
             }
           }
@@ -61,6 +58,14 @@ class DomainEventListenerService(
         LOG.error("Fail to process domain event", e)
       }
     }
+  }
+
+  fun getNotifier(domainEvent: DomainEvent): IEventNotifier? {
+    if (context.containsBean(domainEvent.eventType)) {
+      return context.getBean(domainEvent.eventType) as IEventNotifier
+    }
+    LOG.info("EventNotifier does not exist for Type:'${domainEvent.eventType}'")
+    return null
   }
 }
 

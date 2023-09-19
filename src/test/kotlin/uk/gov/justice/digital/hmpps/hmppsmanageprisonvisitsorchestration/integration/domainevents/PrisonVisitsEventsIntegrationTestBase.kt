@@ -27,10 +27,15 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.DomainEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.EventFeatureSwitch
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.SQSMessage
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PersonRestrictionChangedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerIncentivesDeletedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerIncentivesInsertedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerIncentivesUpdatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerNonAssociationChangedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerReceivedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerReleasedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerRestrictionChangedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.VisitorRestrictionChangedNotifier
 import uk.gov.justice.digital.hmpps.prisonertonomisupdate.integration.LocalStackContainer
 import uk.gov.justice.digital.hmpps.prisonertonomisupdate.integration.LocalStackContainer.setLocalStackProperties
 import uk.gov.justice.hmpps.sqs.HmppsQueue
@@ -81,6 +86,24 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
 
   @SpyBean
   lateinit var prisonerIncentivesDeletedNotifierSpy: PrisonerIncentivesDeletedNotifier
+
+  @SpyBean
+  lateinit var personRestrictionChangedNotifierSpy: PersonRestrictionChangedNotifier
+
+  @SpyBean
+  lateinit var prisonerReceivedNotifierSpy: PrisonerReceivedNotifier
+
+  @SpyBean
+  lateinit var prisonerReleasedNotifierSpy: PrisonerReleasedNotifier
+
+  @SpyBean
+  lateinit var prisonerRestrictionChangedNotifierSpy: PrisonerRestrictionChangedNotifier
+
+  @SpyBean
+  lateinit var visitorRestrictionChangedNotifierSpy: VisitorRestrictionChangedNotifier
+
+  @SpyBean
+  lateinit var domainEventListenerServiceSpy: DomainEventListenerService
 
   @SpyBean
   lateinit var visitSchedulerClient: VisitSchedulerClient
