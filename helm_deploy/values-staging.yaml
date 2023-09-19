@@ -16,3 +16,11 @@ generic-service:
     PRISON-REGISTER_API_URL: https://prison-register-dev.hmpps.service.justice.gov.uk
     WHEREABOUTS_API_URL: https://whereabouts-api-dev.service.justice.gov.uk
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
+
+generic-prometheus-alerts:
+  alertSeverity: prison-visit-booking-alerts-nonprod
+  sqsAlertsQueueNames:
+    - "book-a-prison-visit-staging-hmpps_prison_visits_event_queue"
+    - "book-a-prison-visit-staging-hmpps_prison_visits_event_dlq"
+  sqsAlertsOldestThreshold: 1
+  sqsAlertsTotalMessagesThreshold: 1

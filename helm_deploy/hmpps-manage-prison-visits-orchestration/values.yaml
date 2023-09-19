@@ -37,9 +37,9 @@ generic-service:
       SYSTEM_CLIENT_SECRET: "SYSTEM_CLIENT_SECRET"
     hmpps-domain-events-topic:
       HMPPS_SQS_TOPICS_DOMAINEVENTS_ARN: "topic_arn"
-    sqs-prison-visits-event-secret:
+    sqs-hmpps-prison-visits-event-secret:
       HMPPS_SQS_QUEUES_PRISONVISITSEVENTS_QUEUE_NAME: "sqs_queue_name"
-    sqs-prison-visits-event-dlq-secret:
+    sqs-hmpps-prison-visits-event-dlq-secret:
       HMPPS_SQS_QUEUES_PRISONVISITSEVENTS_DLQ_NAME: "sqs_queue_name"
 
   allowlist:

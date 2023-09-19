@@ -20,7 +20,7 @@ generic-service:
 generic-prometheus-alerts:
   alertSeverity: prison-visit-booking-alerts
   sqsAlertsQueueNames:
-    - "Digital-Prison-Services-prod-hmpps_prison_visits_event_queue"
-    - "Digital-Prison-Services-prod-hmpps_prison_visits_event_dlq"
+    - "book-a-prison-visit-prod-hmpps_prison_visits_event_queue"
+    - "book-a-prison-visit-prod-hmpps_prison_visits_event_dlq"
   sqsAlertsOldestThreshold: 1
   sqsAlertsTotalMessagesThreshold: 1
