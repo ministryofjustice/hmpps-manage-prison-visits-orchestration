@@ -10,94 +10,172 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import software.amazon.awssdk.services.sns.model.PublishRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.DELETE_INCENTIVES_EVENT_TYPE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.EventNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.INSERTED_INCENTIVES_EVENT_TYPE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PERSON_RESTRICTION_CHANGED_TYPE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_NON_ASSOCIATION_DETAIL_CHANGED_TYPE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_RECEIVED_TYPE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_RELEASED_TYPE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_RESTRICTION_CHANGED_TYPE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.UPDATED_INCENTIVES_EVENT_TYPE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.VISITOR_RESTRICTION_CHANGED_TYPE
 import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 
-// @Disabled
+private const val TEST_TYPE = "incentives.iep-review.test"
+
 class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
 
   @Test
   fun `test incentives-iep-review-inserted is processed`() {
     // Given
-    val publishRequest = createDomainEventPublishRequest("incentives.iep-review.inserted")
+    val publishRequest = createDomainEventPublishRequest(INSERTED_INCENTIVES_EVENT_TYPE)
 
     // When
-    awsSnsClient.publish(publishRequest).get()
+    sendSqSMessage(publishRequest)
 
     // Then
-    await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
-    await untilAsserted { verify(prisonerIncentivesInsertedNotifierSpy, times(1)).processEvent(any()) }
+    assertStandardCalls(prisonerIncentivesInsertedNotifierSpy)
   }
 
   @Test
   fun `test incentives-iep-review-deleted is processed`() {
     // Given
-    val publishRequest = createDomainEventPublishRequest("incentives.iep-review.deleted")
+    val publishRequest = createDomainEventPublishRequest(DELETE_INCENTIVES_EVENT_TYPE)
 
     // When
-    awsSnsClient.publish(publishRequest).get()
+    sendSqSMessage(publishRequest)
 
     // Then
-    await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
-    await untilAsserted { verify(prisonerIncentivesDeletedNotifierSpy, times(1)).processEvent(any()) }
+    assertStandardCalls(prisonerIncentivesDeletedNotifierSpy)
   }
 
   @Test
   fun `test incentives-iep-review-updated is processed`() {
     // Given
-    val publishRequest = createDomainEventPublishRequest("incentives.iep-review.updated")
+    val publishRequest = createDomainEventPublishRequest(UPDATED_INCENTIVES_EVENT_TYPE)
 
     // When
-    awsSnsClient.publish(publishRequest).get()
+    sendSqSMessage(publishRequest)
 
     // Then
-    await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
-    await untilAsserted { verify(prisonerIncentivesUpdatedNotifierSpy, times(1)).processEvent(any()) }
+    assertStandardCalls(prisonerIncentivesUpdatedNotifierSpy)
+  }
+
+  @Test
+  fun `test person-restriction-changed is processed`() {
+    // Given
+    val publishRequest = createDomainEventPublishRequest(PERSON_RESTRICTION_CHANGED_TYPE)
+
+    // When
+    sendSqSMessage(publishRequest)
+
+    // Then
+    assertStandardCalls(personRestrictionChangedNotifierSpy)
+  }
+
+  @Test
+  fun `test prisoner-received is processed`() {
+    // Given
+    val publishRequest = createDomainEventPublishRequest(PRISONER_RECEIVED_TYPE)
+
+    // When
+    sendSqSMessage(publishRequest)
+
+    // Then
+    assertStandardCalls(prisonerReceivedNotifierSpy)
+  }
+
+  @Test
+  fun `test prisoner-released is processed`() {
+    // Given
+    val publishRequest = createDomainEventPublishRequest(PRISONER_RELEASED_TYPE)
+
+    // When
+    sendSqSMessage(publishRequest)
+
+    // Then
+    assertStandardCalls(prisonerReleasedNotifierSpy)
+  }
+
+  @Test
+  fun `test prisoner-restriction-changed is processed`() {
+    // Given
+    val publishRequest = createDomainEventPublishRequest(PRISONER_RESTRICTION_CHANGED_TYPE)
+
+    // When
+    sendSqSMessage(publishRequest)
+
+    // Then
+    assertStandardCalls(prisonerRestrictionChangedNotifierSpy)
+  }
+
+  @Test
+  fun `test visitor-restriction-changed is processed`() {
+    // Given
+    val publishRequest = createDomainEventPublishRequest(VISITOR_RESTRICTION_CHANGED_TYPE)
+
+    // When
+    sendSqSMessage(publishRequest)
+
+    // Then
+    assertStandardCalls(visitorRestrictionChangedNotifierSpy)
   }
 
   @Test
   fun `test prisoner non association detail changed is processed`() {
     // Given
-    val eventType = "prison-offender-events.prisoner.non-association-detail.changed"
-    val domainEvent = createDomainEventJson(eventType, createAdditionalInformationJson("2023-09-01", "2023-12-03"))
+
+    val domainEvent = createDomainEventJson(PRISONER_NON_ASSOCIATION_DETAIL_CHANGED_TYPE, createAdditionalInformationJson("2023-09-01", "2023-12-03"))
     val publishRequest = createDomainEventPublishRequest("prison-offender-events.prisoner.non-association-detail.changed", domainEvent)
 
     visitSchedulerMockServer.stubPostNotificationNonAssociationChanged()
 
     // When
-    awsSnsClient.publish(publishRequest).get()
+    sendSqSMessage(publishRequest)
+
     // Then
-    await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
-    await untilAsserted { verify(nonAssociationChangedNotifier, times(1)).processEvent(any()) }
+    assertStandardCalls(nonAssociationChangedNotifier)
     await untilAsserted { verify(visitSchedulerClient, times(1)).processNonAssociations(any()) }
   }
 
   @Test
   fun `test prisoner non association detail changed is processed when no valid to date`() {
     // Given
-    val eventType = "prison-offender-events.prisoner.non-association-detail.changed"
-    val domainEvent = createDomainEventJson(eventType, createAdditionalInformationJson("2023-09-01"))
-    val publishRequest = createDomainEventPublishRequest("prison-offender-events.prisoner.non-association-detail.changed", domainEvent)
+
+    val domainEvent = createDomainEventJson(PRISONER_NON_ASSOCIATION_DETAIL_CHANGED_TYPE, createAdditionalInformationJson("2023-09-01"))
+    val publishRequest = createDomainEventPublishRequest(PRISONER_NON_ASSOCIATION_DETAIL_CHANGED_TYPE, domainEvent)
 
     visitSchedulerMockServer.stubPostNotificationNonAssociationChanged()
 
     // When
-    awsSnsClient.publish(publishRequest).get()
+    sendSqSMessage(publishRequest)
+
     // Then
-    await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
-    await untilAsserted { verify(nonAssociationChangedNotifier, times(1)).processEvent(any()) }
+    assertStandardCalls(nonAssociationChangedNotifier)
     await untilAsserted { verify(visitSchedulerClient, times(1)).processNonAssociations(any()) }
   }
 
   @Test
   fun `test event switch set to false stops processing`() {
     // Given
-    val publishRequest = createDomainEventPublishRequest("incentives.iep-review.test")
+    val publishRequest = createDomainEventPublishRequest(TEST_TYPE)
 
     // When
-    awsSnsClient.publish(publishRequest).get()
+    sendSqSMessage(publishRequest)
 
     // Then
-    await untilAsserted { verify(prisonerIncentivesUpdatedNotifierSpy, never()).processEvent(any()) }
-    await untilAsserted { Assertions.assertThat(eventFeatureSwitch.isEnabled("incentives.iep-review.test")).isFalse }
+    await untilAsserted { Assertions.assertThat(eventFeatureSwitch.isEnabled(TEST_TYPE)).isFalse }
+    await untilAsserted { verify(domainEventListenerServiceSpy, never()).getNotifier(any()) }
+  }
+
+  private fun sendSqSMessage(publishRequest: PublishRequest?) {
+    awsSnsClient.publish(publishRequest).get()
+  }
+
+  fun assertStandardCalls(eventNotifierSpy: EventNotifier) {
+    await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
+    await untilAsserted { verify(eventNotifierSpy, times(1)).processEvent(any()) }
   }
 }
