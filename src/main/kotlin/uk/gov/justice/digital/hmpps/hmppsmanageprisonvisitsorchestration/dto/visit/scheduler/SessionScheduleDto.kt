@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
 import uk.gov.justice.digital.hmpps.visitscheduler.dto.sessions.SessionDateRangeDto
 import uk.gov.justice.digital.hmpps.visitscheduler.dto.sessions.SessionTimeSlotDto
 
@@ -23,6 +24,9 @@ data class SessionScheduleDto(
     required = true,
   )
   val capacity: SessionCapacityDto,
+
+  @Schema(description = "visit type", example = "Social", required = true)
+  val visitType: VisitType,
 
   @Schema(description = "prisoner location group", example = "Wing C", required = false)
   val prisonerLocationGroupNames: List<String>,
