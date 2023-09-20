@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.VisitSchedulerMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.DomainEventListenerService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PRISON_VISITS_QUEUE_CONFIG_KEY
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.DomainEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.EventFeatureSwitch
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.SQSMessage
@@ -109,6 +110,9 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
   lateinit var visitSchedulerClient: VisitSchedulerClient
 
   @SpyBean
+  lateinit var visitSchedulerService: VisitSchedulerService
+
+  @SpyBean
   lateinit var nonAssociationChangedNotifier: PrisonerNonAssociationChangedNotifier
 
   @Autowired
@@ -178,12 +182,37 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     return "{\"eventType\":\"$eventType\",\"additionalInformation\":$additionalInformation}"
   }
 
-  fun createAdditionalInformationJson(effectiveDate: String, expiryDate: String? = null): String {
-    val builder = StringBuilder()
-    builder.append("{\"nomsNumber\":\"G7747GD\",\"bookingId\":\"1171243\",\"nonAssociationNomsNumber\":\"A8713DY\",\"nonAssociationBookingId\":\"1202261\",")
-    builder.append("\"effectiveDate\":\"$effectiveDate\"")
+  fun createNonAssociationAdditionalInformationJson(effectiveDate: String, expiryDate: String? = null): String {
+    val jsonVales = HashMap<String, String>()
+    jsonVales["nomsNumber"] = "G7747GD"
+    jsonVales["bookingId"] = "1171243"
+    jsonVales["nonAssociationNomsNumber"] = "A8713DY"
+    jsonVales["nonAssociationBookingId"] = "1202261"
+    jsonVales["effectiveDate"] = effectiveDate
     expiryDate?.let {
-      builder.append(",\"expiryDate\":\"$expiryDate\"")
+      jsonVales["expiryDate"] = expiryDate
+    }
+    return createAdditionalInformationJson(jsonVales)
+  }
+  fun createAdditionalInformationJson(nomsNumber: String? = null, personId: String? = null): String {
+    val jsonVales = HashMap<String, String>()
+    nomsNumber?.let {
+      jsonVales["nomsNumber"] = nomsNumber
+    }
+    personId?.let {
+      jsonVales["personId"] = personId
+    }
+    return createAdditionalInformationJson(jsonVales)
+  }
+
+  fun createAdditionalInformationJson(jsonValues: Map<String, String>): String {
+    val builder = StringBuilder()
+    builder.append("{")
+    jsonValues.entries.forEachIndexed { index, entry ->
+      builder.append("\"${entry.key}\":\"${entry.value}\"")
+      if (index < jsonValues.size - 1) {
+        builder.append(",")
+      }
     }
     builder.append("}")
     return builder.toString()

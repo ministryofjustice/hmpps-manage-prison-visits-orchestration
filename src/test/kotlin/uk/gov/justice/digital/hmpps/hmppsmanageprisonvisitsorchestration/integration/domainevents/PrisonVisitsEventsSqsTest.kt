@@ -66,68 +66,78 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
   @Test
   fun `test person-restriction-changed is processed`() {
     // Given
-    val publishRequest = createDomainEventPublishRequest(PERSON_RESTRICTION_CHANGED_TYPE)
+    val domainEvent = createDomainEventJson(PERSON_RESTRICTION_CHANGED_TYPE, createAdditionalInformationJson(nomsNumber = "TEST"))
+    val publishRequest = createDomainEventPublishRequest(PERSON_RESTRICTION_CHANGED_TYPE, domainEvent)
 
     // When
     sendSqSMessage(publishRequest)
 
     // Then
     assertStandardCalls(personRestrictionChangedNotifierSpy)
+    await untilAsserted { verify(visitSchedulerService, times(1)).processPersonRestrictionChange(any()) }
   }
 
   @Test
   fun `test prisoner-received is processed`() {
     // Given
-    val publishRequest = createDomainEventPublishRequest(PRISONER_RECEIVED_TYPE)
+    val domainEvent = createDomainEventJson(PRISONER_RECEIVED_TYPE, createAdditionalInformationJson(nomsNumber = "TEST"))
+    val publishRequest = createDomainEventPublishRequest(PRISONER_RECEIVED_TYPE, domainEvent)
 
     // When
     sendSqSMessage(publishRequest)
 
     // Then
     assertStandardCalls(prisonerReceivedNotifierSpy)
+    await untilAsserted { verify(visitSchedulerService, times(1)).processPrisonerReceived(any()) }
   }
 
   @Test
   fun `test prisoner-released is processed`() {
     // Given
-    val publishRequest = createDomainEventPublishRequest(PRISONER_RELEASED_TYPE)
+    val domainEvent = createDomainEventJson(PRISONER_RELEASED_TYPE, createAdditionalInformationJson(nomsNumber = "TEST"))
+    val publishRequest = createDomainEventPublishRequest(PRISONER_RELEASED_TYPE, domainEvent)
 
     // When
     sendSqSMessage(publishRequest)
 
     // Then
     assertStandardCalls(prisonerReleasedNotifierSpy)
+    await untilAsserted { verify(visitSchedulerService, times(1)).processPrisonerReleased(any()) }
   }
 
   @Test
   fun `test prisoner-restriction-changed is processed`() {
     // Given
-    val publishRequest = createDomainEventPublishRequest(PRISONER_RESTRICTION_CHANGED_TYPE)
+    val domainEvent = createDomainEventJson(PRISONER_RESTRICTION_CHANGED_TYPE, createAdditionalInformationJson(nomsNumber = "TEST"))
+    val publishRequest = createDomainEventPublishRequest(PRISONER_RESTRICTION_CHANGED_TYPE, domainEvent)
 
     // When
     sendSqSMessage(publishRequest)
 
     // Then
     assertStandardCalls(prisonerRestrictionChangedNotifierSpy)
+    await untilAsserted { verify(visitSchedulerService, times(1)).processPrisonerRestrictionChange(any()) }
   }
 
   @Test
   fun `test visitor-restriction-changed is processed`() {
     // Given
-    val publishRequest = createDomainEventPublishRequest(VISITOR_RESTRICTION_CHANGED_TYPE)
+    val domainEvent = createDomainEventJson(VISITOR_RESTRICTION_CHANGED_TYPE, createAdditionalInformationJson(personId = "TEST"))
+    val publishRequest = createDomainEventPublishRequest(VISITOR_RESTRICTION_CHANGED_TYPE, domainEvent)
 
     // When
     sendSqSMessage(publishRequest)
 
     // Then
     assertStandardCalls(visitorRestrictionChangedNotifierSpy)
+    await untilAsserted { verify(visitSchedulerService, times(1)).processVisitorRestrictionChange(any()) }
   }
 
   @Test
   fun `test prisoner non association detail changed is processed`() {
     // Given
 
-    val domainEvent = createDomainEventJson(PRISONER_NON_ASSOCIATION_DETAIL_CHANGED_TYPE, createAdditionalInformationJson("2023-09-01", "2023-12-03"))
+    val domainEvent = createDomainEventJson(PRISONER_NON_ASSOCIATION_DETAIL_CHANGED_TYPE, createNonAssociationAdditionalInformationJson("2023-09-01", "2023-12-03"))
     val publishRequest = createDomainEventPublishRequest("prison-offender-events.prisoner.non-association-detail.changed", domainEvent)
 
     visitSchedulerMockServer.stubPostNotificationNonAssociationChanged()
@@ -144,7 +154,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
   fun `test prisoner non association detail changed is processed when no valid to date`() {
     // Given
 
-    val domainEvent = createDomainEventJson(PRISONER_NON_ASSOCIATION_DETAIL_CHANGED_TYPE, createAdditionalInformationJson("2023-09-01"))
+    val domainEvent = createDomainEventJson(PRISONER_NON_ASSOCIATION_DETAIL_CHANGED_TYPE, createNonAssociationAdditionalInformationJson("2023-09-01"))
     val publishRequest = createDomainEventPublishRequest(PRISONER_NON_ASSOCIATION_DETAIL_CHANGED_TYPE, domainEvent)
 
     visitSchedulerMockServer.stubPostNotificationNonAssociationChanged()

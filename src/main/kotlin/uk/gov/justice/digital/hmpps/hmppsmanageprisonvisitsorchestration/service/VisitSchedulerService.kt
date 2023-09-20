@@ -24,6 +24,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.NonAssociationChangedInfo
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PersonRestrictionChangeInfo
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerReceivedInfo
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerReleasedInfo
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerRestrictionChangeInfo
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.VisitorRestrictionChangeInfo
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -113,5 +118,25 @@ class VisitSchedulerService(
 
   fun processNonAssociations(nonAssociationChangedInfo: NonAssociationChangedInfo) {
     visitSchedulerClient.processNonAssociations(NonAssociationChangedNotificationDto(nonAssociationChangedInfo))
+  }
+
+  fun processPrisonerReceived(prisonerReceivedInfo: PrisonerReceivedInfo) {
+    TODO("Not yet implemented")
+  }
+
+  fun processPrisonerReleased(prisonerReleasedInfo: PrisonerReleasedInfo) {
+    TODO("Not yet implemented")
+  }
+
+  fun processPersonRestrictionChange(info: PersonRestrictionChangeInfo) {
+    TODO("Not yet implemented")
+  }
+
+  fun processPrisonerRestrictionChange(info: PrisonerRestrictionChangeInfo) {
+    TODO("Not yet implemented")
+  }
+
+  fun processVisitorRestrictionChange(info: VisitorRestrictionChangeInfo) {
+    TODO("Not yet implemented")
   }
 }
