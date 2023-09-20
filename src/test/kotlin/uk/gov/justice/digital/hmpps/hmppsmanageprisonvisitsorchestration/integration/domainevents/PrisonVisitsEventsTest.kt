@@ -13,7 +13,7 @@ class PrisonVisitsEventsTest() : PrisonVisitsEventsIntegrationTestBase() {
   fun `Test prisoner non association detail changed is processed correctly`() {
     // Given
     val eventType = "prison-offender-events.prisoner.non-association-detail.changed"
-    val domainEvent = createDomainEventJson(eventType, createAdditionalInformationJson("2023-09-01", "2023-12-03"))
+    val domainEvent = createDomainEventJson(eventType, createNonAssociationAdditionalInformationJson("2023-09-01", "2023-12-03"))
     val jsonSqsMessage = createSQSMessage(domainEvent)
 
     visitSchedulerMockServer.stubPostNotificationNonAssociationChanged()
