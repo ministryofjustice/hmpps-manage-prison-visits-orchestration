@@ -102,3 +102,5 @@ prisoner:
 hmpps:
   auth:
     timeout: 10s
+  sqs:
+    enabled: ${hmpps.sqs.enabled}
