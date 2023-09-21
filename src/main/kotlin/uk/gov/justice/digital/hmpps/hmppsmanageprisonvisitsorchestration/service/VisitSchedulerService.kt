@@ -144,4 +144,24 @@ class VisitSchedulerService(
   fun processVisitorRestrictionChange(info: VisitorRestrictionChangeInfo) {
     visitSchedulerClient.processVisitorRestrictionChange(VisitorRestrictionChangeNotificationDto(info))
   }
+
+  fun processPrisonerReceived(prisonerReceivedInfo: PrisonerReceivedInfo) {
+    TODO("Not yet implemented")
+  }
+
+  fun processPrisonerReleased(prisonerReleasedInfo: PrisonerReleasedInfo) {
+    TODO("Not yet implemented")
+  }
+
+  fun processPersonRestrictionChange(info: PersonRestrictionChangeInfo) {
+    TODO("Not yet implemented")
+  }
+
+  fun processPrisonerRestrictionChange(info: PrisonerRestrictionChangeInfo) {
+    TODO("Not yet implemented")
+  }
+
+  fun processVisitorRestrictionChange(info: VisitorRestrictionChangeInfo) {
+    TODO("Not yet implemented")
+  }
 }

@@ -16,8 +16,7 @@ class PrisonerReceivedNotifier(
 ) : EventNotifier(objectMapper) {
   override fun processEvent(domainEvent: DomainEvent) {
     val prisonerReceivedInfo: PrisonerReceivedInfo = objectMapper.readValue(domainEvent.additionalInformation)
-    LOG.debug("Enter PrisonerReceivedNotificationDto Info:$prisonerReceivedInfo")
-
+    LOG.debug("Enter PrisonerReceivedInfo Info:$prisonerReceivedInfo")
     visitSchedulerService.processPrisonerReceived(prisonerReceivedInfo)
   }
 }

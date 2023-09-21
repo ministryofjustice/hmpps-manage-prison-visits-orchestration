@@ -194,12 +194,14 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     }
     return createAdditionalInformationJson(jsonVales)
   }
+
   fun createAdditionalInformationJson(
     nomsNumber: String? = null,
     personId: String? = null,
     effectiveDate: String? = null,
     contactPersonId: String? = null,
   ): String {
+
     val jsonVales = HashMap<String, String>()
     nomsNumber?.let {
       jsonVales["nomsNumber"] = nomsNumber

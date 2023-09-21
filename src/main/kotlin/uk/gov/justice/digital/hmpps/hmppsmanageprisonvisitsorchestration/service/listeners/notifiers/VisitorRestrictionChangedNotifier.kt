@@ -16,8 +16,7 @@ class VisitorRestrictionChangedNotifier(
 ) : EventNotifier(objectMapper) {
   override fun processEvent(domainEvent: DomainEvent) {
     val info: VisitorRestrictionChangeInfo = objectMapper.readValue(domainEvent.additionalInformation)
-    LOG.debug("Enter VisitorRestrictionChangeNotificationDto Info:$info")
-
+    LOG.debug("Enter VisitorRestrictionChangeInfo Info:$info")
     visitSchedulerService.processVisitorRestrictionChange(info)
   }
 }
