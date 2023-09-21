@@ -16,7 +16,7 @@ class PrisonerRestrictionChangedNotifier(
 ) : EventNotifier(objectMapper) {
   override fun processEvent(domainEvent: DomainEvent) {
     val info: PrisonerRestrictionChangeInfo = objectMapper.readValue(domainEvent.additionalInformation)
-    LOG.debug("Enter PrisonerRestrictionChangeInfo Info:$info")
+    LOG.debug("Enter PrisonerRestrictionChangeNotificationDto Info:$info")
 
     visitSchedulerService.processPrisonerRestrictionChange(info)
   }

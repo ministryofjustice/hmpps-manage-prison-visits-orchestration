@@ -23,6 +23,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionChangeNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerRestrictionChangeNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionChangeNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import java.time.Duration
 import java.time.LocalDate
@@ -217,5 +222,25 @@ class VisitSchedulerClient(
     uriBuilder.queryParam("sessionEndTime", sessionEndTime)
 
     return uriBuilder
+  }
+
+  fun processPrisonerReceived(prisonerReceivedNotificationDto: PrisonerReceivedNotificationDto) {
+    TODO("Not yet implemented")
+  }
+
+  fun processPrisonerReleased(prisonerReleasedNotificationDto: PrisonerReleasedNotificationDto) {
+    TODO("Not yet implemented")
+  }
+
+  fun processPersonRestrictionChange(personRestrictionChangeNotificationDto: PersonRestrictionChangeNotificationDto) {
+    TODO("Not yet implemented")
+  }
+
+  fun processPrisonerRestrictionChange(prisonerRestrictionChangeNotificationDto: PrisonerRestrictionChangeNotificationDto) {
+    TODO("Not yet implemented")
+  }
+
+  fun processVisitorRestrictionChange(visitorRestrictionChangeNotificationDto: VisitorRestrictionChangeNotificationDto) {
+    TODO("Not yet implemented")
   }
 }

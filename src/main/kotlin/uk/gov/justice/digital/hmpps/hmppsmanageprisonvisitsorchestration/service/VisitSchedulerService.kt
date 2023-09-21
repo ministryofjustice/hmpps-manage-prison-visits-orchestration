@@ -22,6 +22,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionChangeNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerRestrictionChangeNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionChangeNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.NonAssociationChangedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PersonRestrictionChangeInfo
@@ -116,27 +121,27 @@ class VisitSchedulerService(
     return visitSchedulerClient.getSessionSchedule(prisonCode, sessionDate)
   }
 
-  fun processNonAssociations(nonAssociationChangedInfo: NonAssociationChangedInfo) {
-    visitSchedulerClient.processNonAssociations(NonAssociationChangedNotificationDto(nonAssociationChangedInfo))
+  fun processNonAssociations(info: NonAssociationChangedInfo) {
+    visitSchedulerClient.processNonAssociations(NonAssociationChangedNotificationDto(info))
   }
 
-  fun processPrisonerReceived(prisonerReceivedInfo: PrisonerReceivedInfo) {
-    TODO("Not yet implemented")
+  fun processPrisonerReceived(info: PrisonerReceivedInfo) {
+    visitSchedulerClient.processPrisonerReceived(PrisonerReceivedNotificationDto(info))
   }
 
-  fun processPrisonerReleased(prisonerReleasedInfo: PrisonerReleasedInfo) {
-    TODO("Not yet implemented")
+  fun processPrisonerReleased(info: PrisonerReleasedInfo) {
+    visitSchedulerClient.processPrisonerReleased(PrisonerReleasedNotificationDto(info))
   }
 
   fun processPersonRestrictionChange(info: PersonRestrictionChangeInfo) {
-    TODO("Not yet implemented")
+    visitSchedulerClient.processPersonRestrictionChange(PersonRestrictionChangeNotificationDto(info))
   }
 
   fun processPrisonerRestrictionChange(info: PrisonerRestrictionChangeInfo) {
-    TODO("Not yet implemented")
+    visitSchedulerClient.processPrisonerRestrictionChange(PrisonerRestrictionChangeNotificationDto(info))
   }
 
   fun processVisitorRestrictionChange(info: VisitorRestrictionChangeInfo) {
-    TODO("Not yet implemented")
+    visitSchedulerClient.processVisitorRestrictionChange(VisitorRestrictionChangeNotificationDto(info))
   }
 }
