@@ -66,7 +66,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
   @Test
   fun `test person-restriction-changed is processed`() {
     // Given
-    val domainEvent = createDomainEventJson(PERSON_RESTRICTION_CHANGED_TYPE, createAdditionalInformationJson(nomsNumber = "TEST"))
+    val domainEvent = createDomainEventJson(PERSON_RESTRICTION_CHANGED_TYPE, createAdditionalInformationJson(nomsNumber = "TEST", effectiveDate = "2023-09-20", contactPersonId = "12345"))
     val publishRequest = createDomainEventPublishRequest(PERSON_RESTRICTION_CHANGED_TYPE, domainEvent)
 
     // When
@@ -108,7 +108,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
   @Test
   fun `test prisoner-restriction-changed is processed`() {
     // Given
-    val domainEvent = createDomainEventJson(PRISONER_RESTRICTION_CHANGED_TYPE, createAdditionalInformationJson(nomsNumber = "TEST"))
+    val domainEvent = createDomainEventJson(PRISONER_RESTRICTION_CHANGED_TYPE, createAdditionalInformationJson(nomsNumber = "TEST", effectiveDate = "2023-09-20"))
     val publishRequest = createDomainEventPublishRequest(PRISONER_RESTRICTION_CHANGED_TYPE, domainEvent)
 
     // When
@@ -122,7 +122,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
   @Test
   fun `test visitor-restriction-changed is processed`() {
     // Given
-    val domainEvent = createDomainEventJson(VISITOR_RESTRICTION_CHANGED_TYPE, createAdditionalInformationJson(personId = "TEST"))
+    val domainEvent = createDomainEventJson(VISITOR_RESTRICTION_CHANGED_TYPE, createAdditionalInformationJson(personId = "12345", effectiveDate = "2023-09-20"))
     val publishRequest = createDomainEventPublishRequest(VISITOR_RESTRICTION_CHANGED_TYPE, domainEvent)
 
     // When

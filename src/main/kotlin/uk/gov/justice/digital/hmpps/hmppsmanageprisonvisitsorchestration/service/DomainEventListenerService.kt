@@ -8,7 +8,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.future.future
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.DomainEvent
@@ -20,7 +19,6 @@ import java.util.concurrent.CompletableFuture
 const val PRISON_VISITS_QUEUE_CONFIG_KEY = "prisonvisitsevents"
 
 @Service
-@ConditionalOnExpression("\${hmpps.sqs.enabled:true}")
 class DomainEventListenerService(
   val context: ApplicationContext,
   val objectMapper: ObjectMapper,
@@ -36,26 +34,31 @@ class DomainEventListenerService(
     rawMessage: String,
   ): CompletableFuture<Void> {
     return asCompletableFuture {
-      try {
-        LOG.debug("Enter onDomainEvent")
-        val sqsMessage: SQSMessage = objectMapper.readValue(rawMessage)
-        LOG.debug("Received message: type:${sqsMessage.type} message:${sqsMessage.message}")
+      if (eventFeatureSwitch.isAllEventsEnabled()) {
+        try {
+          LOG.debug("Enter onDomainEvent")
+          val sqsMessage: SQSMessage = objectMapper.readValue(rawMessage)
+          LOG.debug("Received message: type:${sqsMessage.type} message:${sqsMessage.message}")
 
-        when (sqsMessage.type) {
-          "Notification" -> {
-            val domainEvent = objectMapper.readValue<DomainEvent>(sqsMessage.message)
-            val enabled = eventFeatureSwitch.isEnabled(domainEvent.eventType)
-            LOG.debug("Type: ${domainEvent.eventType} Enabled:$enabled")
-            if (enabled) {
-              getNotifier(domainEvent)?.let {
-                it.process(domainEvent)
+          when (sqsMessage.type) {
+            "Notification" -> {
+              val domainEvent = objectMapper.readValue<DomainEvent>(sqsMessage.message)
+              val enabled = eventFeatureSwitch.isEnabled(domainEvent.eventType)
+              LOG.debug("Type: ${domainEvent.eventType} Enabled:$enabled")
+              if (enabled) {
+                getNotifier(domainEvent)?.let {
+                  it.process(domainEvent)
+                }
               }
             }
+
+            else -> LOG.info("Received a message I wasn't expecting Type: ${sqsMessage.type}")
           }
-          else -> LOG.info("Received a message I wasn't expecting Type: ${sqsMessage.type}")
+        } catch (e: Exception) {
+          LOG.error("Fail to process domain event", e)
         }
-      } catch (e: Exception) {
-        LOG.error("Fail to process domain event", e)
+      } else {
+        LOG.debug("Enter onDomainEvent: disabled via property hmpps.sqs.enabled=false")
       }
     }
   }

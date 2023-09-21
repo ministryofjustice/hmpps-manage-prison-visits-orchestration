@@ -17,7 +17,6 @@ generic-service:
     WHEREABOUTS_API_URL: https://whereabouts-api-dev.service.justice.gov.uk
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
 
-
 generic-prometheus-alerts:
   alertSeverity: prison-visit-booking-alerts-nonprod
   sqsAlertsQueueNames:
