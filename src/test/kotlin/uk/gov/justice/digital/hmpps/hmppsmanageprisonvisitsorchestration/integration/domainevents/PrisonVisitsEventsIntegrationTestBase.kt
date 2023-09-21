@@ -201,7 +201,6 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     effectiveDate: String? = null,
     contactPersonId: String? = null,
   ): String {
-
     val jsonVales = HashMap<String, String>()
     nomsNumber?.let {
       jsonVales["nomsNumber"] = nomsNumber
