@@ -24,3 +24,7 @@ generic-prometheus-alerts:
     - "book-a-prison-visit-prod-hmpps_prison_visits_event_dlq"
   sqsAlertsOldestThreshold: 1
   sqsAlertsTotalMessagesThreshold: 1
+
+hmpps:
+  sqs:
+    enabled: false
