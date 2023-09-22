@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PersonRestrictionChangeInfo
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -12,7 +13,7 @@ data class PersonRestrictionChangeNotificationDto(
   val prisonerNumber: String,
   @NotBlank
   val visitorId: String,
-  @NotBlank
+  @NotNull
   val validFromDate: LocalDate,
 
   @JsonInclude(Include.NON_NULL)
