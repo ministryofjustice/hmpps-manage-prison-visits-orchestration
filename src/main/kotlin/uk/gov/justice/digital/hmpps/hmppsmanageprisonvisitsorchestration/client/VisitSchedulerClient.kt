@@ -225,22 +225,22 @@ class VisitSchedulerClient(
   }
 
   fun processPrisonerReceived(prisonerReceivedNotificationDto: PrisonerReceivedNotificationDto) {
-    TODO("Not yet implemented")
+    // TODO Not yet implemented
   }
 
   fun processPrisonerReleased(prisonerReleasedNotificationDto: PrisonerReleasedNotificationDto) {
-    TODO("Not yet implemented")
+    // TODO Not yet implemented
   }
 
   fun processPersonRestrictionChange(personRestrictionChangeNotificationDto: PersonRestrictionChangeNotificationDto) {
-    TODO("Not yet implemented")
+    // TODO Not yet implemented
   }
 
   fun processPrisonerRestrictionChange(prisonerRestrictionChangeNotificationDto: PrisonerRestrictionChangeNotificationDto) {
-    TODO("Not yet implemented")
+    // TODO Not yet implemented
   }
 
   fun processVisitorRestrictionChange(visitorRestrictionChangeNotificationDto: VisitorRestrictionChangeNotificationDto) {
-    TODO("Not yet implemented")
+    // TODO Not yet implemented
   }
 }
