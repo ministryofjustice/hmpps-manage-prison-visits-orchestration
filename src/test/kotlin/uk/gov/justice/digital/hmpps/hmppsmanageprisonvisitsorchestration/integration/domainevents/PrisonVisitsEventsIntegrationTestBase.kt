@@ -1,9 +1,10 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.domainevents
 
-import com.fasterxml.jackson.core.json.JsonWriteFeature
+import com.fasterxml.jackson.annotation.JsonInclude.Include
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
@@ -51,7 +52,7 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
   companion object {
     private val localStackContainer = LocalStackContainer.instance
     val objectMapper: ObjectMapper = ObjectMapper().registerModule(JavaTimeModule())
-      .disable(JsonWriteFeature.QUOTE_FIELD_NAMES.mappedFeature())
+      .setSerializationInclusion(Include.NON_NULL)
     val visitSchedulerMockServer = VisitSchedulerMockServer(objectMapper)
 
     @JvmStatic
@@ -147,6 +148,11 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     roleVisitSchedulerHttpHeaders = setAuthorisation(roles = listOf("ROLE_VISIT_SCHEDULER"))
   }
 
+  @AfterEach()
+  fun afterEach() {
+    visitSchedulerMockServer.resetRequests()
+  }
+
   internal fun setAuthorisation(
     user: String = "AUTH_ADM",
     roles: List<String> = listOf(),
@@ -159,11 +165,6 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
 
   fun createDomainEvent(eventType: String, additionalInformation: String = "test"): DomainEvent {
     return DomainEvent(eventType = eventType, additionalInformation)
-  }
-
-  fun createSQSMessage(domainEventJson: String): String {
-    val sqaMessage = SQSMessage(type = "Notification", messageId = "123", message = domainEventJson)
-    return objectMapper.writeValueAsString(sqaMessage)
   }
 
   fun createDomainEventPublishRequest(eventType: String, domainEvent: String): PublishRequest? {

@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification
 
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonInclude.Include
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.NonAssociationChangedInfo
@@ -13,6 +15,7 @@ data class NonAssociationChangedNotificationDto(
   val nonAssociationPrisonerNumber: String,
   @NotNull
   val validFromDate: LocalDate,
+  @JsonInclude(Include.NON_NULL)
   val validToDate: LocalDate? = null,
 ) {
 

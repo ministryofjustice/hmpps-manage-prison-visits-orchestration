@@ -3,10 +3,15 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integr
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
+import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.containing
+import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.put
+import com.github.tomakehurst.wiremock.http.RequestMethod
+import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -20,7 +25,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import kotlin.collections.ArrayList
 
 class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper) : WireMockServer(8092) {
   fun stubGetVisit(reference: String, visitDto: VisitDto?) {
@@ -38,16 +42,29 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     )
   }
 
-  fun stubPostNotificationNonAssociationChanged() {
+  fun stubPostNotification(notificationEndPoint: String) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
-      post("/visits/notification/non-association/changed")
+      post(notificationEndPoint)
         .willReturn(
           responseBuilder.withStatus(
             HttpStatus.OK.value(),
           ),
         ),
     )
+  }
+
+  fun verifyPost(notificationEndPoint: String, any: Any ? = null) {
+    val builder = RequestPatternBuilder(RequestMethod.POST, WireMock.urlEqualTo(notificationEndPoint))
+      .withPort(8092)
+      .withUrl(notificationEndPoint)
+      .withHeader("Content-Type", containing("application/json"))
+
+    any?.let {
+      builder.withRequestBody(equalToJson(getJsonString(any)))
+    }
+
+    client.verifyThat(1, builder)
   }
 
   fun stubGetVisitHistory(reference: String, eventsAudit: List<EventAuditDto>) {
@@ -265,7 +282,7 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
   }
 
   private fun getJsonString(obj: Any): String {
-    return objectMapper.writer().withDefaultPrettyPrinter().writeValueAsString(obj)
+    return objectMapper.writer().writeValueAsString(obj)
   }
 
   private fun createJsonResponseBuilder(): ResponseDefinitionBuilder {
