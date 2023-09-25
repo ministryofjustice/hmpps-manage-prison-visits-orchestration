@@ -37,6 +37,14 @@ import java.util.Optional
 const val VISIT_CONTROLLER_PATH: String = "/visits"
 const val GET_VISIT_HISTORY_CONTROLLER_PATH: String = "$VISIT_CONTROLLER_PATH/{reference}/history"
 
+const val VISIT_NOTIFICATION_CONTROLLER_PATH: String = "$VISIT_CONTROLLER_PATH/notification"
+const val VISIT_NOTIFICATION_NON_ASSOCIATION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/non-association/changed"
+const val VISIT_NOTIFICATION_PERSON_RESTRICTION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/person/restriction/changed"
+const val VISIT_NOTIFICATION_PRISONER_RECEIVED_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/received"
+const val VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/released"
+const val VISIT_NOTIFICATION_PRISONER_RESTRICTION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/restriction/changed"
+const val VISIT_NOTIFICATION_VISITOR_RESTRICTION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/visitor/restriction/changed"
+
 @Component
 class VisitSchedulerClient(
 
@@ -181,11 +189,61 @@ class VisitSchedulerClient(
 
   fun processNonAssociations(sendDto: NonAssociationChangedNotificationDto) {
     webClient.post()
-      .uri("/visits/notification/non-association/changed")
+      .uri(VISIT_NOTIFICATION_NON_ASSOCIATION_CHANGE_PATH)
       .body(BodyInserters.fromValue(sendDto))
       .retrieve()
       .toBodilessEntity()
       .doOnError { e -> LOG.error("Could not processNonAssociations :", e) }
+      .block(apiTimeout)
+  }
+
+  fun processPrisonerReceived(sendDto: PrisonerReceivedNotificationDto) {
+    webClient.post()
+      .uri(VISIT_NOTIFICATION_PRISONER_RECEIVED_CHANGE_PATH)
+      .body(BodyInserters.fromValue(sendDto))
+      .retrieve()
+      .toBodilessEntity()
+      .doOnError { e -> LOG.error("Could not processPrisonerReceived :", e) }
+      .block(apiTimeout)
+  }
+
+  fun processPrisonerReleased(sendDto: PrisonerReleasedNotificationDto) {
+    webClient.post()
+      .uri(VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH)
+      .body(BodyInserters.fromValue(sendDto))
+      .retrieve()
+      .toBodilessEntity()
+      .doOnError { e -> LOG.error("Could not processPrisonerReleased :", e) }
+      .block(apiTimeout)
+  }
+
+  fun processPersonRestrictionChange(sendDto: PersonRestrictionChangeNotificationDto) {
+    webClient.post()
+      .uri(VISIT_NOTIFICATION_PERSON_RESTRICTION_CHANGE_PATH)
+      .body(BodyInserters.fromValue(sendDto))
+      .retrieve()
+      .toBodilessEntity()
+      .doOnError { e -> LOG.error("Could not processPersonRestrictionChange :", e) }
+      .block(apiTimeout)
+  }
+
+  fun processPrisonerRestrictionChange(sendDto: PrisonerRestrictionChangeNotificationDto) {
+    webClient.post()
+      .uri(VISIT_NOTIFICATION_PRISONER_RESTRICTION_CHANGE_PATH)
+      .body(BodyInserters.fromValue(sendDto))
+      .retrieve()
+      .toBodilessEntity()
+      .doOnError { e -> LOG.error("Could not processPrisonerRestrictionChange :", e) }
+      .block(apiTimeout)
+  }
+
+  fun processVisitorRestrictionChange(sendDto: VisitorRestrictionChangeNotificationDto) {
+    webClient.post()
+      .uri(VISIT_NOTIFICATION_VISITOR_RESTRICTION_CHANGE_PATH)
+      .body(BodyInserters.fromValue(sendDto))
+      .retrieve()
+      .toBodilessEntity()
+      .doOnError { e -> LOG.error("Could not processVisitorRestrictionChange :", e) }
       .block(apiTimeout)
   }
 
@@ -222,25 +280,5 @@ class VisitSchedulerClient(
     uriBuilder.queryParam("sessionEndTime", sessionEndTime)
 
     return uriBuilder
-  }
-
-  fun processPrisonerReceived(prisonerReceivedNotificationDto: PrisonerReceivedNotificationDto) {
-    // TODO Not yet implemented
-  }
-
-  fun processPrisonerReleased(prisonerReleasedNotificationDto: PrisonerReleasedNotificationDto) {
-    // TODO Not yet implemented
-  }
-
-  fun processPersonRestrictionChange(personRestrictionChangeNotificationDto: PersonRestrictionChangeNotificationDto) {
-    // TODO Not yet implemented
-  }
-
-  fun processPrisonerRestrictionChange(prisonerRestrictionChangeNotificationDto: PrisonerRestrictionChangeNotificationDto) {
-    // TODO Not yet implemented
-  }
-
-  fun processVisitorRestrictionChange(visitorRestrictionChangeNotificationDto: VisitorRestrictionChangeNotificationDto) {
-    // TODO Not yet implemented
   }
 }

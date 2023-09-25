@@ -46,9 +46,7 @@ class DomainEventListenerService(
               val enabled = eventFeatureSwitch.isEnabled(domainEvent.eventType)
               LOG.debug("Type: ${domainEvent.eventType} Enabled:$enabled")
               if (enabled) {
-                getNotifier(domainEvent)?.let {
-                  it.process(domainEvent)
-                }
+                getNotifier(domainEvent)?.process(domainEvent)
               }
             }
 
@@ -58,7 +56,7 @@ class DomainEventListenerService(
           LOG.error("Fail to process domain event", e)
         }
       } else {
-        LOG.debug("Enter onDomainEvent: disabled via property hmpps.sqs.enabled=false")
+        LOG.info("Enter onDomainEvent: disabled via property hmpps.sqs.enabled=false")
       }
     }
   }
