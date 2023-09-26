@@ -198,6 +198,7 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
   fun createAdditionalInformationJson(
     nomsNumber: String? = null,
     personId: String? = null,
+    prisonCode: String? = null,
     effectiveDate: String? = null,
     contactPersonId: String? = null,
   ): String {
@@ -213,6 +214,9 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     }
     contactPersonId?.let {
       jsonVales["contactPersonId"] = contactPersonId
+    }
+    prisonCode?.let {
+      jsonVales["prisonId"] = prisonCode
     }
     return createAdditionalInformationJson(jsonVales)
   }
