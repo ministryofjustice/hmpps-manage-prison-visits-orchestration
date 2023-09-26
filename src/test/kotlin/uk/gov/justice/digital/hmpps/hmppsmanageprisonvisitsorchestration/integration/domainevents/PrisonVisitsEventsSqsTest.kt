@@ -103,9 +103,10 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     // Given
     val sentRequestToVsip = PrisonerReleasedNotificationDto(
       prisonerNumber = "TEST",
+      prisonCode = "BRI",
     )
 
-    val domainEvent = createDomainEventJson(PRISONER_RECEIVED_TYPE, createAdditionalInformationJson(nomsNumber = "TEST"))
+    val domainEvent = createDomainEventJson(PRISONER_RECEIVED_TYPE, createAdditionalInformationJson(nomsNumber = "TEST", prisonCode = "BRI"))
     val publishRequest = createDomainEventPublishRequest(PRISONER_RECEIVED_TYPE, domainEvent)
 
     visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_RECEIVED_CHANGE_PATH)
@@ -123,9 +124,10 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     // Given
     val sentRequestToVsip = PrisonerReleasedNotificationDto(
       prisonerNumber = "TEST",
+      prisonCode = "BRI",
     )
 
-    val domainEvent = createDomainEventJson(PRISONER_RELEASED_TYPE, createAdditionalInformationJson(nomsNumber = "TEST"))
+    val domainEvent = createDomainEventJson(PRISONER_RELEASED_TYPE, createAdditionalInformationJson(nomsNumber = "TEST", prisonCode = "BRI"))
     val publishRequest = createDomainEventPublishRequest(PRISONER_RELEASED_TYPE, domainEvent)
 
     visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH)

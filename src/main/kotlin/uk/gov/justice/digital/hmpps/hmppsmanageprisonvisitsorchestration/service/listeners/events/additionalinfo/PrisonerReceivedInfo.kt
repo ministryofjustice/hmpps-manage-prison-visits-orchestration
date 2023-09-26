@@ -7,4 +7,7 @@ data class PrisonerReceivedInfo(
   @NotBlank
   @JsonProperty("nomsNumber")
   val prisonerNumber: String,
+  @NotBlank
+  @JsonProperty("prisonId")
+  val prisonCode: String,
 )

@@ -6,9 +6,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 data class PrisonerReleasedNotificationDto(
   @NotBlank
   val prisonerNumber: String,
+  @NotBlank
+  val prisonCode: String,
 ) {
 
   constructor(info: PrisonerReleasedInfo) : this(
     info.prisonerNumber,
+    info.prisonCode,
   )
 }
