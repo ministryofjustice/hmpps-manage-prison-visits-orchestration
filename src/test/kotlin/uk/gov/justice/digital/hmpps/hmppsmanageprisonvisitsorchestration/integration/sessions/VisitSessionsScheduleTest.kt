@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.visitscheduler.dto.sessions.SessionDateRangeDto
 import uk.gov.justice.digital.hmpps.visitscheduler.dto.sessions.SessionTimeSlotDto
@@ -101,6 +102,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     startTime: LocalTime,
     endTime: LocalTime,
     sessionCapacityDto: SessionCapacityDto = SessionCapacityDto(2, 30),
+    visitType: VisitType = VisitType.SOCIAL,
     weeklyFrequency: Int = 1,
     validFromDate: LocalDate,
     validToDate: LocalDate? = null,
@@ -113,6 +115,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
       sessionDateRange = SessionDateRangeDto(validFromDate, validToDate),
       sessionTimeSlot = SessionTimeSlotDto(startTime = startTime, endTime = endTime),
       capacity = sessionCapacityDto,
+      visitType = visitType,
       weeklyFrequency = weeklyFrequency,
       prisonerLocationGroupNames = prisonerLocationGroupNames,
       prisonerCategoryGroupNames = prisonerCategoryGroupNames,

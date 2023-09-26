@@ -25,6 +25,7 @@ generic-service:
     APPLICATIONINSIGHTS_CONNECTION_STRING: "InstrumentationKey=$(APPINSIGHTS_INSTRUMENTATIONKEY)"
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
     HMPPS_SQS_USE_WEB_TOKEN: "true"
+    HMPPS_SQS_ENABLED: "true"
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:
@@ -37,9 +38,9 @@ generic-service:
       SYSTEM_CLIENT_SECRET: "SYSTEM_CLIENT_SECRET"
     hmpps-domain-events-topic:
       HMPPS_SQS_TOPICS_DOMAINEVENTS_ARN: "topic_arn"
-    sqs-prison-visits-event-secret:
+    sqs-hmpps-prison-visits-event-secret:
       HMPPS_SQS_QUEUES_PRISONVISITSEVENTS_QUEUE_NAME: "sqs_queue_name"
-    sqs-prison-visits-event-dlq-secret:
+    sqs-hmpps-prison-visits-event-dlq-secret:
       HMPPS_SQS_QUEUES_PRISONVISITSEVENTS_DLQ_NAME: "sqs_queue_name"
 
   allowlist:

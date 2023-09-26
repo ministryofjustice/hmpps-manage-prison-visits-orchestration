@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
@@ -20,6 +22,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionChangeNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerRestrictionChangeNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionChangeNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import java.time.Duration
 import java.time.LocalDate
@@ -29,12 +37,25 @@ import java.util.Optional
 const val VISIT_CONTROLLER_PATH: String = "/visits"
 const val GET_VISIT_HISTORY_CONTROLLER_PATH: String = "$VISIT_CONTROLLER_PATH/{reference}/history"
 
+const val VISIT_NOTIFICATION_CONTROLLER_PATH: String = "$VISIT_CONTROLLER_PATH/notification"
+const val VISIT_NOTIFICATION_NON_ASSOCIATION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/non-association/changed"
+const val VISIT_NOTIFICATION_PERSON_RESTRICTION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/person/restriction/changed"
+const val VISIT_NOTIFICATION_PRISONER_RECEIVED_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/received"
+const val VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/released"
+const val VISIT_NOTIFICATION_PRISONER_RESTRICTION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/restriction/changed"
+const val VISIT_NOTIFICATION_VISITOR_RESTRICTION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/visitor/restriction/changed"
+
 @Component
 class VisitSchedulerClient(
 
   @Qualifier("visitSchedulerWebClient") private val webClient: WebClient,
   @Value("\${visit-scheduler.api.timeout:10s}") val apiTimeout: Duration,
 ) {
+
+  companion object {
+    val LOG: Logger = LoggerFactory.getLogger(this::class.java)
+  }
+
   fun getVisitByReference(reference: String): VisitDto? {
     return webClient.get()
       .uri("/visits/$reference")
@@ -164,6 +185,66 @@ class VisitSchedulerClient(
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono<List<SessionScheduleDto>>().block(apiTimeout)
+  }
+
+  fun processNonAssociations(sendDto: NonAssociationChangedNotificationDto) {
+    webClient.post()
+      .uri(VISIT_NOTIFICATION_NON_ASSOCIATION_CHANGE_PATH)
+      .body(BodyInserters.fromValue(sendDto))
+      .retrieve()
+      .toBodilessEntity()
+      .doOnError { e -> LOG.error("Could not processNonAssociations :", e) }
+      .block(apiTimeout)
+  }
+
+  fun processPrisonerReceived(sendDto: PrisonerReceivedNotificationDto) {
+    webClient.post()
+      .uri(VISIT_NOTIFICATION_PRISONER_RECEIVED_CHANGE_PATH)
+      .body(BodyInserters.fromValue(sendDto))
+      .retrieve()
+      .toBodilessEntity()
+      .doOnError { e -> LOG.error("Could not processPrisonerReceived :", e) }
+      .block(apiTimeout)
+  }
+
+  fun processPrisonerReleased(sendDto: PrisonerReleasedNotificationDto) {
+    webClient.post()
+      .uri(VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH)
+      .body(BodyInserters.fromValue(sendDto))
+      .retrieve()
+      .toBodilessEntity()
+      .doOnError { e -> LOG.error("Could not processPrisonerReleased :", e) }
+      .block(apiTimeout)
+  }
+
+  fun processPersonRestrictionChange(sendDto: PersonRestrictionChangeNotificationDto) {
+    webClient.post()
+      .uri(VISIT_NOTIFICATION_PERSON_RESTRICTION_CHANGE_PATH)
+      .body(BodyInserters.fromValue(sendDto))
+      .retrieve()
+      .toBodilessEntity()
+      .doOnError { e -> LOG.error("Could not processPersonRestrictionChange :", e) }
+      .block(apiTimeout)
+  }
+
+  fun processPrisonerRestrictionChange(sendDto: PrisonerRestrictionChangeNotificationDto) {
+    webClient.post()
+      .uri(VISIT_NOTIFICATION_PRISONER_RESTRICTION_CHANGE_PATH)
+      .body(BodyInserters.fromValue(sendDto))
+      .retrieve()
+      .toBodilessEntity()
+      .doOnError { e -> LOG.error("Could not processPrisonerRestrictionChange :", e) }
+      .block(apiTimeout)
+  }
+
+  fun processVisitorRestrictionChange(sendDto: VisitorRestrictionChangeNotificationDto) {
+    webClient.post()
+      .uri(VISIT_NOTIFICATION_VISITOR_RESTRICTION_CHANGE_PATH)
+      .body(BodyInserters.fromValue(sendDto))
+      .retrieve()
+      .toBodilessEntity()
+      .doOnError { e -> LOG.error("Could not processVisitorRestrictionChange :", e) }
+      .block(apiTimeout)
   }
 
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {
