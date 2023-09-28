@@ -52,7 +52,7 @@ class DomainEventListenerService(
           }
         } else {
           LOG.info("Enter onDomainEvent: disabled via property hmpps.sqs.enabled=false ${domainEvent.eventType}")
-        } 
+        }
       }
     }
   }
