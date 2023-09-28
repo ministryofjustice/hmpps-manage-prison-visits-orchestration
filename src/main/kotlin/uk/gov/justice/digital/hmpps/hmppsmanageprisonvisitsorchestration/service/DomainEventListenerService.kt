@@ -34,29 +34,25 @@ class DomainEventListenerService(
     rawMessage: String,
   ): CompletableFuture<Void> {
     return asCompletableFuture {
-      if (eventFeatureSwitch.isAllEventsEnabled()) {
-        try {
-          LOG.debug("Enter onDomainEvent")
-          val sqsMessage: SQSMessage = objectMapper.readValue(rawMessage)
-          LOG.debug("Received message: type:${sqsMessage.type} message:${sqsMessage.message}")
-
-          when (sqsMessage.type) {
-            "Notification" -> {
-              val domainEvent = objectMapper.readValue<DomainEvent>(sqsMessage.message)
-              val enabled = eventFeatureSwitch.isEnabled(domainEvent.eventType)
-              LOG.debug("Type: ${domainEvent.eventType} Enabled:$enabled")
-              if (enabled) {
-                getNotifier(domainEvent)?.process(domainEvent)
-              }
+      val sqsMessage: SQSMessage = objectMapper.readValue(rawMessage)
+      if (sqsMessage.type == "Notification") {
+        LOG.debug("Enter onDomainEvent")
+        val domainEvent = objectMapper.readValue<DomainEvent>(sqsMessage.message)
+        if (eventFeatureSwitch.isAllEventsEnabled()) {
+          try {
+            LOG.debug("Received message: type:${domainEvent.eventType} message:${sqsMessage.message}")
+            val enabled = eventFeatureSwitch.isEnabled(domainEvent.eventType)
+            if (enabled) {
+              getNotifier(domainEvent)?.process(domainEvent)
+            } else {
+              LOG.info("Received a message I wasn't expecting Type: ${sqsMessage.type}")
             }
-
-            else -> LOG.info("Received a message I wasn't expecting Type: ${sqsMessage.type}")
+          } catch (e: Exception) {
+            LOG.error("Fail to process domain event", e)
           }
-        } catch (e: Exception) {
-          LOG.error("Fail to process domain event", e)
-        }
-      } else {
-        LOG.info("Enter onDomainEvent: disabled via property hmpps.sqs.enabled=false")
+        } else {
+          LOG.info("Enter onDomainEvent: disabled via property hmpps.sqs.enabled=false ${domainEvent.eventType}")
+        } 
       }
     }
   }
