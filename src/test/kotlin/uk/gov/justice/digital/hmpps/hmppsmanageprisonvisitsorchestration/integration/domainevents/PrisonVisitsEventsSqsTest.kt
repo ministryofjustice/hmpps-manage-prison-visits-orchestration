@@ -17,8 +17,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_RESTRICTION_CHANGE_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_VISITOR_RESTRICTION_CHANGE_PATH
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ReleaseReasonType.RELEASED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionChangeNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerRestrictionChangeNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionChangeNotificationDto
@@ -99,9 +101,38 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
   }
 
   @Test
-  fun `test prisoner-received is processed`() {
+  fun `test prisoner-released is processed`() {
     // Given
     val sentRequestToVsip = PrisonerReleasedNotificationDto(
+      prisonerNumber = "TEST",
+      prisonCode = "BRI",
+      reasonType = RELEASED,
+    )
+
+    val domainEvent = createDomainEventJson(
+      PRISONER_RELEASED_TYPE,
+      createAdditionalInformationJson(
+        nomsNumber = "TEST",
+        prisonCode = "BRI",
+        reason = sentRequestToVsip.reasonType.toString(),
+      ),
+    )
+    val publishRequest = createDomainEventPublishRequest(PRISONER_RELEASED_TYPE, domainEvent)
+
+    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH)
+    // When
+    sendSqSMessage(publishRequest)
+
+    // Then
+    assertStandardCalls(prisonerReleasedNotifierSpy, VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH, sentRequestToVsip)
+    await untilAsserted { verify(visitSchedulerService, times(1)).processPrisonerReleased(any()) }
+    await untilAsserted { verify(visitSchedulerClient, times(1)).processPrisonerReleased(any()) }
+  }
+
+  @Test
+  fun `test prisoner-received is processed`() {
+    // Given
+    val sentRequestToVsip = PrisonerReceivedNotificationDto(
       prisonerNumber = "TEST",
       prisonCode = "BRI",
     )
@@ -110,6 +141,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     val publishRequest = createDomainEventPublishRequest(PRISONER_RECEIVED_TYPE, domainEvent)
 
     visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_RECEIVED_CHANGE_PATH)
+
     // When
     sendSqSMessage(publishRequest)
 
@@ -117,28 +149,6 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     assertStandardCalls(prisonerReceivedNotifierSpy, VISIT_NOTIFICATION_PRISONER_RECEIVED_CHANGE_PATH, sentRequestToVsip)
     await untilAsserted { verify(visitSchedulerService, times(1)).processPrisonerReceived(any()) }
     await untilAsserted { verify(visitSchedulerClient, times(1)).processPrisonerReceived(any()) }
-  }
-
-  @Test
-  fun `test prisoner-released is processed`() {
-    // Given
-    val sentRequestToVsip = PrisonerReleasedNotificationDto(
-      prisonerNumber = "TEST",
-      prisonCode = "BRI",
-    )
-
-    val domainEvent = createDomainEventJson(PRISONER_RELEASED_TYPE, createAdditionalInformationJson(nomsNumber = "TEST", prisonCode = "BRI"))
-    val publishRequest = createDomainEventPublishRequest(PRISONER_RELEASED_TYPE, domainEvent)
-
-    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH)
-
-    // When
-    sendSqSMessage(publishRequest)
-
-    // Then
-    assertStandardCalls(prisonerReleasedNotifierSpy, VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH, sentRequestToVsip)
-    await untilAsserted { verify(visitSchedulerService, times(1)).processPrisonerReleased(any()) }
-    await untilAsserted { verify(visitSchedulerClient, times(1)).processPrisonerReleased(any()) }
   }
 
   @Test

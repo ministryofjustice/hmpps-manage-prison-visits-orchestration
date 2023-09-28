@@ -10,4 +10,7 @@ data class PrisonerReleasedInfo(
   @NotBlank
   @JsonProperty("prisonId")
   val prisonCode: String,
+  @NotBlank
+  @JsonProperty("reason")
+  val reasonType: String,
 )
