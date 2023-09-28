@@ -24,7 +24,7 @@ class EventFeatureSwitch(
     return isAllEventsEnabled() && environment.getProperty("feature.event.$eventType", Boolean::class.java, true)
   }
 
-  fun isAllEventsEnabled(): Boolean {
+  final fun isAllEventsEnabled(): Boolean {
     return allEventsEnabled
   }
 }
