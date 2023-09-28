@@ -53,8 +53,6 @@ class DomainEventListenerService(
             } else {
               LOG.info("Received a message I wasn't expecting Type: ${domainEvent.eventType}")
             }
-          } else {
-            LOG.info("Enter onDomainEvent: disabled via property hmpps.sqs.enabled=false")
           }
         }
       } catch (e: Exception) {
