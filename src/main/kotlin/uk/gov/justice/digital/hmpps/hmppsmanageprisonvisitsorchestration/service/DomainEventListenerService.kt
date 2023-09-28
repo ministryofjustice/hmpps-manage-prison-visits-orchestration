@@ -34,25 +34,36 @@ class DomainEventListenerService(
     rawMessage: String,
   ): CompletableFuture<Void> {
     return asCompletableFuture {
-      val sqsMessage: SQSMessage = objectMapper.readValue(rawMessage)
-      if (sqsMessage.type == "Notification") {
-        LOG.debug("Enter onDomainEvent")
-        val domainEvent = objectMapper.readValue<DomainEvent>(sqsMessage.message)
-        if (eventFeatureSwitch.isAllEventsEnabled()) {
-          try {
+      var dLQException: Exception? = null
+      try {
+        val sqsMessage: SQSMessage = objectMapper.readValue(rawMessage)
+        if (sqsMessage.type == "Notification") {
+          LOG.debug("Entered onDomainEvent")
+          if (eventFeatureSwitch.isAllEventsEnabled()) {
+            val domainEvent = objectMapper.readValue<DomainEvent>(sqsMessage.message)
             LOG.debug("Received message: type:${domainEvent.eventType} message:${domainEvent.additionalInformation}")
             val enabled = eventFeatureSwitch.isEnabled(domainEvent.eventType)
             if (enabled) {
-              getNotifier(domainEvent)?.process(domainEvent)
+              try {
+                getNotifier(domainEvent)?.process(domainEvent)
+              } catch (e: Exception) {
+                LOG.error("Failed to process know domain event type", e)
+                dLQException = e
+              }
             } else {
               LOG.info("Received a message I wasn't expecting Type: ${domainEvent.eventType}")
             }
-          } catch (e: Exception) {
-            LOG.error("Fail to process domain event", e)
+          } else {
+            LOG.info("Enter onDomainEvent: disabled via property hmpps.sqs.enabled=false")
           }
-        } else {
-          LOG.info("Enter onDomainEvent: disabled via property hmpps.sqs.enabled=false ${domainEvent.eventType}")
         }
+      } catch (e: Exception) {
+        LOG.error("Failed to process unknown domain event $rawMessage", e)
+      }
+
+      if (dLQException != null) {
+        // Throw exception caught in processing known events to push message back on event queue
+        throw dLQException
       }
     }
   }
