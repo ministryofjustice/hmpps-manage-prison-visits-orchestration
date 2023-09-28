@@ -47,7 +47,7 @@ class DomainEventListenerService(
               try {
                 getNotifier(domainEvent)?.process(domainEvent)
               } catch (e: Exception) {
-                LOG.error("Failed to process know domain event type", e)
+                LOG.error("Failed to process know domain event type:${domainEvent.eventType}", e)
                 dLQException = e
               }
             } else {
