@@ -38,8 +38,8 @@ class DomainEventListenerService(
       try {
         val sqsMessage: SQSMessage = objectMapper.readValue(rawMessage)
         if (sqsMessage.type == "Notification") {
-          LOG.debug("Entered onDomainEvent")
           if (eventFeatureSwitch.isAllEventsEnabled()) {
+            LOG.debug("Entered onDomainEvent")
             val domainEvent = objectMapper.readValue<DomainEvent>(sqsMessage.message)
             LOG.debug("Received message: type:${domainEvent.eventType} message:${domainEvent.additionalInformation}")
             val enabled = eventFeatureSwitch.isEnabled(domainEvent.eventType)
