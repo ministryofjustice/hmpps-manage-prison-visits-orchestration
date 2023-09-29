@@ -19,7 +19,7 @@ hmpps.auth.url: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
 
 prison.api.url: https://prison-api-dev.prison.service.justice.gov.uk
 
-prisoner-offender.search.url: https://prisoner-offender-search-dev.prison.service.justice.gov.uk
+prisoner-offender.search.url: https://prisoner-search-dev.prison.service.justice.gov.uk
 
 prisoner-contact.registry.url: https://prisoner-contact-registry-dev.prison.service.justice.gov.uk
 
