@@ -55,7 +55,7 @@ services:
       - SPRING_PROFILES_ACTIVE=dev
       - HMPPS_AUTH_URL=http://hmpps-auth:8080/auth
       - PRISON_API_URL=https://prison-api-dev.prison.service.justice.gov.uk
-      - PRISONER_OFFENDER_SEARCH_URL=https://prisoner-offender-search-dev.prison.service.justice.gov.uk
+      - PRISONER_OFFENDER_SEARCH_URL=https://prisoner-search-dev.prison.service.justice.gov.uk
       - SYSTEM_CLIENT_ID=book-a-prison-visit-client
       - SYSTEM_CLIENT_SECRET=clientsecret
       - SPRING_DATASOURCE_URL=jdbc:postgresql://visit-scheduler-db:5432/visit_scheduler
