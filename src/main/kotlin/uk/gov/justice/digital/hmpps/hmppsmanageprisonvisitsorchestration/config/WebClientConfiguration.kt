@@ -21,8 +21,8 @@ class WebClientConfiguration(
   @Value("\${prison.api.url}")
   private val prisonApiBaseUrl: String,
 
-  @Value("\${prisoner-offender.search.url}")
-  private val prisonOffenderSearchBaseUrl: String,
+  @Value("\${prisoner.search.url}")
+  private val prisonSearchBaseUrl: String,
 
   @Value("\${prison-register.api.url}")
   private val prisonRegisterBaseUrl: String,
@@ -39,7 +39,7 @@ class WebClientConfiguration(
   private enum class HmppsAuthClientRegistrationId(val clientRegistrationId: String) {
     VISIT_SCHEDULER("visit-scheduler"),
     PRISON_API("other-hmpps-apis"),
-    PRISONER_OFFENDER_SEARCH("other-hmpps-apis"),
+    PRISONER_SEARCH("other-hmpps-apis"),
     HMPPS_AUTH_CLIENT("other-hmpps-apis"),
     PRISON_REGISTER_CLIENT("other-hmpps-apis"),
     PRISON_CONTACT_REGISTRY_CLIENT("other-hmpps-apis"),
@@ -59,9 +59,9 @@ class WebClientConfiguration(
   }
 
   @Bean
-  fun prisonerOffenderSearchWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
-    val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.PRISONER_OFFENDER_SEARCH.clientRegistrationId)
-    return getWebClient(prisonOffenderSearchBaseUrl, oauth2Client)
+  fun prisonerSearchWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+    val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.PRISONER_SEARCH.clientRegistrationId)
+    return getWebClient(prisonSearchBaseUrl, oauth2Client)
   }
 
   @Bean
@@ -119,8 +119,8 @@ class WebClientConfiguration(
   }
 
   @Bean
-  fun prisonOffenderSearchHealthWebClient(): WebClient {
-    return WebClient.builder().baseUrl(prisonOffenderSearchBaseUrl).build()
+  fun prisonSearchHealthWebClient(): WebClient {
+    return WebClient.builder().baseUrl(prisonSearchBaseUrl).build()
   }
 
   @Bean

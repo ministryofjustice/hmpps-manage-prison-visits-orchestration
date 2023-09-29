@@ -15,7 +15,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonRegisterClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerOffenderSearchClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.PrisonerProfileDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactDto
@@ -100,7 +100,7 @@ class GetPrisonerProfileTest(
   lateinit var prisonAPiClientSpy: PrisonApiClient
 
   @SpyBean
-  lateinit var prisonerOffenderSearchClientSpy: PrisonerOffenderSearchClient
+  lateinit var prisonerSearchClientSpy: PrisonerSearchClient
 
   @SpyBean
   lateinit var prisonerContactRegistryClientSpy: PrisonerContactRegistryClient
@@ -739,7 +739,7 @@ class GetPrisonerProfileTest(
 
   private fun verifyExternalAPIClientCalls() {
     verify(visitSchedulerClientSpy, times(1)).getVisitsAsMono(any())
-    verify(prisonerOffenderSearchClientSpy, times(1)).getPrisonerByIdAsMono(any())
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(any())
     verify(prisonAPiClientSpy, times(1)).getInmateDetailsAsMono(any())
     verify(prisonAPiClientSpy, times(1)).getVisitBalancesAsMono(any())
     verify(prisonAPiClientSpy, times(1)).getBookingsAsMono(any(), any())

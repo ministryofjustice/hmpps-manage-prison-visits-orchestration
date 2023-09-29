@@ -11,9 +11,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import java.time.Duration
 
 @Component
-class PrisonerOffenderSearchClient(
-  @Qualifier("prisonerOffenderSearchWebClient") private val webClient: WebClient,
-  @Value("\${prisoner-offender.search.timeout:10s}") private val apiTimeout: Duration,
+class PrisonerSearchClient(
+  @Qualifier("prisonerSearchWebClient") private val webClient: WebClient,
+  @Value("\${prisoner.search.timeout:10s}") private val apiTimeout: Duration,
 ) {
   fun getPrisonerById(prisonerId: String): PrisonerDto? {
     return getPrisonerByIdAsMono(prisonerId).block(apiTimeout)

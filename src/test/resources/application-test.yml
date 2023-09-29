@@ -16,11 +16,6 @@ prison:
     url: http://localhost:8093
     timeout: 10s
 
-prisoner-offender:
-  search:
-    url: http://localhost:8094
-    timeout: 10s
-
 prisoner-contact:
   registry:
     url: http://localhost:8095
@@ -34,6 +29,9 @@ whereabouts:
     url: https://prison-register-dev.hmpps.service.justice.gov.uk
 
 prisoner:
+  search:
+    url: http://localhost:8094
+    timeout: 10s
   profile:
     timeout: 10s
     past-visits:
