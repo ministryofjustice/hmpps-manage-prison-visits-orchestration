@@ -87,11 +87,9 @@ prison:
   api:
     timeout: 10s
 
-prisoner-offender:
-    search:
-      timeout: 10s
-
 prisoner:
+  search:
+    timeout: 10s
   profile:
     timeout: 10s
     past-visits:
