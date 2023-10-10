@@ -201,6 +201,7 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     prisonCode: String? = null,
     effectiveDate: String? = null,
     contactPersonId: String? = null,
+    reason: String? = null,
   ): String {
     val jsonVales = HashMap<String, String>()
     nomsNumber?.let {
@@ -217,6 +218,9 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     }
     prisonCode?.let {
       jsonVales["prisonId"] = prisonCode
+    }
+    reason?.let {
+      jsonVales["reason"] = reason
     }
     return createAdditionalInformationJson(jsonVales)
   }
