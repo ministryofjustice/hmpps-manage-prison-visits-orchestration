@@ -34,6 +34,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerReleasedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerRestrictionChangeInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.VisitorRestrictionChangeInfo
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.NonAssociationDomainEventType
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -121,8 +122,8 @@ class VisitSchedulerService(
     return visitSchedulerClient.getSessionSchedule(prisonCode, sessionDate)
   }
 
-  fun processNonAssociations(info: NonAssociationChangedInfo) {
-    visitSchedulerClient.processNonAssociations(NonAssociationChangedNotificationDto(info))
+  fun processNonAssociations(info: NonAssociationChangedInfo, type: NonAssociationDomainEventType) {
+    visitSchedulerClient.processNonAssociations(NonAssociationChangedNotificationDto(info, type))
   }
 
   fun processPrisonerReceived(info: PrisonerReceivedInfo) {
