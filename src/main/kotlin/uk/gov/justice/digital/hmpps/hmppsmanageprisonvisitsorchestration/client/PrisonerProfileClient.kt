@@ -84,7 +84,7 @@ class PrisonerProfileClient(
       }
     } catch (e: Exception) {
       // log a message if there is an error but do not terminate the call
-      LOG.warn("Exception thrown on get prisons call - /prisons", e)
+      LOG.warn("Exception thrown on get prisons call - /prisons/names", e)
     }
 
     return null

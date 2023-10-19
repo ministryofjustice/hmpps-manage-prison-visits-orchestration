@@ -205,14 +205,10 @@ abstract class IntegrationTestBase {
     )
   }
 
-  final fun createPrisonDto(prisonCode: String, name: String, active: Boolean = false): PrisonDto {
+  final fun createPrisonDto(prisonCode: String, name: String): PrisonDto {
     return PrisonDto(
       prisonId = prisonCode,
       prisonName = name,
-      active = active,
-      male = false,
-      female = false,
-      contracted = false,
     )
   }
 }

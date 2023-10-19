@@ -15,7 +15,7 @@ class PrisonRegisterMockServer(@Autowired private val objectMapper: ObjectMapper
       .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
 
     stubFor(
-      get("/prisons")
+      get("/prisons/names")
         .willReturn(
           if (prisons == null) {
             responseBuilder
