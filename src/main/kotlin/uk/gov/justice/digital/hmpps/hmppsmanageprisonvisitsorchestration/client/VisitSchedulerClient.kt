@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionChangeNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
@@ -245,6 +246,20 @@ class VisitSchedulerClient(
       .toBodilessEntity()
       .doOnError { e -> LOG.error("Could not processVisitorRestrictionChange :", e) }
       .block(apiTimeout)
+  }
+
+  fun getNotificationCountForPrison(prisonCode: String): NotificationCountDto {
+    return webClient.get()
+      .uri("/visits/notification/$prisonCode/count")
+      .retrieve()
+      .bodyToMono<NotificationCountDto>().block(apiTimeout)!!
+  }
+
+  fun getNotificationCount(): NotificationCountDto {
+    return webClient.get()
+      .uri("/visits/notification/count")
+      .retrieve()
+      .bodyToMono<NotificationCountDto>().block(apiTimeout)!!
   }
 
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {

@@ -20,7 +20,7 @@ abstract class PrisonerNonAssociationNotifier() : EventNotifier() {
   override fun processEvent(domainEvent: DomainEvent) {
     val type = NonAssociationDomainEventType.getFromValue(domainEvent.eventType)!!
     val additionalInfo = getAdditionalInfo(domainEvent, NonAssociationChangedInfo::class.java)
-    LOG.debug("Enter PrisonerNonAssociationNotifier $type Info:$additionalInfo")
+    LOG.debug("Enter PrisonerNonAssociationNotifier ${type.value} Info:$additionalInfo")
     getVisitSchedulerService().processNonAssociations(additionalInfo, type)
   }
 }

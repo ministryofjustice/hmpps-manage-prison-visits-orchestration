@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SupportTypeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -174,6 +175,32 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(visitDto))
           },
+        ),
+    )
+  }
+
+  fun stubGetCountVisitNotificationForPrison(prisonCode: String) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      get("/visits/notification/$prisonCode/count")
+        .willReturn(
+          responseBuilder
+            .withStatus(HttpStatus.OK.value())
+            .withBody(getJsonString(NotificationCountDto(1))),
+        ),
+    )
+  }
+
+  fun stubGetCountVisitNotification() {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      get("/visits/notification/count")
+        .willReturn(
+          responseBuilder
+            .withStatus(HttpStatus.OK.value())
+            .withBody(getJsonString(NotificationCountDto(2))),
         ),
     )
   }
