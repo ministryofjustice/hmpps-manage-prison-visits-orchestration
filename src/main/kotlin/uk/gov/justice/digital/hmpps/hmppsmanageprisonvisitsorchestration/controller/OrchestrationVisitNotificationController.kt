@@ -54,7 +54,7 @@ class VisitNotificationController(
     @Schema(description = "prisonCode", example = "CFI", required = true)
     @PathVariable
     prisonCode: String,
-  ): NotificationCountDto {
+  ): NotificationCountDto? {
     return visitSchedulerService.getNotificationCountForPrison(prisonCode)
   }
 
@@ -80,7 +80,7 @@ class VisitNotificationController(
       ),
     ],
   )
-  fun getNotificationCount(): NotificationCountDto {
+  fun getNotificationCount(): NotificationCountDto? {
     return visitSchedulerService.getNotificationCount()
   }
 }

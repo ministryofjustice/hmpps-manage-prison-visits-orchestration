@@ -147,11 +147,11 @@ class VisitSchedulerService(
     visitSchedulerClient.processVisitorRestrictionChange(VisitorRestrictionChangeNotificationDto(info))
   }
 
-  fun getNotificationCountForPrison(prisonCode: String): NotificationCountDto {
+  fun getNotificationCountForPrison(prisonCode: String): NotificationCountDto? {
     return visitSchedulerClient.getNotificationCountForPrison(prisonCode)
   }
 
-  fun getNotificationCount(): NotificationCountDto {
+  fun getNotificationCount(): NotificationCountDto? {
     return visitSchedulerClient.getNotificationCount()
   }
 }

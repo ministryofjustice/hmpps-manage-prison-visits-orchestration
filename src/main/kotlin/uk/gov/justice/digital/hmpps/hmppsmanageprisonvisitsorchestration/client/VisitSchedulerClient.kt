@@ -248,18 +248,18 @@ class VisitSchedulerClient(
       .block(apiTimeout)
   }
 
-  fun getNotificationCountForPrison(prisonCode: String): NotificationCountDto {
+  fun getNotificationCountForPrison(prisonCode: String): NotificationCountDto? {
     return webClient.get()
       .uri("/visits/notification/$prisonCode/count")
       .retrieve()
-      .bodyToMono<NotificationCountDto>().block(apiTimeout)!!
+      .bodyToMono<NotificationCountDto>().block(apiTimeout)
   }
 
-  fun getNotificationCount(): NotificationCountDto {
+  fun getNotificationCount(): NotificationCountDto? {
     return webClient.get()
       .uri("/visits/notification/count")
       .retrieve()
-      .bodyToMono<NotificationCountDto>().block(apiTimeout)!!
+      .bodyToMono<NotificationCountDto>().block(apiTimeout)
   }
 
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {
