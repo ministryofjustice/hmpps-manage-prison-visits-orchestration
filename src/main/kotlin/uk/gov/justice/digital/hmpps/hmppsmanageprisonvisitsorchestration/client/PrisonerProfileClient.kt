@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.PrisonerProfileDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
@@ -54,11 +53,11 @@ class PrisonerProfileClient(
 
   private fun setVisitDetails(prisonerProfile: PrisonerProfileDto) {
     val contactsMap = getContactsForPrisoner(prisonerProfile)
-    val prisonsMap = getAvailablePrisons()
+    val prisonNamesMap = getPrisonNamesMap()
 
     prisonerProfile.visits.forEach { visit ->
       contactsMap?.let { setVisitorNames(visit, contactsMap) }
-      prisonsMap?.let { setPrisonName(visit, prisonsMap) }
+      prisonNamesMap?.let { setPrisonName(visit, prisonNamesMap) }
     }
   }
 
@@ -76,18 +75,17 @@ class PrisonerProfileClient(
     return null
   }
 
-  private fun getAvailablePrisons(): Map<String, PrisonDto>? {
-    try {
-      val prisons = prisonRegisterClient.getPrisons()
-      prisons?.let {
-        return prisons.associateBy { it.prisonId }
+  private fun getPrisonNamesMap(): Map<String, String>? {
+    return try {
+      val prisonNames = prisonRegisterClient.getPrisonNames()
+      prisonNames?.let {
+        prisonNames.associateBy { it.prisonId }.mapValues { it.value.prisonName }
       }
     } catch (e: Exception) {
       // log a message if there is an error but do not terminate the call
-      LOG.warn("Exception thrown on get prisons call - /prisons", e)
+      LOG.warn("Exception thrown on get prisons call - /prisons/names", e)
+      null
     }
-
-    return null
   }
 
   private fun setVisitorNames(visitSummary: VisitSummaryDto, contactsMap: Map<Long?, ContactDto>) {
@@ -97,7 +95,7 @@ class PrisonerProfileClient(
     }
   }
 
-  private fun setPrisonName(visitSummary: VisitSummaryDto, prisonsMap: Map<String, PrisonDto>) {
-    visitSummary.prisonName = prisonsMap[visitSummary.prisonCode]?.prisonName
+  private fun setPrisonName(visitSummary: VisitSummaryDto, prisonsMap: Map<String, String>) {
+    visitSummary.prisonName = prisonsMap[visitSummary.prisonCode]
   }
 }

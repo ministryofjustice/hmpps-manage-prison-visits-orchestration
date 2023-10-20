@@ -12,7 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDO
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonNameDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ChangeVisitSlotRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
@@ -205,14 +205,10 @@ abstract class IntegrationTestBase {
     )
   }
 
-  final fun createPrisonDto(prisonCode: String, name: String, active: Boolean = false): PrisonDto {
-    return PrisonDto(
+  final fun createPrisonNameDto(prisonCode: String, name: String): PrisonNameDto {
+    return PrisonNameDto(
       prisonId = prisonCode,
       prisonName = name,
-      active = active,
-      male = false,
-      female = false,
-      contracted = false,
     )
   }
 }
