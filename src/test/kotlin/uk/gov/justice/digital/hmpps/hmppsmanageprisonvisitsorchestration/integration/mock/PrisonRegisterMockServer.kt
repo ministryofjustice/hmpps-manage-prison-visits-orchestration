@@ -7,10 +7,10 @@ import com.github.tomakehurst.wiremock.client.WireMock.get
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonNameDto
 
 class PrisonRegisterMockServer(@Autowired private val objectMapper: ObjectMapper) : WireMockServer(8096) {
-  fun stubGetPrisons(prisons: List<PrisonDto>?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
+  fun stubGetPrisons(prisons: List<PrisonNameDto>?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
     val responseBuilder = aResponse()
       .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
 

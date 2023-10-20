@@ -67,9 +67,9 @@ class GetPrisonerProfileTest(
   private val visitor2 = VisitorDetails(2, "Second", "VisitorB")
   private val visitor3 = VisitorDetails(3, "Third", "VisitorC")
 
-  private val prison1 = createPrisonDto("ABC", "ABC Prison")
-  private val prison2 = createPrisonDto("DEF", "DEF Prison")
-  private val prison3 = createPrisonDto("MDI", "MDI Prison")
+  private val prison1 = createPrisonNameDto("ABC", "ABC Prison")
+  private val prison2 = createPrisonNameDto("DEF", "DEF Prison")
+  private val prison3 = createPrisonNameDto("MDI", "MDI Prison")
   private val prisons = listOf(prison1, prison2, prison3)
 
   private final val alerts = listOf(alert)
@@ -527,7 +527,7 @@ class GetPrisonerProfileTest(
     verifyExternalAPIClientCalls()
 
     // verify the call to prison register is only done once
-    verify(prisonRegisterClientSpy, times(1)).getPrisons()
+    verify(prisonRegisterClientSpy, times(1)).getPrisonNames()
   }
 
   @Test
@@ -558,7 +558,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prison register is only done once
-    verify(prisonRegisterClientSpy, times(1)).getPrisons()
+    verify(prisonRegisterClientSpy, times(1)).getPrisonNames()
   }
 
   @Test
@@ -589,7 +589,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prison register is only done once
-    verify(prisonRegisterClientSpy, times(1)).getPrisons()
+    verify(prisonRegisterClientSpy, times(1)).getPrisonNames()
   }
 
   @Test
@@ -622,7 +622,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prison register is only done once
-    verify(prisonRegisterClientSpy, times(1)).getPrisons()
+    verify(prisonRegisterClientSpy, times(1)).getPrisonNames()
   }
 
   private fun assertPrisonerDtoDetails(prisonerProfile: PrisonerProfileDto, prisonerDto: PrisonerDto) {
