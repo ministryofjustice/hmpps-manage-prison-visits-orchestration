@@ -1,16 +1,22 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.springframework.stereotype.Component
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.DomainEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerRestrictionChangeInfo
 
 const val PRISONER_RESTRICTION_CHANGED_TYPE = "prison-offender-events.prisoner.restriction.changed"
 
 @Component(value = PRISONER_RESTRICTION_CHANGED_TYPE)
-class PrisonerRestrictionChangedNotifier : EventNotifier() {
+class PrisonerRestrictionChangedNotifier(
+  private val objectMapper: ObjectMapper,
+  private val visitSchedulerService: VisitSchedulerService,
+) : EventNotifier(objectMapper) {
   override fun processEvent(domainEvent: DomainEvent) {
-    val additionalInfo = getAdditionalInfo(domainEvent, PrisonerRestrictionChangeInfo::class.java)
-    LOG.debug("Enter PrisonerRestrictionChangeInfo Info:$additionalInfo")
-    getVisitSchedulerService().processPrisonerRestrictionChange(additionalInfo)
+    val info: PrisonerRestrictionChangeInfo = objectMapper.readValue(domainEvent.additionalInformation)
+    LOG.debug("Enter PrisonerRestrictionChangeInfo Info:$info")
+    visitSchedulerService.processPrisonerRestrictionChange(info)
   }
 }
