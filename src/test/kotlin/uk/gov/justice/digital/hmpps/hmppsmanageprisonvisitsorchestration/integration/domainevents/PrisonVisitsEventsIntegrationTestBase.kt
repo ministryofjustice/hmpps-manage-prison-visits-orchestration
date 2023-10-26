@@ -32,10 +32,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerIncentivesDeletedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerIncentivesInsertedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerIncentivesUpdatedNotifier
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerNonAssociationNotifierAmendedNotifier
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerNonAssociationNotifierClosedNotifier
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerNonAssociationNotifierCreatedNotifier
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerNonAssociationNotifierDeletedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerNonAssociationChangedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerReceivedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerReleasedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerRestrictionChangedNotifier
@@ -116,16 +113,7 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
   lateinit var visitSchedulerService: VisitSchedulerService
 
   @SpyBean
-  lateinit var prisonerNonAssociationCreatedNotifier: PrisonerNonAssociationNotifierCreatedNotifier
-
-  @SpyBean
-  lateinit var prisonerNonAssociationNotifierClosedNotifier: PrisonerNonAssociationNotifierClosedNotifier
-
-  @SpyBean
-  lateinit var prisonerNonAssociationNotifierAmendedNotifier: PrisonerNonAssociationNotifierAmendedNotifier
-
-  @SpyBean
-  lateinit var prisonerNonAssociationDeleteNotifier: PrisonerNonAssociationNotifierDeletedNotifier
+  lateinit var nonAssociationChangedNotifier: PrisonerNonAssociationChangedNotifier
 
   @Autowired
   protected lateinit var objectMapper: ObjectMapper
@@ -194,10 +182,16 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     return "{\"eventType\":\"$eventType\",\"additionalInformation\":$additionalInformation}"
   }
 
-  fun createNonAssociationAdditionalInformationJson(): String {
+  fun createNonAssociationAdditionalInformationJson(effectiveDate: String, expiryDate: String? = null): String {
     val jsonVales = HashMap<String, String>()
-    jsonVales["nsPrisonerNumber1"] = "A8713DY"
-    jsonVales["nsPrisonerNumber2"] = "B2022DY"
+    jsonVales["nomsNumber"] = "G7747GD"
+    jsonVales["bookingId"] = "1171243"
+    jsonVales["nonAssociationNomsNumber"] = "A8713DY"
+    jsonVales["nonAssociationBookingId"] = "1202261"
+    jsonVales["effectiveDate"] = effectiveDate
+    expiryDate?.let {
+      jsonVales["expiryDate"] = expiryDate
+    }
     return createAdditionalInformationJson(jsonVales)
   }
 

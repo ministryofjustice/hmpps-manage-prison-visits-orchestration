@@ -22,7 +22,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionChangeNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
@@ -35,7 +34,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerReleasedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerRestrictionChangeInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.VisitorRestrictionChangeInfo
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.NonAssociationDomainEventType
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -123,8 +121,8 @@ class VisitSchedulerService(
     return visitSchedulerClient.getSessionSchedule(prisonCode, sessionDate)
   }
 
-  fun processNonAssociations(info: NonAssociationChangedInfo, type: NonAssociationDomainEventType) {
-    visitSchedulerClient.processNonAssociations(NonAssociationChangedNotificationDto(info, type))
+  fun processNonAssociations(info: NonAssociationChangedInfo) {
+    visitSchedulerClient.processNonAssociations(NonAssociationChangedNotificationDto(info))
   }
 
   fun processPrisonerReceived(info: PrisonerReceivedInfo) {
@@ -145,13 +143,5 @@ class VisitSchedulerService(
 
   fun processVisitorRestrictionChange(info: VisitorRestrictionChangeInfo) {
     visitSchedulerClient.processVisitorRestrictionChange(VisitorRestrictionChangeNotificationDto(info))
-  }
-
-  fun getNotificationCountForPrison(prisonCode: String): NotificationCountDto? {
-    return visitSchedulerClient.getNotificationCountForPrison(prisonCode)
-  }
-
-  fun getNotificationCount(): NotificationCountDto? {
-    return visitSchedulerClient.getNotificationCount()
   }
 }
