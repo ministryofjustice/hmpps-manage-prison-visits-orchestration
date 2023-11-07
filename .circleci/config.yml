@@ -139,7 +139,7 @@ workflows:
           type: approval
           requires:
             - deploy_staging
-      - acceptance_tests-main:
+      - acceptance_tests_main:
           requires:
             - request-acceptance-tests-approval
       - request-preprod-approval:
