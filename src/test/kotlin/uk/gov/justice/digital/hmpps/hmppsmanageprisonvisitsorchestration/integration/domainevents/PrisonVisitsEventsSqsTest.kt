@@ -27,8 +27,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.DELETE_INCENTIVES_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.EventNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.INSERTED_INCENTIVES_EVENT_TYPE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.NonAssociationDomainEventType.NON_ASSOCIATION_CREATED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PERSON_RESTRICTION_CHANGED_TYPE
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_NON_ASSOCIATION_DETAIL_CHANGED_TYPE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_NON_ASSOCIATION_DETAIL_CREATED_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_RECEIVED_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_RELEASED_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_RESTRICTION_CHANGED_TYPE
@@ -200,14 +201,13 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     // Given
 
     val sentRequestToVsip = NonAssociationChangedNotificationDto(
-      prisonerNumber = "G7747GD",
-      nonAssociationPrisonerNumber = "A8713DY",
-      LocalDate.parse("2023-09-01"),
-      LocalDate.parse("2023-12-03"),
+      prisonerNumber = "A8713DY",
+      nonAssociationPrisonerNumber = "B2022DY",
+      type = NON_ASSOCIATION_CREATED,
     )
 
-    val domainEvent = createDomainEventJson(PRISONER_NON_ASSOCIATION_DETAIL_CHANGED_TYPE, createNonAssociationAdditionalInformationJson("2023-09-01", "2023-12-03"))
-    val publishRequest = createDomainEventPublishRequest("prison-offender-events.prisoner.non-association-detail.changed", domainEvent)
+    val domainEvent = createDomainEventJson(PRISONER_NON_ASSOCIATION_DETAIL_CREATED_TYPE, createNonAssociationAdditionalInformationJson())
+    val publishRequest = createDomainEventPublishRequest(PRISONER_NON_ASSOCIATION_DETAIL_CREATED_TYPE, domainEvent)
 
     visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_NON_ASSOCIATION_CHANGE_PATH)
 
@@ -215,7 +215,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     sendSqSMessage(publishRequest)
 
     // Then
-    assertStandardCalls(nonAssociationChangedNotifier, VISIT_NOTIFICATION_NON_ASSOCIATION_CHANGE_PATH, sentRequestToVsip)
+    assertStandardCalls(prisonerNonAssociationCreatedNotifier, VISIT_NOTIFICATION_NON_ASSOCIATION_CHANGE_PATH, sentRequestToVsip)
     await untilAsserted { verify(visitSchedulerClient, times(1)).processNonAssociations(any()) }
   }
 
@@ -224,13 +224,13 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     // Given
 
     val sentRequestToVsip = NonAssociationChangedNotificationDto(
-      prisonerNumber = "G7747GD",
-      nonAssociationPrisonerNumber = "A8713DY",
-      LocalDate.parse("2023-09-01"),
+      prisonerNumber = "A8713DY",
+      nonAssociationPrisonerNumber = "B2022DY",
+      type = NON_ASSOCIATION_CREATED,
     )
 
-    val domainEvent = createDomainEventJson(PRISONER_NON_ASSOCIATION_DETAIL_CHANGED_TYPE, createNonAssociationAdditionalInformationJson("2023-09-01"))
-    val publishRequest = createDomainEventPublishRequest(PRISONER_NON_ASSOCIATION_DETAIL_CHANGED_TYPE, domainEvent)
+    val domainEvent = createDomainEventJson(PRISONER_NON_ASSOCIATION_DETAIL_CREATED_TYPE, createNonAssociationAdditionalInformationJson())
+    val publishRequest = createDomainEventPublishRequest(PRISONER_NON_ASSOCIATION_DETAIL_CREATED_TYPE, domainEvent)
 
     visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_NON_ASSOCIATION_CHANGE_PATH)
 
@@ -238,7 +238,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     sendSqSMessage(publishRequest)
 
     // Then
-    assertStandardCalls(nonAssociationChangedNotifier, VISIT_NOTIFICATION_NON_ASSOCIATION_CHANGE_PATH, sentRequestToVsip)
+    assertStandardCalls(prisonerNonAssociationCreatedNotifier, VISIT_NOTIFICATION_NON_ASSOCIATION_CHANGE_PATH, sentRequestToVsip)
     await untilAsserted { verify(visitSchedulerClient, times(1)).processNonAssociations(any()) }
   }
 

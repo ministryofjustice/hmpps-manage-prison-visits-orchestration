@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonNameDto
 import java.time.Duration
 
 @Component
@@ -13,19 +13,10 @@ class PrisonRegisterClient(
   @Qualifier("prisonRegisterWebClient") private val webClient: WebClient,
   @Value("\${prison-register.api.timeout:10s}") private val apiTimeout: Duration,
 ) {
-  fun getPrisons(): List<PrisonDto>? {
-    return webClient.get().uri("/prisons")
+  fun getPrisonNames(): List<PrisonNameDto>? {
+    return webClient.get().uri("/prisons/names")
       .retrieve()
-      .bodyToMono<List<PrisonDto>>()
-      .block(apiTimeout)
-  }
-
-  fun getPrison(
-    prisonId: String,
-  ): PrisonDto? {
-    return webClient.get().uri("/prisons/id/$prisonId")
-      .retrieve()
-      .bodyToMono<PrisonDto>()
+      .bodyToMono<List<PrisonNameDto>>()
       .block(apiTimeout)
   }
 }
