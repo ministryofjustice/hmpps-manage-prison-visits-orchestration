@@ -218,7 +218,7 @@ workflows:
           type: approval
           requires:
             - deploy_staging
-      - acceptance_tests-develop:
+      - acceptance_tests_develop:
           requires:
             - request-acceptance-tests-approval
       - request-preprod-approval:
