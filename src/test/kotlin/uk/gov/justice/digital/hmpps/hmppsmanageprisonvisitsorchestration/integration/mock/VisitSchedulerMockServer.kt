@@ -23,6 +23,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType.NON_ASSOCIATION_EVENT
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationGroupDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerVisitsNotificationDto
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -201,6 +204,30 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
           responseBuilder
             .withStatus(HttpStatus.OK.value())
             .withBody(getJsonString(NotificationCountDto(2))),
+        ),
+    )
+  }
+
+  fun stubFutureNotificationVisitGroups() {
+    val responseBuilder = createJsonResponseBuilder()
+
+    val now = LocalDate.now()
+
+    val dto = NotificationGroupDto(
+      "v7*d7*ed*7u",
+      NON_ASSOCIATION_EVENT,
+      listOf(
+        PrisonerVisitsNotificationDto("AF34567G", "John Smith", "Username1", now, "v1-d7-ed-7u"),
+        PrisonerVisitsNotificationDto("BF34567G", "John Smith", "Username1", now.plusDays(1), "v2-d7-ed-7u"),
+      ),
+    )
+
+    stubFor(
+      get("/visits/notification/groups")
+        .willReturn(
+          responseBuilder
+            .withStatus(HttpStatus.OK.value())
+            .withBody(getJsonString(listOf(dto))),
         ),
     )
   }
