@@ -1,10 +1,10 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification
+package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import java.time.LocalDate
 
-class PrisonerVisitsNotificationDto(
+class OrchestrationPrisonerVisitsNotificationDto(
   @Schema(description = "Prisoner Number", example = "AF34567G", required = true)
   @field:NotBlank
   val prisonerNumber: String,
@@ -16,4 +16,7 @@ class PrisonerVisitsNotificationDto(
   val visitDate: LocalDate,
   @Schema(description = "Visit Booking Reference", example = "v9-d7-ed-7u", required = true)
   val bookingReference: String,
+  @Schema(description = "Booked by name", example = "John Smith", required = true)
+  @field:NotBlank
+  val bookedByName: String,
 )

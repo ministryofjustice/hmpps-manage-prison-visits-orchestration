@@ -6,20 +6,24 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationNotificationGroupDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType.NON_ASSOCIATION_EVENT
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationGroupDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.HmppsAuthExtension
 
-@DisplayName("GET visits/notification/groups")
+@DisplayName("GET /visits/notification/{prisonCode}/groups")
 class FutureNotificationVisitGroupsTest : IntegrationTestBase() {
+
+  val prisonCode = "ABC"
 
   @Test
   fun `when notification group is requested for all prisons`() {
     // Given
-    visitSchedulerMockServer.stubFutureNotificationVisitGroups()
-
+    val dtoStub = visitSchedulerMockServer.stubFutureNotificationVisitGroups(prisonCode)
+    HmppsAuthExtension.hmppsAuthApi.stubGetUserDetails("Username1", "Aled")
+    HmppsAuthExtension.hmppsAuthApi.stubGetUserDetails("Username2", "Gwyn")
     // When
-    val responseSpec = callFutureNotificationVisitGroups(webTestClient, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callFutureNotificationVisitGroups(webTestClient, prisonCode, roleVisitSchedulerHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -29,17 +33,32 @@ class FutureNotificationVisitGroupsTest : IntegrationTestBase() {
       Assertions.assertThat(reference).isEqualTo("v7*d7*ed*7u")
       Assertions.assertThat(type).isEqualTo(NON_ASSOCIATION_EVENT)
       Assertions.assertThat(affectedVisits).hasSize(2)
+      with(affectedVisits[0]) {
+        Assertions.assertThat(prisonerNumber).isEqualTo("AF34567G")
+        Assertions.assertThat(bookedByUserName).isEqualTo("Username1")
+        Assertions.assertThat(bookedByName).isEqualTo("Aled")
+        Assertions.assertThat(visitDate).isEqualTo(dtoStub.affectedVisits[0].visitDate)
+        Assertions.assertThat(bookingReference).isEqualTo("v1-d7-ed-7u")
+      }
+      with(affectedVisits[1]) {
+        Assertions.assertThat(prisonerNumber).isEqualTo("BF34567G")
+        Assertions.assertThat(bookedByUserName).isEqualTo("Username2")
+        Assertions.assertThat(bookedByName).isEqualTo("Gwyn")
+        Assertions.assertThat(visitDate).isEqualTo(dtoStub.affectedVisits[1].visitDate)
+        Assertions.assertThat(bookingReference).isEqualTo("v2-d7-ed-7u")
+      }
     }
   }
 
-  fun getNotificationGroupDtoDto(responseSpec: ResponseSpec): Array<NotificationGroupDto> =
-    objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, Array<NotificationGroupDto>::class.java)
+  fun getNotificationGroupDtoDto(responseSpec: ResponseSpec): Array<OrchestrationNotificationGroupDto> =
+    objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, Array<OrchestrationNotificationGroupDto>::class.java)
 
   fun callFutureNotificationVisitGroups(
     webTestClient: WebTestClient,
+    prisonCode: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): ResponseSpec {
-    return webTestClient.get().uri("/visits/notification/groups")
+    return webTestClient.get().uri("/visits/notification/$prisonCode/groups")
       .headers(authHttpHeaders)
       .exchange()
   }

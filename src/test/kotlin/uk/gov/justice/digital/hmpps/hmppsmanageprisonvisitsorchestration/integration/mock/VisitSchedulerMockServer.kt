@@ -208,7 +208,7 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     )
   }
 
-  fun stubFutureNotificationVisitGroups() {
+  fun stubFutureNotificationVisitGroups(prisonCode: String): NotificationGroupDto {
     val responseBuilder = createJsonResponseBuilder()
 
     val now = LocalDate.now()
@@ -217,19 +217,21 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
       "v7*d7*ed*7u",
       NON_ASSOCIATION_EVENT,
       listOf(
-        PrisonerVisitsNotificationDto("AF34567G", "John Smith", "Username1", now, "v1-d7-ed-7u"),
-        PrisonerVisitsNotificationDto("BF34567G", "John Smith", "Username1", now.plusDays(1), "v2-d7-ed-7u"),
+        PrisonerVisitsNotificationDto("AF34567G", "Username1", now, "v1-d7-ed-7u"),
+        PrisonerVisitsNotificationDto("BF34567G", "Username2", now.plusDays(1), "v2-d7-ed-7u"),
       ),
     )
 
     stubFor(
-      get("/visits/notification/groups")
+      get("/visits/notification/$prisonCode/groups")
         .willReturn(
           responseBuilder
             .withStatus(HttpStatus.OK.value())
             .withBody(getJsonString(listOf(dto))),
         ),
     )
+
+    return dto
   }
 
   fun stubChangeBookedVisit(reference: String, visitDto: VisitDto?) {
