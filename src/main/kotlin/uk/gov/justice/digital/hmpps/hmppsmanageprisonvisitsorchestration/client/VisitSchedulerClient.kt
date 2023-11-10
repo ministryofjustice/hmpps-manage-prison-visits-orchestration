@@ -22,6 +22,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionChangeNotificationDto
@@ -75,6 +77,23 @@ class VisitSchedulerClient(
 
   fun getVisits(visitSearchRequestFilter: VisitSearchRequestFilter): RestPage<VisitDto>? {
     return getVisitsAsMono(visitSearchRequestFilter).block(apiTimeout)
+  }
+
+  fun getVisitsForSessionTemplateAndDate(sessionTemplateReference: String, sessionDate: LocalDate, visitRestrictions: List<VisitRestriction>?, visitStatusList: List<VisitStatus>, page: Int, size: Int): RestPage<VisitDto>? {
+    return webClient.get()
+      .uri("/visits/session-template/$sessionTemplateReference") {
+        it.queryParam("fromDate", sessionDate)
+          .queryParam("toDate", sessionDate)
+          .queryParamIfPresent("visitRestriction", Optional.ofNullable(visitRestrictions))
+          .queryParam("visitStatus", visitStatusList)
+          .queryParam("page", page)
+          .queryParam("size", size)
+          .build()
+      }
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<RestPage<VisitDto>>()
+      .block(apiTimeout)
   }
 
   fun getVisitsAsMono(visitSearchRequestFilter: VisitSearchRequestFilter): Mono<RestPage<VisitDto>> {

@@ -663,28 +663,6 @@ class GetPrisonerProfileTest(
     return objectMapper.readValue(returnResult.returnResult().responseBody, PrisonerProfileDto::class.java)
   }
 
-  private fun createPrisoner(
-    prisonerId: String,
-    firstName: String,
-    lastName: String,
-    dateOfBirth: LocalDate,
-    prisonId: String = "MDI",
-    prisonName: String = "HMP Leeds",
-    cellLocation: String? = null,
-    currentIncentive: CurrentIncentive? = null,
-  ): PrisonerDto {
-    return PrisonerDto(
-      prisonerNumber = prisonerId,
-      firstName = firstName,
-      lastName = lastName,
-      dateOfBirth = dateOfBirth,
-      prisonId = prisonId,
-      prisonName = prisonName,
-      cellLocation = cellLocation,
-      currentIncentive = currentIncentive,
-    )
-  }
-
   private fun createInmateDetails(
     prisonerId: String,
     category: String? = null,
