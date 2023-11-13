@@ -13,6 +13,8 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonNameDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.CurrentIncentive
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ChangeVisitSlotRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
@@ -30,6 +32,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonRegisterMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonerContactRegistryMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.VisitSchedulerMockServer
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.ArrayList
 
@@ -63,6 +66,30 @@ abstract class IntegrationTestBase {
       prisonOffenderSearchMockServer.stop()
       prisonerContactRegistryMockServer.stop()
       prisonRegisterMockServer.stop()
+    }
+
+    fun getVisitsQueryParams(
+      prisonerId: String,
+      visitStatus: List<String>,
+      startDateTime: LocalDateTime? = null,
+      endDateTime: LocalDateTime? = null,
+      page: Int,
+      size: Int,
+    ): List<String> {
+      val queryParams = ArrayList<String>()
+      queryParams.add("prisonerId=$prisonerId")
+      visitStatus.forEach {
+        queryParams.add("visitStatus=$it")
+      }
+      startDateTime?.let {
+        queryParams.add("startDateTime=$it")
+      }
+      endDateTime?.let {
+        queryParams.add("endDateTime=$it")
+      }
+      queryParams.add("page=$page")
+      queryParams.add("size=$size")
+      return queryParams
     }
   }
 
@@ -104,28 +131,20 @@ abstract class IntegrationTestBase {
       .exchange()
   }
 
-  private fun getVisitsQueryParams(
-    prisonerId: String,
+  fun callGetVisitsBySessionTemplate(
+    webTestClient: WebTestClient,
+    sessionTemplateReference: String,
+    sessionDate: LocalDate,
     visitStatus: List<String>,
-    startDateTime: LocalDateTime? = null,
-    endDateTime: LocalDateTime? = null,
+    visitRestriction: List<VisitRestriction>?,
     page: Int,
     size: Int,
-  ): List<String> {
-    val queryParams = ArrayList<String>()
-    queryParams.add("prisonerId=$prisonerId")
-    visitStatus.forEach {
-      queryParams.add("visitStatus=$it")
-    }
-    startDateTime?.let {
-      queryParams.add("startDateTime=$it")
-    }
-    endDateTime?.let {
-      queryParams.add("endDateTime=$it")
-    }
-    queryParams.add("page=$page")
-    queryParams.add("size=$size")
-    return queryParams
+    authHttpHeaders: (HttpHeaders) -> Unit,
+  ): WebTestClient.ResponseSpec {
+    return webTestClient.get()
+      .uri("/visits/session-template/$sessionTemplateReference?${getOrchestrationVisitsBySessionTemplateQueryParams(sessionDate, visitStatus, visitRestriction, page, size).joinToString("&")}")
+      .headers(authHttpHeaders)
+      .exchange()
   }
 
   final fun createVisitDto(
@@ -209,6 +228,50 @@ abstract class IntegrationTestBase {
     return PrisonNameDto(
       prisonId = prisonCode,
       prisonName = name,
+    )
+  }
+
+  fun getOrchestrationVisitsBySessionTemplateQueryParams(
+    sessionDate: LocalDate,
+    visitStatus: List<String>,
+    visitRestrictions: List<VisitRestriction>?,
+    page: Int,
+    size: Int,
+  ): List<String> {
+    val queryParams = ArrayList<String>()
+    queryParams.add("sessionDate=$sessionDate")
+    visitStatus.forEach {
+      queryParams.add("visitStatus=$it")
+    }
+    visitRestrictions?.let {
+      visitRestrictions.forEach {
+        queryParams.add("visitRestrictions=$it")
+      }
+    }
+    queryParams.add("page=$page")
+    queryParams.add("size=$size")
+    return queryParams
+  }
+
+  final fun createPrisoner(
+    prisonerId: String,
+    firstName: String,
+    lastName: String,
+    dateOfBirth: LocalDate,
+    prisonId: String = "MDI",
+    prisonName: String = "HMP Leeds",
+    cellLocation: String? = null,
+    currentIncentive: CurrentIncentive? = null,
+  ): PrisonerDto {
+    return PrisonerDto(
+      prisonerNumber = prisonerId,
+      firstName = firstName,
+      lastName = lastName,
+      dateOfBirth = dateOfBirth,
+      prisonId = prisonId,
+      prisonName = prisonName,
+      cellLocation = cellLocation,
+      currentIncentive = currentIncentive,
     )
   }
 }

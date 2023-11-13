@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.Valid
+import jakarta.validation.constraints.NotEmpty
+import jakarta.validation.constraints.NotNull
 import org.springframework.data.domain.Page
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
@@ -26,8 +28,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SupportTypeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitsByDateService
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 const val ORCHESTRATION_VISIT_CONTROLLER_PATH: String = "/visits"
@@ -35,6 +42,7 @@ const val ORCHESTRATION_VISIT_CONTROLLER_PATH: String = "/visits"
 @RestController
 class OrchestrationVisitsController(
   private val visitSchedulerService: VisitSchedulerService,
+  private val visitsByDateService: VisitsByDateService,
 ) {
   @PreAuthorize("hasRole('VISIT_SCHEDULER')")
   @GetMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/{reference}")
@@ -443,4 +451,52 @@ class OrchestrationVisitsController(
     ],
   )
   fun getSupportTypes(): List<SupportTypeDto>? = visitSchedulerService.getVisitSupport()
+
+  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @GetMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/session-template/{sessionTemplateReference}")
+  @Operation(
+    summary = "Get visits for a session template reference and date",
+    description = "Retrieve visits for session template reference and date",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Visit details returned",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to Get visits for session template",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to retrieve visits for session template",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getVisitsBySessionTemplate(
+    @Schema(name = "sessionTemplateReference", description = "Session template reference", example = "v9-d7-ed-7u", required = true)
+    @PathVariable
+    @NotNull
+    sessionTemplateReference: String,
+    @Schema(name = "sessionDate", description = "Get visits for session date", example = "2023-05-31", required = true)
+    @RequestParam
+    @NotNull
+    sessionDate: LocalDate,
+    @Schema(name = "visit status'", description = "To filter visits by status", example = "BOOKED", required = true)
+    @RequestParam
+    @NotEmpty
+    @NotNull
+    visitStatus: List<VisitStatus>,
+    @Schema(name = "visitRestrictions", description = "Visit Restriction(s) - OPEN / CLOSED / UNKNOWN", example = "OPEN", required = false)
+    @RequestParam
+    visitRestrictions: List<VisitRestriction>?,
+  ): List<VisitPreviewDto> {
+    return visitsByDateService.getVisitsForSessionTemplateAndDate(sessionTemplateReference, sessionDate, visitStatus, visitRestrictions)
+  }
 }
