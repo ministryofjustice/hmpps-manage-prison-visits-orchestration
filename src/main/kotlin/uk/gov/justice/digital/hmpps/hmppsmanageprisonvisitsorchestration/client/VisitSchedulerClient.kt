@@ -256,9 +256,9 @@ class VisitSchedulerClient(
       .bodyToMono<NotificationCountDto>().block(apiTimeout)
   }
 
-  fun getFutureNotificationVisitGroups(): List<NotificationGroupDto>? {
+  fun getFutureNotificationVisitGroups(prisonCode: String): List<NotificationGroupDto>? {
     return webClient.get()
-      .uri("/visits/notification/groups")
+      .uri("/visits/notification//$prisonCode/groups")
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono<List<NotificationGroupDto>>().block(apiTimeout)
