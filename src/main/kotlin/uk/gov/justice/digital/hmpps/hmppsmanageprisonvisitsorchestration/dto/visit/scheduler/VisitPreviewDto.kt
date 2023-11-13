@@ -3,7 +3,10 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull
 
-data class VisitMinSummaryDto(
+/**
+ * A visit's preview with minimum visit details.
+ */
+data class VisitPreviewDto(
   @Schema(required = true, description = "Prisoner Number", example = "A1234AA")
   @NotNull
   val prisonerId: String,

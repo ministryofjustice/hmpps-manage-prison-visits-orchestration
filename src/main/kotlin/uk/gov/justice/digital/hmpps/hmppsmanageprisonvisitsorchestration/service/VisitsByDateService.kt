@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitMinSummaryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import java.time.LocalDate
@@ -21,7 +21,7 @@ class VisitsByDateService(
     const val PAGE_NUMBER: Int = 0
   }
 
-  fun getVisitsForSessionTemplateAndDate(sessionTemplateReference: String, sessionDate: LocalDate, visitStatus: List<VisitStatus>, visitRestrictions: List<VisitRestriction>?): List<VisitMinSummaryDto> {
+  fun getVisitsForSessionTemplateAndDate(sessionTemplateReference: String, sessionDate: LocalDate, visitStatus: List<VisitStatus>, visitRestrictions: List<VisitRestriction>?): List<VisitPreviewDto> {
     LOG.debug(
       "Entered getVisitsBySessionTemplateForDate sessionTemplateReference:{} , sessionDate:{}, visitStatus: {}, visitRestrictions: {}",
       sessionTemplateReference,
@@ -39,10 +39,10 @@ class VisitsByDateService(
     )?.toList()?.map { visit ->
       try {
         prisonerSearchClient.getPrisonerById(visit.prisonerId)?.let { prisoner ->
-          VisitMinSummaryDto(visit.prisonerId, prisoner.firstName, prisoner.lastName, visit.reference)
-        } ?: VisitMinSummaryDto(visit.prisonerId, visit.reference)
+          VisitPreviewDto(visit.prisonerId, prisoner.firstName, prisoner.lastName, visit.reference)
+        } ?: VisitPreviewDto(visit.prisonerId, visit.reference)
       } catch (e: Exception) {
-        VisitMinSummaryDto(visit.prisonerId, visit.reference)
+        VisitPreviewDto(visit.prisonerId, visit.reference)
       }
     } ?: emptyList()
   }

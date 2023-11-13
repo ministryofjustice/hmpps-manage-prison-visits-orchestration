@@ -4,7 +4,7 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitMinSummaryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
@@ -115,18 +115,18 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
     assertVisitDetails(visit2, visitDto2.reference, prisonerId2, prisonerDto2.firstName, prisonerDto2.lastName)
   }
 
-  private fun getResults(responseSpec: WebTestClient.ResponseSpec): Array<VisitMinSummaryDto> {
-    return objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, Array<VisitMinSummaryDto>::class.java)
+  private fun getResults(responseSpec: WebTestClient.ResponseSpec): Array<VisitPreviewDto> {
+    return objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, Array<VisitPreviewDto>::class.java)
   }
 
-  private fun assertVisitDetails(visit: VisitMinSummaryDto, visitReference: String, prisonerId: String, firstName: String, lastName: String) {
+  private fun assertVisitDetails(visit: VisitPreviewDto, visitReference: String, prisonerId: String, firstName: String, lastName: String) {
     Assertions.assertThat(visit.visitReference).isEqualTo(visitReference)
     Assertions.assertThat(visit.prisonerId).isEqualTo(prisonerId)
     Assertions.assertThat(visit.firstName).isEqualTo(firstName)
     Assertions.assertThat(visit.lastName).isEqualTo(lastName)
   }
 
-  private fun getVisitByReference(visits: List<VisitMinSummaryDto>, reference: String): VisitMinSummaryDto {
+  private fun getVisitByReference(visits: List<VisitPreviewDto>, reference: String): VisitPreviewDto {
     return visits.toList().stream().filter { it.visitReference == reference }.findFirst().get()
   }
 }
