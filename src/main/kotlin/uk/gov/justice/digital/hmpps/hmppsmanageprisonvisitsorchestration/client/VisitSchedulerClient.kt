@@ -80,7 +80,7 @@ class VisitSchedulerClient(
     return getVisitsAsMono(visitSearchRequestFilter).block(apiTimeout)
   }
 
-  fun getVisitsForSessionTemplateAndDate(sessionTemplateReference: String, sessionDate: LocalDate, visitRestrictions: List<VisitRestriction>?, visitStatusList: List<VisitStatus>, page: Int, size: Int): RestPage<VisitDto>? {
+  fun getVisitsForSessionTemplateAndDate(sessionTemplateReference: String, sessionDate: LocalDate, visitStatusList: List<VisitStatus>, visitRestrictions: List<VisitRestriction>?, page: Int, size: Int): RestPage<VisitDto>? {
     return webClient.get()
       .uri("/visits/session-template/$sessionTemplateReference") {
         it.queryParam("fromDate", sessionDate)

@@ -245,7 +245,7 @@ abstract class IntegrationTestBase {
     }
     visitRestrictions?.let {
       visitRestrictions.forEach {
-        queryParams.add("visitRestriction=$it")
+        queryParams.add("visitRestrictions=$it")
       }
     }
     queryParams.add("page=$page")

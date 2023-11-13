@@ -21,17 +21,19 @@ class VisitsByDateService(
     const val PAGE_NUMBER: Int = 0
   }
 
-  fun getVisitsForSessionTemplateAndDate(sessionTemplateReference: String, sessionDate: LocalDate, visitRestrictions: List<VisitRestriction>?): List<VisitMinSummaryDto> {
+  fun getVisitsForSessionTemplateAndDate(sessionTemplateReference: String, sessionDate: LocalDate, visitStatus: List<VisitStatus>, visitRestrictions: List<VisitRestriction>?): List<VisitMinSummaryDto> {
     LOG.debug(
-      "Entered getVisitsBySessionTemplateForDate sessionTemplateReference:{} , sessionDate:{}",
+      "Entered getVisitsBySessionTemplateForDate sessionTemplateReference:{} , sessionDate:{}, visitStatus: {}, visitRestrictions: {}",
       sessionTemplateReference,
       sessionDate,
+      visitStatus,
+      visitRestrictions,
     )
     return visitSchedulerClient.getVisitsForSessionTemplateAndDate(
       sessionTemplateReference,
       sessionDate,
+      visitStatus,
       visitRestrictions,
-      listOf(VisitStatus.BOOKED),
       page = PAGE_NUMBER,
       size = MAX_VISIT_RECORDS,
     )?.toList()?.map { visit ->
