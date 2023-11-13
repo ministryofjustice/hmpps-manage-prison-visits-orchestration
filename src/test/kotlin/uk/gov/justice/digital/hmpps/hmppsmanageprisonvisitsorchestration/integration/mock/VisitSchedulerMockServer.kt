@@ -357,7 +357,7 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     queryParams.add("toDate=$sessionDate")
     visitRestrictions?.let {
       visitRestrictions.forEach {
-        queryParams.add("visitRestriction=$it")
+        queryParams.add("visitRestrictions=$it")
       }
     }
     visitStatus.forEach {

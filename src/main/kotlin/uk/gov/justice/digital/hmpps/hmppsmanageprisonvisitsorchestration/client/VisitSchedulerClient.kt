@@ -85,7 +85,7 @@ class VisitSchedulerClient(
       .uri("/visits/session-template/$sessionTemplateReference") {
         it.queryParam("fromDate", sessionDate)
           .queryParam("toDate", sessionDate)
-          .queryParamIfPresent("visitRestriction", Optional.ofNullable(visitRestrictions))
+          .queryParamIfPresent("visitRestrictions", Optional.ofNullable(visitRestrictions))
           .queryParam("visitStatus", visitStatusList)
           .queryParam("page", page)
           .queryParam("size", size)
