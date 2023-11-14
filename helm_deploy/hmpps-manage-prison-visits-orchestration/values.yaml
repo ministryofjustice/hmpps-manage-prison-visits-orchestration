@@ -2,7 +2,7 @@
 generic-service:
   nameOverride: hmpps-manage-prison-visits-orchestration
   serviceAccountName: visit-someone-in-prison
-
+  productId: "DPS035"
   replicaCount: 4
 
   image:
@@ -12,8 +12,6 @@ generic-service:
 
   ingress:
     enabled: true
-    v1_2_enabled: true
-    v0_47_enabled: false
     host: app-hostname.local    # override per environment
     tlsSecretName: hmpps-manage-prison-visits-orchestration-cert
 
