@@ -332,5 +332,4 @@ class VisitSchedulerClient(
 
     return uriBuilder
   }
-
 }
