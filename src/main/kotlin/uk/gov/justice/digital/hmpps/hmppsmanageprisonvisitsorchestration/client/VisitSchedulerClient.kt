@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ChangeVisitSlotRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SupportTypeDto
@@ -160,7 +161,7 @@ class VisitSchedulerClient(
       .bodyToMono<List<SupportTypeDto>>().block(apiTimeout)
   }
 
-  fun getVisitSessions(prisonId: String, prisonerId: String?, min: Long?, max: Long?): List<VisitSessionDto>? {
+  fun getVisitSessions(prisonId: String, prisonerId: String?, min: Int?, max: Int?): List<VisitSessionDto>? {
     return webClient.get()
       .uri("/visit-sessions") {
         visitSessionsUriBuilder(prisonId, prisonerId, min, max, it).build()
@@ -289,6 +290,13 @@ class VisitSchedulerClient(
       .retrieve()
       .bodyToMono<NotificationCountDto>().block(apiTimeout)
   }
+  fun getPrison(prisonCode: String): PrisonDto? {
+    return webClient.get()
+      .uri("/admin/prisons/prison/$prisonCode")
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<PrisonDto>().block(apiTimeout)
+  }
 
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParamIfPresent("prisonId", Optional.ofNullable(visitSearchRequestFilter.prisonCode))
@@ -302,7 +310,7 @@ class VisitSchedulerClient(
     return uriBuilder
   }
 
-  private fun visitSessionsUriBuilder(prisonId: String, prisonerId: String?, min: Long?, max: Long?, uriBuilder: UriBuilder): UriBuilder {
+  private fun visitSessionsUriBuilder(prisonId: String, prisonerId: String?, min: Int?, max: Int?, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParam("prisonId", prisonId)
     uriBuilder.queryParamIfPresent("prisonerId", Optional.ofNullable(prisonerId))
     uriBuilder.queryParamIfPresent("min", Optional.ofNullable(min))
@@ -324,4 +332,5 @@ class VisitSchedulerClient(
 
     return uriBuilder
   }
+
 }

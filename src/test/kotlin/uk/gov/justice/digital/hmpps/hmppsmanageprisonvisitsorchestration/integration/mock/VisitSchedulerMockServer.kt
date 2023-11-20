@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SupportTypeDto
@@ -307,6 +308,17 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
           createJsonResponseBuilder()
             .withStatus(HttpStatus.OK.value())
             .withBody(getJsonString(supportedPrisonsList)),
+        ),
+    )
+  }
+
+  fun stubGetPrison(prisonCode: String, prisonDto: PrisonDto) {
+    stubFor(
+      get("/admin/prisons/prison/$prisonCode")
+        .willReturn(
+          createJsonResponseBuilder()
+            .withStatus(HttpStatus.OK.value())
+            .withBody(getJsonString(prisonDto)),
         ),
     )
   }

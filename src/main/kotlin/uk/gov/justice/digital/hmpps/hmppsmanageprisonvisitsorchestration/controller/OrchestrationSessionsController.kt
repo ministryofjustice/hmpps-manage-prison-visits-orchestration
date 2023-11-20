@@ -67,13 +67,13 @@ class OrchestrationSessionsController(private val visitSchedulerService: VisitSc
       description = "Override the default minimum number of days notice from the current date",
       example = "2",
     )
-    min: Long?,
+    min: Int?,
     @RequestParam(value = "max", required = false)
     @Parameter(
       description = "Override the default maximum number of days to book-ahead from the current date",
       example = "28",
     )
-    max: Long?,
+    max: Int?,
   ): List<VisitSessionDto>? =
     visitSchedulerService.getVisitSessions(prisonCode, prisonerId, min, max)
 
