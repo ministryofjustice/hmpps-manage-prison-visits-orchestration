@@ -22,6 +22,10 @@ data class VisitPreviewDto(
   @Schema(description = "Visit reference", example = "dp-we-rs-te", required = true)
   @NotNull
   val visitReference: String,
+
+  @Schema(description = "Number of visitors added to the visit", example = "10", required = true)
+  @NotNull
+  val visitorCount: Int,
 ) {
-  constructor(prisonerId: String, visitReference: String) : this(prisonerId, prisonerId, prisonerId, visitReference)
+  constructor(prisonerId: String, visitReference: String, visitorCount: Int) : this(prisonerId, prisonerId, prisonerId, visitReference, visitorCount)
 }
