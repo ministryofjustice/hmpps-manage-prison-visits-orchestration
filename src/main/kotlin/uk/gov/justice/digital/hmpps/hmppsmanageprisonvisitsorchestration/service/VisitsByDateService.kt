@@ -37,12 +37,13 @@ class VisitsByDateService(
       page = PAGE_NUMBER,
       size = MAX_VISIT_RECORDS,
     )?.toList()?.map { visit ->
+      val visitorCount = visit.visitors?.size ?: 0
       try {
         prisonerSearchClient.getPrisonerById(visit.prisonerId)?.let { prisoner ->
-          VisitPreviewDto(visit.prisonerId, prisoner.firstName, prisoner.lastName, visit.reference)
-        } ?: VisitPreviewDto(visit.prisonerId, visit.reference)
+          VisitPreviewDto(visit.prisonerId, prisoner.firstName, prisoner.lastName, visit.reference, visitorCount)
+        } ?: VisitPreviewDto(visit.prisonerId, visit.reference, visitorCount)
       } catch (e: Exception) {
-        VisitPreviewDto(visit.prisonerId, visit.reference)
+        VisitPreviewDto(visit.prisonerId, visit.reference, visitorCount)
       }
     } ?: emptyList()
   }

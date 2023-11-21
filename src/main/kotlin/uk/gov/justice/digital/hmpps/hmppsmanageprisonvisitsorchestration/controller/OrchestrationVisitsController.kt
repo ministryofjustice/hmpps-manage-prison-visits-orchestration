@@ -488,7 +488,7 @@ class OrchestrationVisitsController(
     @RequestParam
     @NotNull
     sessionDate: LocalDate,
-    @Schema(name = "visit status'", description = "To filter visits by status", example = "BOOKED", required = true)
+    @Schema(name = "visitStatus", description = "To filter visits by status", example = "BOOKED", required = true)
     @RequestParam
     @NotEmpty
     @NotNull
