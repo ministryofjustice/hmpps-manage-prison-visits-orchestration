@@ -39,6 +39,8 @@ prisoner:
     future-visits:
       duration-in-months: P2M
 
+manage-users.api.url: http://localhost:8097
+
 hmpps:
   auth:
     url: http://localhost:8090/auth
