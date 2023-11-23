@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.HmppsAuthExtension
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.ManageUsersApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonOffenderSearchMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonRegisterMockServer
@@ -47,6 +48,7 @@ abstract class IntegrationTestBase {
     val prisonOffenderSearchMockServer = PrisonOffenderSearchMockServer(objectMapper)
     val prisonerContactRegistryMockServer = PrisonerContactRegistryMockServer(objectMapper)
     val prisonRegisterMockServer = PrisonRegisterMockServer(objectMapper)
+    val manageUsersApiMockServer = ManageUsersApiMockServer(objectMapper)
 
     @BeforeAll
     @JvmStatic
@@ -56,6 +58,7 @@ abstract class IntegrationTestBase {
       prisonOffenderSearchMockServer.start()
       prisonerContactRegistryMockServer.start()
       prisonRegisterMockServer.start()
+      manageUsersApiMockServer.start()
     }
 
     @AfterAll
@@ -66,6 +69,7 @@ abstract class IntegrationTestBase {
       prisonOffenderSearchMockServer.stop()
       prisonerContactRegistryMockServer.stop()
       prisonRegisterMockServer.stop()
+      manageUsersApiMockServer.stop()
     }
 
     fun getVisitsQueryParams(

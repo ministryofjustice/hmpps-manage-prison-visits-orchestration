@@ -46,7 +46,7 @@ import java.time.LocalTime
 class VisitSchedulerService(
   private val visitSchedulerClient: VisitSchedulerClient,
   private val authenticationHelperService: AuthenticationHelperService,
-  private val hmppsAuthService: HmppsAuthService,
+  private val manageUsersService: ManageUsersService,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -67,7 +67,7 @@ class VisitSchedulerService(
     visit?.let {
       val eventAuditList = visitSchedulerClient.getVisitHistoryByReference(reference)
       if (!eventAuditList.isNullOrEmpty()) {
-        val names = hmppsAuthService.getFullNamesFromVisitHistory(eventAuditList)
+        val names = manageUsersService.getFullNamesFromVisitHistory(eventAuditList)
         val eventAuditListWithNames = eventAuditList.map {
           EventAuditDto(
             type = it.type,
@@ -194,7 +194,7 @@ class VisitSchedulerService(
           it.bookedByUserName,
           it.visitDate,
           it.bookingReference,
-          hmppsAuthService.getUserFullName(it.bookedByUserName),
+          manageUsersService.getUserFullName(it.bookedByUserName),
         )
       }
       OrchestrationNotificationGroupDto(group.reference, group.type, affectedVisits)
