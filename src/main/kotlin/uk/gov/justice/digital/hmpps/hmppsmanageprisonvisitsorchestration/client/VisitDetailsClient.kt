@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.hmpps.auth.UserDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.manage.users.UserDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import java.time.Duration
@@ -11,7 +11,7 @@ import java.time.Duration
 @Component
 class VisitDetailsClient(
   private val visitSchedulerClient: VisitSchedulerClient,
-  private val hmppsAuthClient: HmppsAuthClient,
+  private val manageUsersApiClient: ManageUsersApiClient,
   @Value("\${hmpps.auth.timeout:10s}") private val apiTimeout: Duration,
 ) {
   companion object {
@@ -101,7 +101,7 @@ class VisitDetailsClient(
     return if (actionedBy == NOT_KNOWN) {
       Mono.just(UserDetailsDto(actionedBy, NOT_KNOWN))
     } else {
-      hmppsAuthClient.getUserDetails(actionedBy)
+      manageUsersApiClient.getUserDetails(actionedBy)
     }
   }
 }
