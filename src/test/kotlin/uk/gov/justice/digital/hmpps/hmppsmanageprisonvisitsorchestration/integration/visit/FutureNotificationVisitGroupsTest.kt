@@ -9,7 +9,6 @@ import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationNotificationGroupDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType.NON_ASSOCIATION_EVENT
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.HmppsAuthExtension
 
 @DisplayName("GET /visits/notification/{prisonCode}/groups")
 class FutureNotificationVisitGroupsTest : IntegrationTestBase() {
@@ -20,8 +19,8 @@ class FutureNotificationVisitGroupsTest : IntegrationTestBase() {
   fun `when notification group is requested for all prisons`() {
     // Given
     val dtoStub = visitSchedulerMockServer.stubFutureNotificationVisitGroups(prisonCode)
-    HmppsAuthExtension.hmppsAuthApi.stubGetUserDetails("Username1", "Aled")
-    HmppsAuthExtension.hmppsAuthApi.stubGetUserDetails("Username2", "Gwyn")
+    manageUsersApiMockServer.stubGetUserDetails("Username1", "Aled")
+    manageUsersApiMockServer.stubGetUserDetails("Username2", "Gwyn")
     // When
     val responseSpec = callFutureNotificationVisitGroups(webTestClient, prisonCode, roleVisitSchedulerHttpHeaders)
 

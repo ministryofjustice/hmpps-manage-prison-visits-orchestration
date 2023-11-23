@@ -30,19 +30,19 @@ class WebClientConfiguration(
   @Value("\${prisoner-contact.registry.url}")
   private val prisonerContactRegistryBaseUrl: String,
 
+  @Value("\${manage-users.api.url}")
+  private val manageUsersApiBaseUrl: String,
+
   @Value("\${whereabouts.api.url}")
   private val whereAboutsApiUrl: String,
-
-  @Value("\${hmpps.auth.url}")
-  private val hmppsAuthUrl: String,
 ) {
   private enum class HmppsAuthClientRegistrationId(val clientRegistrationId: String) {
     VISIT_SCHEDULER("visit-scheduler"),
     PRISON_API("other-hmpps-apis"),
     PRISONER_SEARCH("other-hmpps-apis"),
-    HMPPS_AUTH_CLIENT("other-hmpps-apis"),
     PRISON_REGISTER_CLIENT("other-hmpps-apis"),
     PRISON_CONTACT_REGISTRY_CLIENT("other-hmpps-apis"),
+    MANAGE_USERS_API_CLIENT("other-hmpps-apis"),
     WHEREABOUTS_API_CLIENT("other-hmpps-apis"),
   }
 
@@ -65,12 +65,6 @@ class WebClientConfiguration(
   }
 
   @Bean
-  fun hmppsAuthWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
-    val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.HMPPS_AUTH_CLIENT.clientRegistrationId)
-    return getWebClient(hmppsAuthUrl, oauth2Client)
-  }
-
-  @Bean
   fun prisonRegisterWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
     val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.PRISON_REGISTER_CLIENT.clientRegistrationId)
     return getWebClient(prisonRegisterBaseUrl, oauth2Client)
@@ -80,6 +74,12 @@ class WebClientConfiguration(
   fun prisonerContactRegistryWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
     val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.PRISON_CONTACT_REGISTRY_CLIENT.clientRegistrationId)
     return getWebClient(prisonerContactRegistryBaseUrl, oauth2Client)
+  }
+
+  @Bean
+  fun manageUsersApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+    val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.MANAGE_USERS_API_CLIENT.clientRegistrationId)
+    return getWebClient(manageUsersApiBaseUrl, oauth2Client)
   }
 
   @Bean

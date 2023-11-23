@@ -12,13 +12,12 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.HmppsAuthClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ManageUsersApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType.EMAIL
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.EventAuditType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.HmppsAuthExtension.Companion.hmppsAuthApi
 
 private const val NOT_KNOWN = "NOT_KNOWN"
 
@@ -27,7 +26,7 @@ private const val NOT_KNOWN = "NOT_KNOWN"
 class VisitHistoryByReferenceTest : IntegrationTestBase() {
 
   @SpyBean
-  private lateinit var hmppsAuthClient: HmppsAuthClient
+  private lateinit var manageUsersApiClient: ManageUsersApiClient
 
   fun callVisitHistoryByReference(
     webTestClient: WebTestClient,
@@ -55,9 +54,9 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
 
     visitSchedulerMockServer.stubGetVisitHistory(reference, eventList)
 
-    hmppsAuthApi.stubGetUserDetails(createdBy, "Aled")
-    hmppsAuthApi.stubGetUserDetails(lastUpdatedBy, "Ben")
-    hmppsAuthApi.stubGetUserDetails(cancelledBy, "Dhiraj")
+    manageUsersApiMockServer.stubGetUserDetails(createdBy, "Aled")
+    manageUsersApiMockServer.stubGetUserDetails(lastUpdatedBy, "Ben")
+    manageUsersApiMockServer.stubGetUserDetails(cancelledBy, "Dhiraj")
 
     val visitDto = createVisitDto(reference = reference)
     visitSchedulerMockServer.stubGetVisit(reference, visitDto)
@@ -91,7 +90,7 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
     )
 
     visitSchedulerMockServer.stubGetVisitHistory(reference, eventList)
-    hmppsAuthApi.stubGetUserDetails(actionedBy, "Aled")
+    manageUsersApiMockServer.stubGetUserDetails(actionedBy, "Aled")
     val visitDto = createVisitDto(reference = reference)
     visitSchedulerMockServer.stubGetVisit(reference, visitDto)
 
@@ -101,7 +100,7 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isOk
 
-    verify(hmppsAuthClient, times(1)).getUserDetails(any())
+    verify(manageUsersApiClient, times(1)).getUserDetails(any())
   }
 
   @Test
@@ -116,7 +115,7 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
 
     visitSchedulerMockServer.stubGetVisitHistory(reference, eventList)
 
-    hmppsAuthApi.stubGetUserDetails(actionedBy, "Aled")
+    manageUsersApiMockServer.stubGetUserDetails(actionedBy, "Aled")
 
     val visitDto = createVisitDto(reference = reference)
     visitSchedulerMockServer.stubGetVisit(reference, visitDto)
