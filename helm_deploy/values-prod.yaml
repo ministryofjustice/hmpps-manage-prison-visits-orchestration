@@ -8,6 +8,7 @@ generic-service:
     host: hmpps-manage-prison-visits-orchestration.prison.service.justice.gov.uk
 
   env:
+    HMPPS_AUTH_URL: https://sign-in.hmpps.service.justice.gov.uk/auth
     MANAGE_USERS_API_URL: https://manage-users-api.hmpps.service.justice.gov.uk
     VISIT-SCHEDULER_API_URL: https://visit-scheduler.prison.service.justice.gov.uk
     PRISON_API_URL: https://api.prison.service.justice.gov.uk
