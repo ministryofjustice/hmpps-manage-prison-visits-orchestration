@@ -128,8 +128,7 @@ Put any dummy value for AWS_ACCESS_KEY and AWS_SECRET_KEY and eu-west-2 as defau
 
 ##### Step 4 - Send a message to the application queue. The below is a non-assciation event for prisoners G0026GC and A8713DY. Replace the prisoner numbers with your test values.
 ```
-aws sqs --endpoint-url=http://localhost:4566 send-message --queue-url=http://localhost:4566/000000000000/hmpps_prison_visits_event_queue\
-—message-body '{"Type":"Notification", "Message": "{\"eventType\":\"non-associations.created\",\"additionalInformation\":{\"nsPrisonerNumber2\":\"G0026GC\",\"nsPrisonerNumber1\":\"A8713DY\"}}", "MessageId": "60945f6e-f146-418e-a8e9-1de858d41faa"}'
+aws sqs --endpoint-url=http://localhost:4566 send-message --queue-url=http://localhost:4566/000000000000/sqs_hmpps_prison_visits_event_queue  --message-body '{"Type":"Notification", "Message": "{\"eventType\":\"non-associations.created\",\"additionalInformation\":{\"nsPrisonerNumber2\":\"G0026GC\",\"nsPrisonerNumber1\":\"A8713DY\"}}", "MessageId": "60945f6e-f146-418e-a8e9-1de858d41faa"}'
 ```
 
 If you are unsure about the queue name you can check the queue names using the following command and replace it in the above --queue-url value parameter
