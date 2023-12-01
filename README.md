@@ -125,13 +125,48 @@ brew install awscli
 aws configure
 ```
 Put any dummy value for AWS_ACCESS_KEY and AWS_SECRET_KEY and eu-west-2 as default region.
+The queueName is the value of hmpps.sqs.queues.prisonvisitsevents.queueName on the application-<env>.yml file.
+So the queue URL would usually be - http://localhost:4566/000000000000/{queueName}
 
 ##### Step 4 - Send a message to the application queue. The below is a non-assciation event for prisoners G0026GC and A8713DY. Replace the prisoner numbers with your test values.
 ```
-aws sqs --endpoint-url=http://localhost:4566 send-message --queue-url=http://localhost:4566/000000000000/sqs_hmpps_prison_visits_event_queue  --message-body '{"Type":"Notification", "Message": "{\"eventType\":\"non-associations.created\",\"additionalInformation\":{\"nsPrisonerNumber2\":\"G0026GC\",\"nsPrisonerNumber1\":\"A8713DY\"}}", "MessageId": "60945f6e-f146-418e-a8e9-1de858d41faa"}'
+aws sqs send-message \
+  --endpoint-url=http://localhost:4566 \
+  --queue-url=http://localhost:4566/000000000000/sqs_hmpps_prison_visits_event_queue \
+  --message-body \
+    '{"Type":"Notification", "Message": "{\"eventType\":\"non-associations.created\",\"additionalInformation\":{\"nsPrisonerNumber2\":\"G4206GT\",\"nsPrisonerNumber1\":\"G4216GE\"}}", "MessageId": "123"}'
 ```
 
 If you are unsure about the queue name you can check the queue names using the following command and replace it in the above --queue-url value parameter
 ```
 aws sqs list-queues --endpoint-url=http://localhost:4566
 ```
+
+Sample send message requests by event type - 
+Non-associations (non-associations.created)
+```
+aws sqs send-message \
+  --endpoint-url=http://localhost:4566 \
+  --queue-url=http://localhost:4566/000000000000/sqs_hmpps_prison_visits_event_queue \
+  --message-body \
+    '{"Type":"Notification", "Message": "{\"eventType\":\"non-associations.created\",\"additionalInformation\":{\"nsPrisonerNumber2\":\"G4206GT\",\"nsPrisonerNumber1\":\"G4216GE\"}}", "MessageId": "123"}'
+```
+
+Prisoner Release (prison-offender-events.prisoner.released)
+```
+aws sqs send-message \
+  --endpoint-url=http://localhost:4566 \
+  --queue-url=http://localhost:4566/000000000000/sqs_hmpps_prison_visits_event_queue \
+  --message-body \
+    '{"Type":"Notification", "Message": "{\"eventType\": \"prison-offender-events.prisoner.released\", \"additionalInformation\": {\"nomsNumber\": \"X8199EJ\",\"reason\": \"SENT_TO_COURT\",\"currentLocation\": \"OUTSIDE_PRISON\", \"prisonId\": \"BMI\", \"nomisMovementReasonCode\": \"CRT\", \"currentPrisonStatus\": \"UNDER_PRISON_CARE\"}}", "MessageId": "123"}'
+```
+
+Prisoner Restriction Changed (prison-offender-events.prisoner.restriction.changed)
+```
+aws sqs send-message \
+  --endpoint-url=http://localhost:4566 \
+  --queue-url=http://localhost:4566/000000000000/sqs_hmpps_prison_visits_event_queue \
+  --message-body \
+        '{"Type":"Notification", "Message": "{\"eventType\": \"prison-offender-events.prisoner.restriction.changed\", \"additionalInformation\": {\"nomsNumber\": \"X8199EJ\",\"bookingId\": \"2872889\", \"offenderRestrictionId\": \"557172\", \"restrictionType\": \"CHILD\", \"effectiveDate\": \"2023-09-20\", \"comment\": \"NTC anyone under the age of 18 - pot PPRC\", \"authorisedById\": \"37266\", \"enteredById\": \"1138054\"}}", "MessageId": "123"}'
+```
+
