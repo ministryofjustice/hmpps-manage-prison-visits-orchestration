@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.10.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.10.1"
   kotlin("plugin.spring") version "1.9.21"
   id("org.jetbrains.kotlin.plugin.noarg") version "1.9.21"
 }
@@ -28,9 +28,9 @@ dependencies {
 
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.16.0")
   implementation("org.springframework.data:spring-data-commons:3.2.0")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.2.0")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
-  implementation("org.springdoc:springdoc-openapi-starter-common:2.2.0")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.3.0")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
+  implementation("org.springdoc:springdoc-openapi-starter-common:2.3.0")
 
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
@@ -45,13 +45,13 @@ dependencies {
 }
 
 java {
-  toolchain.languageVersion.set(JavaLanguageVersion.of(20))
+  toolchain.languageVersion.set(JavaLanguageVersion.of(21))
 }
 
 tasks {
   withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
-      jvmTarget = "20"
+      jvmTarget = "21"
     }
   }
 }
