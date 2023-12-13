@@ -14,7 +14,7 @@ parameters:
 jobs:
   acceptance_tests_main:
     docker:
-      - image: maven:3.8.4-jdk-11
+      - image: maven:3.9.5-eclipse-temurin-21-alpine
       - image: seleniarm/standalone-chromium
         environment:
           CHROME_HEADLESS: 1
@@ -43,7 +43,7 @@ jobs:
             mvn test -Dbrowser=remote-chrome -Dspring.profiles.active="staging" -Dtest=uk.gov.justice.digital.hmpps.vsip.suites.RunSuite
   acceptance_tests_develop:
     docker:
-      - image: maven:3.8.4-jdk-11
+      - image: maven:3.9.5-eclipse-temurin-21-alpine
       - image: seleniarm/standalone-chromium
         environment:
           CHROME_HEADLESS: 1
