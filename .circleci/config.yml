@@ -70,6 +70,7 @@ jobs:
           command: |
             cd hmpps-vsip-ui-tests
             mvn test -Dbrowser=remote-chrome -Dspring.profiles.active="staging" -Dtest=uk.gov.justice.digital.hmpps.vsip.suites.RunSuite
+
   validate:
     executor:
       name: hmpps/localstack
