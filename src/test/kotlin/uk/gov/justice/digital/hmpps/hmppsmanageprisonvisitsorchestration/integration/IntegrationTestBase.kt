@@ -135,20 +135,28 @@ abstract class IntegrationTestBase {
       .exchange()
   }
 
-  fun callGetVisitsBySessionTemplate(
-    webTestClient: WebTestClient,
-    sessionTemplateReference: String,
-    sessionDate: LocalDate,
+  private fun getVisitsQueryParams(
+    prisonerId: String,
     visitStatus: List<String>,
-    visitRestriction: List<VisitRestriction>?,
+    startDateTime: LocalDateTime? = null,
+    endDateTime: LocalDateTime? = null,
     page: Int,
     size: Int,
-    authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.get()
-      .uri("/visits/session-template/$sessionTemplateReference?${getOrchestrationVisitsBySessionTemplateQueryParams(sessionDate, visitStatus, visitRestriction, page, size).joinToString("&")}")
-      .headers(authHttpHeaders)
-      .exchange()
+  ): List<String> {
+    val queryParams = ArrayList<String>()
+    queryParams.add("prisonerId=$prisonerId")
+    visitStatus.forEach {
+      queryParams.add("visitStatus=$it")
+    }
+    startDateTime?.let {
+      queryParams.add("startDateTime=$it")
+    }
+    endDateTime?.let {
+      queryParams.add("endDateTime=$it")
+    }
+    queryParams.add("page=$page")
+    queryParams.add("size=$size")
+    return queryParams
   }
 
   final fun createVisitDto(
@@ -232,50 +240,6 @@ abstract class IntegrationTestBase {
     return PrisonNameDto(
       prisonId = prisonCode,
       prisonName = name,
-    )
-  }
-
-  fun getOrchestrationVisitsBySessionTemplateQueryParams(
-    sessionDate: LocalDate,
-    visitStatus: List<String>,
-    visitRestrictions: List<VisitRestriction>?,
-    page: Int,
-    size: Int,
-  ): List<String> {
-    val queryParams = ArrayList<String>()
-    queryParams.add("sessionDate=$sessionDate")
-    visitStatus.forEach {
-      queryParams.add("visitStatus=$it")
-    }
-    visitRestrictions?.let {
-      visitRestrictions.forEach {
-        queryParams.add("visitRestrictions=$it")
-      }
-    }
-    queryParams.add("page=$page")
-    queryParams.add("size=$size")
-    return queryParams
-  }
-
-  final fun createPrisoner(
-    prisonerId: String,
-    firstName: String,
-    lastName: String,
-    dateOfBirth: LocalDate,
-    prisonId: String = "MDI",
-    prisonName: String = "HMP Leeds",
-    cellLocation: String? = null,
-    currentIncentive: CurrentIncentive? = null,
-  ): PrisonerDto {
-    return PrisonerDto(
-      prisonerNumber = prisonerId,
-      firstName = firstName,
-      lastName = lastName,
-      dateOfBirth = dateOfBirth,
-      prisonId = prisonId,
-      prisonName = prisonName,
-      cellLocation = cellLocation,
-      currentIncentive = currentIncentive,
     )
   }
 }
