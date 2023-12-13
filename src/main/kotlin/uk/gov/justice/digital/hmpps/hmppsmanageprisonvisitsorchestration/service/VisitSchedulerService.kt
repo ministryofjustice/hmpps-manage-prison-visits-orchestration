@@ -6,14 +6,18 @@ import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitDetailsClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ManageUsersService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.BookingOrchestrationRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationNotificationGroupDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationPrisonerVisitsNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ChangeVisitSlotRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
@@ -42,8 +46,8 @@ import java.time.LocalTime
 @Service
 class VisitSchedulerService(
   private val visitSchedulerClient: VisitSchedulerClient,
-  private val visitDetailsClient: VisitDetailsClient,
   private val authenticationHelperService: AuthenticationHelperService,
+  private val manageUsersService: ManageUsersService,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -56,8 +60,34 @@ class VisitSchedulerService(
   /**
    * Gets further visit details like usernames, contact details etc for a given visit reference.
    */
-  fun getVisitHistoryByReference(reference: String): VisitHistoryDetailsDto? {
-    return visitDetailsClient.getVisitHistoryByReference(reference)
+  fun getVisitHistoryByReference(
+    reference: String,
+  ): VisitHistoryDetailsDto? {
+    val visit = visitSchedulerClient.getVisitByReference(reference)
+
+    visit?.let {
+      val eventAuditList = visitSchedulerClient.getVisitHistoryByReference(reference)
+      if (!eventAuditList.isNullOrEmpty()) {
+        val names = manageUsersService.getFullNamesFromVisitHistory(eventAuditList)
+        val eventAuditListWithNames = eventAuditList.map {
+          EventAuditDto(
+            type = it.type,
+            applicationMethodType = it.applicationMethodType,
+            actionedBy = names[it.actionedBy] ?: it.actionedBy,
+            sessionTemplateReference = it.sessionTemplateReference,
+            createTimestamp = it.createTimestamp,
+          )
+        }
+        return VisitHistoryDetailsDto(
+          eventsAudit = eventAuditListWithNames,
+          visit = visit,
+        )
+      }
+      return VisitHistoryDetailsDto(
+        visit = visit,
+      )
+    }
+    return null
   }
 
   fun visitsSearch(visitSearchRequestFilter: VisitSearchRequestFilter): Page<VisitDto>? {
@@ -107,7 +137,7 @@ class VisitSchedulerService(
     return visitSchedulerClient.changeBookedVisit(reference, VisitSchedulerReserveVisitSlotDto(reserveVisitSlotDto, authenticationHelperService.currentUserName))
   }
 
-  fun getVisitSessions(prisonCode: String, prisonerId: String?, min: Long?, max: Long?): List<VisitSessionDto>? {
+  fun getVisitSessions(prisonCode: String, prisonerId: String?, min: Int?, max: Int?): List<VisitSessionDto>? {
     return visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max)
   }
 
@@ -153,5 +183,26 @@ class VisitSchedulerService(
 
   fun getNotificationCount(): NotificationCountDto? {
     return visitSchedulerClient.getNotificationCount()
+  }
+
+  fun getFutureNotificationVisitGroups(prisonCode: String): List<OrchestrationNotificationGroupDto>? {
+    val groups = visitSchedulerClient.getFutureNotificationVisitGroups(prisonCode)
+
+    return groups?.map { group ->
+      val affectedVisits = group.affectedVisits.map {
+        OrchestrationPrisonerVisitsNotificationDto(
+          it.prisonerNumber,
+          it.bookedByUserName,
+          it.visitDate,
+          it.bookingReference,
+          manageUsersService.getUserFullName(it.bookedByUserName),
+        )
+      }
+      OrchestrationNotificationGroupDto(group.reference, group.type, affectedVisits)
+    }
+  }
+
+  fun getPrison(prisonCode: String): PrisonDto? {
+    return visitSchedulerClient.getPrison(prisonCode)
   }
 }

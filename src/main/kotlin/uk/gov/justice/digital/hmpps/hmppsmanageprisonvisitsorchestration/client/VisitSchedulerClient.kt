@@ -16,14 +16,18 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ChangeVisitSlotRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SupportTypeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationGroupDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionChangeNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
@@ -75,6 +79,23 @@ class VisitSchedulerClient(
 
   fun getVisits(visitSearchRequestFilter: VisitSearchRequestFilter): RestPage<VisitDto>? {
     return getVisitsAsMono(visitSearchRequestFilter).block(apiTimeout)
+  }
+
+  fun getVisitsForSessionTemplateAndDate(sessionTemplateReference: String, sessionDate: LocalDate, visitStatusList: List<VisitStatus>, visitRestrictions: List<VisitRestriction>?, page: Int, size: Int): RestPage<VisitDto>? {
+    return webClient.get()
+      .uri("/visits/session-template/$sessionTemplateReference") {
+        it.queryParam("fromDate", sessionDate)
+          .queryParam("toDate", sessionDate)
+          .queryParamIfPresent("visitRestrictions", Optional.ofNullable(visitRestrictions))
+          .queryParam("visitStatus", visitStatusList)
+          .queryParam("page", page)
+          .queryParam("size", size)
+          .build()
+      }
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<RestPage<VisitDto>>()
+      .block(apiTimeout)
   }
 
   fun getVisitsAsMono(visitSearchRequestFilter: VisitSearchRequestFilter): Mono<RestPage<VisitDto>> {
@@ -140,7 +161,7 @@ class VisitSchedulerClient(
       .bodyToMono<List<SupportTypeDto>>().block(apiTimeout)
   }
 
-  fun getVisitSessions(prisonId: String, prisonerId: String?, min: Long?, max: Long?): List<VisitSessionDto>? {
+  fun getVisitSessions(prisonId: String, prisonerId: String?, min: Int?, max: Int?): List<VisitSessionDto>? {
     return webClient.get()
       .uri("/visit-sessions") {
         visitSessionsUriBuilder(prisonId, prisonerId, min, max, it).build()
@@ -255,11 +276,26 @@ class VisitSchedulerClient(
       .bodyToMono<NotificationCountDto>().block(apiTimeout)
   }
 
+  fun getFutureNotificationVisitGroups(prisonCode: String): List<NotificationGroupDto>? {
+    return webClient.get()
+      .uri("/visits/notification//$prisonCode/groups")
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<List<NotificationGroupDto>>().block(apiTimeout)
+  }
+
   fun getNotificationCount(): NotificationCountDto? {
     return webClient.get()
       .uri("/visits/notification/count")
       .retrieve()
       .bodyToMono<NotificationCountDto>().block(apiTimeout)
+  }
+  fun getPrison(prisonCode: String): PrisonDto? {
+    return webClient.get()
+      .uri("/admin/prisons/prison/$prisonCode")
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<PrisonDto>().block(apiTimeout)
   }
 
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {
@@ -274,7 +310,7 @@ class VisitSchedulerClient(
     return uriBuilder
   }
 
-  private fun visitSessionsUriBuilder(prisonId: String, prisonerId: String?, min: Long?, max: Long?, uriBuilder: UriBuilder): UriBuilder {
+  private fun visitSessionsUriBuilder(prisonId: String, prisonerId: String?, min: Int?, max: Int?, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParam("prisonId", prisonId)
     uriBuilder.queryParamIfPresent("prisonerId", Optional.ofNullable(prisonerId))
     uriBuilder.queryParamIfPresent("min", Optional.ofNullable(min))

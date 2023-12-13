@@ -1,16 +1,15 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client
 
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Component
+import org.springframework.cache.annotation.Cacheable
+import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.manage.users.UserDetailsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import java.time.Duration
 
-@Component
-class VisitDetailsClient(
-  private val visitSchedulerClient: VisitSchedulerClient,
+@Service
+class ManageUsersService(
   private val manageUsersApiClient: ManageUsersApiClient,
   @Value("\${hmpps.auth.timeout:10s}") private val apiTimeout: Duration,
 ) {
@@ -18,43 +17,8 @@ class VisitDetailsClient(
     const val NOT_KNOWN = "NOT_KNOWN"
   }
 
-  fun getVisitHistoryByReference(
-    reference: String,
-  ): VisitHistoryDetailsDto? {
-    val visit = visitSchedulerClient.getVisitByReference(reference)
-
-    visit?.let {
-      val eventAuditList = visitSchedulerClient.getVisitHistoryByReference(reference)
-      eventAuditList?.let {
-        if (eventAuditList.isNotEmpty()) {
-          eventAuditList.filter { it.actionedBy != null }
-
-          val userNames = eventAuditList.filter { it.actionedBy != null }.map { it.actionedBy!! }.toSet()
-          val names = getUserDetails(userNames)
-
-          val eventAuditListWithNames = eventAuditList.map {
-            EventAuditDto(
-              type = it.type,
-              applicationMethodType = it.applicationMethodType,
-              actionedBy = names[it.actionedBy] ?: it.actionedBy,
-              sessionTemplateReference = it.sessionTemplateReference,
-              createTimestamp = it.createTimestamp,
-            )
-          }
-          return VisitHistoryDetailsDto(
-            eventsAudit = eventAuditListWithNames,
-            visit = visit,
-          )
-        }
-        return VisitHistoryDetailsDto(
-          visit = visit,
-        )
-      }
-    }
-    return null
-  }
-
-  private fun getUserDetails(userNames: Set<String>): Map<String, String> {
+  fun getFullNamesFromVisitHistory(eventAuditList: List<EventAuditDto>): Map<String, String> {
+    val userNames = eventAuditList.filter { it.actionedBy != null }.map { it.actionedBy!! }.toSet()
     val monoCallsList = createUserMonoCalls(userNames)
     return executeMonoCalls(monoCallsList)
   }
@@ -92,16 +56,25 @@ class VisitDetailsClient(
     userNames: Set<String>,
   ): List<Mono<UserDetailsDto>> {
     return userNames.map {
-      getUserDetails(it)
+      getFullNamesFromVisitHistory(it)
     }
   }
 
-  private fun getUserDetails(actionedBy: String): Mono<UserDetailsDto> {
+  private fun getFullNamesFromVisitHistory(actionedBy: String): Mono<UserDetailsDto> {
     // for past visits or some exceptional circumstances actionedBy will be NOT_KNOWN
     return if (actionedBy == NOT_KNOWN) {
       Mono.just(UserDetailsDto(actionedBy, NOT_KNOWN))
     } else {
       manageUsersApiClient.getUserDetails(actionedBy)
+    }
+  }
+
+  @Cacheable(value = ["UserFullName"], key = "#userName")
+  fun getUserFullName(userName: String): String {
+    return if (userName == NOT_KNOWN) {
+      userName
+    } else {
+      manageUsersApiClient.getUserDetails(userName).block(apiTimeout)?.fullName ?: NOT_KNOWN
     }
   }
 }
