@@ -13,12 +13,14 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationNotificationGroupDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
 
 const val VISIT_NOTIFICATION_CONTROLLER_PATH: String = "/visits/notification"
 const val VISIT_NOTIFICATION_COUNT_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/count"
 const val VISIT_NOTIFICATION_COUNT_FOR_PRISON_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/{prisonCode}/count"
+const val FUTURE_NOTIFICATION_VISIT_GROUPS: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/{prisonCode}/groups"
 
 @RestController
 @Validated
@@ -82,5 +84,35 @@ class VisitNotificationController(
   )
   fun getNotificationCount(): NotificationCountDto? {
     return visitSchedulerService.getNotificationCount()
+  }
+
+  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @GetMapping(FUTURE_NOTIFICATION_VISIT_GROUPS)
+  @Operation(
+    summary = "get future notification visit groups by prison code",
+    description = "Retrieve future notification visit groups by prison code",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Retrieved future notification visit groups by prison code",
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getFutureNotificationVisitGroups(
+    @Schema(description = "prisonCode", example = "CFI", required = true)
+    @PathVariable
+    prisonCode: String,
+  ): List<OrchestrationNotificationGroupDto>? {
+    return visitSchedulerService.getFutureNotificationVisitGroups(prisonCode)
   }
 }

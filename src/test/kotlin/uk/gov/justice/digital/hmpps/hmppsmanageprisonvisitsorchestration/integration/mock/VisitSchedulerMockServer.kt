@@ -17,15 +17,22 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SupportTypeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType.NON_ASSOCIATION_EVENT
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationGroupDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerVisitsNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase.Companion.getVisitsQueryParams
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.util.ArrayList
 
 class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper) : WireMockServer(8092) {
   fun stubGetVisit(reference: String, visitDto: VisitDto?) {
@@ -104,28 +111,35 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     )
   }
 
-  private fun getVisitsQueryParams(
-    prisonerId: String,
+  fun stubGetVisitsBySessionTemplate(
+    sessionTemplateReference: String,
+    sessionDate: LocalDate,
     visitStatus: List<String>,
-    startDateTime: LocalDateTime? = null,
-    endDateTime: LocalDateTime? = null,
+    visitRestrictions: List<VisitRestriction>,
     page: Int,
     size: Int,
-  ): List<String> {
-    val queryParams = ArrayList<String>()
-    queryParams.add("prisonerId=$prisonerId")
-    visitStatus.forEach {
-      queryParams.add("visitStatus=$it")
-    }
-    startDateTime?.let {
-      queryParams.add("startDateTime=$it")
-    }
-    endDateTime?.let {
-      queryParams.add("endDateTime=$it")
-    }
-    queryParams.add("page=$page")
-    queryParams.add("size=$size")
-    return queryParams
+    visits: List<VisitDto>,
+  ) {
+    val restPage = RestPage(content = visits, page = 0, size = size, total = visits.size.toLong())
+    stubFor(
+      get(
+        "/visits/session-template/$sessionTemplateReference?${
+        getVisitsBySessionTemplateQueryParams(
+          sessionDate,
+          visitStatus,
+          visitRestrictions,
+          page,
+          size,
+        ).joinToString("&")
+        }",
+      )
+        .willReturn(
+          createJsonResponseBuilder()
+            .withStatus(HttpStatus.OK.value()).withBody(
+              getJsonString(restPage),
+            ),
+        ),
+    )
   }
 
   fun stubReserveVisitSlot(visitDto: VisitDto?) {
@@ -205,6 +219,32 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     )
   }
 
+  fun stubFutureNotificationVisitGroups(prisonCode: String): NotificationGroupDto {
+    val responseBuilder = createJsonResponseBuilder()
+
+    val now = LocalDate.now()
+
+    val dto = NotificationGroupDto(
+      "v7*d7*ed*7u",
+      NON_ASSOCIATION_EVENT,
+      listOf(
+        PrisonerVisitsNotificationDto("AF34567G", "Username1", now, "v1-d7-ed-7u"),
+        PrisonerVisitsNotificationDto("BF34567G", "Username2", now.plusDays(1), "v2-d7-ed-7u"),
+      ),
+    )
+
+    stubFor(
+      get("/visits/notification/$prisonCode/groups")
+        .willReturn(
+          responseBuilder
+            .withStatus(HttpStatus.OK.value())
+            .withBody(getJsonString(listOf(dto))),
+        ),
+    )
+
+    return dto
+  }
+
   fun stubChangeBookedVisit(reference: String, visitDto: VisitDto?) {
     val responseBuilder = createJsonResponseBuilder()
 
@@ -272,6 +312,17 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     )
   }
 
+  fun stubGetPrison(prisonCode: String, prisonDto: PrisonDto) {
+    stubFor(
+      get("/admin/prisons/prison/$prisonCode")
+        .willReturn(
+          createJsonResponseBuilder()
+            .withStatus(HttpStatus.OK.value())
+            .withBody(getJsonString(prisonDto)),
+        ),
+    )
+  }
+
   fun stubGetSessionCapacity(
     prisonCode: String,
     sessionDate: LocalDate,
@@ -306,6 +357,29 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
             .withBody(getJsonString(sessionSchedules)),
         ),
     )
+  }
+
+  private fun getVisitsBySessionTemplateQueryParams(
+    sessionDate: LocalDate,
+    visitStatus: List<String>,
+    visitRestrictions: List<VisitRestriction>?,
+    page: Int,
+    size: Int,
+  ): List<String> {
+    val queryParams = ArrayList<String>()
+    queryParams.add("fromDate=$sessionDate")
+    queryParams.add("toDate=$sessionDate")
+    visitRestrictions?.let {
+      visitRestrictions.forEach {
+        queryParams.add("visitRestrictions=$it")
+      }
+    }
+    visitStatus.forEach {
+      queryParams.add("visitStatus=$it")
+    }
+    queryParams.add("page=$page")
+    queryParams.add("size=$size")
+    return queryParams
   }
 
   private fun getJsonString(obj: Any): String {
