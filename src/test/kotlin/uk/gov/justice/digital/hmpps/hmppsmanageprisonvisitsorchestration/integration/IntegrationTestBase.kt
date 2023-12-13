@@ -242,4 +242,64 @@ abstract class IntegrationTestBase {
       prisonName = name,
     )
   }
+
+  fun getOrchestrationVisitsBySessionTemplateQueryParams(
+    sessionDate: LocalDate,
+    visitStatus: List<String>,
+    visitRestrictions: List<VisitRestriction>?,
+    page: Int,
+    size: Int,
+  ): List<String> {
+    val queryParams = ArrayList<String>()
+    queryParams.add("sessionDate=$sessionDate")
+    visitStatus.forEach {
+      queryParams.add("visitStatus=$it")
+    }
+    visitRestrictions?.let {
+      visitRestrictions.forEach {
+        queryParams.add("visitRestrictions=$it")
+      }
+    }
+    queryParams.add("page=$page")
+    queryParams.add("size=$size")
+    return queryParams
+  }
+
+  fun callGetVisitsBySessionTemplate(
+    webTestClient: WebTestClient,
+    sessionTemplateReference: String,
+    sessionDate: LocalDate,
+    visitStatus: List<String>,
+    visitRestriction: List<VisitRestriction>?,
+    page: Int,
+    size: Int,
+    authHttpHeaders: (HttpHeaders) -> Unit,
+  ): WebTestClient.ResponseSpec {
+    return webTestClient.get()
+      .uri("/visits/session-template/$sessionTemplateReference?${getOrchestrationVisitsBySessionTemplateQueryParams(sessionDate, visitStatus, visitRestriction, page, size).joinToString("&")}")
+      .headers(authHttpHeaders)
+      .exchange()
+  }
+
+  fun createPrisoner(
+    prisonerId: String,
+    firstName: String,
+    lastName: String,
+    dateOfBirth: LocalDate,
+    prisonId: String = "MDI",
+    prisonName: String = "HMP Leeds",
+    cellLocation: String? = null,
+    currentIncentive: CurrentIncentive? = null,
+  ): PrisonerDto {
+    return PrisonerDto(
+      prisonerNumber = prisonerId,
+      firstName = firstName,
+      lastName = lastName,
+      dateOfBirth = dateOfBirth,
+      prisonId = prisonId,
+      prisonName = prisonName,
+      cellLocation = cellLocation,
+      currentIncentive = currentIncentive,
+    )
+  }
 }
