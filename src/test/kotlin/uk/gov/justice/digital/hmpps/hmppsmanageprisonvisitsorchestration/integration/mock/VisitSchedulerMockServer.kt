@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType.NON_ASSOCIATION_EVENT
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationGroupDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerVisitsNotificationDto
@@ -308,6 +309,17 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
           createJsonResponseBuilder()
             .withStatus(HttpStatus.OK.value())
             .withBody(getJsonString(supportedPrisonsList)),
+        ),
+    )
+  }
+
+  fun stubGetVisitNotificationTypes(reference: String, vararg type: NotificationEventType) {
+    stubFor(
+      get("/visits/notification/visit/$reference/types")
+        .willReturn(
+          createJsonResponseBuilder()
+            .withStatus(HttpStatus.OK.value())
+            .withBody(getJsonString(type.toList())),
         ),
     )
   }
