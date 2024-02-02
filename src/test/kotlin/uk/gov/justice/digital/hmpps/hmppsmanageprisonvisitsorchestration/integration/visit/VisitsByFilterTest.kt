@@ -15,7 +15,7 @@ class VisitsByFilterTest : IntegrationTestBase() {
     val prisonerId = "ABC"
     val visitStatus = "BOOKED"
     val visitsList = mutableListOf(visitDto, visitDto2)
-    visitSchedulerMockServer.stubGetVisits(prisonerId, listOf(visitStatus), startDateTime = null, endDateTime = null, 1, 10, visitsList)
+    visitSchedulerMockServer.stubGetVisits(null, prisonerId, listOf(visitStatus), startDate = null, endDate = null, 1, 10, visitsList)
 
     // When
     val responseSpec = callGetVisits(webTestClient, prisonerId, listOf(visitStatus), null, null, 1, 10, roleVisitSchedulerHttpHeaders)
@@ -33,7 +33,7 @@ class VisitsByFilterTest : IntegrationTestBase() {
     val prisonerId = "AABBCC"
     val visitStatus = "BOOKED"
     val emptyList = mutableListOf<VisitDto>()
-    visitSchedulerMockServer.stubGetVisits(prisonerId, listOf(visitStatus), startDateTime = null, endDateTime = null, 1, 10, emptyList)
+    visitSchedulerMockServer.stubGetVisits(null, prisonerId, listOf(visitStatus), startDate = null, endDate = null, 1, 10, emptyList)
 
     // When
     val responseSpec = callGetVisits(webTestClient, prisonerId, listOf(visitStatus), null, null, 1, 10, roleVisitSchedulerHttpHeaders)

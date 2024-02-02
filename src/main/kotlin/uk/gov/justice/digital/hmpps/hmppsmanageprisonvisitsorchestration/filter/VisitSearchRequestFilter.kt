@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter
 import io.swagger.v3.oas.annotations.Parameter
 import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.NotNull
-import java.time.LocalDateTime
+import java.time.LocalDate
 
 data class VisitSearchRequestFilter(
   @Parameter(
@@ -19,22 +19,16 @@ data class VisitSearchRequestFilter(
   val prisonerId: String?,
 
   @Parameter(
-    description = "Filter results by visitor (contact id)",
-    example = "12322",
+    description = "Filter results by visits that start on or after the given date",
+    example = "2021-11-03",
   )
-  val visitorId: String? = null,
+  val startDate: LocalDate? = null,
 
   @Parameter(
-    description = "Filter results by visits that start on or after the given timestamp",
-    example = "2021-11-03T09:00:00",
+    description = "Filter results by visits that start on or before the given date",
+    example = "2021-11-03",
   )
-  val startDateTime: LocalDateTime? = null,
-
-  @Parameter(
-    description = "Filter results by visits that start on or before the given timestamp",
-    example = "2021-11-03T09:00:00",
-  )
-  val endDateTime: LocalDateTime? = null,
+  val endDate: LocalDate? = null,
 
   @Parameter(
     description = "Filter results by visit status",

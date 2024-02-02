@@ -34,7 +34,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Period
-import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 import java.util.stream.Collectors
 
@@ -705,13 +704,13 @@ class GetPrisonerProfileTest(
 
   private fun stubGetVisits(visits: List<VisitDto>) {
     visitSchedulerMockServer.stubGetVisits(
-      PRISONER_ID,
-      listOf("BOOKED", "CANCELLED"),
-      LocalDateTime.now().minus(pastVisitsPeriod).with(TemporalAdjusters.firstDayOfMonth()).truncatedTo(ChronoUnit.DAYS),
-      LocalDateTime.now().plus(futureVisitsPeriod).with(TemporalAdjusters.lastDayOfMonth()).truncatedTo(ChronoUnit.DAYS),
-      0,
-      1000,
-      visits,
+      prisonerId = PRISONER_ID,
+      visitStatus = listOf("BOOKED", "CANCELLED"),
+      startDate = LocalDate.now().minus(pastVisitsPeriod).with(TemporalAdjusters.firstDayOfMonth()),
+      endDate = LocalDate.now().plus(futureVisitsPeriod).with(TemporalAdjusters.lastDayOfMonth()),
+      page = 0,
+      size = 1000,
+      visits = visits,
     )
   }
 
