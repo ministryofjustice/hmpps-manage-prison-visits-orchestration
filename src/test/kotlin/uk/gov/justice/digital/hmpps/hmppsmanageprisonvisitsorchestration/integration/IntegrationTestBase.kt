@@ -311,6 +311,17 @@ abstract class IntegrationTestBase {
       .exchange()
   }
 
+  fun callFutureVisits(
+    webTestClient: WebTestClient,
+    prisonerId: String,
+    authHttpHeaders: (HttpHeaders) -> Unit,
+  ): WebTestClient.ResponseSpec {
+    return webTestClient.get()
+      .uri("/visits/search/future/$prisonerId")
+      .headers(authHttpHeaders)
+      .exchange()
+  }
+
   final fun createPrisoner(
     prisonerId: String,
     firstName: String,

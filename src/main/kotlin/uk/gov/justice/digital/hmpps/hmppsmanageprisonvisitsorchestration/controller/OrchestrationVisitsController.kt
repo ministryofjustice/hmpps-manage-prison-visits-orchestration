@@ -6,8 +6,10 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.Valid
+import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.NotNull
+import org.hibernate.validator.constraints.Length
 import org.springframework.data.domain.Page
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
@@ -353,5 +355,41 @@ class OrchestrationVisitsController(
     visitRestrictions: List<VisitRestriction>?,
   ): List<VisitPreviewDto> {
     return visitsByDateService.getVisitsForSessionTemplateAndDate(sessionTemplateReference, sessionDate, visitStatus, visitRestrictions)
+  }
+
+  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @GetMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/search/future/{prisonerId}")
+  @Operation(
+    summary = "Get future visits for a prisoner",
+    description = "Get future visits for given prisoner number",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Returned future visits for a prisoner",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to get future visits for a prisoner",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to get future visits for a prisoner",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getFutureVisitsForPrisoner(
+    @PathVariable(value = "prisonerId", required = true)
+    @NotBlank
+    @Length(min = 3, max = 50)
+    prisonerId: String,
+  ): List<VisitDto> {
+    return visitSchedulerService.findFutureVisitsForPrisoner(prisonerId)
   }
 }

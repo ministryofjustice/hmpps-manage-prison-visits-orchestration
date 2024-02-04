@@ -144,6 +144,21 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     )
   }
 
+  fun stubGetFutureVisits(
+    prisonerId: String,
+    visits: List<VisitDto>,
+  ) {
+    stubFor(
+      get("/visits/search/future/$prisonerId")
+        .willReturn(
+          createJsonResponseBuilder()
+            .withStatus(HttpStatus.OK.value()).withBody(
+              getJsonString(visits),
+            ),
+        ),
+    )
+  }
+
   fun stubCreateApplication(applicationDto: ApplicationDto?) {
     val responseBuilder = createJsonResponseBuilder()
 

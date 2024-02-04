@@ -101,6 +101,10 @@ class VisitSchedulerService(
     return Page.empty()
   }
 
+  fun findFutureVisitsForPrisoner(prisonerId: String): List<VisitDto> {
+    return visitSchedulerClient.getFutureVisitsForPrisoner(prisonerId) ?: emptyList()
+  }
+
   fun getVisitSupport(): List<SupportTypeDto>? {
     return visitSchedulerClient.getVisitSupport()
   }

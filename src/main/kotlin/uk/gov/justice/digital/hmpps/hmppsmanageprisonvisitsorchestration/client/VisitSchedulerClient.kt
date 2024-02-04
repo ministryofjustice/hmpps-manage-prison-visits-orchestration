@@ -80,6 +80,14 @@ class VisitSchedulerClient(
     return getVisitsAsMono(visitSearchRequestFilter).block(apiTimeout)
   }
 
+  fun getFutureVisitsForPrisoner(prisonerId: String): List<VisitDto>? {
+    return webClient.get()
+      .uri("/visits/search/future/$prisonerId")
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<List<VisitDto>>().block(apiTimeout)
+  }
+
   fun getVisitsForSessionTemplateAndDate(sessionTemplateReference: String, sessionDate: LocalDate, visitStatusList: List<VisitStatus>, visitRestrictions: List<VisitRestriction>?, page: Int, size: Int): RestPage<VisitDto>? {
     return webClient.get()
       .uri("/visits/session-template/$sessionTemplateReference") {
