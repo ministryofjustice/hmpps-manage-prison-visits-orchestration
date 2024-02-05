@@ -208,7 +208,6 @@ abstract class IntegrationTestBase {
       sessionDate = sessionDate!!,
       visitContact = null,
       visitors = setOf(visitor),
-      actionedBy = "user -1",
     )
   }
 

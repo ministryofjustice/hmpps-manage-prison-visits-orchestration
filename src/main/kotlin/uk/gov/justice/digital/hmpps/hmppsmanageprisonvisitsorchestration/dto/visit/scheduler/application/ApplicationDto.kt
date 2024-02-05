@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application
 
+import com.fasterxml.jackson.annotation.JsonAlias
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
@@ -19,6 +21,8 @@ data class ApplicationDto(
   @Schema(description = "Prisoner Id", example = "AF34567G", required = true)
   val prisonerId: String,
   @Schema(description = "Prison Id", example = "MDI", required = true)
+  @JsonProperty("prisonId")
+  @JsonAlias("prisonCode")
   val prisonCode: String,
   @Schema(description = "Visit Type", example = "SOCIAL", required = true)
   val visitType: VisitType,

@@ -12,12 +12,10 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ApplicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ChangeApplicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.CreateApplicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.VisitSchedulerCreateApplicationDto
 import java.time.Duration
 
 const val APPLICATION_CONTROLLER_PATH: String = "/visits/application"
-const val APPLICATION_RESERVE_SLOT: String = "$APPLICATION_CONTROLLER_PATH/slot/reserve"
-const val APPLICATION_RESERVED_SLOT_CHANGE: String = "$APPLICATION_CONTROLLER_PATH/{reference}/slot/change"
-const val APPLICATION_CHANGE: String = "$APPLICATION_CONTROLLER_PATH/{bookingReference}/change"
 
 @Component
 class VisitSchedulerApplicationsClient(
@@ -29,9 +27,9 @@ class VisitSchedulerApplicationsClient(
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun createInitialApplication(createApplicationDto: CreateApplicationDto): ApplicationDto? {
+  fun createInitialApplication(createApplicationDto: VisitSchedulerCreateApplicationDto): ApplicationDto? {
     return webClient.post()
-      .uri(APPLICATION_RESERVE_SLOT)
+      .uri("$APPLICATION_CONTROLLER_PATH//slot/reserve")
       .body(BodyInserters.fromValue(createApplicationDto))
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()

@@ -7,17 +7,19 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ApplicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ChangeApplicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.CreateApplicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.VisitSchedulerCreateApplicationDto
 
 @Service
 class ApplicationsService(
   private val visitSchedulerApplicationsClient: VisitSchedulerApplicationsClient,
+  private val authenticationHelperService: AuthenticationHelperService,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
   fun createInitialApplication(createApplicationDto: CreateApplicationDto): ApplicationDto? {
-    return visitSchedulerApplicationsClient.createInitialApplication(createApplicationDto)
+    return visitSchedulerApplicationsClient.createInitialApplication(VisitSchedulerCreateApplicationDto(createApplicationDto, authenticationHelperService.currentUserName))
   }
 
   fun changeIncompleteApplication(applicationReference: String, changeApplicationDto: ChangeApplicationDto): ApplicationDto? {

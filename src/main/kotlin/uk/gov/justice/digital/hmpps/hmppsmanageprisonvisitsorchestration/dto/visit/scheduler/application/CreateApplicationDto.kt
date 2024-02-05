@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import java.time.LocalDate
 
-data class CreateApplicationDto(
+open class CreateApplicationDto(
   @Schema(description = "Prisoner Id", example = "AF34567G", required = true)
   @field:NotBlank
   val prisonerId: String,
@@ -32,6 +32,4 @@ data class CreateApplicationDto(
   var visitors: Set<@Valid VisitorDto>,
   @Schema(description = "List of additional support associated with the visit", required = false)
   val visitorSupport: Set<@Valid VisitorSupportDto>? = setOf(),
-  @Schema(description = "Username for user who actioned this request", required = true)
-  val actionedBy: String,
 )
