@@ -124,8 +124,9 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     val restPage = RestPage(content = visits, page = 0, size = size, total = visits.size.toLong())
     stubFor(
       get(
-        "/visits/session-template/$sessionTemplateReference?${
+        "/visits/session-template?${
         getVisitsBySessionTemplateQueryParams(
+          sessionTemplateReference,
           sessionDate,
           visitStatus,
           visitRestrictions,
@@ -372,6 +373,7 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
   }
 
   private fun getVisitsBySessionTemplateQueryParams(
+    sessionTemplateReference: String?,
     sessionDate: LocalDate,
     visitStatus: List<String>,
     visitRestrictions: List<VisitRestriction>?,
@@ -379,6 +381,9 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     size: Int,
   ): List<String> {
     val queryParams = ArrayList<String>()
+    sessionTemplateReference?.let {
+      queryParams.add("sessionTemplateReference=$sessionTemplateReference")
+    }
     queryParams.add("fromDate=$sessionDate")
     queryParams.add("toDate=$sessionDate")
     visitRestrictions?.let {

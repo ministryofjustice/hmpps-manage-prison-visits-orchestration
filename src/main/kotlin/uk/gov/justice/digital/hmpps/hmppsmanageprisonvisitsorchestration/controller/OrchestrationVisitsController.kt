@@ -453,7 +453,7 @@ class OrchestrationVisitsController(
   fun getSupportTypes(): List<SupportTypeDto>? = visitSchedulerService.getVisitSupport()
 
   @PreAuthorize("hasRole('VISIT_SCHEDULER')")
-  @GetMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/session-template/{sessionTemplateReference}")
+  @GetMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/session-template")
   @Operation(
     summary = "Get visits for a session template reference and date",
     description = "Retrieve visits for session template reference and date",
@@ -481,9 +481,9 @@ class OrchestrationVisitsController(
   )
   fun getVisitsBySessionTemplate(
     @Schema(name = "sessionTemplateReference", description = "Session template reference", example = "v9-d7-ed-7u", required = true)
-    @PathVariable
+    @RequestParam
     @NotNull
-    sessionTemplateReference: String,
+    sessionTemplateReference: String?,
     @Schema(name = "sessionDate", description = "Get visits for session date", example = "2023-05-31", required = true)
     @RequestParam
     @NotNull

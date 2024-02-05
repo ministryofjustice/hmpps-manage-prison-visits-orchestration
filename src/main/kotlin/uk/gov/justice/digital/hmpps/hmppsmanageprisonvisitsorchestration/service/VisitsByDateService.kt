@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
+import uk.gov.justice.digital.hmpps.visitscheduler.dto.sessions.SessionTimeSlotDto
 import java.time.LocalDate
 
 @Service
@@ -21,7 +22,7 @@ class VisitsByDateService(
     const val PAGE_NUMBER: Int = 0
   }
 
-  fun getVisitsForSessionTemplateAndDate(sessionTemplateReference: String, sessionDate: LocalDate, visitStatus: List<VisitStatus>, visitRestrictions: List<VisitRestriction>?): List<VisitPreviewDto> {
+  fun getVisitsForSessionTemplateAndDate(sessionTemplateReference: String?, sessionDate: LocalDate, visitStatus: List<VisitStatus>, visitRestrictions: List<VisitRestriction>?): List<VisitPreviewDto> {
     LOG.debug(
       "Entered getVisitsBySessionTemplateForDate sessionTemplateReference:{} , sessionDate:{}, visitStatus: {}, visitRestrictions: {}",
       sessionTemplateReference,
@@ -38,12 +39,13 @@ class VisitsByDateService(
       size = MAX_VISIT_RECORDS,
     )?.toList()?.map { visit ->
       val visitorCount = visit.visitors?.size ?: 0
+      val visitTimeSlot = SessionTimeSlotDto(visit.startTimestamp.toLocalTime(), visit.endTimestamp.toLocalTime())
       try {
         prisonerSearchClient.getPrisonerById(visit.prisonerId)?.let { prisoner ->
-          VisitPreviewDto(visit.prisonerId, prisoner.firstName, prisoner.lastName, visit.reference, visitorCount)
-        } ?: VisitPreviewDto(visit.prisonerId, visit.reference, visitorCount)
+          VisitPreviewDto(visit.prisonerId, prisoner.firstName, prisoner.lastName, visit.reference, visitorCount, visitTimeSlot)
+        } ?: VisitPreviewDto(visit.prisonerId, visit.reference, visitorCount, visitTimeSlot)
       } catch (e: Exception) {
-        VisitPreviewDto(visit.prisonerId, visit.reference, visitorCount)
+        VisitPreviewDto(visit.prisonerId, visit.reference, visitorCount, visitTimeSlot)
       }
     } ?: emptyList()
   }
