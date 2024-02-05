@@ -480,7 +480,7 @@ class OrchestrationVisitsController(
     ],
   )
   fun getVisitsBySessionTemplate(
-    @Schema(name = "sessionTemplateReference", description = "Session template reference", example = "v9-d7-ed-7u", required = true)
+    @Schema(name = "sessionTemplateReference", description = "Session template reference", example = "v9-d7-ed-7u", required = false)
     @RequestParam
     @NotNull
     sessionTemplateReference: String?,
