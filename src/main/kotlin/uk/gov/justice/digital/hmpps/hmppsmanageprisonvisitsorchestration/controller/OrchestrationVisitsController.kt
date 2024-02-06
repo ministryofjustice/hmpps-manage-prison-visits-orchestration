@@ -34,6 +34,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitsByDateService
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.validation.NullableNotBlank
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -482,7 +483,7 @@ class OrchestrationVisitsController(
   fun getVisitsBySessionTemplate(
     @Schema(name = "sessionTemplateReference", description = "Session template reference", example = "v9-d7-ed-7u", required = false)
     @RequestParam
-    @NotNull
+    @NullableNotBlank
     sessionTemplateReference: String?,
     @Schema(name = "sessionDate", description = "Get visits for session date", example = "2023-05-31", required = true)
     @RequestParam
