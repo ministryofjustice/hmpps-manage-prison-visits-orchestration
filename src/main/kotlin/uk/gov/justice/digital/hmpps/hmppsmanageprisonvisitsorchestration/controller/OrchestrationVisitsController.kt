@@ -35,6 +35,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitsByDateService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.validation.NullableNotBlank
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.validation.NullableNotEmpty
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -496,6 +497,7 @@ class OrchestrationVisitsController(
     visitStatus: List<VisitStatus>,
     @Schema(name = "visitRestrictions", description = "Visit Restriction(s) - OPEN / CLOSED / UNKNOWN", example = "OPEN", required = false)
     @RequestParam
+    @NullableNotEmpty
     visitRestrictions: List<VisitRestriction>?,
   ): List<VisitPreviewDto> {
     return visitsByDateService.getVisitsForSessionTemplateAndDate(sessionTemplateReference, sessionDate, visitStatus, visitRestrictions)
