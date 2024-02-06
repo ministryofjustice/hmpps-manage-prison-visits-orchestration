@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorSupportDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.CreateApplicationRestriction
 import java.time.LocalDate
 
 open class CreateApplicationDto(
@@ -23,7 +23,7 @@ open class CreateApplicationDto(
   val sessionDate: LocalDate,
   @Schema(description = "Visit Restriction", example = "OPEN", required = true)
   @field:NotNull
-  val visitRestriction: VisitRestriction,
+  val applicationRestriction: CreateApplicationRestriction,
   @Schema(description = "Contact associated with the visit", required = false)
   @field:Valid
   val visitContact: ContactDto?,

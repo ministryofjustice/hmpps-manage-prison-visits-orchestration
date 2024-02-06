@@ -18,7 +18,7 @@ class VisitSchedulerCreateApplicationDto(
   createApplicationDto.prisonerId,
   createApplicationDto.sessionTemplateReference,
   createApplicationDto.sessionDate,
-  createApplicationDto.visitRestriction,
+  createApplicationDto.applicationRestriction,
   createApplicationDto.visitContact,
   createApplicationDto.visitors,
   createApplicationDto.visitorSupport,

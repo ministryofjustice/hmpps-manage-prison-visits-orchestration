@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ApplicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ChangeApplicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.CreateApplicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.CreateApplicationRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.OutcomeStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
@@ -204,7 +205,7 @@ abstract class IntegrationTestBase {
     return CreateApplicationDto(
       prisonerId = prisonerId,
       sessionTemplateReference = sessionTemplateReference,
-      visitRestriction = VisitRestriction.OPEN,
+      applicationRestriction = CreateApplicationRestriction.OPEN,
       sessionDate = sessionDate!!,
       visitContact = null,
       visitors = setOf(visitor),
@@ -244,7 +245,7 @@ abstract class IntegrationTestBase {
   fun createChangeApplicationDto(): ChangeApplicationDto {
     val visitor = VisitorDto(1, false)
     return ChangeApplicationDto(
-      visitRestriction = VisitRestriction.OPEN,
+      applicationRestriction = CreateApplicationRestriction.OPEN,
       sessionDate = LocalDate.now(),
       visitContact = null,
       visitors = setOf(visitor),
