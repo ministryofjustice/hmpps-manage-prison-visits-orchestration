@@ -30,6 +30,6 @@ class ApplicationsService(
     visitReference: String,
     createApplicationDto: CreateApplicationDto,
   ): ApplicationDto? {
-    return visitSchedulerApplicationsClient.createApplicationForAnExistingVisit(visitReference, createApplicationDto)
+    return visitSchedulerApplicationsClient.createApplicationForAnExistingVisit(visitReference, VisitSchedulerCreateApplicationDto(createApplicationDto, authenticationHelperService.currentUserName))
   }
 }
