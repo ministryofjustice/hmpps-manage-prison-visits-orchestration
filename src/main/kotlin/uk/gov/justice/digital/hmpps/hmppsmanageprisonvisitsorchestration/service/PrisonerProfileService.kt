@@ -8,9 +8,8 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerProfileClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.PrisonerProfileDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
-import java.time.LocalDateTime
+import java.time.LocalDate
 import java.time.Period
-import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 
 @Service
@@ -32,8 +31,8 @@ class PrisonerProfileService(
       prisonerId,
       createVisitSearchFilterForProfile(
         prisonerId = prisonerId,
-        startDateTime = getStartDate(LocalDateTime.now(), pastVisitsPeriod),
-        endDateTime = getEndDate(LocalDateTime.now(), futureVisitsPeriod),
+        startDate = getStartDate(LocalDate.now(), pastVisitsPeriod),
+        endDate = getEndDate(LocalDate.now(), futureVisitsPeriod),
       ),
     )
     validatePrisonersPrisonId(prisonerProfile, prisonId)
@@ -48,23 +47,23 @@ class PrisonerProfileService(
     }
   }
 
-  private fun getStartDate(dateTime: LocalDateTime, period: Period): LocalDateTime {
-    return dateTime.minus(period).with(TemporalAdjusters.firstDayOfMonth()).truncatedTo(ChronoUnit.DAYS)
+  private fun getStartDate(date: LocalDate, period: Period): LocalDate {
+    return date.minus(period).with(TemporalAdjusters.firstDayOfMonth())
   }
 
-  private fun getEndDate(dateTime: LocalDateTime, period: Period): LocalDateTime {
-    return dateTime.plus(period).with(TemporalAdjusters.lastDayOfMonth()).truncatedTo(ChronoUnit.DAYS)
+  private fun getEndDate(date: LocalDate, period: Period): LocalDate {
+    return date.plus(period).with(TemporalAdjusters.lastDayOfMonth())
   }
 
   private fun createVisitSearchFilterForProfile(
     prisonerId: String,
-    startDateTime: LocalDateTime,
-    endDateTime: LocalDateTime,
+    startDate: LocalDate,
+    endDate: LocalDate,
   ): VisitSearchRequestFilter {
     return VisitSearchRequestFilter(
       prisonerId = prisonerId,
-      startDateTime = startDateTime,
-      endDateTime = endDateTime,
+      startDate = startDate,
+      endDate = endDate,
       visitStatusList = listOf("BOOKED", "CANCELLED"),
       page = PAGE_NUMBER,
       size = MAX_VISIT_RECORDS,

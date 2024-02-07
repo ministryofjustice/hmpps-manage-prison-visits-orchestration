@@ -15,15 +15,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ChangeVisitSlotRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SupportTypeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
@@ -104,8 +101,8 @@ class VisitSchedulerService(
     return Page.empty()
   }
 
-  fun reserveVisitSlot(reserveVisitSlotDto: ReserveVisitSlotDto): VisitDto? {
-    return visitSchedulerClient.reserveVisitSlot(VisitSchedulerReserveVisitSlotDto(reserveVisitSlotDto, authenticationHelperService.currentUserName))
+  fun findFutureVisitsForPrisoner(prisonerId: String): List<VisitDto> {
+    return visitSchedulerClient.getFutureVisitsForPrisoner(prisonerId) ?: emptyList()
   }
 
   fun getVisitSupport(): List<SupportTypeDto>? {
@@ -128,14 +125,6 @@ class VisitSchedulerService(
         cancelVisitDto.applicationMethodType,
       ),
     )
-  }
-
-  fun changeReservedVisitSlot(applicationReference: String, changeVisitSlotRequestDto: ChangeVisitSlotRequestDto): VisitDto? {
-    return visitSchedulerClient.changeVisitSlot(applicationReference, changeVisitSlotRequestDto)
-  }
-
-  fun changeBookedVisit(reference: String, reserveVisitSlotDto: ReserveVisitSlotDto): VisitDto? {
-    return visitSchedulerClient.changeBookedVisit(reference, VisitSchedulerReserveVisitSlotDto(reserveVisitSlotDto, authenticationHelperService.currentUserName))
   }
 
   fun getVisitSessions(prisonCode: String, prisonerId: String?, min: Int?, max: Int?): List<VisitSessionDto>? {

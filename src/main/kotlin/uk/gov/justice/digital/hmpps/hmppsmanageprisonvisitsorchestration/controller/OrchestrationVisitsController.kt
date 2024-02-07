@@ -6,15 +6,16 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.Valid
+import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.NotNull
+import org.hibernate.validator.constraints.Length
 import org.springframework.data.domain.Page
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
@@ -24,8 +25,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.BookingOrchestrationRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ChangeVisitSlotRequestDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SupportTypeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
@@ -35,7 +34,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitsByDateService
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 const val ORCHESTRATION_VISIT_CONTROLLER_PATH: String = "/visits"
 
@@ -156,26 +154,20 @@ class OrchestrationVisitsController(
       example = "MDI",
     )
     prisonCode: String?,
-    @RequestParam(value = "startDateTime", required = false)
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    @RequestParam(value = "startDate", required = false)
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Parameter(
-      description = "Filter results by visits that start on or after the given timestamp",
-      example = "2021-11-03T09:00:00",
+      description = "Filter results by visits that start on or after the given date",
+      example = "2021-11-03",
     )
-    startDateTime: LocalDateTime?,
-    @RequestParam(value = "endDateTime", required = false)
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    startDate: LocalDate?,
+    @RequestParam(value = "endDate", required = false)
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Parameter(
-      description = "Filter results by visits that start on or before the given timestamp",
-      example = "2021-11-03T09:00:00",
+      description = "Filter results by visits that start on or before the given date",
+      example = "2021-11-03",
     )
-    endDateTime: LocalDateTime?,
-    @RequestParam(value = "visitorId", required = false)
-    @Parameter(
-      description = "Filter results by visitor (contact id)",
-      example = "12322",
-    )
-    visitorId: Long?,
+    endDate: LocalDate?,
     @RequestParam(value = "visitStatus", required = true)
     @Parameter(
       description = "Filter results by visit status",
@@ -198,53 +190,13 @@ class OrchestrationVisitsController(
     val visitSearchRequestFilter = VisitSearchRequestFilter(
       prisonCode = prisonCode,
       prisonerId = prisonerId,
-      visitorId = visitorId?.toString(),
-      startDateTime = startDateTime,
-      endDateTime = endDateTime,
+      startDate = startDate,
+      endDate = endDate,
       visitStatusList = visitStatusList,
       page = page,
       size = size,
     )
     return visitSchedulerService.visitsSearch(visitSearchRequestFilter)
-  }
-
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
-  @PostMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/slot/reserve")
-  @ResponseStatus(HttpStatus.CREATED)
-  @Operation(
-    summary = "Reserve a slot (date/time slot) for a visit (a starting point)",
-    requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
-      content = [
-        Content(
-          mediaType = "application/json",
-          schema = Schema(implementation = ReserveVisitSlotDto::class),
-        ),
-      ],
-    ),
-    responses = [
-      ApiResponse(
-        responseCode = "201",
-        description = "Visit slot reserved",
-      ),
-      ApiResponse(
-        responseCode = "400",
-        description = "Incorrect request to reserve a slot",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorized to access this endpoint",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Incorrect permissions to reserve a slot",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-    ],
-  )
-  fun reserveVisitSlot(@RequestBody reserveVisitSlotDto: ReserveVisitSlotDto): VisitDto? {
-    return visitSchedulerService.reserveVisitSlot(reserveVisitSlotDto)
   }
 
   @PreAuthorize("hasRole('VISIT_SCHEDULER')")
@@ -287,101 +239,6 @@ class OrchestrationVisitsController(
     bookingRequestDto: BookingOrchestrationRequestDto,
   ): VisitDto? {
     return visitSchedulerService.bookVisit(applicationReference, bookingRequestDto)
-  }
-
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
-  @PutMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/{reference}/change")
-  @ResponseStatus(HttpStatus.CREATED)
-  @Operation(
-    summary = "Change a booked visit, (a starting point)",
-    requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
-      content = [
-        Content(
-          mediaType = "application/json",
-          schema = Schema(implementation = ReserveVisitSlotDto::class),
-        ),
-      ],
-    ),
-    responses = [
-      ApiResponse(
-        responseCode = "201",
-        description = "Visit created",
-      ),
-      ApiResponse(
-        responseCode = "400",
-        description = "Incorrect request to change a booked visit",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorized to access this endpoint",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Incorrect permissions to change a booked visit",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-    ],
-  )
-  fun changeBookedVisit(
-    @Schema(description = "reference", example = "v9-d7-ed-7u", required = true)
-    @PathVariable
-    reference: String,
-    @RequestBody @Valid
-    reserveVisitSlotDto: ReserveVisitSlotDto,
-  ): VisitDto? {
-    return visitSchedulerService.changeBookedVisit(reference.trim(), reserveVisitSlotDto)
-  }
-
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
-  @PutMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/{applicationReference}/slot/change")
-  @ResponseStatus(HttpStatus.OK)
-  @Operation(
-    summary = "Change a reserved slot and associated details for a visit (before booking)",
-    requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
-      content = [
-        Content(
-          mediaType = "application/json",
-          schema = Schema(implementation = ChangeVisitSlotRequestDto::class),
-        ),
-      ],
-    ),
-    responses = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Visit slot changed",
-      ),
-      ApiResponse(
-        responseCode = "400",
-        description = "Incorrect request to changed a visit slot",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorized to access this endpoint",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Incorrect permissions to changed a visit slot",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "404",
-        description = "Visit slot not found",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-    ],
-  )
-  fun changeReservedVisitSlot(
-    @Schema(description = "applicationReference", example = "dfs-wjs-eqr", required = true)
-    @PathVariable
-    applicationReference: String,
-    @RequestBody @Valid
-    changeVisitSlotRequestDto: ChangeVisitSlotRequestDto,
-  ): VisitDto? {
-    return visitSchedulerService.changeReservedVisitSlot(applicationReference.trim(), changeVisitSlotRequestDto)
   }
 
   @PreAuthorize("hasRole('VISIT_SCHEDULER')")
@@ -498,5 +355,41 @@ class OrchestrationVisitsController(
     visitRestrictions: List<VisitRestriction>?,
   ): List<VisitPreviewDto> {
     return visitsByDateService.getVisitsForSessionTemplateAndDate(sessionTemplateReference, sessionDate, visitStatus, visitRestrictions)
+  }
+
+  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @GetMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/search/future/{prisonerId}")
+  @Operation(
+    summary = "Get future visits for a prisoner",
+    description = "Get future visits for given prisoner number",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Returned future visits for a prisoner",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to get future visits for a prisoner",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to get future visits for a prisoner",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getFutureVisitsForPrisoner(
+    @PathVariable(value = "prisonerId", required = true)
+    @NotBlank
+    @Length(min = 3, max = 50)
+    prisonerId: String,
+  ): List<VisitDto> {
+    return visitSchedulerService.findFutureVisitsForPrisoner(prisonerId)
   }
 }

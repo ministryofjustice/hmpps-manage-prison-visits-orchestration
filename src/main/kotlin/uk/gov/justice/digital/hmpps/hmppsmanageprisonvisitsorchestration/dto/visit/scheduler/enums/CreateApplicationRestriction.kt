@@ -1,9 +1,9 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums
 
 @Suppress("unused")
-enum class VisitStatus(
+enum class CreateApplicationRestriction(
   val description: String,
 ) {
-  BOOKED("Booked"),
-  CANCELLED("Cancelled"),
+  OPEN("Open"),
+  CLOSED("Closed"),
 }
