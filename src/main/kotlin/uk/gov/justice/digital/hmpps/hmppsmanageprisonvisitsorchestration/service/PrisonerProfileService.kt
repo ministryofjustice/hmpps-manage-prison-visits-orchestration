@@ -62,8 +62,8 @@ class PrisonerProfileService(
   ): VisitSearchRequestFilter {
     return VisitSearchRequestFilter(
       prisonerId = prisonerId,
-      startDate = startDate,
-      endDate = endDate,
+      visitStartDate = startDate,
+      visitEndDate = endDate,
       visitStatusList = listOf("BOOKED", "CANCELLED"),
       page = PAGE_NUMBER,
       size = MAX_VISIT_RECORDS,
