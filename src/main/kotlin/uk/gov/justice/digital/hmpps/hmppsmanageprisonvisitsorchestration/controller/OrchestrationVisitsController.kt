@@ -154,20 +154,20 @@ class OrchestrationVisitsController(
       example = "MDI",
     )
     prisonCode: String?,
-    @RequestParam(value = "startDate", required = false)
+    @RequestParam(value = "visitStartDate", required = false)
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Parameter(
       description = "Filter results by visits that start on or after the given date",
       example = "2021-11-03",
     )
-    startDate: LocalDate?,
-    @RequestParam(value = "endDate", required = false)
+    visitStartDate: LocalDate?,
+    @RequestParam(value = "visitEndDate", required = false)
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Parameter(
       description = "Filter results by visits that start on or before the given date",
       example = "2021-11-03",
     )
-    endDate: LocalDate?,
+    visitEndDate: LocalDate?,
     @RequestParam(value = "visitStatus", required = true)
     @Parameter(
       description = "Filter results by visit status",
@@ -190,8 +190,8 @@ class OrchestrationVisitsController(
     val visitSearchRequestFilter = VisitSearchRequestFilter(
       prisonCode = prisonCode,
       prisonerId = prisonerId,
-      startDate = startDate,
-      endDate = endDate,
+      visitStartDate = visitStartDate,
+      visitEndDate = visitEndDate,
       visitStatusList = visitStatusList,
       page = page,
       size = size,

@@ -22,13 +22,13 @@ data class VisitSearchRequestFilter(
     description = "Filter results by visits that start on or after the given date",
     example = "2021-11-03",
   )
-  val startDate: LocalDate? = null,
+  val visitStartDate: LocalDate? = null,
 
   @Parameter(
     description = "Filter results by visits that start on or before the given date",
     example = "2021-11-03",
   )
-  val endDate: LocalDate? = null,
+  val visitEndDate: LocalDate? = null,
 
   @Parameter(
     description = "Filter results by visit status",

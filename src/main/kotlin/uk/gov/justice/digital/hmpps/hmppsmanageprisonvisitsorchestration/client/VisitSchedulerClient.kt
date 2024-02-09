@@ -289,8 +289,8 @@ class VisitSchedulerClient(
     uriBuilder.queryParamIfPresent("prisonId", Optional.ofNullable(visitSearchRequestFilter.prisonCode))
     uriBuilder.queryParamIfPresent("prisonerId", Optional.ofNullable(visitSearchRequestFilter.prisonerId))
     uriBuilder.queryParam("visitStatus", visitSearchRequestFilter.visitStatusList)
-    uriBuilder.queryParamIfPresent("visitStartDate", Optional.ofNullable(visitSearchRequestFilter.startDate))
-    uriBuilder.queryParamIfPresent("visitEndDate", Optional.ofNullable(visitSearchRequestFilter.endDate))
+    uriBuilder.queryParamIfPresent("visitStartDate", Optional.ofNullable(visitSearchRequestFilter.visitStartDate))
+    uriBuilder.queryParamIfPresent("visitEndDate", Optional.ofNullable(visitSearchRequestFilter.visitEndDate))
     uriBuilder.queryParam("page", visitSearchRequestFilter.page)
     uriBuilder.queryParam("size", visitSearchRequestFilter.size)
     return uriBuilder
