@@ -81,7 +81,7 @@ management:
 
 visit-scheduler:
   api:
-    timeout: 10s
+    timeout: 60s
 
 prison:
   api:
