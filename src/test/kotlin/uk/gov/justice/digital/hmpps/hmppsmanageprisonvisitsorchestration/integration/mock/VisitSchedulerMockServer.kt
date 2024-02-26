@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SupportTypeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ApplicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
@@ -31,7 +32,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerVisitsNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase.Companion.getVisitsQueryParams
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.ArrayList
 
@@ -92,17 +92,18 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
   }
 
   fun stubGetVisits(
+    prisonCode: String? = null,
     prisonerId: String,
     visitStatus: List<String>,
-    startDateTime: LocalDateTime?,
-    endDateTime: LocalDateTime?,
+    startDate: LocalDate?,
+    endDate: LocalDate?,
     page: Int,
     size: Int,
     visits: List<VisitDto>,
   ) {
     val restPage = RestPage(content = visits, page = 0, size = size, total = visits.size.toLong())
     stubFor(
-      get("/visits/search?${getVisitsQueryParams(prisonerId, visitStatus, startDateTime, endDateTime, page, size).joinToString("&")}")
+      get("/visits/search?${getVisitsQueryParams(prisonCode, prisonerId, visitStatus, startDate, endDate, page, size).joinToString("&")}")
         .willReturn(
           createJsonResponseBuilder()
             .withStatus(HttpStatus.OK.value()).withBody(
@@ -143,19 +144,34 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     )
   }
 
-  fun stubReserveVisitSlot(visitDto: VisitDto?) {
+  fun stubGetFutureVisits(
+    prisonerId: String,
+    visits: List<VisitDto>,
+  ) {
+    stubFor(
+      get("/visits/search/future/$prisonerId")
+        .willReturn(
+          createJsonResponseBuilder()
+            .withStatus(HttpStatus.OK.value()).withBody(
+              getJsonString(visits),
+            ),
+        ),
+    )
+  }
+
+  fun stubCreateApplication(applicationDto: ApplicationDto?) {
     val responseBuilder = createJsonResponseBuilder()
 
     stubFor(
-      post("/visits/slot/reserve")
+      post("/visits/application/slot/reserve")
         .willReturn(
-          if (visitDto == null) {
+          if (applicationDto == null) {
             responseBuilder
               .withStatus(HttpStatus.BAD_REQUEST.value())
           } else {
             responseBuilder
               .withStatus(HttpStatus.OK.value())
-              .withBody(getJsonString(visitDto))
+              .withBody(getJsonString(applicationDto))
           },
         ),
     )
@@ -246,35 +262,35 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     return dto
   }
 
-  fun stubChangeBookedVisit(reference: String, visitDto: VisitDto?) {
+  fun stubChangeBookedVisit(bookingReference: String, applicationDto: ApplicationDto?) {
     val responseBuilder = createJsonResponseBuilder()
 
     stubFor(
-      put("/visits/$reference/change")
+      put("/visits/application/$bookingReference/change")
         .willReturn(
-          if (visitDto == null) {
+          if (applicationDto == null) {
             responseBuilder
               .withStatus(HttpStatus.NOT_FOUND.value())
           } else {
             responseBuilder
               .withStatus(HttpStatus.OK.value())
-              .withBody(getJsonString(visitDto))
+              .withBody(getJsonString(applicationDto))
           },
         ),
     )
   }
 
-  fun stubChangeReservedVisitSlot(applicationReference: String, visitDto: VisitDto?) {
+  fun stubChangeReservedVisitSlot(applicationReference: String, applicationDto: ApplicationDto?) {
     val responseBuilder = createJsonResponseBuilder()
 
     stubFor(
-      put("/visits/$applicationReference/slot/change")
+      put("/visits/application/$applicationReference/slot/change")
         .willReturn(
-          if (visitDto == null) {
+          if (applicationDto == null) {
             responseBuilder.withStatus(HttpStatus.NOT_FOUND.value())
           } else {
             responseBuilder.withStatus(HttpStatus.OK.value())
-              .withBody(getJsonString(visitDto))
+              .withBody(getJsonString(applicationDto))
           },
         ),
     )
