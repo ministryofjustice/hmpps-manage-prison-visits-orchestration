@@ -14,14 +14,12 @@ import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ChangeVisitSlotRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SupportTypeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerReserveVisitSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
@@ -82,6 +80,14 @@ class VisitSchedulerClient(
     return getVisitsAsMono(visitSearchRequestFilter).block(apiTimeout)
   }
 
+  fun getFutureVisitsForPrisoner(prisonerId: String): List<VisitDto>? {
+    return webClient.get()
+      .uri("/visits/search/future/$prisonerId")
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<List<VisitDto>>().block(apiTimeout)
+  }
+
   fun getVisitsForSessionTemplateAndDate(sessionTemplateReference: String?, sessionDate: LocalDate, visitStatusList: List<VisitStatus>, visitRestrictions: List<VisitRestriction>?, page: Int, size: Int): RestPage<VisitDto>? {
     return webClient.get()
       .uri("/visits/session-template") {
@@ -110,37 +116,10 @@ class VisitSchedulerClient(
       .bodyToMono()
   }
 
-  fun reserveVisitSlot(reserveVisitSlotDto: VisitSchedulerReserveVisitSlotDto): VisitDto? {
-    return webClient.post()
-      .uri("/visits/slot/reserve")
-      .body(BodyInserters.fromValue(reserveVisitSlotDto))
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<VisitDto>().block(apiTimeout)
-  }
-
   fun bookVisitSlot(applicationReference: String, requestDto: BookingRequestDto): VisitDto? {
     return webClient.put()
       .uri("/visits/$applicationReference/book")
       .body(BodyInserters.fromValue(requestDto))
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<VisitDto>().block(apiTimeout)
-  }
-
-  fun changeVisitSlot(applicationReference: String, changeVisitSlotRequestDto: ChangeVisitSlotRequestDto): VisitDto? {
-    return webClient.put()
-      .uri("/visits/$applicationReference/slot/change")
-      .body(BodyInserters.fromValue(changeVisitSlotRequestDto))
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<VisitDto>().block(apiTimeout)
-  }
-
-  fun changeBookedVisit(reference: String, reserveVisitSlotDto: VisitSchedulerReserveVisitSlotDto): VisitDto? {
-    return webClient.put()
-      .uri("/visits/$reference/change")
-      .body(BodyInserters.fromValue(reserveVisitSlotDto))
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono<VisitDto>().block(apiTimeout)
@@ -311,9 +290,8 @@ class VisitSchedulerClient(
     uriBuilder.queryParamIfPresent("prisonId", Optional.ofNullable(visitSearchRequestFilter.prisonCode))
     uriBuilder.queryParamIfPresent("prisonerId", Optional.ofNullable(visitSearchRequestFilter.prisonerId))
     uriBuilder.queryParam("visitStatus", visitSearchRequestFilter.visitStatusList)
-    uriBuilder.queryParamIfPresent("startDateTime", Optional.ofNullable(visitSearchRequestFilter.startDateTime))
-    uriBuilder.queryParamIfPresent("endDateTime", Optional.ofNullable(visitSearchRequestFilter.endDateTime))
-    uriBuilder.queryParamIfPresent("visitorId", Optional.ofNullable(visitSearchRequestFilter.visitorId))
+    uriBuilder.queryParamIfPresent("visitStartDate", Optional.ofNullable(visitSearchRequestFilter.visitStartDate))
+    uriBuilder.queryParamIfPresent("visitEndDate", Optional.ofNullable(visitSearchRequestFilter.visitEndDate))
     uriBuilder.queryParam("page", visitSearchRequestFilter.page)
     uriBuilder.queryParam("size", visitSearchRequestFilter.size)
     return uriBuilder

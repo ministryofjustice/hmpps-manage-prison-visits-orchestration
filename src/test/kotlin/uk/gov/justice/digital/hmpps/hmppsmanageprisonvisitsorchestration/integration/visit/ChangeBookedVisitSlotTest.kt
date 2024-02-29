@@ -5,20 +5,20 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerReserveVisitSlotDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.CreateApplicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
 @DisplayName("Change a booked Visit Slot tests")
 class ChangeBookedVisitSlotTest : IntegrationTestBase() {
   fun callChangeBookedVisitSlot(
     webTestClient: WebTestClient,
-    reference: String,
-    reserveVisitSlotDto: VisitSchedulerReserveVisitSlotDto,
+    bookingReference: String,
+    createApplicationDto: CreateApplicationDto,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
-    return webTestClient.put().uri("/visits/$reference/change")
+    return webTestClient.put().uri("/visits/application/$bookingReference/change")
       .headers(authHttpHeaders)
-      .body(BodyInserters.fromValue(reserveVisitSlotDto))
+      .body(BodyInserters.fromValue(createApplicationDto))
       .exchange()
   }
 
@@ -27,12 +27,12 @@ class ChangeBookedVisitSlotTest : IntegrationTestBase() {
     // Given
     val prisonerId = "A123567B"
     val reference = "aa-bb-cc-dd"
-    val reserveVisitSlotDto = createReserveVisitSlotDto(prisonerId)
-    val visitDto = createVisitDto(reference = reference)
-    visitSchedulerMockServer.stubChangeBookedVisit(reference, visitDto)
+    val createApplicationDto = createCreateApplicationDto(prisonerId)
+    val applicationDto = createApplicationDto(reference = reference, prisonerId = prisonerId)
+    visitSchedulerMockServer.stubChangeBookedVisit(reference, applicationDto)
 
     // When
-    val responseSpec = callChangeBookedVisitSlot(webTestClient, reference, reserveVisitSlotDto, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callChangeBookedVisitSlot(webTestClient, reference, createApplicationDto, roleVisitSchedulerHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isCreated
@@ -44,13 +44,13 @@ class ChangeBookedVisitSlotTest : IntegrationTestBase() {
   fun `when change a booked slot is unsuccessful then an error status is returned`() {
     // Given
     val prisonerId = "A123567B"
-    val reserveVisitSlotDto = createReserveVisitSlotDto(prisonerId)
+    val createApplicationDto = createCreateApplicationDto(prisonerId)
     val reference = "aa-bb-cc-dd"
-    val visitDto = null
-    visitSchedulerMockServer.stubChangeBookedVisit(reference, visitDto)
+    val applicationDto = null
+    visitSchedulerMockServer.stubChangeBookedVisit(reference, applicationDto)
 
     // When
-    val responseSpec = callChangeBookedVisitSlot(webTestClient, reference, reserveVisitSlotDto, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callChangeBookedVisitSlot(webTestClient, reference, createApplicationDto, roleVisitSchedulerHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
