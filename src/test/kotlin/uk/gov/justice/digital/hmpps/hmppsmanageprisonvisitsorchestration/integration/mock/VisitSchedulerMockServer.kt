@@ -63,7 +63,7 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     )
   }
 
-  fun verifyPost(notificationEndPoint: String, any: Any ? = null) {
+  fun verifyPost(notificationEndPoint: String, any: Any? = null) {
     val builder = RequestPatternBuilder(RequestMethod.POST, WireMock.urlEqualTo(notificationEndPoint))
       .withPort(8092)
       .withUrl(notificationEndPoint)
@@ -126,14 +126,14 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     stubFor(
       get(
         "/visits/session-template?${
-        getVisitsBySessionTemplateQueryParams(
-          sessionTemplateReference,
-          sessionDate,
-          visitStatus,
-          visitRestrictions,
-          page,
-          size,
-        ).joinToString("&")
+          getVisitsBySessionTemplateQueryParams(
+            sessionTemplateReference,
+            sessionDate,
+            visitStatus,
+            visitRestrictions,
+            page,
+            size,
+          ).joinToString("&")
         }",
       )
         .willReturn(
