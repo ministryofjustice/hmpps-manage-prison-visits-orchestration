@@ -25,7 +25,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.BookingOrchestrationRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SupportTypeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
@@ -284,30 +283,6 @@ class OrchestrationVisitsController(
   fun cancelVisit(@PathVariable reference: String, @RequestBody cancelVisitDto: CancelVisitOrchestrationDto): VisitDto? {
     return visitSchedulerService.cancelVisit(reference, cancelVisitDto)
   }
-
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
-  @GetMapping("/visit-support")
-  @Operation(
-    summary = "Available Support",
-    description = "Retrieve all available support types",
-    responses = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Available Support information returned",
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorized to access this endpoint",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "400",
-        description = "Incorrect request to Get Available Support",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-    ],
-  )
-  fun getSupportTypes(): List<SupportTypeDto>? = visitSchedulerService.getVisitSupport()
 
   @PreAuthorize("hasRole('VISIT_SCHEDULER')")
   @GetMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/session-template/{sessionTemplateReference}")
