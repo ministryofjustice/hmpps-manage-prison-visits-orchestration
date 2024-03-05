@@ -37,6 +37,24 @@ class VisitByReferenceTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `when visit exists without a phone number for contact search by reference still returns that visit`() {
+    // Given
+    val reference = "aa-bb-cc-dd"
+    val visitDto = createVisitDto(reference = reference)
+    visitSchedulerMockServer.stubGetVisit(reference, visitDto)
+
+    // When
+    val responseSpec = callVisitByReference(webTestClient, reference, roleVisitSchedulerHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isOk
+    val visitDtoResponse = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, VisitDto::class.java)
+    Assertions.assertThat(visitDtoResponse.reference).isEqualTo(visitDto.reference)
+    Assertions.assertThat(visitDtoResponse.visitContact!!.telephone).isNull()
+    Assertions.assertThat(visitDtoResponse.visitContact!!.name).isNotNull()
+  }
+
+  @Test
   fun `when visit does not exist search by reference returns NOT_FOUND status`() {
     // Given
     val reference = "xx-yy-cc-dd"

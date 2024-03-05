@@ -8,6 +8,6 @@ import io.swagger.v3.oas.annotations.media.Schema
 class ContactDto(
   @Schema(description = "Contact Name", example = "John Smith", required = true)
   val name: String,
-  @Schema(description = "Contact Phone Number", example = "01234 567890", required = true)
+  @Schema(description = "Contact Phone Number", example = "01234 567890", required = false)
   val telephone: String?,
 )
