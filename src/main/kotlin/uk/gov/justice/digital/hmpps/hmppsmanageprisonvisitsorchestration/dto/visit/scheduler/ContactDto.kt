@@ -9,5 +9,5 @@ class ContactDto(
   @Schema(description = "Contact Name", example = "John Smith", required = true)
   val name: String,
   @Schema(description = "Contact Phone Number", example = "01234 567890", required = false)
-  val telephone: String?,
+  val telephone: String? = null,
 )
