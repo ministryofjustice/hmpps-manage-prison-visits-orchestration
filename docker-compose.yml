@@ -16,7 +16,7 @@ services:
       - SYSTEM_CLIENT_SECRET=clientsecret
 
   localstack:
-    image: localstack/localstack:1.3
+    image: localstack/localstack:3.0
     networks:
       - hmpps
     container_name: localstack-external-vsip-orc

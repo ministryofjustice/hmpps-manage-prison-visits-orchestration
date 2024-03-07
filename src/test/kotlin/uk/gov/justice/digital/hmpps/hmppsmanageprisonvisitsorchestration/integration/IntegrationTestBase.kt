@@ -50,7 +50,7 @@ abstract class IntegrationTestBase {
     val prisonOffenderSearchMockServer = PrisonOffenderSearchMockServer(objectMapper)
     val prisonerContactRegistryMockServer = PrisonerContactRegistryMockServer(objectMapper)
     val prisonRegisterMockServer = PrisonRegisterMockServer(objectMapper)
-    val manageUsersApiMockServer = ManageUsersApiMockServer(objectMapper)
+    val manageUsersApiMockServer = ManageUsersApiMockServer()
 
     @BeforeAll
     @JvmStatic
