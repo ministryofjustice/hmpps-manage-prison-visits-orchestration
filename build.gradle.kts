@@ -36,10 +36,10 @@ dependencies {
 
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
-  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.20")
+  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.21")
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:3.0.1")
   testImplementation("org.mockito:mockito-inline:5.2.0")
-  testImplementation("org.testcontainers:localstack:1.19.6")
+  testImplementation("org.testcontainers:localstack:1.19.7")
   testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
   testImplementation("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
