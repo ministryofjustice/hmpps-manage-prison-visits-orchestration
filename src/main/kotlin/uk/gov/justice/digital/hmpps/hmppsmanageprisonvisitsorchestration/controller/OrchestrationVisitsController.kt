@@ -32,6 +32,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitsByDateService
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.validation.NullableNotBlank
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.validation.NullableNotEmpty
 import java.time.LocalDate
 
 const val ORCHESTRATION_VISIT_CONTROLLER_PATH: String = "/visits"
@@ -285,7 +287,7 @@ class OrchestrationVisitsController(
   }
 
   @PreAuthorize("hasRole('VISIT_SCHEDULER')")
-  @GetMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/session-template/{sessionTemplateReference}")
+  @GetMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/session-template")
   @Operation(
     summary = "Get visits for a session template reference and date",
     description = "Retrieve visits for session template reference and date",
@@ -312,10 +314,10 @@ class OrchestrationVisitsController(
     ],
   )
   fun getVisitsBySessionTemplate(
-    @Schema(name = "sessionTemplateReference", description = "Session template reference", example = "v9-d7-ed-7u", required = true)
-    @PathVariable
-    @NotNull
-    sessionTemplateReference: String,
+    @Schema(name = "sessionTemplateReference", description = "Session template reference", example = "v9-d7-ed-7u", required = false)
+    @RequestParam
+    @NullableNotBlank
+    sessionTemplateReference: String?,
     @Schema(name = "sessionDate", description = "Get visits for session date", example = "2023-05-31", required = true)
     @RequestParam
     @NotNull
@@ -327,6 +329,7 @@ class OrchestrationVisitsController(
     visitStatus: List<VisitStatus>,
     @Schema(name = "visitRestrictions", description = "Visit Restriction(s) - OPEN / CLOSED / UNKNOWN", example = "OPEN", required = false)
     @RequestParam
+    @NullableNotEmpty
     visitRestrictions: List<VisitRestriction>?,
   ): List<VisitPreviewDto> {
     return visitsByDateService.getVisitsForSessionTemplateAndDate(sessionTemplateReference, sessionDate, visitStatus, visitRestrictions)

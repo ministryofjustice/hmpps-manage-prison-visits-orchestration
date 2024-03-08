@@ -87,10 +87,11 @@ class VisitSchedulerClient(
       .bodyToMono<List<VisitDto>>().block(apiTimeout)
   }
 
-  fun getVisitsForSessionTemplateAndDate(sessionTemplateReference: String, sessionDate: LocalDate, visitStatusList: List<VisitStatus>, visitRestrictions: List<VisitRestriction>?, page: Int, size: Int): RestPage<VisitDto>? {
+  fun getVisitsForSessionTemplateAndDate(sessionTemplateReference: String?, sessionDate: LocalDate, visitStatusList: List<VisitStatus>, visitRestrictions: List<VisitRestriction>?, page: Int, size: Int): RestPage<VisitDto>? {
     return webClient.get()
-      .uri("/visits/session-template/$sessionTemplateReference") {
-        it.queryParam("fromDate", sessionDate)
+      .uri("/visits/session-template") {
+        it.queryParamIfPresent("sessionTemplateReference", Optional.ofNullable(sessionTemplateReference))
+          .queryParam("fromDate", sessionDate)
           .queryParam("toDate", sessionDate)
           .queryParamIfPresent("visitRestrictions", Optional.ofNullable(visitRestrictions))
           .queryParam("visitStatus", visitStatusList)
