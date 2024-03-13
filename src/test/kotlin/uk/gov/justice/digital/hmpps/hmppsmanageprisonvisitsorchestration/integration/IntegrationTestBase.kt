@@ -15,6 +15,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonNameDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.CurrentIncentive
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
@@ -178,8 +179,9 @@ abstract class IntegrationTestBase {
     outcomeStatus: OutcomeStatus? = null,
     createdTimestamp: LocalDateTime = LocalDateTime.now(),
     modifiedTimestamp: LocalDateTime = LocalDateTime.now(),
-    sessionTemplateReference: String = "ref.ref.ref",
+    sessionTemplateReference: String? = "ref.ref.ref",
     visitors: List<VisitorDto>? = null,
+    contact: ContactDto = ContactDto("Jane Doe", "01234567890"),
   ): VisitDto {
     return VisitDto(
       applicationReference = applicationReference,
@@ -197,6 +199,7 @@ abstract class IntegrationTestBase {
       createdTimestamp = createdTimestamp,
       modifiedTimestamp = modifiedTimestamp,
       visitors = visitors,
+      visitContact = contact,
     )
   }
 
@@ -274,6 +277,7 @@ abstract class IntegrationTestBase {
   }
 
   fun getOrchestrationVisitsBySessionTemplateQueryParams(
+    sessionTemplateReference: String?,
     sessionDate: LocalDate,
     visitStatus: List<String>,
     visitRestrictions: List<VisitRestriction>?,
@@ -281,6 +285,9 @@ abstract class IntegrationTestBase {
     size: Int,
   ): List<String> {
     val queryParams = ArrayList<String>()
+    sessionTemplateReference?.let {
+      queryParams.add("sessionTemplateReference=$sessionTemplateReference")
+    }
     queryParams.add("sessionDate=$sessionDate")
     visitStatus.forEach {
       queryParams.add("visitStatus=$it")
@@ -306,7 +313,7 @@ abstract class IntegrationTestBase {
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     return webTestClient.get()
-      .uri("/visits/session-template/$sessionTemplateReference?${getOrchestrationVisitsBySessionTemplateQueryParams(sessionDate, visitStatus, visitRestriction, page, size).joinToString("&")}")
+      .uri("/visits/session-template?${getOrchestrationVisitsBySessionTemplateQueryParams(sessionTemplateReference, sessionDate, visitStatus, visitRestriction, page, size).joinToString("&")}")
       .headers(authHttpHeaders)
       .exchange()
   }

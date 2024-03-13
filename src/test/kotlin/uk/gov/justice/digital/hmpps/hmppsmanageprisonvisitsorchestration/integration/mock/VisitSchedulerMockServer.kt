@@ -20,7 +20,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SupportTypeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ApplicationDto
@@ -125,8 +124,9 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     val restPage = RestPage(content = visits, page = 0, size = size, total = visits.size.toLong())
     stubFor(
       get(
-        "/visits/session-template/$sessionTemplateReference?${
+        "/visits/session-template?${
           getVisitsBySessionTemplateQueryParams(
+            sessionTemplateReference,
             sessionDate,
             visitStatus,
             visitRestrictions,
@@ -307,17 +307,6 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     )
   }
 
-  fun stubGetVisitSupport(visitSupportList: List<SupportTypeDto>) {
-    stubFor(
-      get("/visit-support")
-        .willReturn(
-          createJsonResponseBuilder()
-            .withStatus(HttpStatus.OK.value())
-            .withBody(getJsonString(visitSupportList)),
-        ),
-    )
-  }
-
   fun stubGetSupportedPrisons(supportedPrisonsList: List<String>) {
     stubFor(
       get("/config/prisons/supported")
@@ -388,6 +377,7 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
   }
 
   private fun getVisitsBySessionTemplateQueryParams(
+    sessionTemplateReference: String?,
     sessionDate: LocalDate,
     visitStatus: List<String>,
     visitRestrictions: List<VisitRestriction>?,
@@ -395,6 +385,9 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     size: Int,
   ): List<String> {
     val queryParams = ArrayList<String>()
+    sessionTemplateReference?.let {
+      queryParams.add("sessionTemplateReference=$sessionTemplateReference")
+    }
     queryParams.add("fromDate=$sessionDate")
     queryParams.add("toDate=$sessionDate")
     visitRestrictions?.let {
