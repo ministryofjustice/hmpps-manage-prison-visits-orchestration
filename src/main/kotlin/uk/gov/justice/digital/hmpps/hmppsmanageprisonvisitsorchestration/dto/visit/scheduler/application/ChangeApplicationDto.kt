@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorSupportDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.CreateApplicationRestriction
 import java.time.LocalDate
 
@@ -25,6 +24,7 @@ data class ChangeApplicationDto(
   @Schema(description = "List of visitors associated with the visit", required = false)
   @field:NotNull
   val visitors: Set<@Valid VisitorDto>? = null,
-  @Schema(description = "List of additional support associated with the visit", required = false)
-  val visitorSupport: Set<@Valid VisitorSupportDto>? = null,
+  @Schema(description = "additional support associated with the visit, if null support will not be updated", required = false)
+  @Valid
+  var visitorSupport: ApplicationSupportDto? = null,
 )
