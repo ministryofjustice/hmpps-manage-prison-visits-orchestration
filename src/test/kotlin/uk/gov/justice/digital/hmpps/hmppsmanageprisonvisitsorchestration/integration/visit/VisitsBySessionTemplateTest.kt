@@ -18,6 +18,7 @@ import java.time.LocalTime
 class VisitsBySessionTemplateTest : IntegrationTestBase() {
   private val prisonerId1 = "AA123BB"
   private val prisonerId2 = "BB123BB"
+  private val prisonCode = "MDI"
   private lateinit var prisonerDto1: PrisonerDto
   private lateinit var prisonerDto2: PrisonerDto
 
@@ -52,10 +53,10 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
 
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId1, prisonerDto1)
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId2, prisonerDto2)
-    visitSchedulerMockServer.stubGetVisitsBySessionTemplate(sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), 0, 1000, visitsList)
+    visitSchedulerMockServer.stubGetVisitsBySessionTemplate(sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), prisonCode, 0, 1000, visitsList)
 
     // When
-    val responseSpec = callGetVisitsBySessionTemplate(webTestClient, sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), 1, 10, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callGetVisitsBySessionTemplate(webTestClient, sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), prisonCode, 1, 10, roleVisitSchedulerHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -85,10 +86,10 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
 
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId1, prisonerDto1)
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId2, prisonerDto2)
-    visitSchedulerMockServer.stubGetVisitsBySessionTemplate(sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), 0, 1000, visitsList)
+    visitSchedulerMockServer.stubGetVisitsBySessionTemplate(sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), prisonCode, 0, 1000, visitsList)
 
     // When
-    val responseSpec = callGetVisitsBySessionTemplate(webTestClient, sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), 1, 10, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callGetVisitsBySessionTemplate(webTestClient, sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), prisonCode, 1, 10, roleVisitSchedulerHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -114,10 +115,10 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
 
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId1, prisonerDto1)
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId2, prisonerDto2)
-    visitSchedulerMockServer.stubGetVisitsBySessionTemplate(sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), 0, 1000, mutableListOf())
+    visitSchedulerMockServer.stubGetVisitsBySessionTemplate(sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), prisonCode, 0, 1000, mutableListOf())
 
     // When
-    val responseSpec = callGetVisitsBySessionTemplate(webTestClient, sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), 1, 10, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callGetVisitsBySessionTemplate(webTestClient, sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), prisonCode, 1, 10, roleVisitSchedulerHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -142,10 +143,10 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
     // prisoner1 search returns 404
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId1, null)
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId2, prisonerDto2)
-    visitSchedulerMockServer.stubGetVisitsBySessionTemplate(sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), 0, 1000, visitsList)
+    visitSchedulerMockServer.stubGetVisitsBySessionTemplate(sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), prisonCode, 0, 1000, visitsList)
 
     // When
-    val responseSpec = callGetVisitsBySessionTemplate(webTestClient, sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), 1, 10, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callGetVisitsBySessionTemplate(webTestClient, sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), prisonCode, 1, 10, roleVisitSchedulerHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
