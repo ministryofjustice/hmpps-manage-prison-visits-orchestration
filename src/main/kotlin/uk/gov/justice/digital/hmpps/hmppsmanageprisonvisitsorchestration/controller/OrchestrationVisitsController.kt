@@ -43,7 +43,7 @@ class OrchestrationVisitsController(
   private val visitSchedulerService: VisitSchedulerService,
   private val visitsByDateService: VisitsByDateService,
 ) {
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @PreAuthorize("hasRole('VISITS_ORCHESTRATION_SERVICE')")
   @GetMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/{reference}")
   @Operation(
     summary = "Get a visit",
@@ -79,7 +79,7 @@ class OrchestrationVisitsController(
     return visitSchedulerService.getVisitByReference(reference)
   }
 
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @PreAuthorize("hasRole('VISITS_ORCHESTRATION_SERVICE')")
   @GetMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/{reference}/history")
   @Operation(
     summary = "Get visit history",
@@ -115,7 +115,7 @@ class OrchestrationVisitsController(
     return visitSchedulerService.getVisitHistoryByReference(reference)
   }
 
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @PreAuthorize("hasRole('VISITS_ORCHESTRATION_SERVICE')")
   @GetMapping(params = ["page", "size"], path = ["$ORCHESTRATION_VISIT_CONTROLLER_PATH/search"])
   @Operation(
     summary = "Get visits",
@@ -200,7 +200,7 @@ class OrchestrationVisitsController(
     return visitSchedulerService.visitsSearch(visitSearchRequestFilter)
   }
 
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @PreAuthorize("hasRole('VISITS_ORCHESTRATION_SERVICE')")
   @PutMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/{applicationReference}/book")
   @ResponseStatus(HttpStatus.OK)
   @Operation(
@@ -242,7 +242,7 @@ class OrchestrationVisitsController(
     return visitSchedulerService.bookVisit(applicationReference, bookingRequestDto)
   }
 
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @PreAuthorize("hasRole('VISITS_ORCHESTRATION_SERVICE')")
   @PutMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/{reference}/cancel")
   @ResponseStatus(HttpStatus.OK)
   @Operation(
@@ -286,7 +286,7 @@ class OrchestrationVisitsController(
     return visitSchedulerService.cancelVisit(reference, cancelVisitDto)
   }
 
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @PreAuthorize("hasRole('VISITS_ORCHESTRATION_SERVICE')")
   @GetMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/session-template")
   @Operation(
     summary = "Get visits for a session template reference and date",
@@ -335,7 +335,7 @@ class OrchestrationVisitsController(
     return visitsByDateService.getVisitsForSessionTemplateAndDate(sessionTemplateReference, sessionDate, visitStatus, visitRestrictions)
   }
 
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @PreAuthorize("hasRole('VISITS_ORCHESTRATION_SERVICE')")
   @GetMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/search/future/{prisonerId}")
   @Operation(
     summary = "Get future visits for a prisoner",

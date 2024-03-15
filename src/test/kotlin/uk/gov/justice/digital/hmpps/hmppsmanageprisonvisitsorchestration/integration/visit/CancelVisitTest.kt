@@ -34,7 +34,7 @@ class CancelVisitTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubCancelVisit(reference, visitDto)
 
     // When
-    val responseSpec = callCancelVisit(webTestClient, reference, cancelVisitOrchestrationDto, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callCancelVisit(webTestClient, reference, cancelVisitOrchestrationDto, roleVisitOrchestrastionHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -51,7 +51,7 @@ class CancelVisitTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubCancelVisit(reference, visitDto)
 
     // When
-    val responseSpec = callCancelVisit(webTestClient, reference, cancelVisitOrchestrationDto, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callCancelVisit(webTestClient, reference, cancelVisitOrchestrationDto, roleVisitOrchestrastionHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound

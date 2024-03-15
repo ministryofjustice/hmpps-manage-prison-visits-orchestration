@@ -18,7 +18,7 @@ const val ORCHESTRATION_PRISONER_CONTROLLER_PATH: String = "/prisoner"
 class PrisonerProfileController(
   private val prisonerProfileService: PrisonerProfileService,
 ) {
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @PreAuthorize("hasRole('VISITS_ORCHESTRATION_SERVICE')")
   @GetMapping("$ORCHESTRATION_PRISONER_CONTROLLER_PATH/{prisonId}/{prisonerId}/profile")
   @Operation(
     summary = "Get a prisoner's profile page",

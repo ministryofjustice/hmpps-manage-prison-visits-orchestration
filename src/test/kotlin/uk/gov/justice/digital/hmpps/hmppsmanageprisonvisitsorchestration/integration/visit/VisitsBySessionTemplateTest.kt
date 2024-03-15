@@ -55,7 +55,7 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetVisitsBySessionTemplate(sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), 0, 1000, visitsList)
 
     // When
-    val responseSpec = callGetVisitsBySessionTemplate(webTestClient, sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), 1, 10, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callGetVisitsBySessionTemplate(webTestClient, sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), 1, 10, roleVisitOrchestrastionHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -88,7 +88,7 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetVisitsBySessionTemplate(sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), 0, 1000, visitsList)
 
     // When
-    val responseSpec = callGetVisitsBySessionTemplate(webTestClient, sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), 1, 10, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callGetVisitsBySessionTemplate(webTestClient, sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), 1, 10, roleVisitOrchestrastionHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -117,7 +117,7 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetVisitsBySessionTemplate(sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), 0, 1000, mutableListOf())
 
     // When
-    val responseSpec = callGetVisitsBySessionTemplate(webTestClient, sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), 1, 10, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callGetVisitsBySessionTemplate(webTestClient, sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), 1, 10, roleVisitOrchestrastionHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -145,7 +145,7 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetVisitsBySessionTemplate(sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), 0, 1000, visitsList)
 
     // When
-    val responseSpec = callGetVisitsBySessionTemplate(webTestClient, sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), 1, 10, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callGetVisitsBySessionTemplate(webTestClient, sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), 1, 10, roleVisitOrchestrastionHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk

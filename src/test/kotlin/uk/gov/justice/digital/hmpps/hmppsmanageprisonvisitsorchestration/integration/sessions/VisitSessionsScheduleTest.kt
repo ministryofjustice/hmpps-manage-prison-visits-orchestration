@@ -55,7 +55,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     )
 
     // When
-    val responseSpec = callVisitsSessionsSchedule(webTestClient, prisonCode, sessionDate, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callVisitsSessionsSchedule(webTestClient, prisonCode, sessionDate, roleVisitOrchestrastionHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -89,7 +89,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetSessionSchedule(prisonCode, sessionDate, mutableListOf())
 
     // When
-    val responseSpec = callVisitsSessionsSchedule(webTestClient, prisonCode, sessionDate, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callVisitsSessionsSchedule(webTestClient, prisonCode, sessionDate, roleVisitOrchestrastionHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk

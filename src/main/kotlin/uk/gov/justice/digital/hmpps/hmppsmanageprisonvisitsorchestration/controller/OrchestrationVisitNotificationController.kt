@@ -32,7 +32,7 @@ class VisitNotificationController(
   private val visitSchedulerService: VisitSchedulerService,
 ) {
 
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @PreAuthorize("hasRole('VISITS_ORCHESTRATION_SERVICE')")
   @GetMapping(VISIT_NOTIFICATION_COUNT_FOR_PRISON_PATH)
   @Operation(
     summary = "Get notification count for a prison",
@@ -62,7 +62,7 @@ class VisitNotificationController(
     return visitSchedulerService.getNotificationCountForPrison(prisonCode)
   }
 
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @PreAuthorize("hasRole('VISITS_ORCHESTRATION_SERVICE')")
   @GetMapping(VISIT_NOTIFICATION_COUNT_PATH)
   @Operation(
     summary = "Get notification count",
@@ -88,7 +88,7 @@ class VisitNotificationController(
     return visitSchedulerService.getNotificationCount()
   }
 
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @PreAuthorize("hasRole('VISITS_ORCHESTRATION_SERVICE')")
   @GetMapping(FUTURE_NOTIFICATION_VISIT_GROUPS)
   @Operation(
     summary = "get future notification visit groups by prison code",
@@ -118,7 +118,7 @@ class VisitNotificationController(
     return visitSchedulerService.getFutureNotificationVisitGroups(prisonCode)
   }
 
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @PreAuthorize("hasRole('VISITS_ORCHESTRATION_SERVICE')")
   @GetMapping(VISIT_NOTIFICATION_TYPES)
   @Operation(
     summary = "get visit notification types by booking reference",

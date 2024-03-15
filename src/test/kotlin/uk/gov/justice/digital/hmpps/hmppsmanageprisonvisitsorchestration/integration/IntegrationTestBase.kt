@@ -106,7 +106,7 @@ abstract class IntegrationTestBase {
   @Autowired
   lateinit var webTestClient: WebTestClient
 
-  lateinit var roleVisitSchedulerHttpHeaders: (HttpHeaders) -> Unit
+  lateinit var roleVisitOrchestrastionHttpHeaders: (HttpHeaders) -> Unit
 
   @Autowired
   protected lateinit var jwtAuthHelper: JwtAuthHelper
@@ -116,7 +116,7 @@ abstract class IntegrationTestBase {
 
   @BeforeEach
   internal fun setUp() {
-    roleVisitSchedulerHttpHeaders = setAuthorisation(roles = listOf("ROLE_VISIT_SCHEDULER"))
+    roleVisitOrchestrastionHttpHeaders = setAuthorisation(roles = listOf("ROLE_VISITS_ORCHESTRATION_SERVICE"))
   }
 
   internal fun setAuthorisation(
