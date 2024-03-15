@@ -331,8 +331,12 @@ class OrchestrationVisitsController(
     @RequestParam
     @NullableNotEmpty
     visitRestrictions: List<VisitRestriction>?,
+    @Schema(name = "prisonCode", description = "Filter results by prison id/code", example = "MDI", required = true)
+    @RequestParam
+    @NotNull
+    prisonCode: String,
   ): List<VisitPreviewDto> {
-    return visitsByDateService.getVisitsForSessionTemplateAndDate(sessionTemplateReference, sessionDate, visitStatus, visitRestrictions)
+    return visitsByDateService.getVisitsForSessionTemplateAndDate(sessionTemplateReference, sessionDate, visitStatus, visitRestrictions, prisonCode)
   }
 
   @PreAuthorize("hasRole('VISIT_SCHEDULER')")
