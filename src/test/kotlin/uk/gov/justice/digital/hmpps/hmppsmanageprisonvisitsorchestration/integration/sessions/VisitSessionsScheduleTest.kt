@@ -81,7 +81,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     assertThat(sessionScheduleResults[1].prisonerLocationGroupNames.size).isEqualTo(0)
     assertThat(sessionScheduleResults[1].prisonerCategoryGroupNames.size).isEqualTo(0)
     assertThat(sessionScheduleResults[1].prisonerIncentiveLevelGroupNames.size).isEqualTo(0)
-    assertThat(sessionScheduleResults[0].areLocationGroupsInclusive).isFalse()
+    assertThat(sessionScheduleResults[1].areLocationGroupsInclusive).isFalse()
   }
 
   @Test
