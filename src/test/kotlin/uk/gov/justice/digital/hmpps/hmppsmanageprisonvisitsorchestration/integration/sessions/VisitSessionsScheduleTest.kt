@@ -41,12 +41,14 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
       prisonerIncentiveLevelGroupNames = listOf("Incentive Group 1", "Incentive Group 2", "Incentive Group 3", "Incentive Group 4"),
       validFromDate = sessionDate.minusWeeks(1),
       validToDate = sessionDate.plusWeeks(2),
+      areLocationGroupsInclusive = true,
     )
     val sessionScheduleDto2 = createSessionScheduleDto(
       reference = "reference-2",
       startTime = LocalTime.of(10, 0),
       endTime = LocalTime.of(11, 0),
       validFromDate = sessionDate.minusWeeks(2),
+      areLocationGroupsInclusive = false,
     )
     visitSchedulerMockServer.stubGetSessionSchedule(
       prisonCode,
@@ -69,6 +71,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     assertThat(sessionScheduleResults[0].prisonerLocationGroupNames.size).isEqualTo(2)
     assertThat(sessionScheduleResults[0].prisonerCategoryGroupNames.size).isEqualTo(3)
     assertThat(sessionScheduleResults[0].prisonerIncentiveLevelGroupNames.size).isEqualTo(4)
+    assertThat(sessionScheduleResults[0].areLocationGroupsInclusive).isTrue()
 
     assertThat(sessionScheduleResults[1].sessionTemplateReference).isEqualTo(sessionScheduleDto2.sessionTemplateReference)
     assertThat(sessionScheduleResults[1].sessionTimeSlot.startTime).isEqualTo(LocalTime.parse("10:00"))
@@ -78,6 +81,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     assertThat(sessionScheduleResults[1].prisonerLocationGroupNames.size).isEqualTo(0)
     assertThat(sessionScheduleResults[1].prisonerCategoryGroupNames.size).isEqualTo(0)
     assertThat(sessionScheduleResults[1].prisonerIncentiveLevelGroupNames.size).isEqualTo(0)
+    assertThat(sessionScheduleResults[0].areLocationGroupsInclusive).isFalse()
   }
 
   @Test
@@ -103,6 +107,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     endTime: LocalTime,
     sessionCapacityDto: SessionCapacityDto = SessionCapacityDto(2, 30),
     visitType: VisitType = VisitType.SOCIAL,
+    areLocationGroupsInclusive: Boolean,
     weeklyFrequency: Int = 1,
     validFromDate: LocalDate,
     validToDate: LocalDate? = null,
@@ -116,6 +121,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
       sessionTimeSlot = SessionTimeSlotDto(startTime = startTime, endTime = endTime),
       capacity = sessionCapacityDto,
       visitType = visitType,
+      areLocationGroupsInclusive = areLocationGroupsInclusive,
       weeklyFrequency = weeklyFrequency,
       prisonerLocationGroupNames = prisonerLocationGroupNames,
       prisonerCategoryGroupNames = prisonerCategoryGroupNames,
