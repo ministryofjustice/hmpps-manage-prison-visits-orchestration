@@ -117,6 +117,7 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     sessionDate: LocalDate,
     visitStatus: List<String>,
     visitRestrictions: List<VisitRestriction>,
+    prisonCode: String,
     page: Int,
     size: Int,
     visits: List<VisitDto>,
@@ -130,6 +131,7 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
             sessionDate,
             visitStatus,
             visitRestrictions,
+            prisonCode,
             page,
             size,
           ).joinToString("&")
@@ -381,6 +383,7 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     sessionDate: LocalDate,
     visitStatus: List<String>,
     visitRestrictions: List<VisitRestriction>?,
+    prisonCode: String,
     page: Int,
     size: Int,
   ): List<String> {
@@ -398,6 +401,7 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     visitStatus.forEach {
       queryParams.add("visitStatus=$it")
     }
+    queryParams.add("prisonCode=$prisonCode")
     queryParams.add("page=$page")
     queryParams.add("size=$size")
     return queryParams

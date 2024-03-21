@@ -281,6 +281,7 @@ abstract class IntegrationTestBase {
     sessionDate: LocalDate,
     visitStatus: List<String>,
     visitRestrictions: List<VisitRestriction>?,
+    prisonCode: String,
     page: Int,
     size: Int,
   ): List<String> {
@@ -297,6 +298,7 @@ abstract class IntegrationTestBase {
         queryParams.add("visitRestrictions=$it")
       }
     }
+    queryParams.add("prisonCode=$prisonCode")
     queryParams.add("page=$page")
     queryParams.add("size=$size")
     return queryParams
@@ -308,12 +310,13 @@ abstract class IntegrationTestBase {
     sessionDate: LocalDate,
     visitStatus: List<String>,
     visitRestriction: List<VisitRestriction>?,
+    prisonCode: String,
     page: Int,
     size: Int,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     return webTestClient.get()
-      .uri("/visits/session-template?${getOrchestrationVisitsBySessionTemplateQueryParams(sessionTemplateReference, sessionDate, visitStatus, visitRestriction, page, size).joinToString("&")}")
+      .uri("/visits/session-template?${getOrchestrationVisitsBySessionTemplateQueryParams(sessionTemplateReference, sessionDate, visitStatus, visitRestriction, prisonCode, page, size).joinToString("&")}")
       .headers(authHttpHeaders)
       .exchange()
   }
