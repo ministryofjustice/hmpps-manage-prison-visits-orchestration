@@ -219,7 +219,7 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
       put("/visits/$reference/ignore-notifications")
         .willReturn(
           if (visitDto == null) {
-            responseBuilder.withStatus(status?.value()?: HttpStatus.NOT_FOUND.value())
+            responseBuilder.withStatus(status?.value() ?: HttpStatus.NOT_FOUND.value())
           } else {
             responseBuilder
               .withStatus(HttpStatus.OK.value())
