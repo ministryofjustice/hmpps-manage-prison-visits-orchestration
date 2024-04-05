@@ -24,7 +24,9 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.BookingOrchestrationRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.IgnoreVisitNotificationsOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.IgnoreVisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
@@ -373,5 +375,55 @@ class OrchestrationVisitsController(
     prisonerId: String,
   ): List<VisitDto> {
     return visitSchedulerService.findFutureVisitsForPrisoner(prisonerId)
+  }
+
+  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @PutMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/{reference}/ignore-notifications")
+  @ResponseStatus(HttpStatus.OK)
+  @Operation(
+    summary = "Do not change an existing booked visit and ignore all notifications",
+    requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
+      content = [
+        Content(
+          mediaType = "application/json",
+          schema = Schema(implementation = IgnoreVisitNotificationsDto::class),
+        ),
+      ],
+    ),
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Visit notifications cleared and reason noted.",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to ignore visit notifications.",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to ignore visit notifications.",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Visit not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun ignoreVisitNotifications(
+    @Schema(description = "reference", example = "v9-d7-ed-7u", required = true)
+    @PathVariable
+    reference: String,
+    @RequestBody @Valid
+    ignoreVisitNotifications: IgnoreVisitNotificationsOrchestrationDto,
+  ): VisitDto? {
+    return visitSchedulerService.ignoreVisitNotifications(reference.trim(), ignoreVisitNotifications)
   }
 }
