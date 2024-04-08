@@ -212,6 +212,23 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     )
   }
 
+  fun stubIgnoreVisitNotifications(reference: String, visitDto: VisitDto?, status: HttpStatus? = null) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      put("/visits/notification/visit/$reference/ignore")
+        .willReturn(
+          if (visitDto == null) {
+            responseBuilder.withStatus(status?.value() ?: HttpStatus.NOT_FOUND.value())
+          } else {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(visitDto))
+          },
+        ),
+    )
+  }
+
   fun stubGetCountVisitNotificationForPrison(prisonCode: String) {
     val responseBuilder = createJsonResponseBuilder()
 

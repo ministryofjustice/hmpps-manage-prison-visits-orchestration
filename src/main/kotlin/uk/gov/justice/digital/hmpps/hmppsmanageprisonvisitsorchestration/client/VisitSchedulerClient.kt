@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.Res
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.IgnoreVisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
@@ -137,6 +138,15 @@ class VisitSchedulerClient(
     return webClient.put()
       .uri("/visits/$reference/cancel")
       .body(BodyInserters.fromValue(cancelVisitDto))
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<VisitDto>().block(apiTimeout)
+  }
+
+  fun ignoreVisitNotification(reference: String, ignoreVisitNotifications: IgnoreVisitNotificationsDto): VisitDto? {
+    return webClient.put()
+      .uri("/visits/notification/visit/$reference/ignore")
+      .body(BodyInserters.fromValue(ignoreVisitNotifications))
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono<VisitDto>().block(apiTimeout)
