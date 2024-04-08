@@ -145,7 +145,7 @@ class VisitSchedulerClient(
 
   fun ignoreVisitNotification(reference: String, ignoreVisitNotifications: IgnoreVisitNotificationsDto): VisitDto? {
     return webClient.put()
-      .uri("/visits/$reference/ignore-notifications")
+      .uri("/visits/notification/visit/$reference/ignore")
       .body(BodyInserters.fromValue(ignoreVisitNotifications))
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()

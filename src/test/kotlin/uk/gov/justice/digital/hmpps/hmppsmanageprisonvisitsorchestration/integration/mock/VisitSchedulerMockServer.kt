@@ -216,7 +216,7 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     val responseBuilder = createJsonResponseBuilder()
 
     stubFor(
-      put("/visits/$reference/ignore-notifications")
+      put("/visits/notification/visit/$reference/ignore")
         .willReturn(
           if (visitDto == null) {
             responseBuilder.withStatus(status?.value() ?: HttpStatus.NOT_FOUND.value())

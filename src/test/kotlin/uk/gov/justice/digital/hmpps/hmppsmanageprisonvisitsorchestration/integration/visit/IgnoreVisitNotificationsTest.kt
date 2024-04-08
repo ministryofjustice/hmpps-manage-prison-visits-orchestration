@@ -17,7 +17,7 @@ class IgnoreVisitNotificationsTest : IntegrationTestBase() {
     ignoreVisitNotificationsOrchestration: IgnoreVisitNotificationsOrchestrationDto,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
-    return webTestClient.put().uri("/visits/$reference/ignore-notifications")
+    return webTestClient.put().uri("/visits/notification/visit/$reference/ignore")
       .headers(authHttpHeaders)
       .body(BodyInserters.fromValue(ignoreVisitNotificationsOrchestration))
       .exchange()
