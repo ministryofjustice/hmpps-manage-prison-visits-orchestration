@@ -75,6 +75,7 @@ class VisitSchedulerService(
             actionedBy = names[it.actionedBy] ?: it.actionedBy,
             sessionTemplateReference = it.sessionTemplateReference,
             createTimestamp = it.createTimestamp,
+            text = it.text,
           )
         }
         return VisitHistoryDetailsDto(
