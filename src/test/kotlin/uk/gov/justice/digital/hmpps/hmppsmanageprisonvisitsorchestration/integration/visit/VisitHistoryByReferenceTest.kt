@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType.EMAIL
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType.NOT_APPLICABLE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.EventAuditType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
@@ -50,6 +51,8 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
       EventAuditDto(type = EventAuditType.BOOKED_VISIT, actionedBy = createdBy, applicationMethodType = EMAIL),
       EventAuditDto(type = EventAuditType.UPDATED_VISIT, actionedBy = lastUpdatedBy, applicationMethodType = EMAIL),
       EventAuditDto(type = EventAuditType.CANCELLED_VISIT, actionedBy = cancelledBy, applicationMethodType = EMAIL),
+      EventAuditDto(type = EventAuditType.IGNORE_VISIT_NOTIFICATIONS_EVENT, actionedBy = createdBy, applicationMethodType = NOT_APPLICABLE, text = "ignore for now"),
+      EventAuditDto(type = EventAuditType.IGNORE_VISIT_NOTIFICATIONS_EVENT, actionedBy = cancelledBy, applicationMethodType = NOT_APPLICABLE, text = "ignore again"),
     )
 
     visitSchedulerMockServer.stubGetVisitHistory(reference, eventList)
@@ -70,8 +73,15 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
     Assertions.assertThat(visitHistoryDetailsDto.visit.reference).isEqualTo(visitDto.reference)
 
     Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[0].actionedBy).isEqualTo("Aled")
+    Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[0].text).isNull()
     Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[1].actionedBy).isEqualTo("Ben")
+    Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[1].text).isNull()
     Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[2].actionedBy).isEqualTo("Dhiraj")
+    Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[2].text).isNull()
+    Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[3].actionedBy).isEqualTo("Aled")
+    Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[3].text).isEqualTo("ignore for now")
+    Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[4].actionedBy).isEqualTo("Dhiraj")
+    Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[4].text).isEqualTo("ignore again")
   }
 
   private fun getVisitHistoryDetailsDto(responseSpec: ResponseSpec) =
