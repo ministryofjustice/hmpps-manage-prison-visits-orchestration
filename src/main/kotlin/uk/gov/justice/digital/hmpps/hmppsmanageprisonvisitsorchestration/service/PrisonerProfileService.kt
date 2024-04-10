@@ -5,8 +5,10 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerProfileClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.PrisonerProfileDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerBasicInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import java.time.LocalDate
 import java.time.Period
@@ -39,6 +41,22 @@ class PrisonerProfileService(
     return prisonerProfile
   }
 
+  fun getPrisonerDetails(prisonerIds: List<String>): List<PrisonerBasicInfoDto> {
+    LOG.debug("Entered getPrisonerDetails for public booker - prisonerIds:{${prisonerIds.joinToString(", ")}}")
+    val prisonerBasicInfoList = mutableListOf<PrisonerBasicInfoDto>()
+    prisonerIds.forEach {
+      prisonerBasicInfoList.add(
+        try {
+          prisonerProfileClient.getBasicPrisonerProfile(it) ?: getBlankPrisonerBasicInfo(it)
+        } catch (ex: WebClientResponseException) {
+          getBlankPrisonerBasicInfo(it)
+        },
+      )
+    }
+
+    return prisonerBasicInfoList
+  }
+
   private fun validatePrisonersPrisonId(prisonerProfile: PrisonerProfileDto?, prisonId: String) {
     prisonerProfile?.let {
       require(it.prisonId == prisonId) {
@@ -68,5 +86,9 @@ class PrisonerProfileService(
       page = PAGE_NUMBER,
       size = MAX_VISIT_RECORDS,
     )
+  }
+
+  private fun getBlankPrisonerBasicInfo(prisonerId: String): PrisonerBasicInfoDto {
+    return PrisonerBasicInfoDto(prisonerId, "UNKNOWN", "UNKNOWN", null, null)
   }
 }
