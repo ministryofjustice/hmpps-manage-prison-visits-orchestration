@@ -24,7 +24,7 @@ class GetPrisonTest : IntegrationTestBase() {
   @Test
   fun `when active prisons exist then all active prisons are returned`() {
     // Given
-    val prisonDto = PrisonDto("HEI", true, 2, 28, setOf(LocalDate.now()))
+    val prisonDto = PrisonDto("HEI", true, 2, 28, 6, 3, 3, 18, setOf(LocalDate.now()))
     visitSchedulerMockServer.stubGetPrison("HEI", prisonDto = prisonDto)
 
     // When
@@ -39,6 +39,10 @@ class GetPrisonTest : IntegrationTestBase() {
     Assertions.assertThat(result.excludeDates).hasSize(prisonDto.excludeDates.size)
     Assertions.assertThat(result.policyNoticeDaysMin).isEqualTo(prisonDto.policyNoticeDaysMin)
     Assertions.assertThat(result.policyNoticeDaysMax).isEqualTo(prisonDto.policyNoticeDaysMax)
+    Assertions.assertThat(result.maxAdultVisitors).isEqualTo(prisonDto.maxAdultVisitors)
+    Assertions.assertThat(result.maxChildVisitors).isEqualTo(prisonDto.maxChildVisitors)
+    Assertions.assertThat(result.maxTotalVisitors).isEqualTo(prisonDto.maxTotalVisitors)
+    Assertions.assertThat(result.adultAgeYears).isEqualTo(prisonDto.adultAgeYears)
   }
 
   private fun getResult(returnResult: WebTestClient.BodyContentSpec): PrisonDto {
