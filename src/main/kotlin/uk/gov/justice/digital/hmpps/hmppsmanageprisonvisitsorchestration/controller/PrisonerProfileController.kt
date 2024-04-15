@@ -57,7 +57,7 @@ class PrisonerProfileController(
     return prisonerProfileService.getPrisonerProfile(prisonId, prisonerId)
   }
 
-  @PreAuthorize("hasRole('PUBLIC_BOOKER')")
+  @PreAuthorize("hasRole('ROLE_ORCHESTRATION_SERVICE__VISIT_BOOKER_REGISTRY')")
   @GetMapping(ORCHESTRATION_PRISONERS_BASIC_INFO_CONTROLLER_PATH)
   @Operation(
     summary = "Get a prisoner's basic details",
@@ -89,7 +89,7 @@ class PrisonerProfileController(
       ),
     ],
   )
-  fun getBasicPrisonerDetails(@PathVariable prisonerIds: List<String>): List<PrisonerBasicInfoDto> {
+  fun getPrisonersBasicDetails(@PathVariable prisonerIds: List<String>): List<PrisonerBasicInfoDto> {
     return prisonerProfileService.getPrisonerDetails(prisonerIds)
   }
 }

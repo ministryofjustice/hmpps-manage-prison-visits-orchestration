@@ -120,7 +120,7 @@ abstract class IntegrationTestBase {
   @BeforeEach
   internal fun setUp() {
     roleVisitSchedulerHttpHeaders = setAuthorisation(roles = listOf("ROLE_VISIT_SCHEDULER"))
-    rolePublicVisitsBookingHttpHeaders = setAuthorisation(roles = listOf("ROLE_PUBLIC_BOOKER"))
+    rolePublicVisitsBookingHttpHeaders = setAuthorisation(roles = listOf("ROLE_ORCHESTRATION_SERVICE__VISIT_BOOKER_REGISTRY"))
   }
 
   internal fun setAuthorisation(

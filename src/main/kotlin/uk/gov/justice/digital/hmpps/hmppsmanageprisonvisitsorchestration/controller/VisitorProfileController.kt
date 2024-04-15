@@ -19,7 +19,7 @@ const val ORCHESTRATION_VISITORS_BASIC_INFO_CONTROLLER_PATH: String = "$ORCHESTR
 class VisitorProfileController(
   private val visitorProfileService: VisitorProfileService,
 ) {
-  @PreAuthorize("hasRole('PUBLIC_BOOKER')")
+  @PreAuthorize("hasRole('ROLE_ORCHESTRATION_SERVICE__VISIT_BOOKER_REGISTRY')")
   @GetMapping(ORCHESTRATION_VISITORS_BASIC_INFO_CONTROLLER_PATH)
   @Operation(
     summary = "Get visitor(s) basic details",
@@ -51,7 +51,7 @@ class VisitorProfileController(
       ),
     ],
   )
-  fun getBasicVisitorDetails(@PathVariable prisonerId: String, @PathVariable visitorIds: List<Long>): List<BasicContactDto> {
+  fun getVisitorsBasicDetails(@PathVariable prisonerId: String, @PathVariable visitorIds: List<Long>): List<BasicContactDto> {
     return visitorProfileService.getVisitorsDetails(prisonerId, visitorIds)
   }
 }
