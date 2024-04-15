@@ -4,18 +4,18 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
 data class PrisonerBasicInfoDto(
-  @Schema(required = true, description = "Prisoner Number", example = "A1234AA")
+  @Schema(description = "Prisoner Number", example = "A1234AA", required = true)
   val prisonerNumber: String,
 
-  @Schema(required = true, description = "First Name", example = "Robert")
-  val firstName: String,
+  @Schema(description = "First Name", example = "Robert", required = false)
+  val firstName: String?,
 
-  @Schema(required = true, description = "Last name", example = "Larsen")
-  val lastName: String,
+  @Schema(description = "Last name", example = "Larsen", required = false)
+  val lastName: String?,
 
-  @Schema(required = true, description = "Date of Birth", example = "1975-04-02")
+  @Schema(description = "Date of Birth", example = "1975-04-02", required = false)
   val dateOfBirth: LocalDate?,
 
-  @Schema(description = "Prison ID", example = "MDI")
+  @Schema(description = "Prison ID", example = "MDI", required = false)
   val prisonId: String?,
 )

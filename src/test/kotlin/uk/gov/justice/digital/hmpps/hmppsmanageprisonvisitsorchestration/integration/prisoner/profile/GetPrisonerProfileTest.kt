@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.PrisonerProfileDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.AlertDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.InmateDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.PrisonerBookingSummaryDto
@@ -35,7 +34,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Period
 import java.time.temporal.TemporalAdjusters
-import java.util.stream.Collectors
 
 @DisplayName("Get Prisoner Profile")
 class GetPrisonerProfileTest(
@@ -683,25 +681,6 @@ class GetPrisonerProfileTest(
     return PrisonerBookingSummaryDto(prisonerId, convictedStatus)
   }
 
-  private fun createContactsList(visitorDetails: List<VisitorDetails>): List<ContactDto> {
-    return visitorDetails.stream().map {
-      createContactDto(it.personId, it.firstName, it.lastName)
-    }.collect(Collectors.toList())
-  }
-
-  private fun createContactDto(personId: Long, firstName: String, lastName: String): ContactDto {
-    return ContactDto(
-      personId = personId,
-      firstName = firstName,
-      lastName = lastName,
-      relationshipCode = "OTH",
-      contactType = "S",
-      approvedVisitor = true,
-      emergencyContact = true,
-      nextOfKin = true,
-    )
-  }
-
   private fun stubGetVisits(visits: List<VisitDto>) {
     visitSchedulerMockServer.stubGetVisits(
       prisonerId = PRISONER_ID,
@@ -721,6 +700,4 @@ class GetPrisonerProfileTest(
     verify(prisonAPiClientSpy, times(1)).getVisitBalancesAsMono(any())
     verify(prisonAPiClientSpy, times(1)).getBookingsAsMono(any(), any())
   }
-
-  private class VisitorDetails(val personId: Long, val firstName: String, val lastName: String)
 }

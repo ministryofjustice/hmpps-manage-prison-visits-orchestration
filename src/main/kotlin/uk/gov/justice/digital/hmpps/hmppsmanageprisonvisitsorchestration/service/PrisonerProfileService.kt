@@ -89,6 +89,6 @@ class PrisonerProfileService(
   }
 
   private fun getBlankPrisonerBasicInfo(prisonerId: String): PrisonerBasicInfoDto {
-    return PrisonerBasicInfoDto(prisonerId, "UNKNOWN", "UNKNOWN", null, null)
+    return PrisonerBasicInfoDto(prisonerId, null, null, null, null)
   }
 }

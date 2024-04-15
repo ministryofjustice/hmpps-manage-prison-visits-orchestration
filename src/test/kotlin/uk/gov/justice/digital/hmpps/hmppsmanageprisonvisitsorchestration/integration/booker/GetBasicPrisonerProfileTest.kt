@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.prisoner.profile
+package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.booker
 
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.DisplayName
@@ -159,8 +159,8 @@ class GetBasicPrisonerProfileTest : IntegrationTestBase() {
 
   private fun assertUnknownPrisonerDetails(prisonerBasicInfo: PrisonerBasicInfoDto, prisonerDto: PrisonerDto) {
     Assertions.assertThat(prisonerBasicInfo.prisonerNumber).isEqualTo(prisonerDto.prisonerNumber)
-    Assertions.assertThat(prisonerBasicInfo.firstName).isEqualTo("UNKNOWN")
-    Assertions.assertThat(prisonerBasicInfo.lastName).isEqualTo("UNKNOWN")
+    Assertions.assertThat(prisonerBasicInfo.firstName).isNull()
+    Assertions.assertThat(prisonerBasicInfo.lastName).isNull()
     Assertions.assertThat(prisonerBasicInfo.dateOfBirth).isNull()
     Assertions.assertThat(prisonerBasicInfo.prisonId).isNull()
   }

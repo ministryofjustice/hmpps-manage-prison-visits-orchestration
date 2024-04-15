@@ -19,7 +19,7 @@ class VisitorProfileService(
     LOG.debug("Entered getVisitorsDetails prisonerId:$prisonerId , visitorIds:{${visitorIds.joinToString(", ")}}")
     val prisonerContacts = prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerId, false)
     visitorIds.forEach { visitorId ->
-      val contact = prisonerContacts?.first { it.personId == visitorId }?.let {
+      val contact = prisonerContacts?.firstOrNull { it.personId == visitorId }?.let {
         BasicContactDto(it)
       } ?: getBlankContactInfo(visitorId)
 
@@ -29,6 +29,6 @@ class VisitorProfileService(
   }
 
   private fun getBlankContactInfo(visitorId: Long): BasicContactDto {
-    return BasicContactDto(visitorId, "UNKNOWN", "UNKNOWN")
+    return BasicContactDto(visitorId, null, null)
   }
 }
