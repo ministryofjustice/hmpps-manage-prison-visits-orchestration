@@ -44,14 +44,15 @@ class PrisonerProfileService(
   fun getPrisonerDetails(prisonerIds: List<String>): List<PrisonerBasicInfoDto> {
     LOG.debug("Entered getPrisonerDetails for public booker - prisonerIds:{${prisonerIds.joinToString(", ")}}")
     val prisonerBasicInfoList = mutableListOf<PrisonerBasicInfoDto>()
-    prisonerIds.forEach {
-      prisonerBasicInfoList.add(
-        try {
-          prisonerProfileClient.getBasicPrisonerProfile(it) ?: getBlankPrisonerBasicInfo(it)
-        } catch (ex: WebClientResponseException) {
-          getBlankPrisonerBasicInfo(it)
-        },
-      )
+    prisonerIds.forEach { prisonerId ->
+      try {
+        val prisonerBasicInfo = prisonerProfileClient.getBasicPrisonerProfile(prisonerId)
+        prisonerBasicInfo?.let {
+          prisonerBasicInfoList.add(prisonerBasicInfo)
+        }
+      } catch (ex: WebClientResponseException) {
+        LOG.info("An exception occurred while trying to get prisoner details for prison number - $prisonerId, error details - ${ex.message}")
+      }
     }
 
     return prisonerBasicInfoList
@@ -86,9 +87,5 @@ class PrisonerProfileService(
       page = PAGE_NUMBER,
       size = MAX_VISIT_RECORDS,
     )
-  }
-
-  private fun getBlankPrisonerBasicInfo(prisonerId: String): PrisonerBasicInfoDto {
-    return PrisonerBasicInfoDto(prisonerId, null, null, null, null)
   }
 }

@@ -85,10 +85,9 @@ class GetBasicDetailsForPrisonersVisitorsTest : IntegrationTestBase() {
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val contactsList = getResults(returnResult)
 
-    Assertions.assertThat(contactsList.size).isEqualTo(3)
+    Assertions.assertThat(contactsList.size).isEqualTo(2)
     assertVisitorContactBasicDetails(contactsList[0], visitor1)
     assertVisitorContactBasicDetails(contactsList[1], visitor2)
-    assertUnknownContactDetails(contactsList[2], visitor3)
 
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId, false)
   }
@@ -122,12 +121,6 @@ class GetBasicDetailsForPrisonersVisitorsTest : IntegrationTestBase() {
     Assertions.assertThat(basicContactDto.personId).isEqualTo(visitorDetails.personId)
     Assertions.assertThat(basicContactDto.firstName).isEqualTo(visitorDetails.firstName)
     Assertions.assertThat(basicContactDto.lastName).isEqualTo(visitorDetails.lastName)
-  }
-
-  private fun assertUnknownContactDetails(basicContactDto: BasicContactDto, visitorDetails: VisitorDetails) {
-    Assertions.assertThat(basicContactDto.personId).isEqualTo(visitorDetails.personId)
-    Assertions.assertThat(basicContactDto.firstName).isNull()
-    Assertions.assertThat(basicContactDto.lastName).isNull()
   }
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BasicContactDto> {

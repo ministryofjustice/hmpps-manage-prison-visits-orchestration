@@ -7,11 +7,11 @@ data class PrisonerBasicInfoDto(
   @Schema(description = "Prisoner Number", example = "A1234AA", required = true)
   val prisonerNumber: String,
 
-  @Schema(description = "First Name", example = "Robert", required = false)
-  val firstName: String?,
+  @Schema(description = "First Name", example = "Robert", required = true)
+  val firstName: String,
 
-  @Schema(description = "Last name", example = "Larsen", required = false)
-  val lastName: String?,
+  @Schema(description = "Last name", example = "Larsen", required = true)
+  val lastName: String,
 
   @Schema(description = "Date of Birth", example = "1975-04-02", required = false)
   val dateOfBirth: LocalDate?,

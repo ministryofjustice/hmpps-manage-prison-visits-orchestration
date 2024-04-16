@@ -6,10 +6,10 @@ import io.swagger.v3.oas.annotations.media.Schema
 class BasicContactDto(
   @Schema(description = "Identifier for this contact (Person in NOMIS)", example = "5871791", required = true)
   val personId: Long,
-  @Schema(description = "First name", example = "John", required = false)
-  val firstName: String?,
-  @Schema(description = "Last name", example = "Smith", required = false)
-  val lastName: String?,
+  @Schema(description = "First name", example = "John", required = true)
+  val firstName: String,
+  @Schema(description = "Last name", example = "Smith", required = true)
+  val lastName: String,
 ) {
   constructor(contact: ContactDto) : this(
     personId = contact.personId!!,

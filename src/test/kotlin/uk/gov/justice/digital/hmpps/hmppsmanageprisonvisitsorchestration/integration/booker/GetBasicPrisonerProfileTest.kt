@@ -100,9 +100,8 @@ class GetBasicPrisonerProfileTest : IntegrationTestBase() {
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val prisonerDetailsList = getResults(returnResult)
-
+    Assertions.assertThat(prisonerDetailsList.size).isEqualTo(1)
     assertPrisonerBasicDetails(prisonerDetailsList[0], prisoner1Dto)
-    assertUnknownPrisonerDetails(prisonerDetailsList[1], prisoner2Dto)
 
     verify(prisonerSearchClientSpy, times(2)).getPrisonerByIdAsMono(any())
   }
@@ -118,8 +117,7 @@ class GetBasicPrisonerProfileTest : IntegrationTestBase() {
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val prisonerDetailsList = getResults(returnResult)
-
-    assertUnknownPrisonerDetails(prisonerDetailsList[0], prisoner1Dto)
+    Assertions.assertThat(prisonerDetailsList.size).isEqualTo(0)
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(any())
   }
@@ -155,14 +153,6 @@ class GetBasicPrisonerProfileTest : IntegrationTestBase() {
     Assertions.assertThat(prisonerBasicInfo.lastName).isEqualTo(prisonerDto.lastName)
     Assertions.assertThat(prisonerBasicInfo.dateOfBirth).isEqualTo(prisonerDto.dateOfBirth)
     Assertions.assertThat(prisonerBasicInfo.prisonId).isEqualTo(prisonerDto.prisonId)
-  }
-
-  private fun assertUnknownPrisonerDetails(prisonerBasicInfo: PrisonerBasicInfoDto, prisonerDto: PrisonerDto) {
-    Assertions.assertThat(prisonerBasicInfo.prisonerNumber).isEqualTo(prisonerDto.prisonerNumber)
-    Assertions.assertThat(prisonerBasicInfo.firstName).isNull()
-    Assertions.assertThat(prisonerBasicInfo.lastName).isNull()
-    Assertions.assertThat(prisonerBasicInfo.dateOfBirth).isNull()
-    Assertions.assertThat(prisonerBasicInfo.prisonId).isNull()
   }
 
   private fun createCurrentIncentive(): CurrentIncentive {

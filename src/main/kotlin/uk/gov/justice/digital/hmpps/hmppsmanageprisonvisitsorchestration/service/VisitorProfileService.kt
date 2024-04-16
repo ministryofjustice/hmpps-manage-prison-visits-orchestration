@@ -17,18 +17,14 @@ class VisitorProfileService(
   fun getVisitorsDetails(prisonerId: String, visitorIds: List<Long>): List<BasicContactDto> {
     val contacts = mutableListOf<BasicContactDto>()
     LOG.debug("Entered getVisitorsDetails prisonerId:$prisonerId , visitorIds:{${visitorIds.joinToString(", ")}}")
+
     val prisonerContacts = prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerId, false)
     visitorIds.forEach { visitorId ->
-      val contact = prisonerContacts?.firstOrNull { it.personId == visitorId }?.let {
-        BasicContactDto(it)
-      } ?: getBlankContactInfo(visitorId)
-
-      contacts.add(contact)
+      prisonerContacts?.firstOrNull { it.personId == visitorId }?.let { contact ->
+        contacts.add(BasicContactDto(contact))
+      }
     }
-    return contacts
-  }
 
-  private fun getBlankContactInfo(visitorId: Long): BasicContactDto {
-    return BasicContactDto(visitorId, null, null)
+    return contacts
   }
 }
