@@ -24,8 +24,8 @@ data class PrisonDto(
   @Schema(description = "Max number of adults")
   @field:Min(1)
   val maxAdultVisitors: Int,
-  @Schema(description = "Max number of children, if -1 then no limit is applied")
-  @field:Min(-1)
+  @Schema(description = "Max number of children")
+  @field:Min(0)
   val maxChildVisitors: Int,
   @Schema(description = "Age of adults in years")
   val adultAgeYears: Int,
