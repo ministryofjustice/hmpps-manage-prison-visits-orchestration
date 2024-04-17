@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.PrisonerProfileDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerBasicInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
@@ -49,6 +50,21 @@ class PrisonerProfileClient(
       .block(apiTimeout)?.also { prisonerProfile ->
         setVisitDetails(prisonerProfile)
       }
+  }
+
+  // TODO - change to get multiple prisoner details at once
+  fun getBasicPrisonerProfile(
+    prisonerId: String,
+  ): PrisonerBasicInfoDto? {
+    return prisonerSearchClient.getPrisonerByIdAsMono(prisonerId).block(apiTimeout)?.let {
+      return PrisonerBasicInfoDto(
+        prisonerNumber = it.prisonerNumber,
+        firstName = it.firstName,
+        lastName = it.lastName,
+        dateOfBirth = it.dateOfBirth,
+        prisonId = it.prisonId,
+      )
+    }
   }
 
   private fun setVisitDetails(prisonerProfile: PrisonerProfileDto) {

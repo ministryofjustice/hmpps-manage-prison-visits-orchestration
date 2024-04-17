@@ -38,6 +38,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.ArrayList
+import java.util.stream.Collectors
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
@@ -108,6 +109,8 @@ abstract class IntegrationTestBase {
 
   lateinit var roleVisitSchedulerHttpHeaders: (HttpHeaders) -> Unit
 
+  lateinit var rolePublicVisitsBookingHttpHeaders: (HttpHeaders) -> Unit
+
   @Autowired
   protected lateinit var jwtAuthHelper: JwtAuthHelper
 
@@ -117,6 +120,7 @@ abstract class IntegrationTestBase {
   @BeforeEach
   internal fun setUp() {
     roleVisitSchedulerHttpHeaders = setAuthorisation(roles = listOf("ROLE_VISIT_SCHEDULER"))
+    rolePublicVisitsBookingHttpHeaders = setAuthorisation(roles = listOf("ROLE_ORCHESTRATION_SERVICE__VISIT_BOOKER_REGISTRY"))
   }
 
   internal fun setAuthorisation(
@@ -353,4 +357,25 @@ abstract class IntegrationTestBase {
       currentIncentive = currentIncentive,
     )
   }
+
+  private fun createContactDto(personId: Long, firstName: String, lastName: String): uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactDto {
+    return uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactDto(
+      personId = personId,
+      firstName = firstName,
+      lastName = lastName,
+      relationshipCode = "OTH",
+      contactType = "S",
+      approvedVisitor = true,
+      emergencyContact = true,
+      nextOfKin = true,
+    )
+  }
+
+  final fun createContactsList(visitorDetails: List<VisitorDetails>): List<uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactDto> {
+    return visitorDetails.stream().map {
+      createContactDto(it.personId, it.firstName, it.lastName)
+    }.collect(Collectors.toList())
+  }
+
+  class VisitorDetails(val personId: Long, val firstName: String, val lastName: String)
 }
