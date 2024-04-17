@@ -9,7 +9,7 @@ import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.BasicContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorBasicInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
 @DisplayName("Get Basic Contact Profile for a list of visitors")
@@ -117,13 +117,13 @@ class GetBasicDetailsForPrisonersVisitorsTest : IntegrationTestBase() {
     verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(prisonerId, false)
   }
 
-  private fun assertVisitorContactBasicDetails(basicContactDto: BasicContactDto, visitorDetails: VisitorDetails) {
-    Assertions.assertThat(basicContactDto.personId).isEqualTo(visitorDetails.personId)
-    Assertions.assertThat(basicContactDto.firstName).isEqualTo(visitorDetails.firstName)
-    Assertions.assertThat(basicContactDto.lastName).isEqualTo(visitorDetails.lastName)
+  private fun assertVisitorContactBasicDetails(visitorBasicInfo: VisitorBasicInfoDto, visitorDetails: VisitorDetails) {
+    Assertions.assertThat(visitorBasicInfo.personId).isEqualTo(visitorDetails.personId)
+    Assertions.assertThat(visitorBasicInfo.firstName).isEqualTo(visitorDetails.firstName)
+    Assertions.assertThat(visitorBasicInfo.lastName).isEqualTo(visitorDetails.lastName)
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BasicContactDto> {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<BasicContactDto>::class.java).toList()
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<VisitorBasicInfoDto> {
+    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<VisitorBasicInfoDto>::class.java).toList()
   }
 }

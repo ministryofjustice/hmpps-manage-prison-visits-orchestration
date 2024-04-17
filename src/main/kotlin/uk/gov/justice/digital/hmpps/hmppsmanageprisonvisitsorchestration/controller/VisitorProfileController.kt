@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.BasicContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorBasicInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitorProfileService
 
 const val ORCHESTRATION_VISITORS_CONTROLLER_PATH: String = "$ORCHESTRATION_PRISONER_CONTROLLER_PATH/{prisonerId}/visitors"
@@ -51,7 +51,7 @@ class VisitorProfileController(
       ),
     ],
   )
-  fun getVisitorsBasicDetails(@PathVariable prisonerId: String, @PathVariable visitorIds: List<Long>): List<BasicContactDto> {
+  fun getVisitorsBasicDetails(@PathVariable prisonerId: String, @PathVariable visitorIds: List<Long>): List<VisitorBasicInfoDto> {
     return visitorProfileService.getVisitorsDetails(prisonerId, visitorIds)
   }
 }
