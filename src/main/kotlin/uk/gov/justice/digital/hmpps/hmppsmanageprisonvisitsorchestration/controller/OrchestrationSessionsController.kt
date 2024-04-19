@@ -79,7 +79,7 @@ class OrchestrationSessionsController(private val visitSchedulerService: VisitSc
   ): List<VisitSessionDto>? =
     visitSchedulerService.getVisitSessions(prisonCode, prisonerId, min, max)
 
-  @PreAuthorize("hasRole('ROLE_ORCHESTRATION_SERVICE__PVB')")
+  @PreAuthorize("hasAnyRole('ROLE_ORCHESTRATION_SERVICE__PVB', 'VISIT_SCHEDULER')")
   @GetMapping("/visit-sessions/available")
   @Operation(
     summary = "Returns only visit sessions for a prisoner which are within the reservable time period",
