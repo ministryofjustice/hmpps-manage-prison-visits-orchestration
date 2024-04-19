@@ -12,6 +12,7 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
@@ -162,6 +163,16 @@ class VisitSchedulerClient(
       .bodyToMono<List<VisitSessionDto>>().block(apiTimeout)
   }
 
+  fun getAvailableVisitSessions(prisonId: String, prisonerId: String, visitRestriction: VisitRestriction, min: Int?, max: Int?): List<AvailableVisitSessionDto>? {
+    return webClient.get()
+      .uri("/visit-sessions/available") {
+        visitAvailableSessionsUriBuilder(prisonId, prisonerId, visitRestriction, min, max, it).build()
+      }
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<List<AvailableVisitSessionDto>>().block(apiTimeout)
+  }
+
   fun getSupportedPrisons(): List<String>? {
     return webClient.get()
       .uri("/config/prisons/supported")
@@ -310,6 +321,15 @@ class VisitSchedulerClient(
   private fun visitSessionsUriBuilder(prisonId: String, prisonerId: String?, min: Int?, max: Int?, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParam("prisonId", prisonId)
     uriBuilder.queryParamIfPresent("prisonerId", Optional.ofNullable(prisonerId))
+    uriBuilder.queryParamIfPresent("min", Optional.ofNullable(min))
+    uriBuilder.queryParamIfPresent("max", Optional.ofNullable(max))
+    return uriBuilder
+  }
+
+  private fun visitAvailableSessionsUriBuilder(prisonId: String, prisonerId: String, visitRestriction: VisitRestriction, min: Int?, max: Int?, uriBuilder: UriBuilder): UriBuilder {
+    uriBuilder.queryParam("prisonId", prisonId)
+    uriBuilder.queryParam("prisonerId", prisonerId)
+    uriBuilder.queryParam("visitRestriction", visitRestriction.toString())
     uriBuilder.queryParamIfPresent("min", Optional.ofNullable(min))
     uriBuilder.queryParamIfPresent("max", Optional.ofNullable(max))
     return uriBuilder
