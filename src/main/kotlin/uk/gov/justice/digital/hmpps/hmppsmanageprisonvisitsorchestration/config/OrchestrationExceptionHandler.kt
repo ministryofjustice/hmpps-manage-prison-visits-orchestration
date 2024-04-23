@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.reactive.function.client.WebClientException
 import org.springframework.web.reactive.function.client.WebClientResponseException
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerAuthFailureException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
 
 @RestControllerAdvice
@@ -23,6 +24,20 @@ class OrchestrationExceptionHandler {
         ErrorResponse(
           status = HttpStatus.NOT_FOUND,
           userMessage = "Prisoner profile not found: ${e.cause?.message}",
+          developerMessage = e.message,
+        ),
+      )
+  }
+
+  @ExceptionHandler(BookerAuthFailureException::class)
+  fun handleBookerAuthFailureException(e: BookerAuthFailureException): ResponseEntity<ErrorResponse?>? {
+    log.error("Booker auth failure exception caught: {}", e.message)
+    return ResponseEntity
+      .status(HttpStatus.NOT_FOUND)
+      .body(
+        ErrorResponse(
+          status = HttpStatus.NOT_FOUND,
+          userMessage = "Booker auth failure : ${e.cause?.message}",
           developerMessage = e.message,
         ),
       )

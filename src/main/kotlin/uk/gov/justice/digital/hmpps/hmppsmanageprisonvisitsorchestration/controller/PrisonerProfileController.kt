@@ -10,12 +10,10 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.PrisonerProfileDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerBasicInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonerProfileService
 
 const val ORCHESTRATION_PRISONER_CONTROLLER_PATH: String = "/prisoner"
 const val ORCHESTRATION_PRISONER_PROFILE_CONTROLLER_PATH: String = "$ORCHESTRATION_PRISONER_CONTROLLER_PATH/{prisonId}/{prisonerId}/profile"
-const val ORCHESTRATION_PRISONERS_BASIC_INFO_CONTROLLER_PATH: String = "$ORCHESTRATION_PRISONER_CONTROLLER_PATH/{prisonerIds}/basic-details"
 
 @RestController
 class PrisonerProfileController(
@@ -55,41 +53,5 @@ class PrisonerProfileController(
   )
   fun getPrisonerProfile(@PathVariable prisonId: String, @PathVariable prisonerId: String): PrisonerProfileDto? {
     return prisonerProfileService.getPrisonerProfile(prisonId, prisonerId)
-  }
-
-  @PreAuthorize("hasRole('ROLE_ORCHESTRATION_SERVICE__VISIT_BOOKER_REGISTRY')")
-  @GetMapping(ORCHESTRATION_PRISONERS_BASIC_INFO_CONTROLLER_PATH)
-  @Operation(
-    summary = "Get a prisoner's basic details",
-    description = "Get the prisoner's basic details",
-    responses = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Prisoner Profile Returned",
-      ),
-      ApiResponse(
-        responseCode = "500",
-        description = "Incorrect request to retrieve prisoner's basic details",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorized to access this endpoint",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Incorrect permissions to retrieve prisoner's basic details",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "404",
-        description = "Prisoner details not found",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-    ],
-  )
-  fun getPrisonersBasicDetails(@PathVariable prisonerIds: List<String>): List<PrisonerBasicInfoDto> {
-    return prisonerProfileService.getPrisonerDetails(prisonerIds)
   }
 }

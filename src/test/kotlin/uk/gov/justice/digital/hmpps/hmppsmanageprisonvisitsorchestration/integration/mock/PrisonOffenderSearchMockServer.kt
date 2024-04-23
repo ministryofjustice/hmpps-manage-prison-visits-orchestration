@@ -10,7 +10,7 @@ import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 
 class PrisonOffenderSearchMockServer(@Autowired private val objectMapper: ObjectMapper) : WireMockServer(8094) {
-  fun stubGetPrisonerById(prisonerId: String, prisoner: PrisonerDto?) {
+  fun stubGetPrisonerById(prisonerId: String, prisoner: PrisonerDto?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
     val responseBuilder = aResponse()
       .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
 
@@ -19,7 +19,7 @@ class PrisonOffenderSearchMockServer(@Autowired private val objectMapper: Object
         .willReturn(
           if (prisoner == null) {
             responseBuilder
-              .withStatus(HttpStatus.NOT_FOUND.value())
+              .withStatus(httpStatus.value())
           } else {
             responseBuilder
               .withStatus(HttpStatus.OK.value())
