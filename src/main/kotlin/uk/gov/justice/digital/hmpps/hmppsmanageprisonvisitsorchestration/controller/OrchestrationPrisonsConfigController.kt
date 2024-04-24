@@ -20,7 +20,7 @@ const val ORCHESTRATION_CONFIG_CONTROLLER_PATH: String = "/config"
 class OrchestrationPrisonsConfigController(
   private val visitSchedulerService: VisitSchedulerService,
 ) {
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("$ORCHESTRATION_CONFIG_CONTROLLER_PATH/prisons/supported")
   @Operation(
     summary = "Get supported prisons",
@@ -55,7 +55,7 @@ class OrchestrationPrisonsConfigController(
     return visitSchedulerService.getSupportedPrisons()
   }
 
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("$ORCHESTRATION_CONFIG_CONTROLLER_PATH/prisons/prison/{prisonCode}")
   @Operation(
     summary = "Gets prison by given prison id/code",

@@ -28,7 +28,7 @@ class GetPrisonTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetPrison("HEI", prisonDto = prisonDto)
 
     // When
-    val responseSpec = callGetSupportedPrisons(webTestClient, "HEI", roleVisitSchedulerHttpHeaders)
+    val responseSpec = callGetSupportedPrisons(webTestClient, "HEI", roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()

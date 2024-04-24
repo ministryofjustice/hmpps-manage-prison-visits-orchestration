@@ -31,7 +31,7 @@ class CreateInitialApplicationTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubCreateApplication(applicationDto)
 
     // When
-    val responseSpec = createInitialApplication(webTestClient, createApplicationDto, roleVisitSchedulerHttpHeaders)
+    val responseSpec = createInitialApplication(webTestClient, createApplicationDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isCreated
@@ -48,7 +48,7 @@ class CreateInitialApplicationTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubCreateApplication(applicationDto)
 
     // When
-    val responseSpec = createInitialApplication(webTestClient, reserveVisitSlotDto, roleVisitSchedulerHttpHeaders)
+    val responseSpec = createInitialApplication(webTestClient, reserveVisitSlotDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isBadRequest

@@ -33,7 +33,7 @@ class VisitSessionsTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2, visitSessionDto3, visitSessionDto4, visitSessionDto5))
 
     // When
-    val responseSpec = callGetVisitSessions(webTestClient, prisonCode, prisonerId, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callGetVisitSessions(webTestClient, prisonCode, prisonerId, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -50,7 +50,7 @@ class VisitSessionsTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf())
 
     // When
-    val responseSpec = callGetVisitSessions(webTestClient, prisonCode, prisonerId, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callGetVisitSessions(webTestClient, prisonCode, prisonerId, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk

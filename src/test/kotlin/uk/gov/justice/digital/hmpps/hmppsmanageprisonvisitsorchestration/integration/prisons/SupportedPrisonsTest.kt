@@ -25,7 +25,7 @@ class SupportedPrisonsTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetSupportedPrisons(prisons.toMutableList())
 
     // When
-    val responseSpec = callGetSupportedPrisons(webTestClient, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callGetSupportedPrisons(webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -41,7 +41,7 @@ class SupportedPrisonsTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetSupportedPrisons(mutableListOf())
 
     // When
-    val responseSpec = callGetSupportedPrisons(webTestClient, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callGetSupportedPrisons(webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk

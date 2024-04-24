@@ -33,7 +33,7 @@ class BookVisitTest : IntegrationTestBase() {
     val requestDto = BookingRequestDto(actionedBy = "booker", EMAIL)
 
     // When
-    val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -51,7 +51,7 @@ class BookVisitTest : IntegrationTestBase() {
     val requestDto = BookingRequestDto(actionedBy = "booker", EMAIL)
 
     // When
-    val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound

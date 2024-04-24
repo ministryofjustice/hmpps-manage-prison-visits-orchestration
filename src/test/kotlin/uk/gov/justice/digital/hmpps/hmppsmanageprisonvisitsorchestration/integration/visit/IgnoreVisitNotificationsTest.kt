@@ -32,7 +32,7 @@ class IgnoreVisitNotificationsTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubIgnoreVisitNotifications(reference, visitDto)
 
     // When
-    val responseSpec = callIgnoreVisitNotifications(webTestClient, reference, ignoreVisitNotifications, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callIgnoreVisitNotifications(webTestClient, reference, ignoreVisitNotifications, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -49,7 +49,7 @@ class IgnoreVisitNotificationsTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubIgnoreVisitNotifications(reference, visitDto)
 
     // When
-    val responseSpec = callIgnoreVisitNotifications(webTestClient, reference, ignoreVisitNotifications, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callIgnoreVisitNotifications(webTestClient, reference, ignoreVisitNotifications, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -64,7 +64,7 @@ class IgnoreVisitNotificationsTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubIgnoreVisitNotifications(reference, visitDto, HttpStatus.FORBIDDEN)
 
     // When
-    val responseSpec = callIgnoreVisitNotifications(webTestClient, reference, ignoreVisitNotifications, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callIgnoreVisitNotifications(webTestClient, reference, ignoreVisitNotifications, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isForbidden

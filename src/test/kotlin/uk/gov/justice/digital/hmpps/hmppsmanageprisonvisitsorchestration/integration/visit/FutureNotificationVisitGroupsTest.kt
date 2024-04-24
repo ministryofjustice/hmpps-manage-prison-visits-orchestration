@@ -22,7 +22,7 @@ class FutureNotificationVisitGroupsTest : IntegrationTestBase() {
     manageUsersApiMockServer.stubGetUserDetails("Username1", "Aled")
     manageUsersApiMockServer.stubGetUserDetails("Username2", "Gwyn")
     // When
-    val responseSpec = callFutureNotificationVisitGroups(webTestClient, prisonCode, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callFutureNotificationVisitGroups(webTestClient, prisonCode, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk

@@ -32,7 +32,7 @@ class ChangeBookedVisitSlotTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubChangeBookedVisit(reference, applicationDto)
 
     // When
-    val responseSpec = callChangeBookedVisitSlot(webTestClient, reference, createApplicationDto, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callChangeBookedVisitSlot(webTestClient, reference, createApplicationDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isCreated
@@ -50,7 +50,7 @@ class ChangeBookedVisitSlotTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubChangeBookedVisit(reference, applicationDto)
 
     // When
-    val responseSpec = callChangeBookedVisitSlot(webTestClient, reference, createApplicationDto, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callChangeBookedVisitSlot(webTestClient, reference, createApplicationDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound

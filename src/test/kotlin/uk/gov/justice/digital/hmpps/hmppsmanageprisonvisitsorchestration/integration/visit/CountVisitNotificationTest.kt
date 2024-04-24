@@ -20,7 +20,7 @@ class CountVisitNotificationTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetCountVisitNotification()
 
     // When
-    val responseSpec = callCountVisitNotification(webTestClient, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callCountVisitNotification(webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -33,7 +33,7 @@ class CountVisitNotificationTest : IntegrationTestBase() {
     // Given
     visitSchedulerMockServer.stubGetCountVisitNotificationForPrison(prisonCode)
     // When
-    val responseSpec = callCountVisitNotificationForAPrison(webTestClient, prisonCode, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callCountVisitNotificationForAPrison(webTestClient, prisonCode, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
