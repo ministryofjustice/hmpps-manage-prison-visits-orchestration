@@ -40,7 +40,7 @@ class BookerAuthorisationTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubBookerAuthorisation(bookerReference)
 
     // When
-    val responseSpec = callBookerAuthorisation(webTestClient, authDetail, rolePublicVisitsBookingHttpHeaders)
+    val responseSpec = callBookerAuthorisation(webTestClient, authDetail, roleVisitSchedulerHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -57,7 +57,7 @@ class BookerAuthorisationTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubBookerAuthorisation(bookerReference, HttpStatus.NOT_FOUND)
 
     // When
-    val responseSpec = callBookerAuthorisation(webTestClient, authDetail, rolePublicVisitsBookingHttpHeaders)
+    val responseSpec = callBookerAuthorisation(webTestClient, authDetail, roleVisitSchedulerHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -70,7 +70,7 @@ class BookerAuthorisationTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubBookerAuthorisation(bookerReference, HttpStatus.UNAUTHORIZED)
 
     // When
-    val responseSpec = callBookerAuthorisation(webTestClient, authDetail, rolePublicVisitsBookingHttpHeaders)
+    val responseSpec = callBookerAuthorisation(webTestClient, authDetail, roleVisitSchedulerHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isUnauthorized

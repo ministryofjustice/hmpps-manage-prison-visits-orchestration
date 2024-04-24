@@ -65,7 +65,7 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList)
 
     // When
-    val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, rolePublicVisitsBookingHttpHeaders, bookerReference, prisonerId)
+    val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, roleVisitSchedulerHttpHeaders, bookerReference, prisonerId)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -91,7 +91,7 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList)
 
     // When
-    val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, rolePublicVisitsBookingHttpHeaders, bookerReference, prisonerId)
+    val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, roleVisitSchedulerHttpHeaders, bookerReference, prisonerId)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -118,7 +118,7 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList)
 
     // When
-    val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, rolePublicVisitsBookingHttpHeaders, bookerReference, prisonerId)
+    val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, roleVisitSchedulerHttpHeaders, bookerReference, prisonerId)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -146,7 +146,7 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList)
 
     // When
-    val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, rolePublicVisitsBookingHttpHeaders, bookerReference, prisonerId)
+    val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, roleVisitSchedulerHttpHeaders, bookerReference, prisonerId)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -173,7 +173,7 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList)
 
     // When
-    val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, rolePublicVisitsBookingHttpHeaders, bookerReference, prisonerId)
+    val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, roleVisitSchedulerHttpHeaders, bookerReference, prisonerId)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -196,7 +196,7 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList)
 
     // When
-    val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, rolePublicVisitsBookingHttpHeaders, bookerReference, prisonerId)
+    val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, roleVisitSchedulerHttpHeaders, bookerReference, prisonerId)
 
     // Then
     responseSpec.expectStatus().is5xxServerError
@@ -221,7 +221,7 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, null, HttpStatus.NOT_FOUND)
 
     // When
-    val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, rolePublicVisitsBookingHttpHeaders, bookerReference, prisonerId)
+    val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, roleVisitSchedulerHttpHeaders, bookerReference, prisonerId)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -249,7 +249,7 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, null, HttpStatus.INTERNAL_SERVER_ERROR)
 
     // When
-    val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, rolePublicVisitsBookingHttpHeaders, bookerReference, prisonerId)
+    val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, roleVisitSchedulerHttpHeaders, bookerReference, prisonerId)
 
     // Then
     responseSpec.expectStatus().is5xxServerError
@@ -260,7 +260,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
   @Test
   fun `when get visitors by prisoner called without correct role then access forbidden is returned`() {
     // When
-    val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, roleVisitSchedulerHttpHeaders, bookerReference, prisonerId)
+    val invalidRoleHttpHeaders = setAuthorisation(roles = listOf("ROLE_INVALID"))
+    val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, invalidRoleHttpHeaders, bookerReference, prisonerId)
 
     // Then
     responseSpec.expectStatus().isForbidden
