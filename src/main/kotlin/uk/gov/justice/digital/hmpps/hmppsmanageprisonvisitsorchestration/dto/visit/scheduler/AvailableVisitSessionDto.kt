@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.Valid
 import jakarta.validation.constraints.FutureOrPresent
 import jakarta.validation.constraints.NotNull
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.visitscheduler.dto.sessions.SessionTimeSlotDto
 import java.time.LocalDate
 
@@ -18,4 +19,8 @@ data class AvailableVisitSessionDto(
   @field:NotNull
   @Valid
   val sessionTimeSlot: SessionTimeSlotDto,
+
+  @Schema(description = "Visit Restriction", example = "OPEN", required = true)
+  @field:NotNull
+  val visitRestriction: VisitRestriction,
 )
