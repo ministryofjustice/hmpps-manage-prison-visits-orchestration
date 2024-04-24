@@ -41,6 +41,11 @@ prisoner:
 
 manage-users.api.url: http://localhost:8097
 
+prison-visit-booker-registry:
+  api:
+    url: http://localhost:8098
+    timeout: 10s
+
 hmpps:
   auth:
     url: http://localhost:8090/auth
