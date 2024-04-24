@@ -82,8 +82,8 @@ class OrchestrationSessionsController(private val visitSchedulerService: VisitSc
   @PreAuthorize("hasRole('VISIT_SCHEDULER')")
   @GetMapping("/visit-sessions/available")
   @Operation(
-    summary = "Returns only visit sessions for a prisoner which are within the reservable time period",
-    description = "Retrieve only visit sessions for a specified prisoner",
+    summary = "Returns only available visit sessions for a specified prisoner by restriction and within the reservable time period",
+    description = "Returns only available visit sessions for a specified prisoner by restriction and within the reservable time period",
     responses = [
       ApiResponse(
         responseCode = "200",
