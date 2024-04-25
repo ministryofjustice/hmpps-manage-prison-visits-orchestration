@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.CreateApplicationRestriction
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import java.time.LocalDate
 
 open class CreateApplicationDto(
@@ -32,4 +33,7 @@ open class CreateApplicationDto(
   @Schema(description = "additional support associated with the visit, if null support will not be updated", required = false)
   @Valid
   var visitorSupport: ApplicationSupportDto? = null,
+  @Schema(description = "User type", example = "STAFF", required = true)
+  @field:NotNull
+  val userType: UserType,
 )

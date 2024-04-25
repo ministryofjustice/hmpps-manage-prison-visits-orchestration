@@ -22,4 +22,5 @@ class VisitSchedulerCreateApplicationDto(
   createApplicationDto.visitContact,
   createApplicationDto.visitors,
   createApplicationDto.visitorSupport,
+  createApplicationDto.userType,
 )
