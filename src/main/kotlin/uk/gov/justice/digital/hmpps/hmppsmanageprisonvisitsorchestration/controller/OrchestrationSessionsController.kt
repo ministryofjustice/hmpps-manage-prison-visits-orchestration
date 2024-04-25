@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
 import java.time.LocalDate
 import java.time.LocalTime
@@ -76,6 +78,47 @@ class OrchestrationSessionsController(private val visitSchedulerService: VisitSc
     max: Int?,
   ): List<VisitSessionDto>? =
     visitSchedulerService.getVisitSessions(prisonCode, prisonerId, min, max)
+
+  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @GetMapping("/visit-sessions/available")
+  @Operation(
+    summary = "Returns only available visit sessions for a specified prisoner by restriction and within the reservable time period",
+    description = "Returns only available visit sessions for a specified prisoner by restriction and within the reservable time period",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Visit session information returned",
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to Get visit sessions ",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getAvailableVisitSessions(
+    @RequestParam(value = "prisonId", required = true)
+    @Parameter(description = "Query by NOMIS Prison Identifier", example = "MDI", required = true)
+    prisonCode: String,
+    @RequestParam(value = "prisonerId", required = true)
+    @Parameter(description = "Filter results by prisoner id", example = "A12345DC", required = true)
+    prisonerId: String,
+    @RequestParam(value = "visitRestriction", required = true)
+    @Parameter(description = "Filter sessions by Visit restriction", example = "CLOSED", required = true)
+    visitRestriction: VisitRestriction,
+    @RequestParam(value = "min", required = false)
+    @Parameter(description = "Override the default minimum number of days notice from the current date", example = "2", required = false)
+    min: Int?,
+    @RequestParam(value = "max", required = false)
+    @Parameter(description = "Override the default maximum number of days to book-ahead from the current date", example = "28", required = false)
+    max: Int?,
+  ): List<AvailableVisitSessionDto>? =
+    visitSchedulerService.getAvailableVisitSessions(prisonCode, prisonerId, visitRestriction, min, max)
 
   @PreAuthorize("hasRole('VISIT_SCHEDULER')")
   @GetMapping("/visit-sessions/capacity")

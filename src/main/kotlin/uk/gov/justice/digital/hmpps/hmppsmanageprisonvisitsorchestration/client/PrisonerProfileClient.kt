@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.PrisonerProfileDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
@@ -61,7 +61,7 @@ class PrisonerProfileClient(
     }
   }
 
-  private fun getContactsForPrisoner(prisonerProfile: PrisonerProfileDto): Map<Long?, ContactDto>? {
+  private fun getContactsForPrisoner(prisonerProfile: PrisonerProfileDto): Map<Long?, PrisonerContactDto>? {
     try {
       val contacts = prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerProfile.prisonerId, withAddress = false)
       contacts?.let {
@@ -88,7 +88,7 @@ class PrisonerProfileClient(
     }
   }
 
-  private fun setVisitorNames(visitSummary: VisitSummaryDto, contactsMap: Map<Long?, ContactDto>) {
+  private fun setVisitorNames(visitSummary: VisitSummaryDto, contactsMap: Map<Long?, PrisonerContactDto>) {
     visitSummary.visitors?.forEach { visitor ->
       visitor.firstName = contactsMap[visitor.nomisPersonId]?.firstName
       visitor.lastName = contactsMap[visitor.nomisPersonId]?.lastName

@@ -16,6 +16,7 @@ generic-service:
     PRISONER-CONTACT_REGISTRY_URL: https://prisoner-contact-registry-dev.prison.service.justice.gov.uk
     PRISON-REGISTER_API_URL: https://prison-register-dev.hmpps.service.justice.gov.uk
     WHEREABOUTS_API_URL: https://whereabouts-api-dev.service.justice.gov.uk
+    PRISON-VISIT-BOOKER-REGISTRY_API_URL: https://hmpps-prison-visit-booker-registry-staging.prison.service.justice.gov.uk
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
 
 generic-prometheus-alerts:

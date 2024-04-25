@@ -6,21 +6,24 @@ import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ManageUsersService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.BookingOrchestrationRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.IgnoreVisitNotificationsOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationNotificationGroupDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationPrisonerVisitsNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.IgnoreVisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
@@ -55,7 +58,7 @@ class VisitSchedulerService(
   }
 
   /**
-   * Gets further visit details like usernames, contact details etc for a given visit reference.
+   * Gets further visit details like usernames, contact details etc. for a given visit reference.
    */
   fun getVisitHistoryByReference(
     reference: String,
@@ -73,6 +76,7 @@ class VisitSchedulerService(
             actionedBy = names[it.actionedBy] ?: it.actionedBy,
             sessionTemplateReference = it.sessionTemplateReference,
             createTimestamp = it.createTimestamp,
+            text = it.text,
           )
         }
         return VisitHistoryDetailsDto(
@@ -122,8 +126,22 @@ class VisitSchedulerService(
     )
   }
 
+  fun ignoreVisitNotifications(reference: String, ignoreVisitNotifications: IgnoreVisitNotificationsOrchestrationDto): VisitDto? {
+    return visitSchedulerClient.ignoreVisitNotification(
+      reference,
+      IgnoreVisitNotificationsDto(
+        ignoreVisitNotifications.reason,
+        authenticationHelperService.currentUserName,
+      ),
+    )
+  }
+
   fun getVisitSessions(prisonCode: String, prisonerId: String?, min: Int?, max: Int?): List<VisitSessionDto>? {
     return visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max)
+  }
+
+  fun getAvailableVisitSessions(prisonCode: String, prisonerId: String, visitRestriction: VisitRestriction, min: Int?, max: Int?): List<AvailableVisitSessionDto>? {
+    return visitSchedulerClient.getAvailableVisitSessions(prisonCode, prisonerId, visitRestriction, min, max)
   }
 
   fun getSupportedPrisons(): List<String>? {

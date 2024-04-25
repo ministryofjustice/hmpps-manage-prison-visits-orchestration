@@ -13,13 +13,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.Pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonerProfileService
 
 const val ORCHESTRATION_PRISONER_CONTROLLER_PATH: String = "/prisoner"
+const val ORCHESTRATION_PRISONER_PROFILE_CONTROLLER_PATH: String = "$ORCHESTRATION_PRISONER_CONTROLLER_PATH/{prisonId}/{prisonerId}/profile"
 
 @RestController
 class PrisonerProfileController(
   private val prisonerProfileService: PrisonerProfileService,
 ) {
   @PreAuthorize("hasRole('VISIT_SCHEDULER')")
-  @GetMapping("$ORCHESTRATION_PRISONER_CONTROLLER_PATH/{prisonId}/{prisonerId}/profile")
+  @GetMapping(ORCHESTRATION_PRISONER_PROFILE_CONTROLLER_PATH)
   @Operation(
     summary = "Get a prisoner's profile page",
     description = "Get the prisoner's profile page",

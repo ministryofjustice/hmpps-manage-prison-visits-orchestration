@@ -29,4 +29,6 @@ prison-register.api.url: https://prison-register-dev.hmpps.service.justice.gov.u
 
 whereabouts.api.url: https://whereabouts-api-dev.service.justice.gov.uk
 
+prison-visit-booker-registry.api.url: https://hmpps-prison-visit-booker-registry-dev.prison.service.justice.gov.uk
+
 hmpps.sqs.enabled: true

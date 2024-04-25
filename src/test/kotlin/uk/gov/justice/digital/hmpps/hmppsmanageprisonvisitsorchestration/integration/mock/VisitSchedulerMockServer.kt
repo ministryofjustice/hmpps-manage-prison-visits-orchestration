@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
@@ -212,6 +213,23 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     )
   }
 
+  fun stubIgnoreVisitNotifications(reference: String, visitDto: VisitDto?, status: HttpStatus? = null) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      put("/visits/notification/visit/$reference/ignore")
+        .willReturn(
+          if (visitDto == null) {
+            responseBuilder.withStatus(status?.value() ?: HttpStatus.NOT_FOUND.value())
+          } else {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(visitDto))
+          },
+        ),
+    )
+  }
+
   fun stubGetCountVisitNotificationForPrison(prisonCode: String) {
     val responseBuilder = createJsonResponseBuilder()
 
@@ -298,6 +316,23 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     )
   }
 
+  fun stubGetAvailableVisitSessions(
+    prisonId: String,
+    prisonerId: String,
+    visitRestriction: VisitRestriction,
+    visitSessions: List<AvailableVisitSessionDto>,
+    httpStatus: HttpStatus = HttpStatus.OK,
+  ) {
+    stubFor(
+      get("/visit-sessions/available?prisonId=$prisonId&prisonerId=$prisonerId&visitRestriction=$visitRestriction")
+        .willReturn(
+          createJsonResponseBuilder()
+            .withStatus(httpStatus.value())
+            .withBody(getJsonString(visitSessions)),
+        ),
+    )
+  }
+
   fun stubGetVisitSessions(prisonId: String, prisonerId: String, visitSessions: List<VisitSessionDto>) {
     stubFor(
       get("/visit-sessions?prisonId=$prisonId&prisonerId=$prisonerId")
@@ -308,7 +343,6 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
         ),
     )
   }
-
   fun stubGetSupportedPrisons(supportedPrisonsList: List<String>) {
     stubFor(
       get("/config/prisons/supported")

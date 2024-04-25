@@ -35,6 +35,9 @@ class WebClientConfiguration(
 
   @Value("\${whereabouts.api.url}")
   private val whereAboutsApiUrl: String,
+
+  @Value("\${prison-visit-booker-registry.api.url}")
+  private val prisonVisitBookerRegistryApiUrl: String,
 ) {
   private enum class HmppsAuthClientRegistrationId(val clientRegistrationId: String) {
     VISIT_SCHEDULER("visit-scheduler"),
@@ -44,6 +47,7 @@ class WebClientConfiguration(
     PRISON_CONTACT_REGISTRY_CLIENT("other-hmpps-apis"),
     MANAGE_USERS_API_CLIENT("other-hmpps-apis"),
     WHEREABOUTS_API_CLIENT("other-hmpps-apis"),
+    PRISON_VISIT_BOOKER_REGISTRY_API_CLIENT("other-hmpps-apis"),
   }
 
   @Bean
@@ -86,6 +90,12 @@ class WebClientConfiguration(
   fun whereAboutsApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
     val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.WHEREABOUTS_API_CLIENT.clientRegistrationId)
     return getWebClient(whereAboutsApiUrl, oauth2Client)
+  }
+
+  @Bean
+  fun prisonVisitBookerRegistryWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+    val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.PRISON_VISIT_BOOKER_REGISTRY_API_CLIENT.clientRegistrationId)
+    return getWebClient(prisonVisitBookerRegistryApiUrl, oauth2Client)
   }
 
   private fun getOauth2Client(authorizedClientManager: OAuth2AuthorizedClientManager, clientRegistrationId: String): ServletOAuth2AuthorizedClientExchangeFilterFunction {

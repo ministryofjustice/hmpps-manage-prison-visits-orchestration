@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDO
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonNameDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.CurrentIncentive
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
@@ -33,11 +34,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonOffenderSearchMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonRegisterMockServer
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonVisitBookerRegistryMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonerContactRegistryMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.VisitSchedulerMockServer
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.ArrayList
+import java.util.stream.Collectors
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
@@ -51,6 +54,7 @@ abstract class IntegrationTestBase {
     val prisonerContactRegistryMockServer = PrisonerContactRegistryMockServer(objectMapper)
     val prisonRegisterMockServer = PrisonRegisterMockServer(objectMapper)
     val manageUsersApiMockServer = ManageUsersApiMockServer()
+    val prisonVisitBookerRegistryMockServer = PrisonVisitBookerRegistryMockServer(objectMapper)
 
     @BeforeAll
     @JvmStatic
@@ -61,6 +65,7 @@ abstract class IntegrationTestBase {
       prisonerContactRegistryMockServer.start()
       prisonRegisterMockServer.start()
       manageUsersApiMockServer.start()
+      prisonVisitBookerRegistryMockServer.start()
     }
 
     @AfterAll
@@ -72,6 +77,7 @@ abstract class IntegrationTestBase {
       prisonerContactRegistryMockServer.stop()
       prisonRegisterMockServer.stop()
       manageUsersApiMockServer.stop()
+      prisonVisitBookerRegistryMockServer.stop()
     }
 
     fun getVisitsQueryParams(
@@ -353,4 +359,32 @@ abstract class IntegrationTestBase {
       currentIncentive = currentIncentive,
     )
   }
+
+  private fun createContactDto(personId: Long, firstName: String, lastName: String, dateOfBirth: LocalDate?, approvedVisitor: Boolean): PrisonerContactDto {
+    return PrisonerContactDto(
+      personId = personId,
+      firstName = firstName,
+      lastName = lastName,
+      approvedVisitor = approvedVisitor,
+      dateOfBirth = dateOfBirth,
+      relationshipCode = "OTH",
+      contactType = "S",
+      emergencyContact = true,
+      nextOfKin = true,
+    )
+  }
+
+  final fun createContactsList(visitorDetails: List<VisitorDetails>): List<PrisonerContactDto> {
+    return visitorDetails.stream().map {
+      createContactDto(it.personId, it.firstName, it.lastName, it.dateOfBirth, it.approved)
+    }.collect(Collectors.toList())
+  }
+
+  class VisitorDetails(
+    val personId: Long,
+    val firstName: String,
+    val lastName: String,
+    val dateOfBirth: LocalDate? = null,
+    val approved: Boolean = true,
+  )
 }
