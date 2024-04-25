@@ -251,7 +251,7 @@ abstract class IntegrationTestBase {
       visitors = visitors!!,
       completed = false,
       reserved = false,
-      userType = PUBLIC
+      userType = PUBLIC,
     )
   }
 
