@@ -31,7 +31,7 @@ data class PrisonDto(
   val adultAgeYears: Int,
 
   @Schema(description = "exclude dates", required = false)
-  var excludeDates: Set<LocalDate> = setOf(),
+  val excludeDates: Set<LocalDate> = setOf(),
 
   @Schema(description = "prison user client", required = false)
   val clients: List<PrisonUserClientDto> = listOf(),
