@@ -32,4 +32,7 @@ data class PrisonDto(
 
   @Schema(description = "exclude dates", required = false)
   var excludeDates: Set<LocalDate> = mutableSetOf(),
+
+  @Schema(description = "prison user client", required = false)
+  val clients: List<PrisonUserClientDto> = mutableListOf(),
 )

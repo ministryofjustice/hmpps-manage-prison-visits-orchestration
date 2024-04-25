@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
@@ -173,9 +174,9 @@ class VisitSchedulerClient(
       .bodyToMono<List<AvailableVisitSessionDto>>().block(apiTimeout)
   }
 
-  fun getSupportedPrisons(): List<String>? {
+  fun getSupportedPrisons(type: UserType): List<String>? {
     return webClient.get()
-      .uri("/config/prisons/supported")
+      .uri("/config/prisons/user-type/${type.name}/supported")
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono<List<String>>().block(apiTimeout)
