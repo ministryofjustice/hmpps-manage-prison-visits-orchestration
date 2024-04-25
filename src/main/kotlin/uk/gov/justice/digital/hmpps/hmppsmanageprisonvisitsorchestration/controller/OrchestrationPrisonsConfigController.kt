@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
 
 const val ORCHESTRATION_CONFIG_CONTROLLER_PATH: String = "/config"
@@ -21,7 +22,7 @@ class OrchestrationPrisonsConfigController(
   private val visitSchedulerService: VisitSchedulerService,
 ) {
   @PreAuthorize("hasRole('VISIT_SCHEDULER')")
-  @GetMapping("$ORCHESTRATION_CONFIG_CONTROLLER_PATH/prisons/supported")
+  @GetMapping("$ORCHESTRATION_CONFIG_CONTROLLER_PATH/prisons/user-type/{type}/supported")
   @Operation(
     summary = "Get supported prisons",
     description = "Get all supported prisons id's",
@@ -51,8 +52,12 @@ class OrchestrationPrisonsConfigController(
       ),
     ],
   )
-  fun getSupportedPrisons(): List<String>? {
-    return visitSchedulerService.getSupportedPrisons()
+  fun getSupportedPrisons(
+    @Schema(description = "type", example = "STAFF", required = true)
+    @PathVariable
+    type: UserType,
+  ): List<String>? {
+    return visitSchedulerService.getSupportedPrisons(type)
   }
 
   @PreAuthorize("hasRole('VISIT_SCHEDULER')")
