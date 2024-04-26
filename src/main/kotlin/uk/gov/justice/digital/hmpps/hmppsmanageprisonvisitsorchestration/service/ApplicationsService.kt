@@ -12,7 +12,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 @Service
 class ApplicationsService(
   private val visitSchedulerApplicationsClient: VisitSchedulerApplicationsClient,
-  private val authenticationHelperService: AuthenticationHelperService,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)

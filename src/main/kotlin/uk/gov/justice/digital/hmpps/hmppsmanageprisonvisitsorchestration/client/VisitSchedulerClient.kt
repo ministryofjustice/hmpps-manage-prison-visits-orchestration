@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
@@ -164,10 +165,10 @@ class VisitSchedulerClient(
       .bodyToMono<List<VisitSessionDto>>().block(apiTimeout)
   }
 
-  fun getAvailableVisitSessions(prisonId: String, prisonerId: String, visitRestriction: VisitRestriction, min: Int?, max: Int?): List<AvailableVisitSessionDto>? {
+  fun getAvailableVisitSessions(prisonId: String, prisonerId: String, sessionRestriction: SessionRestriction, min: Int?, max: Int?): List<AvailableVisitSessionDto>? {
     return webClient.get()
       .uri("/visit-sessions/available") {
-        visitAvailableSessionsUriBuilder(prisonId, prisonerId, visitRestriction, min, max, it).build()
+        visitAvailableSessionsUriBuilder(prisonId, prisonerId, sessionRestriction, min, max, it).build()
       }
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
@@ -327,10 +328,10 @@ class VisitSchedulerClient(
     return uriBuilder
   }
 
-  private fun visitAvailableSessionsUriBuilder(prisonId: String, prisonerId: String, visitRestriction: VisitRestriction, min: Int?, max: Int?, uriBuilder: UriBuilder): UriBuilder {
+  private fun visitAvailableSessionsUriBuilder(prisonId: String, prisonerId: String, sessionRestriction: SessionRestriction, min: Int?, max: Int?, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParam("prisonId", prisonId)
     uriBuilder.queryParam("prisonerId", prisonerId)
-    uriBuilder.queryParam("visitRestriction", visitRestriction.toString())
+    uriBuilder.queryParam("sessionRestriction", sessionRestriction.toString())
     uriBuilder.queryParamIfPresent("min", Optional.ofNullable(min))
     uriBuilder.queryParamIfPresent("max", Optional.ofNullable(max))
     return uriBuilder
