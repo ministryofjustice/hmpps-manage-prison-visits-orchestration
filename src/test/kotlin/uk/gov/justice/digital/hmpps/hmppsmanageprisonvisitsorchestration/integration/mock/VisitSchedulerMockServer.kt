@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ApplicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
@@ -343,9 +344,9 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
         ),
     )
   }
-  fun stubGetSupportedPrisons(supportedPrisonsList: List<String>) {
+  fun stubGetSupportedPrisons(type: UserType, supportedPrisonsList: List<String>) {
     stubFor(
-      get("/config/prisons/supported")
+      get("/config/prisons/user-type/${type.name}/supported")
         .willReturn(
           createJsonResponseBuilder()
             .withStatus(HttpStatus.OK.value())
