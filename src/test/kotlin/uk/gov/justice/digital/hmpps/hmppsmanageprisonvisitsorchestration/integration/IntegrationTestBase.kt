@@ -221,6 +221,7 @@ abstract class IntegrationTestBase {
       visitContact = null,
       visitors = setOf(visitor),
       userType = STAFF,
+      actionedBy = "Aled",
     )
   }
 

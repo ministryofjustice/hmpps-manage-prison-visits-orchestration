@@ -36,7 +36,7 @@ open class CreateApplicationDto(
   @Schema(description = "User type", example = "STAFF", required = true)
   @field:NotNull
   val userType: UserType,
-  @Schema(description = "Requested by (Booker reference Or User Name)", example = "asd-asd-asd or AFHETTY_GEN", required = true)
+  @Schema(description = "actioned by (Booker reference Or User Name)", example = "asd-asd-asd or AFHETTY_GEN", required = true)
   @field:NotBlank
-  val createdByReference: String,
+  val actionedBy: String,
 )
