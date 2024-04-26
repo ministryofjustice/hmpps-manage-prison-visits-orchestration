@@ -12,14 +12,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 @Service
 class ApplicationsService(
   private val visitSchedulerApplicationsClient: VisitSchedulerApplicationsClient,
-  private val authenticationHelperService: AuthenticationHelperService,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
   fun createInitialApplication(createApplicationDto: CreateApplicationDto): ApplicationDto? {
-    return visitSchedulerApplicationsClient.createInitialApplication(VisitSchedulerCreateApplicationDto(createApplicationDto, authenticationHelperService.currentUserName))
+    return visitSchedulerApplicationsClient.createInitialApplication(VisitSchedulerCreateApplicationDto(createApplicationDto))
   }
 
   fun changeIncompleteApplication(applicationReference: String, changeApplicationDto: ChangeApplicationDto): ApplicationDto? {
@@ -30,6 +29,6 @@ class ApplicationsService(
     visitReference: String,
     createApplicationDto: CreateApplicationDto,
   ): ApplicationDto? {
-    return visitSchedulerApplicationsClient.createApplicationForAnExistingVisit(visitReference, VisitSchedulerCreateApplicationDto(createApplicationDto, authenticationHelperService.currentUserName))
+    return visitSchedulerApplicationsClient.createApplicationForAnExistingVisit(visitReference, VisitSchedulerCreateApplicationDto(createApplicationDto))
   }
 }

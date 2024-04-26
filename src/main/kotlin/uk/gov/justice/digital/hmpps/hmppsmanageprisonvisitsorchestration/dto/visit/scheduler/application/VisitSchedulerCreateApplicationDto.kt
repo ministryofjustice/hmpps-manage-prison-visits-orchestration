@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application
 
 import jakarta.validation.Valid
-import jakarta.validation.constraints.NotBlank
 
 class VisitSchedulerCreateApplicationDto(
   /**
@@ -12,8 +11,6 @@ class VisitSchedulerCreateApplicationDto(
   @field:Valid
   private val createApplicationDto: CreateApplicationDto,
 
-  @field:NotBlank
-  val actionedBy: String,
 ) : CreateApplicationDto(
   createApplicationDto.prisonerId,
   createApplicationDto.sessionTemplateReference,
@@ -22,4 +19,6 @@ class VisitSchedulerCreateApplicationDto(
   createApplicationDto.visitContact,
   createApplicationDto.visitors,
   createApplicationDto.visitorSupport,
+  createApplicationDto.userType,
+  createApplicationDto.actionedBy,
 )
