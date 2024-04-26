@@ -19,7 +19,7 @@ class ApplicationsService(
   }
 
   fun createInitialApplication(createApplicationDto: CreateApplicationDto): ApplicationDto? {
-    return visitSchedulerApplicationsClient.createInitialApplication(VisitSchedulerCreateApplicationDto(createApplicationDto, authenticationHelperService.currentUserName))
+    return visitSchedulerApplicationsClient.createInitialApplication(VisitSchedulerCreateApplicationDto(createApplicationDto, createApplicationDto.createdByReference))
   }
 
   fun changeIncompleteApplication(applicationReference: String, changeApplicationDto: ChangeApplicationDto): ApplicationDto? {
