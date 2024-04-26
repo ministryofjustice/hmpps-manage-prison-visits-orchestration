@@ -29,7 +29,7 @@ class OrchestrationSessionsController(private val visitSchedulerService: VisitSc
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("/visit-sessions")
   @Operation(
     summary = "Returns all visit sessions which are within the reservable time period - whether or not they are full",
@@ -79,7 +79,7 @@ class OrchestrationSessionsController(private val visitSchedulerService: VisitSc
   ): List<VisitSessionDto>? =
     visitSchedulerService.getVisitSessions(prisonCode, prisonerId, min, max)
 
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("/visit-sessions/available")
   @Operation(
     summary = "Returns only available visit sessions for a specified prisoner by restriction and within the reservable time period",
@@ -120,7 +120,7 @@ class OrchestrationSessionsController(private val visitSchedulerService: VisitSc
   ): List<AvailableVisitSessionDto>? =
     visitSchedulerService.getAvailableVisitSessions(prisonCode, prisonerId, visitRestriction, min, max)
 
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("/visit-sessions/capacity")
   @Operation(
     summary = "Returns the VSIP session capacity for the given sessions",
@@ -177,7 +177,7 @@ class OrchestrationSessionsController(private val visitSchedulerService: VisitSc
     sessionEndTime: LocalTime,
   ): SessionCapacityDto? = visitSchedulerService.getSessionCapacity(prisonCode, sessionDate, sessionStartTime, sessionEndTime)
 
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("/visit-sessions/schedule")
   @Operation(
     summary = "Returns session scheduled for given prison and date",

@@ -126,7 +126,7 @@ class GetPrisonerProfileTest(
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -155,7 +155,7 @@ class GetPrisonerProfileTest(
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -174,7 +174,7 @@ class GetPrisonerProfileTest(
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -201,7 +201,7 @@ class GetPrisonerProfileTest(
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     responseSpec.expectStatus().is4xxClientError
@@ -219,7 +219,7 @@ class GetPrisonerProfileTest(
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -247,7 +247,7 @@ class GetPrisonerProfileTest(
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -274,7 +274,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
     stubGetVisits(listOf(visit1, visit2))
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -306,7 +306,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
     stubGetVisits(listOf(visit1, visit2))
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -332,7 +332,7 @@ class GetPrisonerProfileTest(
     stubGetVisits(mutableListOf())
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -359,7 +359,7 @@ class GetPrisonerProfileTest(
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -403,7 +403,7 @@ class GetPrisonerProfileTest(
     stubGetVisits(listOf(visit3))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -438,7 +438,7 @@ class GetPrisonerProfileTest(
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -474,7 +474,7 @@ class GetPrisonerProfileTest(
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -509,7 +509,7 @@ class GetPrisonerProfileTest(
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -541,7 +541,7 @@ class GetPrisonerProfileTest(
     stubGetVisits(listOf(incorrectPrisonVisit))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -572,7 +572,7 @@ class GetPrisonerProfileTest(
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -603,7 +603,7 @@ class GetPrisonerProfileTest(
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()

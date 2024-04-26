@@ -19,7 +19,7 @@ const val ORCHESTRATION_PRISONER_PROFILE_CONTROLLER_PATH: String = "$ORCHESTRATI
 class PrisonerProfileController(
   private val prisonerProfileService: PrisonerProfileService,
 ) {
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(ORCHESTRATION_PRISONER_PROFILE_CONTROLLER_PATH)
   @Operation(
     summary = "Get a prisoner's profile page",

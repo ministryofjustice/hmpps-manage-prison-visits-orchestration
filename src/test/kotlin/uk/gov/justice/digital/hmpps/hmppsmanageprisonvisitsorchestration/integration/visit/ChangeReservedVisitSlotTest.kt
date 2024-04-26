@@ -33,7 +33,7 @@ class ChangeReservedVisitSlotTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubChangeReservedVisitSlot(visitReference, applicationDto)
 
     // When
-    val responseSpec = callChangeReservedVisitSlot(webTestClient, visitReference, changeApplicationDto, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callChangeReservedVisitSlot(webTestClient, visitReference, changeApplicationDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -50,7 +50,7 @@ class ChangeReservedVisitSlotTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubChangeReservedVisitSlot(visitReference, applicationDto)
 
     // When
-    val responseSpec = callChangeReservedVisitSlot(webTestClient, visitReference, changeApplicationDto, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callChangeReservedVisitSlot(webTestClient, visitReference, changeApplicationDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound

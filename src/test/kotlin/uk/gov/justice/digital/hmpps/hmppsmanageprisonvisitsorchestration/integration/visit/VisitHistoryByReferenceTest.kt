@@ -65,7 +65,7 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetVisit(reference, visitDto)
 
     // When
-    val responseSpec = callVisitHistoryByReference(webTestClient, reference, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callVisitHistoryByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -105,7 +105,7 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetVisit(reference, visitDto)
 
     // When
-    val responseSpec = callVisitHistoryByReference(webTestClient, reference, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callVisitHistoryByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -131,7 +131,7 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetVisit(reference, visitDto)
 
     // When
-    val responseSpec = callVisitHistoryByReference(webTestClient, reference, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callVisitHistoryByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -157,7 +157,7 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetVisit(reference, visitDto)
 
     // When
-    val responseSpec = callVisitHistoryByReference(webTestClient, reference, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callVisitHistoryByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -174,7 +174,7 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetVisit(reference, null)
 
     // When
-    val responseSpec = callVisitHistoryByReference(webTestClient, reference, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callVisitHistoryByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound

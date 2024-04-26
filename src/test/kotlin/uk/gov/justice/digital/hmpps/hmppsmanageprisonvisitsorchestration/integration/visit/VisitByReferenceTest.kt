@@ -29,7 +29,7 @@ class VisitByReferenceTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetVisit(reference, visitDto)
 
     // When
-    val responseSpec = callVisitByReference(webTestClient, reference, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callVisitByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -45,7 +45,7 @@ class VisitByReferenceTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetVisit(reference, visitDto)
 
     // When
-    val responseSpec = callVisitByReference(webTestClient, reference, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callVisitByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -62,7 +62,7 @@ class VisitByReferenceTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetVisit(reference, null)
 
     // When
-    val responseSpec = callVisitByReference(webTestClient, reference, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callVisitByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound

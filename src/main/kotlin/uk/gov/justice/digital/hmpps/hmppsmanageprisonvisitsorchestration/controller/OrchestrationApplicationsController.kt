@@ -29,7 +29,7 @@ const val APPLICATION_CHANGE: String = "$ORCHESTRATION_APPLICATIONS_CONTROLLER_P
 class OrchestrationApplicationsController(
   private val applicationsService: ApplicationsService,
 ) {
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @PostMapping(APPLICATION_RESERVE_SLOT)
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(
@@ -71,7 +71,7 @@ class OrchestrationApplicationsController(
     return applicationsService.createInitialApplication(createApplicationDto = createApplicationDto)
   }
 
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @PutMapping(APPLICATION_RESERVED_SLOT_CHANGE)
   @ResponseStatus(HttpStatus.OK)
   @Operation(
@@ -121,7 +121,7 @@ class OrchestrationApplicationsController(
     return applicationsService.changeIncompleteApplication(reference.trim(), changeApplicationDto)
   }
 
-  @PreAuthorize("hasRole('VISIT_SCHEDULER')")
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @PutMapping(APPLICATION_CHANGE)
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(

@@ -38,7 +38,7 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonCode, prisonerId, VisitRestriction.OPEN, mutableListOf(visitSession1, visitSession2, visitSession3))
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, VisitRestriction.OPEN, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, VisitRestriction.OPEN, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -55,7 +55,7 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonCode, prisonerId, VisitRestriction.OPEN, mutableListOf())
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, VisitRestriction.OPEN, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, VisitRestriction.OPEN, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -72,7 +72,7 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonCode, prisonerId, VisitRestriction.OPEN, emptyList(), HttpStatus.NOT_FOUND)
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, VisitRestriction.CLOSED, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, VisitRestriction.CLOSED, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
