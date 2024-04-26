@@ -6,9 +6,12 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTimeSlotDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionType.CLOSED
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionType.OPEN
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.visitscheduler.dto.sessions.SessionTimeSlotDto
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -18,10 +21,10 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     webTestClient: WebTestClient,
     prisonCode: String,
     prisonerId: String,
-    visitRestriction: VisitRestriction,
+    sessionType: SessionType,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
-    return webTestClient.get().uri("/visit-sessions/available?prisonId=$prisonCode&prisonerId=$prisonerId&visitRestriction=$visitRestriction")
+    return webTestClient.get().uri("/visit-sessions/available?prisonId=$prisonCode&prisonerId=$prisonerId&sessionType=$sessionType")
       .headers(authHttpHeaders)
       .exchange()
   }
@@ -35,10 +38,10 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     val visitSession2 = AvailableVisitSessionDto(LocalDate.now().plusDays(1), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), VisitRestriction.OPEN)
     val visitSession3 = AvailableVisitSessionDto(LocalDate.now().plusDays(2), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), VisitRestriction.OPEN)
 
-    visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonCode, prisonerId, VisitRestriction.OPEN, mutableListOf(visitSession1, visitSession2, visitSession3))
+    visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonCode, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3))
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, VisitRestriction.OPEN, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -52,10 +55,10 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     val prisonCode = "MDI"
     val prisonerId = "AA123456B"
 
-    visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonCode, prisonerId, VisitRestriction.OPEN, mutableListOf())
+    visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonCode, prisonerId, OPEN, mutableListOf())
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, VisitRestriction.OPEN, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -69,10 +72,10 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     val prisonCode = "MDI"
     val prisonerId = "AA123456B"
 
-    visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonCode, prisonerId, VisitRestriction.OPEN, emptyList(), HttpStatus.NOT_FOUND)
+    visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonCode, prisonerId, OPEN, emptyList(), HttpStatus.NOT_FOUND)
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, VisitRestriction.CLOSED, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, CLOSED, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -86,7 +89,7 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     val invalidRole = setAuthorisation(roles = listOf("ROLE_ORCHESTRATION_SERVICE__VISIT_BOOKER_REGISTRY"))
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, VisitRestriction.CLOSED, invalidRole)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, CLOSED, invalidRole)
 
     // Then
     responseSpec.expectStatus().isForbidden
@@ -97,10 +100,10 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     // Given
     val prisonCode = "MDI"
     val prisonerId = "AA123456B"
-    val visitRestriction = VisitRestriction.CLOSED
+    val sessionType = CLOSED
 
     // When
-    val responseSpec = webTestClient.get().uri("/visit-sessions/available?prisonId=$prisonCode&prisonerId=$prisonerId&visitRestriction=$visitRestriction")
+    val responseSpec = webTestClient.get().uri("/visit-sessions/available?prisonId=$prisonCode&prisonerId=$prisonerId&sessionType=$sessionType")
       .exchange()
 
     // Then
