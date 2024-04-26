@@ -23,7 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
@@ -141,8 +141,8 @@ class VisitSchedulerService(
     return visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max)
   }
 
-  fun getAvailableVisitSessions(prisonCode: String, prisonerId: String, sessionType: SessionType, min: Int?, max: Int?): List<AvailableVisitSessionDto>? {
-    return visitSchedulerClient.getAvailableVisitSessions(prisonCode, prisonerId, sessionType, min, max)
+  fun getAvailableVisitSessions(prisonCode: String, prisonerId: String, sessionRestriction: SessionRestriction, min: Int?, max: Int?): List<AvailableVisitSessionDto>? {
+    return visitSchedulerClient.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction, min, max)
   }
 
   fun getSupportedPrisons(type: UserType): List<String>? {

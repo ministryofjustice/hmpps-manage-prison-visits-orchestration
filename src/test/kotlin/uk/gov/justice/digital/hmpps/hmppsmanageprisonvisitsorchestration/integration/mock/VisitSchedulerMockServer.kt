@@ -24,7 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ApplicationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
@@ -321,12 +321,12 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
   fun stubGetAvailableVisitSessions(
     prisonId: String,
     prisonerId: String,
-    sessionType: SessionType,
+    sessionRestriction: SessionRestriction,
     visitSessions: List<AvailableVisitSessionDto>,
     httpStatus: HttpStatus = HttpStatus.OK,
   ) {
     stubFor(
-      get("/visit-sessions/available?prisonId=$prisonId&prisonerId=$prisonerId&sessionType=$sessionType")
+      get("/visit-sessions/available?prisonId=$prisonId&prisonerId=$prisonerId&sessionRestriction=$sessionRestriction")
         .willReturn(
           createJsonResponseBuilder()
             .withStatus(httpStatus.value())

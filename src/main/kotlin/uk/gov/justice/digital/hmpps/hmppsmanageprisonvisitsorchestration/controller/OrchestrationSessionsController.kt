@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
 import java.time.LocalDate
 import java.time.LocalTime
@@ -108,9 +108,9 @@ class OrchestrationSessionsController(private val visitSchedulerService: VisitSc
     @RequestParam(value = "prisonerId", required = true)
     @Parameter(description = "Filter results by prisoner id", example = "A12345DC", required = true)
     prisonerId: String,
-    @RequestParam(value = "sessionType", required = true)
-    @Parameter(description = "Filter sessions by Session type - OPEN or CLOSED", example = "CLOSED", required = true)
-    sessionType: SessionType,
+    @RequestParam(value = "sessionRestriction", required = true)
+    @Parameter(description = "Filter sessions by session restriction - OPEN or CLOSED", example = "CLOSED", required = true)
+    sessionRestriction: SessionRestriction,
     @RequestParam(value = "min", required = false)
     @Parameter(description = "Override the default minimum number of days notice from the current date", example = "2", required = false)
     min: Int?,
@@ -118,7 +118,7 @@ class OrchestrationSessionsController(private val visitSchedulerService: VisitSc
     @Parameter(description = "Override the default maximum number of days to book-ahead from the current date", example = "28", required = false)
     max: Int?,
   ): List<AvailableVisitSessionDto>? =
-    visitSchedulerService.getAvailableVisitSessions(prisonCode, prisonerId, sessionType, min, max)
+    visitSchedulerService.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction, min, max)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("/visit-sessions/capacity")
