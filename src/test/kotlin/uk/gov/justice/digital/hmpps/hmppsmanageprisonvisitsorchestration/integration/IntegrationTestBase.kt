@@ -265,6 +265,7 @@ abstract class IntegrationTestBase {
       visitContact = null,
       visitors = setOf(visitor),
       sessionTemplateReference = "aa-bb-cc-dd",
+      allowOverBooking = false,
     )
   }
 

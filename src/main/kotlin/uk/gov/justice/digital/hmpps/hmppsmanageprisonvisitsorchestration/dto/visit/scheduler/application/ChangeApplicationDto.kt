@@ -27,4 +27,6 @@ data class ChangeApplicationDto(
   @Schema(description = "additional support associated with the visit, if null support will not be updated", required = false)
   @Valid
   var visitorSupport: ApplicationSupportDto? = null,
+  @field:NotNull
+  val allowOverBooking: Boolean = false,
 )
