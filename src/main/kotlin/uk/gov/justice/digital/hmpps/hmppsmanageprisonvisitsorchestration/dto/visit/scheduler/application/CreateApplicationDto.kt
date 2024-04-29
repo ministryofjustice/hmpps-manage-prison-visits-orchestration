@@ -39,4 +39,7 @@ open class CreateApplicationDto(
   @Schema(description = "actioned by (Booker reference - if PUBLIC user type Or User Name - if staff user type)", example = "asd-asd-asd or STAFF_USER", required = true)
   @field:NotBlank
   val actionedBy: String,
+  @Schema(description = "allow over booking", required = false)
+  @field:NotNull
+  val allowOverBooking: Boolean = false,
 )

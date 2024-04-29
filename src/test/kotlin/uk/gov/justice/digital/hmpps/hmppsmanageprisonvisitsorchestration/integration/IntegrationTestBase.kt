@@ -222,6 +222,7 @@ abstract class IntegrationTestBase {
       visitors = setOf(visitor),
       userType = STAFF,
       actionedBy = "Aled",
+      allowOverBooking = true,
     )
   }
 
