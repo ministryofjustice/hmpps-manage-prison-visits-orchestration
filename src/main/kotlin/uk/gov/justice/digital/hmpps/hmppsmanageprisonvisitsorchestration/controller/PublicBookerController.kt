@@ -32,7 +32,7 @@ class PublicBookerController(
   private val publicBookerService: PublicBookerService,
 ) {
 
-  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'ROLE_VISIT_ORCHESTRATION_SERVICE__PUBLIC_VISIT_BOOKING_UI')")
   @PutMapping(PUBLIC_BOOKER_CREATE_AUTH_DETAILS_CONTROLLER_PATH)
   @ResponseStatus(HttpStatus.OK)
   @Operation(
@@ -64,7 +64,7 @@ class PublicBookerController(
     return publicBookerService.bookerAuthorisation(authDetail)
   }
 
-  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'ROLE_VISIT_ORCHESTRATION_SERVICE__PUBLIC_VISIT_BOOKING_UI')")
   @GetMapping(PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH)
   @Operation(
     summary = "Get prisoners associated with a booker.",
@@ -103,7 +103,7 @@ class PublicBookerController(
     return publicBookerService.getBookersPrisoners(bookerReference)
   }
 
-  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'ROLE_VISIT_ORCHESTRATION_SERVICE__PUBLIC_VISIT_BOOKING_UI')")
   @GetMapping(PUBLIC_BOOKER_GET_VISITORS_CONTROLLER_PATH)
   @Operation(
     summary = "Get visitors for a prisoner associated with that booker.",
