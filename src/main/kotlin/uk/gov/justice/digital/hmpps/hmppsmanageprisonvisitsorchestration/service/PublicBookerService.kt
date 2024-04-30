@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
@@ -14,16 +13,20 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.con
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorBasicInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerBasicInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerAuthFailureException
+import java.time.LocalDate
 
 @Service
 class PublicBookerService(
   private val prisonVisitBookerRegistryClient: PrisonVisitBookerRegistryClient,
   private val prisonerSearchClient: PrisonerSearchClient,
-  private val prisonerContactRegistryClient: PrisonerContactRegistryClient,
+  private val prisonerContactService: PrisonerContactService,
+  private val prisonService: PrisonService,
 ) {
   companion object {
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
+    const val BANNED_RESTRICTION_TYPE = "BAN"
   }
 
   fun bookerAuthorisation(createBookerAuthDetail: AuthDetailDto): BookerReference {
@@ -44,16 +47,18 @@ class PublicBookerService(
     return prisonerDetailsList
   }
 
-  fun getVisitorsForBookersPrisoner(bookerReference: String, prisonerNumber: String): List<VisitorBasicInfoDto> {
+  fun getVisitorsForBookersPrisoner(prisonCode: String, bookerReference: String, prisonerNumber: String): List<VisitorBasicInfoDto> {
+    val prison = prisonService.getPrison(prisonCode)
+    // TODO - check if prison is ACTIVE for public?
+
     val visitorDetailsList = mutableListOf<VisitorBasicInfoDto>()
     val associatedVisitors = prisonVisitBookerRegistryClient.getVisitorsForBookersAssociatedPrisoner(bookerReference, prisonerNumber) ?: emptyList()
 
     if (associatedVisitors.isNotEmpty()) {
-      // get approved visitors only and those who have a DOB
-      val allValidContacts =
-        getPrisonersSocialContacts(prisonerNumber)
-          ?.filter { isContactValidForPublicBooking(it) }
+      // get approved visitors for a prisoner with a DOB and not BANNED
+      val allValidContacts = getAllValidContacts(prison, prisonerNumber)
 
+      // filter them through the associated visitor list
       allValidContacts?.let {
         associatedVisitors.forEach { associatedVisitor ->
           allValidContacts.firstOrNull { it.personId == associatedVisitor.personId }?.let { contact ->
@@ -81,23 +86,24 @@ class PublicBookerService(
     return prisoner
   }
 
-  private fun getPrisonersSocialContacts(prisonerNumber: String): List<PrisonerContactDto>? {
-    var contacts: List<PrisonerContactDto>? = null
+  private fun getAllValidContacts(prison: PrisonDto, prisonerNumber: String): List<PrisonerContactDto>? {
+    val lastBookableDate = getLastBookableSessionDate(prison)
 
-    try {
-      contacts = prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerNumber, false)
-    } catch (e: WebClientResponseException) {
-      logger.info("Failed to get social contacts for prisoner - $prisonerNumber, error = ${e.message}")
-      if (e.statusCode != HttpStatus.NOT_FOUND) {
-        throw e
-      }
-    }
-
-    return contacts
+    return prisonerContactService.getAllPrisonersSocialContacts(prisonerNumber)
+      ?.filter { isContactApproved(it) }
+      ?.filter { hasContactGotDateOfBirth(it) }
+      ?.filterNot { prisonerContactService.isContactBannedBeforeDate(it, lastBookableDate) }
   }
 
-  private fun isContactValidForPublicBooking(contact: PrisonerContactDto): Boolean {
-    // TODO - confirm if required or we send back the flag and the front end decides to show it or not
-    return contact.approvedVisitor && contact.dateOfBirth != null
+  private fun isContactApproved(contact: PrisonerContactDto): Boolean {
+    return contact.approvedVisitor
+  }
+
+  private fun hasContactGotDateOfBirth(contact: PrisonerContactDto): Boolean {
+    return contact.dateOfBirth != null
+  }
+
+  private fun getLastBookableSessionDate(prison: PrisonDto): LocalDate {
+    return prisonService.getLastBookableSessionDate(prison, LocalDate.now())
   }
 }
