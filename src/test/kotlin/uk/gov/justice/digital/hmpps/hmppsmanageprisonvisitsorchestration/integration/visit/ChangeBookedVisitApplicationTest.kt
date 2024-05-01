@@ -8,22 +8,22 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.CreateApplicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
-@DisplayName("Change a booked Visit Slot tests")
-class ChangeBookedVisitSlotTest : IntegrationTestBase() {
-  fun callChangeBookedVisitSlot(
+@DisplayName("Change a booked visit application tests")
+class ChangeBookedVisitApplicationTest : IntegrationTestBase() {
+  fun callChangeBookedVisitApplication(
     webTestClient: WebTestClient,
-    bookingReference: String,
+    applicationReference: String,
     createApplicationDto: CreateApplicationDto,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
-    return webTestClient.put().uri("/visits/application/$bookingReference/change")
+    return webTestClient.put().uri("/visits/application/$applicationReference/change")
       .headers(authHttpHeaders)
       .body(BodyInserters.fromValue(createApplicationDto))
       .exchange()
   }
 
   @Test
-  fun `when change a booked slot is successful then OK status is returned`() {
+  fun `when change a booked visit application is successful then OK status is returned`() {
     // Given
     val prisonerId = "A123567B"
     val reference = "aa-bb-cc-dd"
@@ -32,7 +32,7 @@ class ChangeBookedVisitSlotTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubChangeBookedVisit(reference, applicationDto)
 
     // When
-    val responseSpec = callChangeBookedVisitSlot(webTestClient, reference, createApplicationDto, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callChangeBookedVisitApplication(webTestClient, reference, createApplicationDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isCreated
@@ -41,7 +41,7 @@ class ChangeBookedVisitSlotTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when change a booked slot is unsuccessful then an error status is returned`() {
+  fun `when change a booked visit application is unsuccessful then an error status is returned`() {
     // Given
     val prisonerId = "A123567B"
     val createApplicationDto = createCreateApplicationDto(prisonerId)
@@ -50,7 +50,7 @@ class ChangeBookedVisitSlotTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubChangeBookedVisit(reference, applicationDto)
 
     // When
-    val responseSpec = callChangeBookedVisitSlot(webTestClient, reference, createApplicationDto, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callChangeBookedVisitApplication(webTestClient, reference, createApplicationDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound

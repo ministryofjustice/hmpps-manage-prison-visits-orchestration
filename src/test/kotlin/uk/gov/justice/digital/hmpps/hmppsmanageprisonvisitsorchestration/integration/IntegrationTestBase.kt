@@ -222,6 +222,7 @@ abstract class IntegrationTestBase {
       visitors = setOf(visitor),
       userType = STAFF,
       actionedBy = "Aled",
+      allowOverBooking = true,
     )
   }
 
@@ -264,6 +265,7 @@ abstract class IntegrationTestBase {
       visitContact = null,
       visitors = setOf(visitor),
       sessionTemplateReference = "aa-bb-cc-dd",
+      allowOverBooking = false,
     )
   }
 
