@@ -29,6 +29,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
   @SpyBean
   lateinit var prisonerSearchClientSpy: PrisonerSearchClient
 
+  private val prisonCode = "HEI"
+
   private val bookerReference = "booker-1"
 
   private final val currentIncentive = createCurrentIncentive()
@@ -67,8 +69,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       bookerReference,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber),
-        BookerPrisonersDto(prisoner2Dto.prisonerNumber),
+        BookerPrisonersDto(prisoner1Dto.prisonerNumber, prisonCode),
+        BookerPrisonersDto(prisoner2Dto.prisonerNumber, prisonCode),
       ),
     )
 
@@ -121,8 +123,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       bookerReference,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber),
-        BookerPrisonersDto(prisoner2Dto.prisonerNumber),
+        BookerPrisonersDto(prisoner1Dto.prisonerNumber, prisonCode),
+        BookerPrisonersDto(prisoner2Dto.prisonerNumber, prisonCode),
       ),
     )
 
@@ -148,8 +150,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       bookerReference,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber),
-        BookerPrisonersDto(prisoner2Dto.prisonerNumber),
+        BookerPrisonersDto(prisoner1Dto.prisonerNumber, prisonCode),
+        BookerPrisonersDto(prisoner2Dto.prisonerNumber, prisonCode),
       ),
     )
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisoner1Dto.prisonerNumber, null)
@@ -216,8 +218,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       bookerReference,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber),
-        BookerPrisonersDto(prisoner2Dto.prisonerNumber),
+        BookerPrisonersDto(prisoner1Dto.prisonerNumber, prisonCode),
+        BookerPrisonersDto(prisoner2Dto.prisonerNumber, prisonCode),
       ),
     )
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisoner1Dto.prisonerNumber, null, HttpStatus.NOT_FOUND)
@@ -243,8 +245,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       bookerReference,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber),
-        BookerPrisonersDto(prisoner2Dto.prisonerNumber),
+        BookerPrisonersDto(prisoner1Dto.prisonerNumber, prisonCode),
+        BookerPrisonersDto(prisoner2Dto.prisonerNumber, prisonCode),
       ),
     )
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisoner1Dto.prisonerNumber, null, HttpStatus.INTERNAL_SERVER_ERROR)

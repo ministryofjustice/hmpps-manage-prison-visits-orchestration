@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerAuthFailureException
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import java.time.LocalDate
 
 @Service
@@ -40,15 +41,18 @@ class PublicBookerService(
     prisoners?.forEach {
       val prisonerDetails = getPrisonerDetails(it.prisonerNumber)
       prisonerDetails?.let { prisoner ->
-        prisonerDetailsList.add(PrisonerBasicInfoDto(it.prisonerNumber, prisoner))
+        prisonerDetailsList.add(PrisonerBasicInfoDto(it.prisonerNumber, it.prisonCode, prisoner))
       }
     }
 
     return prisonerDetailsList
   }
 
-  fun getVisitorsForBookersPrisoner(prisonCode: String, bookerReference: String, prisonerNumber: String): List<VisitorBasicInfoDto> {
-    val prison = prisonService.getPrison(prisonCode)
+  fun getVisitorsForBookersPrisoner(bookerReference: String, prisonerNumber: String): List<VisitorBasicInfoDto> {
+    val prisoner = prisonVisitBookerRegistryClient.getPrisonersForBooker(bookerReference)
+      ?.firstOrNull { it.prisonerNumber == prisonerNumber }
+      ?: throw NotFoundException("Prisoner with number - $prisonerNumber not found for booker reference - $bookerReference")
+    val prison = prisonService.getPrison(prisoner.prisonCode)
     // TODO - check if prison is ACTIVE for public?
 
     val visitorDetailsList = mutableListOf<VisitorBasicInfoDto>()
@@ -90,9 +94,11 @@ class PublicBookerService(
     val lastBookableDate = getLastBookableSessionDate(prison)
 
     return prisonerContactService.getAllPrisonersSocialContacts(prisonerNumber)
-      ?.filter { isContactApproved(it) }
-      ?.filter { hasContactGotDateOfBirth(it) }
-      ?.filterNot { prisonerContactService.isContactBannedBeforeDate(it, lastBookableDate) }
+      ?.filter {
+        isContactApproved(it)
+          .and(hasContactGotDateOfBirth(it))
+          .and(!prisonerContactService.isContactBannedBeforeDate(it, lastBookableDate))
+      }
   }
 
   private fun isContactApproved(contact: PrisonerContactDto): Boolean {

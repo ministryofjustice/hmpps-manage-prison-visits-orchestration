@@ -47,14 +47,13 @@ class PrisonerContactService(
     LOG.debug("Getting contact details - {} with visitorIds - {}", prisonerNumber, visitorIds)
     val contacts = prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerNumber, false)
     visitorIds.forEach { visitorId ->
-      contacts?.firstOrNull{it.personId == visitorId}?.let {
+      contacts?.firstOrNull { it.personId == visitorId }?.let {
         visitorsList.add(it)
       }
     }
 
     return visitorsList
   }
-
 
   fun isContactBannedBeforeDate(contact: PrisonerContactDto, date: LocalDate): Boolean {
     return contact.restrictions.any {
@@ -63,14 +62,13 @@ class PrisonerContactService(
   }
 
   private fun getContact(contacts: List<PrisonerContactDto>, visitorId: Long): PrisonerContactDto? {
-    return contacts.firstOrNull{it.personId == visitorId && it.approvedVisitor}
+    return contacts.firstOrNull { it.personId == visitorId && it.approvedVisitor }
   }
 
   private fun hasBanForDate(restriction: RestrictionDto, date: LocalDate): Boolean {
     return (
-      restriction.restrictionType == PublicBookerService.BANNED_RESTRICTION_TYPE
-        && (restriction.expiryDate == null || restriction.expiryDate.isAfter(date)
+      restriction.restrictionType == PublicBookerService.BANNED_RESTRICTION_TYPE &&
+        (restriction.expiryDate == null || restriction.expiryDate.isAfter(date))
       )
-    )
   }
 }

@@ -24,9 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 
 const val PUBLIC_BOOKER_CONTROLLER_PATH: String = "/public/booker"
 const val PUBLIC_BOOKER_CREATE_AUTH_DETAILS_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/register/auth"
-const val PUBLIC_BOOKER_BOOKER_REFERENCE_PATH: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}"
-const val PUBLIC_BOOKER_BOOKER_REFERENCE_PRISON_PATH: String = "$PUBLIC_BOOKER_BOOKER_REFERENCE_PATH/prison/{prisonCode}"
-const val PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_BOOKER_REFERENCE_PRISON_PATH/prisoners"
+const val PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/prisoners"
 const val PUBLIC_BOOKER_GET_VISITORS_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH/{prisonerNumber}/visitors"
 
 @RestController
@@ -136,9 +134,6 @@ class PublicBookerController(
     @PathVariable(value = "bookerReference", required = true)
     @NotBlank
     bookerReference: String,
-    @PathVariable(value = "prisonCode", required = true)
-    @NotBlank
-    prisonCode: String,
     @PathVariable(value = "prisonerNumber", required = true)
     @Parameter(
       description = "Prisoner Number for whom visitors need to be returned.",
@@ -147,6 +142,6 @@ class PublicBookerController(
     @NotBlank
     prisonerNumber: String,
   ): List<VisitorBasicInfoDto> {
-    return publicBookerService.getVisitorsForBookersPrisoner(prisonCode, bookerReference, prisonerNumber)
+    return publicBookerService.getVisitorsForBookersPrisoner(bookerReference, prisonerNumber)
   }
 }

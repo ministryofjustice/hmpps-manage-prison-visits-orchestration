@@ -15,11 +15,15 @@ data class PrisonerBasicInfoDto(
 
   @Schema(description = "Date of Birth", example = "1975-04-02", required = false)
   val dateOfBirth: LocalDate?,
+
+  @Schema(description = "Prison code", example = "MDI", required = true)
+  val prisonCode: String,
 ) {
-  constructor(prisonerNumber: String, prisonerDto: PrisonerDto) : this(
+  constructor(prisonerNumber: String, prisonCode: String, prisonerDto: PrisonerDto) : this(
     prisonerNumber = prisonerNumber,
     firstName = prisonerDto.firstName,
     lastName = prisonerDto.lastName,
     dateOfBirth = prisonerDto.dateOfBirth,
+    prisonCode = prisonCode,
   )
 }

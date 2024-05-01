@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.PrisonNotFoundException
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import java.time.LocalDate
 
 @Service
@@ -21,17 +21,17 @@ class PrisonService(
     return if (isPrisonActive(prison, UserType.PUBLIC)) {
       prison
     } else {
-      throw PrisonNotFoundException("Prison with code - $prisonCode, is not active for usertype - ${UserType.PUBLIC}")
+      throw NotFoundException("Prison with code - $prisonCode, is not active for usertype - ${UserType.PUBLIC}")
     }
   }
 
   fun getPrison(prisonCode: String): PrisonDto {
-    return visitSchedulerService.getPrison(prisonCode)?: throw PrisonNotFoundException("Prison with code - $prisonCode, not found on visit-scheduler")
+    return visitSchedulerService.getPrison(prisonCode) ?: throw NotFoundException("Prison with code - $prisonCode, not found on visit-scheduler")
   }
 
   private fun isPrisonActive(prison: PrisonDto, userType: UserType): Boolean {
     val isPrisonActive = prison.active
-    val isPrisonActiveForUserType = prison.clients.firstOrNull { it.userType == userType}?.active ?: false
+    val isPrisonActiveForUserType = prison.clients.firstOrNull { it.userType == userType }?.active ?: false
     return isPrisonActive && isPrisonActiveForUserType
   }
 

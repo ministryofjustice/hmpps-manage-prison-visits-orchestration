@@ -10,4 +10,9 @@ data class BookerPrisonersDto(
   @Schema(description = "Prisoner Number", example = "A1234AA", required = true)
   @NotBlank
   val prisonerNumber: String,
+
+  @JsonProperty("prisonCode")
+  @Schema(description = "Prison Code", example = "MDI", required = true)
+  @NotBlank
+  val prisonCode: String,
 )
