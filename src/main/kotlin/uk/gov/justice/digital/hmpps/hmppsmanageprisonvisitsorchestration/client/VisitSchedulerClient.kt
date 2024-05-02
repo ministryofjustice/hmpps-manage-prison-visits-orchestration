@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.Res
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.IgnoreVisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
@@ -165,10 +166,10 @@ class VisitSchedulerClient(
       .bodyToMono<List<VisitSessionDto>>().block(apiTimeout)
   }
 
-  fun getAvailableVisitSessions(prisonId: String, prisonerId: String, sessionRestriction: SessionRestriction, min: Int?, max: Int?): List<AvailableVisitSessionDto>? {
+  fun getAvailableVisitSessions(prisonId: String, prisonerId: String, sessionRestriction: SessionRestriction, dateRange: DateRange): List<AvailableVisitSessionDto>? {
     return webClient.get()
       .uri("/visit-sessions/available") {
-        visitAvailableSessionsUriBuilder(prisonId, prisonerId, sessionRestriction, min, max, it).build()
+        visitAvailableSessionsUriBuilder(prisonId, prisonerId, sessionRestriction, dateRange, it).build()
       }
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
@@ -328,12 +329,12 @@ class VisitSchedulerClient(
     return uriBuilder
   }
 
-  private fun visitAvailableSessionsUriBuilder(prisonId: String, prisonerId: String, sessionRestriction: SessionRestriction, min: Int?, max: Int?, uriBuilder: UriBuilder): UriBuilder {
+  private fun visitAvailableSessionsUriBuilder(prisonId: String, prisonerId: String, sessionRestriction: SessionRestriction, dateRange: DateRange, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParam("prisonId", prisonId)
     uriBuilder.queryParam("prisonerId", prisonerId)
-    uriBuilder.queryParam("sessionRestriction", sessionRestriction.toString())
-    uriBuilder.queryParamIfPresent("min", Optional.ofNullable(min))
-    uriBuilder.queryParamIfPresent("max", Optional.ofNullable(max))
+    uriBuilder.queryParam("sessionRestriction", sessionRestriction.name)
+    uriBuilder.queryParam("fromDate", dateRange.fromDate)
+    uriBuilder.queryParam("toDate", dateRange.toDate)
     return uriBuilder
   }
 

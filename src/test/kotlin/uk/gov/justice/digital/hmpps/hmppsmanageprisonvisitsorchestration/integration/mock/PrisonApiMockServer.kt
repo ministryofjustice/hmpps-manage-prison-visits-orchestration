@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.InmateDetailDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.PrisonerBookingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.VisitBalancesDto
 
@@ -62,6 +63,25 @@ class PrisonApiMockServer(@Autowired private val objectMapper: ObjectMapper) : W
             responseBuilder
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(visitBalances))
+          },
+        ),
+    )
+  }
+
+  fun stubGetRestrictions(prisonerId: String, offenderRestrictionsDto: OffenderRestrictionsDto? = null) {
+    val responseBuilder = aResponse()
+      .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+
+    stubFor(
+      get("/api/offenders/$prisonerId/offender-restrictions?activeRestrictionsOnly=true")
+        .willReturn(
+          offenderRestrictionsDto?.let {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(it))
+          } ?: run {
+            responseBuilder
+              .withStatus(HttpStatus.NOT_FOUND.value())
           },
         ),
     )

@@ -108,17 +108,11 @@ class OrchestrationSessionsController(private val visitSchedulerService: VisitSc
     @RequestParam(value = "prisonerId", required = true)
     @Parameter(description = "Filter results by prisoner id", example = "A12345DC", required = true)
     prisonerId: String,
-    @RequestParam(value = "sessionRestriction", required = true)
-    @Parameter(description = "Filter sessions by session restriction - OPEN or CLOSED", example = "CLOSED", required = true)
-    sessionRestriction: SessionRestriction,
-    @RequestParam(value = "min", required = false)
-    @Parameter(description = "Override the default minimum number of days notice from the current date", example = "2", required = false)
-    min: Int?,
-    @RequestParam(value = "max", required = false)
-    @Parameter(description = "Override the default maximum number of days to book-ahead from the current date", example = "28", required = false)
-    max: Int?,
+    @RequestParam(value = "sessionRestriction", required = false)
+    @Parameter(description = "Filter sessions by session restriction - OPEN or CLOSED, if prisoner has CLOSED it will use that", example = "CLOSED", required = false)
+    sessionRestriction: SessionRestriction = SessionRestriction.OPEN,
   ): List<AvailableVisitSessionDto>? =
-    visitSchedulerService.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction, min, max)
+    visitSchedulerService.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("/visit-sessions/capacity")

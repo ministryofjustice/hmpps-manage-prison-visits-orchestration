@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
 
 const val ORCHESTRATION_CONFIG_CONTROLLER_PATH: String = "/config"
@@ -20,6 +21,7 @@ const val ORCHESTRATION_CONFIG_CONTROLLER_PATH: String = "/config"
 @RestController
 class OrchestrationPrisonsConfigController(
   private val visitSchedulerService: VisitSchedulerService,
+  private val prisonService: PrisonService,
 ) {
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("$ORCHESTRATION_CONFIG_CONTROLLER_PATH/prisons/user-type/{type}/supported")
@@ -57,7 +59,7 @@ class OrchestrationPrisonsConfigController(
     @PathVariable
     type: UserType,
   ): List<String>? {
-    return visitSchedulerService.getSupportedPrisons(type)
+    return prisonService.getSupportedPrisons(type)
   }
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")

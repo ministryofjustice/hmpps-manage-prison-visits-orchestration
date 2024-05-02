@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
@@ -319,14 +320,19 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
   }
 
   fun stubGetAvailableVisitSessions(
-    prisonId: String,
+    prisonDto: PrisonDto,
     prisonerId: String,
     sessionRestriction: SessionRestriction,
     visitSessions: List<AvailableVisitSessionDto>,
     httpStatus: HttpStatus = HttpStatus.OK,
   ) {
+    val today = LocalDate.now()
+    val fromDate = today.plusDays(prisonDto.policyNoticeDaysMin.toLong())
+    val toDate = today.plusDays(prisonDto.policyNoticeDaysMax.toLong())
+    val dateRange = DateRange(fromDate, toDate)
+
     stubFor(
-      get("/visit-sessions/available?prisonId=$prisonId&prisonerId=$prisonerId&sessionRestriction=$sessionRestriction")
+      get("/visit-sessions/available?prisonId=${prisonDto.code}&prisonerId=$prisonerId&sessionRestriction=${sessionRestriction.name}&fromDate=${dateRange.fromDate}&toDate=${dateRange.toDate}")
         .willReturn(
           createJsonResponseBuilder()
             .withStatus(httpStatus.value())
