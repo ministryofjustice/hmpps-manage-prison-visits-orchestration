@@ -68,3 +68,6 @@ feature:
   event:
     incentives:
       iep-review.test: false
+
+wiremock:
+  reset-mappings-after-each-test: true

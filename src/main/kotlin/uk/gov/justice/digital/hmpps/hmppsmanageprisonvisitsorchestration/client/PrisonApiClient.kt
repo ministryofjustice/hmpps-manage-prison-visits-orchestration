@@ -1,8 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
@@ -25,6 +28,11 @@ class PrisonApiClient(
   @Qualifier("prisonApiWebClient") private val webClient: WebClient,
   @Value("\${prison.api.timeout:10s}") private val apiTimeout: Duration,
 ) {
+
+  companion object {
+    val LOG: Logger = LoggerFactory.getLogger(this::class.java)
+  }
+
   fun getInmateDetails(prisonerId: String): InmateDetailDto? {
     return getInmateDetailsAsMono(prisonerId)
       .block(apiTimeout)
@@ -79,8 +87,21 @@ class PrisonApiClient(
       }
       .retrieve()
       .bodyToMono<OffenderRestrictionsDto>()
+      .onErrorResume {
+          e ->
+        if (!isNotFoundError(e)) {
+          LOG.error("getOffenderRestrictions Failed get request /api/offenders/$prisonerId/offender-restrictions")
+          Mono.error(e)
+        } else {
+          LOG.error("getOffenderRestrictions NOT FOUND get request /api/offenders/$prisonerId/offender-restrictions")
+          return@onErrorResume Mono.justOrEmpty(null)
+        }
+      }
       .block(apiTimeout)
   }
+
+  fun isNotFoundError(e: Throwable?) =
+    e is WebClientResponseException && e.statusCode == NOT_FOUND
 
   fun getUserCaseLoads(): ArrayList<CaseLoadDto>? {
     return webClient.get()
