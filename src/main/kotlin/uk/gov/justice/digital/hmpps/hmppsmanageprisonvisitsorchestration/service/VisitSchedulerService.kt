@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationNotificationGroupDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationPrisonerVisitsNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
@@ -24,7 +25,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.CLOSED
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.OPEN
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
@@ -49,6 +51,8 @@ class VisitSchedulerService(
   private val visitSchedulerClient: VisitSchedulerClient,
   private val authenticationHelperService: AuthenticationHelperService,
   private val manageUsersService: ManageUsersService,
+  private val prisonerProfileService: PrisonerProfileService,
+  private val prisonService: PrisonService,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -141,12 +145,16 @@ class VisitSchedulerService(
     return visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max)
   }
 
-  fun getAvailableVisitSessions(prisonCode: String, prisonerId: String, sessionRestriction: SessionRestriction, min: Int?, max: Int?): List<AvailableVisitSessionDto>? {
-    return visitSchedulerClient.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction, min, max)
+  fun getAvailableVisitSessions(prisonCode: String, prisonerId: String, requestedSessionRestriction: SessionRestriction?): List<AvailableVisitSessionDto>? {
+    val dataRange = prisonService.getToDaysBookableDateRange(prisonCode)
+    val restrictions = prisonerProfileService.getRestrictions(prisonerId)
+    val sessionRestriction = if (hasClosedRestriction(restrictions)) CLOSED else requestedSessionRestriction ?: OPEN
+
+    return visitSchedulerClient.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction, dataRange)
   }
 
-  fun getSupportedPrisons(type: UserType): List<String>? {
-    return visitSchedulerClient.getSupportedPrisons(type)
+  private fun hasClosedRestriction(restrictions: List<OffenderRestrictionDto>): Boolean {
+    return restrictions.any { CLOSED.name.equals(it.restrictionType, true) }
   }
 
   fun getSessionCapacity(prisonCode: String, sessionDate: LocalDate, sessionStartTime: LocalTime, sessionEndTime: LocalTime): SessionCapacityDto? {

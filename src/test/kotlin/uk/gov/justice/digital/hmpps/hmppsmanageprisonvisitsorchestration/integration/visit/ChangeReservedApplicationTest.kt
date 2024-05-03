@@ -8,10 +8,10 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ChangeApplicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
-@DisplayName("Change a reserved Visit Slot")
-class ChangeReservedVisitSlotTest : IntegrationTestBase() {
+@DisplayName("Change a reserved application")
+class ChangeReservedApplicationTest : IntegrationTestBase() {
 
-  fun callChangeReservedVisitSlot(
+  fun callChangeReservedApplicationSlot(
     webTestClient: WebTestClient,
     applicationReference: String,
     changeApplicationDto: ChangeApplicationDto,
@@ -24,7 +24,7 @@ class ChangeReservedVisitSlotTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when change a reserved visit slot is successful then OK status is returned`() {
+  fun `when change a reserved application slot is successful then OK status is returned`() {
     // Given
     val applicationReference = "aaa-bbb-ccc-ddd"
     val visitReference = "aa-bb-cc-dd"
@@ -33,7 +33,7 @@ class ChangeReservedVisitSlotTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubChangeReservedVisitSlot(visitReference, applicationDto)
 
     // When
-    val responseSpec = callChangeReservedVisitSlot(webTestClient, visitReference, changeApplicationDto, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callChangeReservedApplicationSlot(webTestClient, visitReference, changeApplicationDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -42,7 +42,7 @@ class ChangeReservedVisitSlotTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when change a reserve visit slot is unsuccessful then an error status is returned`() {
+  fun `when change a reserve application slot is unsuccessful then an error status is returned`() {
     // Given
     val changeApplicationDto = createChangeApplicationDto()
     val visitReference = "aaa-bbb-ccc-ddd"
@@ -50,7 +50,7 @@ class ChangeReservedVisitSlotTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubChangeReservedVisitSlot(visitReference, applicationDto)
 
     // When
-    val responseSpec = callChangeReservedVisitSlot(webTestClient, visitReference, changeApplicationDto, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callChangeReservedApplicationSlot(webTestClient, visitReference, changeApplicationDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound

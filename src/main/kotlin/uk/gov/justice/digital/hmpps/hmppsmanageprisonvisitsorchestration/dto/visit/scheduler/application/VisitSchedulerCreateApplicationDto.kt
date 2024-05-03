@@ -21,4 +21,5 @@ class VisitSchedulerCreateApplicationDto(
   createApplicationDto.visitorSupport,
   createApplicationDto.userType,
   createApplicationDto.actionedBy,
+  createApplicationDto.allowOverBooking,
 )
