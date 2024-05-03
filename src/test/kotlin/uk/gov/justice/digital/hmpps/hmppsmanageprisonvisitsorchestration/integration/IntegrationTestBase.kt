@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
@@ -350,7 +351,7 @@ abstract class IntegrationTestBase {
     firstName: String,
     lastName: String,
     dateOfBirth: LocalDate,
-    prisonId: String = "MDI",
+    prisonId: String? = "MDI",
     prisonName: String = "HMP Leeds",
     cellLocation: String? = null,
     currentIncentive: CurrentIncentive? = null,
@@ -408,6 +409,10 @@ abstract class IntegrationTestBase {
     maxAdultVisitors: Int = 3,
     maxChildVisitors: Int = 3,
     adultAgeYears: Int = 18,
+    clients: List<PrisonUserClientDto> = listOf(
+      PrisonUserClientDto(STAFF, true),
+      PrisonUserClientDto(PUBLIC, true),
+    ),
   ): PrisonDto {
     return PrisonDto(
       prisonCode,
@@ -418,6 +423,7 @@ abstract class IntegrationTestBase {
       maxAdultVisitors,
       maxChildVisitors,
       adultAgeYears,
+      clients = clients,
     )
   }
 
