@@ -8,6 +8,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTimeSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
@@ -58,6 +59,39 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(3)
+  }
+
+  @Test
+  fun `when visit sessions has a banned restriction for a visitor a new moderated date range is used`() {
+    // Given
+    val prisonCode = "MDI"
+    val prisonerId = "AA123456B"
+    val visitorIds = listOf(1L)
+
+    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), VisitRestriction.OPEN)
+    val prisonDto = PrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18, setOf(LocalDate.now()))
+
+    val toDay = LocalDate.now()
+    val fromDate = toDay.plusDays(prisonDto.policyNoticeDaysMin.toLong())
+    val toDate = toDay.plusDays(prisonDto.policyNoticeDaysMax.toLong())
+    val dateRange = DateRange(fromDate, toDate)
+
+    val moderatedDateRange = DateRange(toDay, toDay.plusWeeks(1))
+    visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonDto, prisonerId, OPEN, mutableListOf(visitSession1), dateRange = moderatedDateRange)
+
+    visitSchedulerMockServer.stubGetPrison(prisonCode, prisonDto)
+    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId)
+
+    prisonerContactRegistryMockServer.stubDoVisitorsHaveClosedRestrictions(prisonerId, visitorIds = visitorIds, result = false)
+    prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = moderatedDateRange)
+
+    // When
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.size()").isEqualTo(1)
   }
 
   @Test
