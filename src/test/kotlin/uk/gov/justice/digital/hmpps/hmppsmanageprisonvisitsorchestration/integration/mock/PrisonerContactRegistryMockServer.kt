@@ -47,7 +47,7 @@ class PrisonerContactRegistryMockServer(@Autowired private val objectMapper: Obj
             responseBuilder
               .withStatus(HttpStatus.NOT_FOUND.value())
           } else {
-            responseBuilder
+dela            responseBuilder
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(HasClosedRestrictionDto(result)))
           },
