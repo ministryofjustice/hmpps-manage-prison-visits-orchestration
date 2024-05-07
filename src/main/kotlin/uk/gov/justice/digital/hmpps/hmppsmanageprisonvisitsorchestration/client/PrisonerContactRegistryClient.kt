@@ -38,7 +38,7 @@ class PrisonerContactRegistryClient(
   }
 
   fun getBannedRestrictionDateRange(prisonerId: String, visitors: List<Long>, prisonDateRange: DateRange): DateRange {
-    val uri = "/prisoners/$prisonerId/contacts/restrictions/banned/dateRange"
+    val uri = "/prisoners/$prisonerId/approved/social/contacts/restrictions/banned/dateRange"
 
     return webClient.get()
       .uri(uri) {
@@ -59,11 +59,11 @@ class PrisonerContactRegistryClient(
   }
 
   fun doVisitorsHaveClosedRestrictions(prisonerId: String, visitors: List<Long>): Boolean {
-    val uri = "/prisoners/$prisonerId/contacts/restrictions/closed"
+    val uri = "/prisoners/$prisonerId/approved/social/contacts/restrictions/closed"
 
     return webClient.get()
       .uri(uri) {
-        getVisitorsHaveClosedRestrictionsParams(prisonerId, visitors, it)
+        getVisitorsHaveClosedRestrictionsParams(visitors, it)
       }
       .retrieve()
       .bodyToMono<HasClosedRestrictionDto>()
@@ -79,8 +79,7 @@ class PrisonerContactRegistryClient(
       .block(apiTimeout).value
   }
 
-  private fun getVisitorsHaveClosedRestrictionsParams(prisonerId: String, visitorIds: List<Long>, uriBuilder: UriBuilder): URI {
-    uriBuilder.queryParam("prisonerId", prisonerId)
+  private fun getVisitorsHaveClosedRestrictionsParams(visitorIds: List<Long>, uriBuilder: UriBuilder): URI {
     uriBuilder.queryParam("visitors", visitorIds.joinToString(","))
     return uriBuilder.build()
   }

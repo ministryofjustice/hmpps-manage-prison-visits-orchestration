@@ -2,4 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 
 import java.time.LocalDate
 
-data class DateRange(var fromDate: LocalDate, val toDate: LocalDate)
+data class DateRange(
+  var fromDate: LocalDate,
+  val toDate: LocalDate,
+)
