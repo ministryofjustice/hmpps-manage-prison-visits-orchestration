@@ -42,7 +42,7 @@ class PrisonerContactRegistryClient(
 
     return webClient.get()
       .uri(uri) {
-        getBannedRestrictionDateRangeParams(prisonerId, visitors, prisonDateRange, it)
+        getBannedRestrictionDateRangeParams(visitors, prisonDateRange, it)
       }
       .retrieve()
       .bodyToMono<DateRange>()
@@ -85,8 +85,7 @@ class PrisonerContactRegistryClient(
     return uriBuilder.build()
   }
 
-  private fun getBannedRestrictionDateRangeParams(prisonerId: String, visitorIds: List<Long>, dateRange: DateRange, uriBuilder: UriBuilder): URI {
-    uriBuilder.queryParam("prisonerId", prisonerId)
+  private fun getBannedRestrictionDateRangeParams(visitorIds: List<Long>, dateRange: DateRange, uriBuilder: UriBuilder): URI {
     uriBuilder.queryParam("visitors", visitorIds.joinToString(","))
     uriBuilder.queryParam("fromDate", dateRange.fromDate)
     uriBuilder.queryParam("toDate", dateRange.toDate)

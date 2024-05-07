@@ -66,7 +66,7 @@ class PrisonerContactRegistryMockServer(@Autowired private val objectMapper: Obj
     val responseBuilder = aResponse()
       .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
     stubFor(
-      get("/prisoners/$prisonerId/contacts/restrictions/banned/dateRange?prisonerId=$prisonerId&visitors=$visitorIdsString&fromDate=${dateRange.fromDate}&toDate=${dateRange.toDate}")
+      get("/prisoners/$prisonerId/contacts/restrictions/banned/dateRange?visitors=$visitorIdsString&fromDate=${dateRange.fromDate}&toDate=${dateRange.toDate}")
         .willReturn(
           if (result == null) {
             responseBuilder
