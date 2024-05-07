@@ -37,7 +37,6 @@ class PrisonerContactRegistryMockServer(@Autowired private val objectMapper: Obj
       .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
 
     val visitorIdsString = visitorIds.joinToString(",")
-
     val uri = "/prisoners/$prisonerId/approved/social/contacts/restrictions/closed?visitors=$visitorIdsString"
 
     stubFor(
@@ -47,7 +46,7 @@ class PrisonerContactRegistryMockServer(@Autowired private val objectMapper: Obj
             responseBuilder
               .withStatus(HttpStatus.NOT_FOUND.value())
           } else {
-dela            responseBuilder
+            responseBuilder
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(HasClosedRestrictionDto(result)))
           },
