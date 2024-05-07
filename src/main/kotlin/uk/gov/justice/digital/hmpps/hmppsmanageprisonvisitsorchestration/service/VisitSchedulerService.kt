@@ -13,7 +13,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationNotificationGroupDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationPrisonerVisitsNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
@@ -145,16 +144,27 @@ class VisitSchedulerService(
     return visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max)
   }
 
-  fun getAvailableVisitSessions(prisonCode: String, prisonerId: String, requestedSessionRestriction: SessionRestriction?): List<AvailableVisitSessionDto>? {
-    val dataRange = prisonService.getToDaysBookableDateRange(prisonCode)
-    val restrictions = prisonerProfileService.getRestrictions(prisonerId)
-    val sessionRestriction = if (hasClosedRestriction(restrictions)) CLOSED else requestedSessionRestriction ?: OPEN
+  fun getAvailableVisitSessions(prisonCode: String, prisonerId: String, requestedSessionRestriction: SessionRestriction?, visitors: List<Long>): List<AvailableVisitSessionDto>? {
+    val sessionRestriction = updateRequestedRestriction(requestedSessionRestriction, prisonerId, visitors)
 
-    return visitSchedulerClient.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction, dataRange)
+    val dataRange = prisonService.getToDaysBookableDateRange(prisonCode)
+    val updatedDateRange = prisonerProfileService.getBannedRestrictionDateRage(prisonerId, visitors, dataRange)
+
+    return visitSchedulerClient.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction, updatedDateRange)
   }
 
-  private fun hasClosedRestriction(restrictions: List<OffenderRestrictionDto>): Boolean {
-    return restrictions.any { CLOSED.name.equals(it.restrictionType, true) }
+  private fun updateRequestedRestriction(
+    requestedSessionRestriction: SessionRestriction?,
+    prisonerId: String,
+    visitors: List<Long>,
+  ): SessionRestriction {
+    return if (prisonerProfileService.hasPrisonerGotClosedRestrictions(prisonerId) ||
+      prisonerProfileService.hasVisitorsGotClosedRestrictions(prisonerId, visitors)
+    ) {
+      CLOSED
+    } else {
+      requestedSessionRestriction ?: OPEN
+    }
   }
 
   fun getSessionCapacity(prisonCode: String, sessionDate: LocalDate, sessionStartTime: LocalTime, sessionEndTime: LocalTime): SessionCapacityDto? {

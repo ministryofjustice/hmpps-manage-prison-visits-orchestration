@@ -111,8 +111,14 @@ class OrchestrationSessionsController(private val visitSchedulerService: VisitSc
     @RequestParam(value = "sessionRestriction", required = false)
     @Parameter(description = "Filter sessions by session restriction - OPEN or CLOSED, if prisoner has CLOSED it will use that", example = "CLOSED", required = false)
     sessionRestriction: SessionRestriction = SessionRestriction.OPEN,
+    @RequestParam(value = "visitors", required = true)
+    @Parameter(
+      description = "List of visitors who require visit sessions",
+      example = "4729510",
+    )
+    visitors: List<Long>,
   ): List<AvailableVisitSessionDto>? =
-    visitSchedulerService.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction)
+    visitSchedulerService.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction, visitors)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("/visit-sessions/capacity")
