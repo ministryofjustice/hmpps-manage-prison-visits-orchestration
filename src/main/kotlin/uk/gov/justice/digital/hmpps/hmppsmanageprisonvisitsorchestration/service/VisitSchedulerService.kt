@@ -144,11 +144,11 @@ class VisitSchedulerService(
     return visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max)
   }
 
-  fun getAvailableVisitSessions(prisonCode: String, prisonerId: String, requestedSessionRestriction: SessionRestriction?, visitors: List<Long>): List<AvailableVisitSessionDto>? {
+  fun getAvailableVisitSessions(prisonCode: String, prisonerId: String, requestedSessionRestriction: SessionRestriction?, visitors: List<Long>?): List<AvailableVisitSessionDto>? {
     val sessionRestriction = updateRequestedRestriction(requestedSessionRestriction, prisonerId, visitors)
 
     val dataRange = prisonService.getToDaysBookableDateRange(prisonCode)
-    val updatedDateRange = prisonerProfileService.getBannedRestrictionDateRage(prisonerId, visitors, dataRange)
+    val updatedDateRange = visitors?.let { prisonerProfileService.getBannedRestrictionDateRage(prisonerId, visitors, dataRange) } ?: dataRange
 
     return visitSchedulerClient.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction, updatedDateRange)
   }
@@ -156,10 +156,10 @@ class VisitSchedulerService(
   private fun updateRequestedRestriction(
     requestedSessionRestriction: SessionRestriction?,
     prisonerId: String,
-    visitors: List<Long>,
+    visitors: List<Long>?,
   ): SessionRestriction {
     return if (prisonerProfileService.hasPrisonerGotClosedRestrictions(prisonerId) ||
-      prisonerProfileService.hasVisitorsGotClosedRestrictions(prisonerId, visitors)
+      (if (visitors != null) prisonerProfileService.hasVisitorsGotClosedRestrictions(prisonerId, visitors) else false)
     ) {
       CLOSED
     } else {

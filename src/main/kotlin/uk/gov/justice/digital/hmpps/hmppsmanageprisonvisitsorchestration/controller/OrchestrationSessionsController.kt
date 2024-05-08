@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import jakarta.validation.constraints.NotEmpty
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.format.annotation.DateTimeFormat
@@ -111,12 +112,13 @@ class OrchestrationSessionsController(private val visitSchedulerService: VisitSc
     @RequestParam(value = "sessionRestriction", required = false)
     @Parameter(description = "Filter sessions by session restriction - OPEN or CLOSED, if prisoner has CLOSED it will use that", example = "CLOSED", required = false)
     sessionRestriction: SessionRestriction = SessionRestriction.OPEN,
-    @RequestParam(value = "visitors", required = true)
+    @RequestParam(value = "visitors", required = false)
     @Parameter(
       description = "List of visitors who require visit sessions",
-      example = "4729510",
+      example = "4729510,4729220",
     )
-    visitors: List<Long>,
+    @NotEmpty(message = "An empty visitors list is not allowed")
+    visitors: List<Long>? = null,
   ): List<AvailableVisitSessionDto>? =
     visitSchedulerService.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction, visitors)
 

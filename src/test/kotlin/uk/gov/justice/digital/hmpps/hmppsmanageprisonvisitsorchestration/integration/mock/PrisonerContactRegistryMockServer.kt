@@ -10,7 +10,6 @@ import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.HasClosedRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
-import java.time.LocalDate
 
 class PrisonerContactRegistryMockServer(@Autowired private val objectMapper: ObjectMapper) : WireMockServer(8095) {
   fun stubGetPrisonerContacts(prisonerId: String, contactsList: List<PrisonerContactDto>?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
@@ -57,8 +56,8 @@ class PrisonerContactRegistryMockServer(@Autowired private val objectMapper: Obj
   fun stubGetBannedRestrictionDateRage(
     prisonerId: String,
     visitorIds: List<Long>,
-    dateRange: DateRange = DateRange(fromDate = LocalDate.now(), toDate = LocalDate.now().plusWeeks(1)),
-    result: DateRange? = DateRange(LocalDate.now(), LocalDate.now().plusWeeks(1)),
+    dateRange: DateRange,
+    result: DateRange? = dateRange,
   ) {
     val visitorIdsString = visitorIds.joinToString(",")
 

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.method.annotation.HandlerMethodValidationException
 import org.springframework.web.reactive.function.client.WebClientException
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerAuthFailureException
@@ -81,6 +82,19 @@ class OrchestrationExceptionHandler {
     val error = ErrorResponse(
       status = HttpStatus.BAD_REQUEST,
       userMessage = "Validation failure: ${e.cause?.message}",
+      developerMessage = e.message,
+    )
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error)
+  }
+
+  @ExceptionHandler(HandlerMethodValidationException::class)
+  fun handleHandlerMethodValidationException(e: HandlerMethodValidationException): ResponseEntity<ErrorResponse> {
+    log.debug("Validation exception: {}", e.message)
+    val message = e.localizedMessage
+    val error = ErrorResponse(
+      status = HttpStatus.BAD_REQUEST,
+      userMessage = message,
       developerMessage = e.message,
     )
 
