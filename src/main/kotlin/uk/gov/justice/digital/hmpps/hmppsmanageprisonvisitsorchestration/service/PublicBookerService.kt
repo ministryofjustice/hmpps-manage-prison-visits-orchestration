@@ -27,7 +27,6 @@ class PublicBookerService(
 ) {
   companion object {
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
-    const val BANNED_RESTRICTION_TYPE = "BAN"
     const val PRISONER_VALIDATION_ERROR_MSG = "prisoner validation for prisoner number - {0} failed with error - {1}"
     const val PRISON_VALIDATION_ERROR_MSG = "prison validation for prison code - {0} for prisoner number - {1} failed with error - {2}"
   }
@@ -139,20 +138,7 @@ class PublicBookerService(
   private fun getAllValidContacts(prison: PrisonDto, prisonerNumber: String): List<PrisonerContactDto>? {
     val lastBookableDate = getLastBookableSessionDate(prison)
 
-    return prisonerContactService.getAllPrisonersSocialContacts(prisonerNumber)
-      ?.filter {
-        isContactApproved(it)
-          .and(hasContactGotDateOfBirth(it))
-          .and(!prisonerContactService.isContactBannedBeforeDate(it, lastBookableDate))
-      }
-  }
-
-  private fun isContactApproved(contact: PrisonerContactDto): Boolean {
-    return contact.approvedVisitor
-  }
-
-  private fun hasContactGotDateOfBirth(contact: PrisonerContactDto): Boolean {
-    return contact.dateOfBirth != null
+    return prisonerContactService.getPrisonersSocialContactsWithDOBAndNotBannedBeforeDate(prisonerNumber, lastBookableDate)
   }
 
   private fun getLastBookableSessionDate(prison: PrisonDto): LocalDate {
