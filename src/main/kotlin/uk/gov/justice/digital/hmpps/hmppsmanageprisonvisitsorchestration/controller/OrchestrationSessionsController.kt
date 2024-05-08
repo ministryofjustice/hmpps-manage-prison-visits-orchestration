@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
-import jakarta.validation.constraints.NotEmpty
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.format.annotation.DateTimeFormat
@@ -20,6 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.validation.NullableNotEmpty
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -117,7 +117,7 @@ class OrchestrationSessionsController(private val visitSchedulerService: VisitSc
       description = "List of visitors who require visit sessions",
       example = "4729510,4729220",
     )
-    @NotEmpty(message = "An empty visitors list is not allowed")
+    @NullableNotEmpty(message = "An empty visitors list is not allowed")
     visitors: List<Long>? = null,
   ): List<AvailableVisitSessionDto>? =
     visitSchedulerService.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction, visitors)
