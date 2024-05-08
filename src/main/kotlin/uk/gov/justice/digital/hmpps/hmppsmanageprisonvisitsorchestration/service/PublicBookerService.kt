@@ -48,11 +48,15 @@ class PublicBookerService(
       } ?: run {
         if (offenderSearchPrisoner?.prisonId != null) {
           val prisonCode = offenderSearchPrisoner.prisonId
-          val prison = prisonService.getPrison(prisonCode)
-          validatePrison(prisonCode, prison)?.let {
-            logger.error(MessageFormat.format(PRISONER_VALIDATION_ERROR_MSG, prisonCode, prisoner.prisonerNumber, it))
-          } ?: run {
-            prisonerDetailsList.add(PrisonerInfoDto(prisoner.prisonerNumber, offenderSearchPrisoner))
+          try {
+            val prison = prisonService.getPrison(prisonCode)
+            validatePrison(prison)?.let {
+              logger.error(MessageFormat.format(PRISONER_VALIDATION_ERROR_MSG, prisonCode, prisoner.prisonerNumber, it))
+            } ?: run {
+              prisonerDetailsList.add(PrisonerInfoDto(prisoner.prisonerNumber, offenderSearchPrisoner))
+            }
+          } catch (ne: NotFoundException) {
+            logger.error("Prison with code - $prisonCode, not found on visit-scheduler")
           }
         }
       }
@@ -79,7 +83,7 @@ class PublicBookerService(
     val prisonCode = offenderSearchPrisoner!!.prisonId!!
     // get the prison and validate
     val prison = prisonService.getPrison(prisonCode)
-    validatePrison(prisonCode, prison)?.let {
+    validatePrison(prison)?.let {
       val message = MessageFormat.format(PRISON_VALIDATION_ERROR_MSG, prisonCode, prisonerNumber, it)
       logger.error(message)
       throw ValidationException(message)
@@ -89,7 +93,7 @@ class PublicBookerService(
 
     if (associatedVisitors.isNotEmpty()) {
       // get approved visitors for a prisoner with a DOB and not BANNED
-      val allValidContacts = getAllValidContacts(prison!!, prisonerNumber)
+      val allValidContacts = getAllValidContacts(prison, prisonerNumber)
 
       // filter them through the associated visitor list
       allValidContacts?.let {
@@ -118,18 +122,15 @@ class PublicBookerService(
     return errorMessage
   }
 
-  private fun validatePrison(prisonCode: String, prison: PrisonDto?): String? {
+  private fun validatePrison(prison: PrisonDto): String? {
     var errorMessage: String? = null
-    if (prison != null) {
-      if (!prisonService.isActive(prison)) {
-        errorMessage = "Prison with code - ${prison.code}, is not active on visit-scheduler"
-      } else {
-        if (!prisonService.isActive(prison, UserType.PUBLIC)) {
-          errorMessage = "Prison with code - ${prison.code}, is not active for public users on visit-scheduler"
-        }
-      }
+
+    if (!prisonService.isActive(prison)) {
+      errorMessage = "Prison with code - ${prison.code}, is not active on visit-scheduler"
     } else {
-      errorMessage = "Prison with code - $prisonCode, not found on visit-scheduler"
+      if (!prisonService.isActive(prison, UserType.PUBLIC)) {
+        errorMessage = "Prison with code - ${prison.code}, is not active for public users on visit-scheduler"
+      }
     }
 
     return errorMessage

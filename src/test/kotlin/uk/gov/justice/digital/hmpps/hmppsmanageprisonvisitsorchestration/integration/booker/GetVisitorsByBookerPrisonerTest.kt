@@ -267,7 +267,7 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
 
     // Then
     responseSpec.expectStatus().isBadRequest
-    assertErrorResult(responseSpec, HttpStatus.BAD_REQUEST, "prison validation for prison code - $PRISON_CODE for prisoner number - $PRISONER_ID failed with error - Prison with code - $PRISON_CODE, not found on visit-scheduler")
+    assertErrorResult(responseSpec, HttpStatus.BAD_REQUEST, "Prison with prison code - $PRISON_CODE not found on visit-scheduler")
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(PRISONER_ID)
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)

@@ -45,6 +45,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.NonAssociationDomainEventType
 import java.time.LocalDate
 import java.time.LocalTime
+import kotlin.jvm.optionals.getOrNull
 
 @Service
 class VisitSchedulerService(
@@ -215,7 +216,7 @@ class VisitSchedulerService(
   }
 
   fun getPrison(prisonCode: String): PrisonDto? {
-    return visitSchedulerClient.getPrison(prisonCode)
+    return visitSchedulerClient.getPrison(prisonCode)?.getOrNull()
   }
 
   fun getNotificationsTypesForBookingReference(reference: String): List<NotificationEventType>? {
