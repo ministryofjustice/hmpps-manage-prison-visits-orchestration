@@ -42,13 +42,20 @@ class PublicBookerService(
 
     prisoners?.forEach { prisoner ->
       // get the offender details from prisoner search and validate but do not throw an exception
-      val offenderSearchPrisoner = prisonerSearchService.getPrisoner(prisoner.prisonerNumber)
+      var offenderSearchPrisoner: PrisonerDto? = null
+      try {
+        offenderSearchPrisoner = prisonerSearchService.getPrisoner(prisoner.prisonerNumber)
+      } catch (nfe: NotFoundException) {
+        logger.error("Prisoner with id - ${prisoner.prisonerNumber} not found on offender search")
+      }
 
-      validatePrisoner(prisoner.prisonerNumber, offenderSearchPrisoner)?.let {
-        logger.error(MessageFormat.format(PRISONER_VALIDATION_ERROR_MSG, prisoner.prisonerNumber, it))
-      } ?: run {
-        getPrisonerInfo(offenderSearchPrisoner!!, prisoner)?.let {
-          prisonerDetailsList.add(it)
+      offenderSearchPrisoner?.let {
+        validatePrisoner(prisoner.prisonerNumber, offenderSearchPrisoner)?.let {
+          logger.error(MessageFormat.format(PRISONER_VALIDATION_ERROR_MSG, prisoner.prisonerNumber, it))
+        } ?: run {
+          getPrisonerInfo(offenderSearchPrisoner, prisoner)?.let {
+            prisonerDetailsList.add(it)
+          }
         }
       }
     }
@@ -71,7 +78,7 @@ class PublicBookerService(
       throw ValidationException(message)
     }
 
-    val prisonCode = offenderSearchPrisoner!!.prisonId!!
+    val prisonCode = offenderSearchPrisoner.prisonId!!
     // get the prison and validate
     val prison = prisonService.getPrison(prisonCode)
     validatePrison(prison)?.let {
@@ -119,15 +126,12 @@ class PublicBookerService(
     return null
   }
 
-  private fun validatePrisoner(prisonerNumber: String, offenderSearchPrisoner: PrisonerDto?): String? {
+  private fun validatePrisoner(prisonerNumber: String, offenderSearchPrisoner: PrisonerDto): String? {
     var errorMessage: String? = null
-    if (offenderSearchPrisoner != null) {
-      if (offenderSearchPrisoner.prisonId == null) {
-        // if the offender was found but without a prison code throw an exception
-        errorMessage = "Prisoner - $prisonerNumber on prisoner search does not have a valid prison"
-      }
-    } else {
-      errorMessage = "Prisoner with id - $prisonerNumber not found on offender search"
+
+    if (offenderSearchPrisoner.prisonId == null) {
+      // if the offender was found but without a prison code throw an exception
+      errorMessage = "Prisoner - $prisonerNumber on prisoner search does not have a valid prison"
     }
 
     return errorMessage

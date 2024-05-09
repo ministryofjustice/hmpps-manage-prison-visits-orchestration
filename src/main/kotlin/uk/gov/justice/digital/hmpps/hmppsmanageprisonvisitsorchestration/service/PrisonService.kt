@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import java.time.LocalDate
 
 @Service
@@ -19,7 +18,7 @@ class PrisonService(
   }
 
   fun getPrison(prisonCode: String): PrisonDto {
-    return visitSchedulerClient.getPrison(prisonCode) ?: throw NotFoundException("Prison with prison code - $prisonCode not found on visit-scheduler")
+    return visitSchedulerClient.getPrison(prisonCode)
   }
 
   fun isActive(prison: PrisonDto): Boolean {

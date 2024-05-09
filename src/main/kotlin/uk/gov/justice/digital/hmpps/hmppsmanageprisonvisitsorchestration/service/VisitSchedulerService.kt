@@ -214,7 +214,7 @@ class VisitSchedulerService(
     }
   }
 
-  fun getPrison(prisonCode: String): PrisonDto? {
+  fun getPrison(prisonCode: String): PrisonDto {
     return visitSchedulerClient.getPrison(prisonCode)
   }
 

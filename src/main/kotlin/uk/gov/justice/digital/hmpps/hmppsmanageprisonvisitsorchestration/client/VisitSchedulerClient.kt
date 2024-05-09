@@ -4,15 +4,14 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Mono
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isNotFoundError
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
@@ -299,7 +298,7 @@ class VisitSchedulerClient(
       .bodyToMono<NotificationCountDto>().block(apiTimeout)
   }
 
-  fun getPrison(prisonCode: String): PrisonDto? {
+  fun getPrison(prisonCode: String): PrisonDto {
     val uri = "/admin/prisons/prison/$prisonCode"
     return webClient.get()
       .uri(uri)
@@ -316,7 +315,7 @@ class VisitSchedulerClient(
           Mono.error { NotFoundException("Prison with prison code - $prisonCode not found on visit-scheduler") }
         }
       }
-      .block(apiTimeout)
+      .blockOptional(apiTimeout).get()
   }
 
   fun getNotificationsTypesForBookingReference(reference: String): List<NotificationEventType>? {
@@ -368,7 +367,4 @@ class VisitSchedulerClient(
 
     return uriBuilder
   }
-
-  fun isNotFoundError(e: Throwable?) =
-    e is WebClientResponseException && e.statusCode == HttpStatus.NOT_FOUND
 }
