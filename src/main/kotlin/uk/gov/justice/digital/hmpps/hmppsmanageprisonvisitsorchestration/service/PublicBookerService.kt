@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonersDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorInfoDto
@@ -46,18 +47,8 @@ class PublicBookerService(
       validatePrisoner(prisoner.prisonerNumber, offenderSearchPrisoner)?.let {
         logger.error(MessageFormat.format(PRISONER_VALIDATION_ERROR_MSG, prisoner.prisonerNumber, it))
       } ?: run {
-        if (offenderSearchPrisoner?.prisonId != null) {
-          val prisonCode = offenderSearchPrisoner.prisonId
-          try {
-            val prison = prisonService.getPrison(prisonCode)
-            validatePrison(prison)?.let {
-              logger.error(MessageFormat.format(PRISONER_VALIDATION_ERROR_MSG, prisonCode, prisoner.prisonerNumber, it))
-            } ?: run {
-              prisonerDetailsList.add(PrisonerInfoDto(prisoner.prisonerNumber, offenderSearchPrisoner))
-            }
-          } catch (ne: NotFoundException) {
-            logger.error("Prison with code - $prisonCode, not found on visit-scheduler")
-          }
+        getPrisonerInfo(offenderSearchPrisoner!!, prisoner)?.let {
+          prisonerDetailsList.add(it)
         }
       }
     }
@@ -88,6 +79,7 @@ class PublicBookerService(
       logger.error(message)
       throw ValidationException(message)
     }
+
     val visitorDetailsList = mutableListOf<VisitorInfoDto>()
     val associatedVisitors = prisonVisitBookerRegistryClient.getVisitorsForBookersAssociatedPrisoner(bookerReference, prisonerNumber) ?: emptyList()
 
@@ -106,6 +98,25 @@ class PublicBookerService(
     }
 
     return visitorDetailsList
+  }
+
+  private fun getPrisonerInfo(offenderSearchPrisoner: PrisonerDto, bookerPrisoner: BookerPrisonersDto): PrisonerInfoDto? {
+    val prisonCode = offenderSearchPrisoner.prisonId!!
+    val prison: PrisonDto
+    try {
+      prison = prisonService.getPrison(prisonCode)
+    } catch (ne: NotFoundException) {
+      logger.error("Prison with code - $prisonCode, not found on visit-scheduler")
+      return null
+    }
+
+    validatePrison(prison)?.let {
+      logger.error(MessageFormat.format(PRISONER_VALIDATION_ERROR_MSG, prisonCode, bookerPrisoner.prisonerNumber, it))
+    } ?: run {
+      return PrisonerInfoDto(bookerPrisoner.prisonerNumber, offenderSearchPrisoner)
+    }
+
+    return null
   }
 
   private fun validatePrisoner(prisonerNumber: String, offenderSearchPrisoner: PrisonerDto?): String? {

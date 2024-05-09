@@ -3,13 +3,13 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.servic
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import java.time.LocalDate
-import kotlin.jvm.optionals.getOrNull
 
 @Service
 class PrisonService(
@@ -20,7 +20,18 @@ class PrisonService(
   }
 
   fun getPrison(prisonCode: String): PrisonDto {
-    return visitSchedulerClient.getPrison(prisonCode)?.getOrNull() ?: throw NotFoundException("Prison with prison code - $prisonCode not found on visit-scheduler")
+    val prisonDto: PrisonDto
+    try {
+      prisonDto = visitSchedulerClient.getPrison(prisonCode) ?: throw NotFoundException("Prison with prison code - $prisonCode not found on visit-scheduler")
+    } catch (e: WebClientResponseException) {
+      if (visitSchedulerClient.isNotFoundError(e)) {
+        throw NotFoundException("Prison with prison code - $prisonCode not found on visit-scheduler")
+      }
+
+      throw e
+    }
+
+    return prisonDto
   }
 
   fun isActive(prison: PrisonDto): Boolean {

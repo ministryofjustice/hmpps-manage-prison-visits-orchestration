@@ -298,13 +298,13 @@ class VisitSchedulerClient(
       .bodyToMono<NotificationCountDto>().block(apiTimeout)
   }
 
-  fun getPrison(prisonCode: String): Optional<PrisonDto>? {
+  fun getPrison(prisonCode: String): PrisonDto? {
     val uri = "/admin/prisons/prison/$prisonCode"
     return webClient.get()
       .uri(uri)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono<Optional<PrisonDto>>()
+      .bodyToMono<PrisonDto>()
       .onErrorResume {
           e ->
         if (!isNotFoundError(e)) {
@@ -312,7 +312,7 @@ class VisitSchedulerClient(
           Mono.error(e)
         } else {
           LOG.error("getPrison NOT_FOUND for get request $uri")
-          return@onErrorResume Mono.just(Optional.empty())
+          Mono.error(e)
         }
       }
       .block(apiTimeout)
