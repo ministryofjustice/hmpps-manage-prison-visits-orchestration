@@ -18,10 +18,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.IgnoreVisitNotificationsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
@@ -295,12 +295,12 @@ class VisitSchedulerClient(
       .retrieve()
       .bodyToMono<NotificationCountDto>().block(apiTimeout)
   }
-  fun getPrison(prisonCode: String): PrisonDto? {
+  fun getPrison(prisonCode: String): VisitSchedulerPrisonDto? {
     return webClient.get()
       .uri("/admin/prisons/prison/$prisonCode")
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono<PrisonDto>().block(apiTimeout)
+      .bodyToMono<VisitSchedulerPrisonDto>().block(apiTimeout)
   }
 
   fun getNotificationsTypesForBookingReference(reference: String): List<NotificationEventType>? {

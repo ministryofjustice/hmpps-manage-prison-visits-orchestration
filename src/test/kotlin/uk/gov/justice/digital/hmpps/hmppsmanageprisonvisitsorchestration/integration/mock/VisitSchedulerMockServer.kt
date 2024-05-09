@@ -19,10 +19,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.Res
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ApplicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
@@ -320,19 +320,19 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
   }
 
   fun stubGetAvailableVisitSessions(
-    prisonDto: PrisonDto,
+    visitSchedulerPrisonDto: VisitSchedulerPrisonDto,
     prisonerId: String,
     sessionRestriction: SessionRestriction,
     visitSessions: List<AvailableVisitSessionDto>,
     httpStatus: HttpStatus = HttpStatus.OK,
   ) {
     val today = LocalDate.now()
-    val fromDate = today.plusDays(prisonDto.policyNoticeDaysMin.toLong())
-    val toDate = today.plusDays(prisonDto.policyNoticeDaysMax.toLong())
+    val fromDate = today.plusDays(visitSchedulerPrisonDto.policyNoticeDaysMin.toLong())
+    val toDate = today.plusDays(visitSchedulerPrisonDto.policyNoticeDaysMax.toLong())
     val dateRange = DateRange(fromDate, toDate)
 
     stubFor(
-      get("/visit-sessions/available?prisonId=${prisonDto.code}&prisonerId=$prisonerId&sessionRestriction=${sessionRestriction.name}&fromDate=${dateRange.fromDate}&toDate=${dateRange.toDate}")
+      get("/visit-sessions/available?prisonId=${visitSchedulerPrisonDto.code}&prisonerId=$prisonerId&sessionRestriction=${sessionRestriction.name}&fromDate=${dateRange.fromDate}&toDate=${dateRange.toDate}")
         .willReturn(
           createJsonResponseBuilder()
             .withStatus(httpStatus.value())
@@ -373,13 +373,18 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     )
   }
 
-  fun stubGetPrison(prisonCode: String, prisonDto: PrisonDto) {
+  fun stubGetPrison(prisonCode: String, visitSchedulerPrisonDto: VisitSchedulerPrisonDto?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
     stubFor(
       get("/admin/prisons/prison/$prisonCode")
         .willReturn(
-          createJsonResponseBuilder()
-            .withStatus(HttpStatus.OK.value())
-            .withBody(getJsonString(prisonDto)),
+          if (visitSchedulerPrisonDto == null) {
+            createJsonResponseBuilder()
+              .withStatus(httpStatus.value())
+          } else {
+            createJsonResponseBuilder()
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(visitSchedulerPrisonDto))
+          },
         ),
     )
   }

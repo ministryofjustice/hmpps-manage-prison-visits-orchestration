@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonNameDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import java.time.Duration
 
 @Component
@@ -17,6 +18,13 @@ class PrisonRegisterClient(
     return webClient.get().uri("/prisons/names")
       .retrieve()
       .bodyToMono<List<PrisonNameDto>>()
+      .block(apiTimeout)
+  }
+
+  fun getPrison(prisonCode: String): PrisonRegisterPrisonDto? {
+    return webClient.get().uri("/prisons/id/$prisonCode")
+      .retrieve()
+      .bodyToMono<PrisonRegisterPrisonDto>()
       .block(apiTimeout)
   }
 }
