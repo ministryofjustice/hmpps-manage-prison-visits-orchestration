@@ -38,6 +38,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerRestrictionChangeNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionChangeNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import java.time.Duration
 import java.time.LocalDate
@@ -312,7 +313,7 @@ class VisitSchedulerClient(
           Mono.error(e)
         } else {
           LOG.error("getPrison NOT_FOUND for get request $uri")
-          Mono.error(e)
+          Mono.error { NotFoundException("Prison with prison code - $prisonCode not found on visit-scheduler") }
         }
       }
       .block(apiTimeout)
