@@ -19,26 +19,35 @@ Run:
 ```
 
 ## Running
+You have 2 options to run the visit-orchestration service. Either connect to the dev environment for all services (except local stack) 
+or connect to dev environment and run a local version of the visit-scheduler.
 
-Create a Spring Boot run configuration with active profile of dev, to run against te development environment.
+First, create a .env file at the project root and add 2 secrets to it
+```
+SYSTEM_CLIENT_ID='get from kubernetes secrets for dev namespace'
+SYSTEM_CLIENT_SECRET='get from kubernetes secrets for dev namespace'
+```
 
+Then create a Spring Boot run configuration with active profile of 'dev' and set an environments file to the
+`.env` file we just created. Run the service in your chosen IDE.
 
-Alternatively the service can be run using docker-compose with client 'book-a-prison-visit-client' and the usual dev secret.
+### Using dev environment (recommended)
 ```
 docker-compose up -d
 ```
-or for particular compose files
-```
-docker-compose -f docker-compose-local.yml up -d
-```
-Ports
 
-| Service            | Port |  
-|--------------------|------|
-| visit-scheduler    | 8081 |
-| visit-scheduler-db | 5432 |
-| hmpps-auth         | 8090 |
+### Using dev environment and local visit-scheduler
+To use the visit-orchestration service with a local visit-scheduler, do not run docker compose. Instead, change the `visit-scheduler.api.url` 
+field in the `application-dev.yml` file to `http://localhost:8081`, and run the visit-orchestration service 
+in your IDE.
 
+Now clone the [Visit scheduler](https://github.com/ministryofjustice/visit-scheduler) repo and follow the set up guide for that service.
+
+## Ports
+
+| Service             | Port |  
+|---------------------|------|
+| visit-orchestration | 8080 |
 Call info endpoint:
 ```
 $ curl 'http://localhost:8080/info' -i -X GET

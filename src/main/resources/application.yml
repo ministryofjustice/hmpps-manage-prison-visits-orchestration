@@ -1,7 +1,7 @@
 info.app:
   name: Hmpps Manage Prison Visits Orchestration
   version: 1.0
-  description: VSIP Orchestration service used by VSIP frontend to make external API calls and collate responses
+  description: Visit Orchestration service used by Visit frontend to make external API calls and collate responses
   contact:
     name: Visit Someone in Prison
     email: prisonvisitsbooking@digital.justice.gov.uk
