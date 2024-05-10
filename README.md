@@ -2,7 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/ministryofjustice/hmpps-manage-prison-visits-orchestration/tree/main.svg?style=shield)](https://app.circleci.com/pipelines/github/ministryofjustice/visit-scheduler)
 
-This is a Spring Boot application, written in Kotlin, used as an orchestration layer between the Visit Someone In Prison front end and external API calls like visit-scheduler, prison-api, prisoner-search. Used by [Visit Someone in Prison](https://github.com/ministryofjustice/book-a-prison-visit-staff-ui).
+This is a Spring Boot application, written in Kotlin, used as an orchestration layer between the Visits front end and external API calls like visit-scheduler, prison-api, prisoner-search. Used by [Visits UI](https://github.com/ministryofjustice/book-a-prison-visit-staff-ui).
 
 ## Building
 
