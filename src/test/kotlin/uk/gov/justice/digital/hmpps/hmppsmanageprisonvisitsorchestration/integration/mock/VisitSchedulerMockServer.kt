@@ -373,13 +373,17 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     )
   }
 
-  fun stubGetPrison(prisonCode: String, prisonDto: PrisonDto) {
+  fun stubGetPrison(prisonCode: String, prisonDto: PrisonDto?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
     stubFor(
       get("/admin/prisons/prison/$prisonCode")
         .willReturn(
-          createJsonResponseBuilder()
-            .withStatus(HttpStatus.OK.value())
-            .withBody(getJsonString(prisonDto)),
+          if (prisonDto == null) {
+            createJsonResponseBuilder().withStatus(httpStatus.value())
+          } else {
+            createJsonResponseBuilder()
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(prisonDto))
+          },
         ),
     )
   }

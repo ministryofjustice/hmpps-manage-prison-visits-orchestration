@@ -13,7 +13,7 @@ import java.time.LocalDate
 class PrisonServiceTest {
 
   private val visitSchedulerClient = mock<VisitSchedulerClient>()
-  var prisonService: PrisonService = PrisonService(visitSchedulerClient)
+  private val prisonService: PrisonService = PrisonService(visitSchedulerClient)
 
   @Test
   fun `works out date range correctly with give prison object`() {

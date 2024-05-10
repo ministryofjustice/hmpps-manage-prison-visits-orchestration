@@ -64,9 +64,7 @@ class PrisonerProfileClient(
   private fun getContactsForPrisoner(prisonerProfile: PrisonerProfileDto): Map<Long?, PrisonerContactDto>? {
     try {
       val contacts = prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerProfile.prisonerId, withAddress = false)
-      contacts?.let {
-        return contacts.associateBy { it.personId }
-      }
+      return contacts.associateBy { it.personId }
     } catch (e: Exception) {
       // log a message if there is an error but do not terminate the call
       LOG.warn("Exception thrown on prisoner contact registry call - /prisoners/${prisonerProfile.prisonerId}/contacts", e)

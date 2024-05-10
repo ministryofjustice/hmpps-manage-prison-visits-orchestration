@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.visit
+package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.prisons
 
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.DisplayName

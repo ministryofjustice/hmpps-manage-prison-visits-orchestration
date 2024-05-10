@@ -12,11 +12,15 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDO
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.testcontainers.shaded.org.apache.commons.lang3.RandomUtils
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.RestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonNameDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.CurrentIncentive
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
@@ -41,7 +45,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.VisitSchedulerMockServer
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.ArrayList
 import java.util.stream.Collectors
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -350,7 +353,7 @@ abstract class IntegrationTestBase {
     firstName: String,
     lastName: String,
     dateOfBirth: LocalDate,
-    prisonId: String = "MDI",
+    prisonId: String? = "MDI",
     prisonName: String = "HMP Leeds",
     cellLocation: String? = null,
     currentIncentive: CurrentIncentive? = null,
@@ -367,7 +370,7 @@ abstract class IntegrationTestBase {
     )
   }
 
-  private fun createContactDto(personId: Long, firstName: String, lastName: String, dateOfBirth: LocalDate?, approvedVisitor: Boolean): PrisonerContactDto {
+  private fun createContactDto(personId: Long, firstName: String, lastName: String, dateOfBirth: LocalDate?, approvedVisitor: Boolean, restrictions: List<RestrictionDto>): PrisonerContactDto {
     return PrisonerContactDto(
       personId = personId,
       firstName = firstName,
@@ -378,13 +381,52 @@ abstract class IntegrationTestBase {
       contactType = "S",
       emergencyContact = true,
       nextOfKin = true,
+      restrictions = restrictions,
     )
   }
 
   final fun createContactsList(visitorDetails: List<VisitorDetails>): List<PrisonerContactDto> {
     return visitorDetails.stream().map {
-      createContactDto(it.personId, it.firstName, it.lastName, it.dateOfBirth, it.approved)
+      createContactDto(it.personId, it.firstName, it.lastName, it.dateOfBirth, it.approved, it.restrictions)
     }.collect(Collectors.toList())
+  }
+
+  final fun createVisitor(
+    visitorId: Int = RandomUtils.nextInt(),
+    firstName: String,
+    lastName: String,
+    dateOfBirth: LocalDate?,
+    approved: Boolean = true,
+    restrictions: List<RestrictionDto> = emptyList(),
+  ): VisitorDetails {
+    return VisitorDetails(visitorId.toLong(), firstName, lastName, dateOfBirth, approved, restrictions = restrictions)
+  }
+
+  final fun createPrison(
+    prisonCode: String = "HEI",
+    active: Boolean = true,
+    policyNoticeDaysMin: Int = 2,
+    policyNoticeDaysMax: Int = 28,
+    maxTotalVisitors: Int = 6,
+    maxAdultVisitors: Int = 3,
+    maxChildVisitors: Int = 3,
+    adultAgeYears: Int = 18,
+    clients: List<PrisonUserClientDto> = listOf(
+      PrisonUserClientDto(STAFF, true),
+      PrisonUserClientDto(PUBLIC, true),
+    ),
+  ): PrisonDto {
+    return PrisonDto(
+      prisonCode,
+      active,
+      policyNoticeDaysMin,
+      policyNoticeDaysMax,
+      maxTotalVisitors,
+      maxAdultVisitors,
+      maxChildVisitors,
+      adultAgeYears,
+      clients = clients,
+    )
   }
 
   class VisitorDetails(
@@ -393,5 +435,6 @@ abstract class IntegrationTestBase {
     val lastName: String,
     val dateOfBirth: LocalDate? = null,
     val approved: Boolean = true,
+    val restrictions: List<RestrictionDto> = emptyList(),
   )
 }

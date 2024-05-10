@@ -14,11 +14,23 @@ class PrisonService(
   private val visitSchedulerClient: VisitSchedulerClient,
 ) {
   companion object {
-    val LOG: Logger = LoggerFactory.getLogger(this::class.java)
+    val logger: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
   fun getPrison(prisonCode: String): PrisonDto {
-    return visitSchedulerClient.getPrison(prisonCode)!!
+    return visitSchedulerClient.getPrison(prisonCode)
+  }
+
+  fun isActive(prison: PrisonDto): Boolean {
+    return prison.active
+  }
+
+  fun isActive(prison: PrisonDto, userType: UserType): Boolean {
+    return prison.clients.firstOrNull { it.userType == userType }?.active ?: false
+  }
+
+  fun getLastBookableSessionDate(prison: PrisonDto, date: LocalDate): LocalDate {
+    return date.plusDays(prison.policyNoticeDaysMax.toLong())
   }
 
   fun getSupportedPrisons(type: UserType): List<String>? {
@@ -28,7 +40,8 @@ class PrisonService(
   fun getToDaysBookableDateRange(
     prisonCode: String,
   ): DateRange {
-    return getToDaysDateRange(getPrison(prisonCode))
+    val prison = getPrison(prisonCode)
+    return getToDaysDateRange(prison)
   }
 
   fun getToDaysDateRange(
