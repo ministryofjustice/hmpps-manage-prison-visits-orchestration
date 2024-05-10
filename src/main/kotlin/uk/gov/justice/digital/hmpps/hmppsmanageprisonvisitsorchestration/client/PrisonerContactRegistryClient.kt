@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.HasClosedRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.RangeNotFoundException
 import java.net.URI
 import java.time.Duration
 
@@ -50,12 +51,14 @@ class PrisonerContactRegistryClient(
           e ->
         if (!isNotFoundError(e)) {
           LOG.error("getBannedRestrictionDateRage Failed get request $uri")
+          Mono.error(e)
         } else {
+          val message = "getBannedRestrictionDateRage NOT FOUND get request $uri"
           LOG.error("getBannedRestrictionDateRage NOT FOUND get request $uri")
+          Mono.error(RangeNotFoundException(message, e))
         }
-        Mono.error(e)
       }
-      .block(apiTimeout)
+      .blockOptional(apiTimeout).get()
   }
 
   fun doVisitorsHaveClosedRestrictions(prisonerId: String, visitors: List<Long>): Boolean {
@@ -76,7 +79,7 @@ class PrisonerContactRegistryClient(
         }
         Mono.error(e)
       }
-      .block(apiTimeout).value
+      .blockOptional(apiTimeout).get().value
   }
 
   private fun getVisitorsHaveClosedRestrictionsParams(visitorIds: List<Long>, uriBuilder: UriBuilder): URI {

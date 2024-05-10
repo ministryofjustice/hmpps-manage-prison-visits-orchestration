@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integr
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.boot.test.mock.mockito.SpyBean
@@ -22,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.OPEN
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonerProfileService
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -30,6 +32,9 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
 
   @SpyBean
   private lateinit var visitSchedulerClient: VisitSchedulerClient
+
+  @SpyBean
+  private lateinit var prisonerProfileService: PrisonerProfileService
 
   fun callGetAvailableVisitSessions(
     webTestClient: WebTestClient,
@@ -83,7 +88,7 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     val prisonerId = "AA123456B"
     val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), VisitRestriction.OPEN)
     val prisonDto = PrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18, setOf(LocalDate.now()))
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonDto, prisonerId, OPEN, mutableListOf(visitSession1))
+    visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonDto, prisonerId, OPEN, mutableListOf(visitSession1))
     visitSchedulerMockServer.stubGetPrison(prisonCode, prisonDto)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId)
 
@@ -94,6 +99,34 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(1)
+  }
+
+  @Test
+  fun `when visit sessions for parameters are available but no dateRange is returned`() {
+    // Given
+    val prisonCode = "MDI"
+    val prisonerId = "AA123456B"
+    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), VisitRestriction.OPEN)
+    val visitSession2 = AvailableVisitSessionDto(LocalDate.now().plusDays(1), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), VisitRestriction.OPEN)
+    val visitSession3 = AvailableVisitSessionDto(LocalDate.now().plusDays(2), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), VisitRestriction.OPEN)
+    val prisonDto = PrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18, setOf(LocalDate.now()))
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3))
+    visitSchedulerMockServer.stubGetPrison(prisonCode, prisonDto)
+    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId)
+    val visitorIds = listOf(1L, 2L, 3L)
+    prisonerContactRegistryMockServer.stubDoVisitorsHaveClosedRestrictions(prisonerId, visitorIds = visitorIds, result = false)
+    prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = null)
+
+    // When
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.size()").isEqualTo(0)
+
+    verify(prisonerProfileService, times(1)).getBannedRestrictionDateRage(any(), any(), any())
+    verify(visitSchedulerClient, times(0)).getAvailableVisitSessions(any(), any(), any(), any())
   }
 
   @Test
