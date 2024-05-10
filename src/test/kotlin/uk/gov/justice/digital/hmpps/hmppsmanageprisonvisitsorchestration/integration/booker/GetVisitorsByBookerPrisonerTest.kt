@@ -236,8 +236,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, BOOKER_REFERENCE, PRISONER_ID)
 
     // Then
-    responseSpec.expectStatus().isBadRequest
-    assertErrorResult(responseSpec, HttpStatus.BAD_REQUEST, "Prisoner with number - $PRISONER_ID not found for booker reference - $BOOKER_REFERENCE")
+    responseSpec.expectStatus().isNotFound
+    assertErrorResult(responseSpec, HttpStatus.NOT_FOUND, "Prisoners for booker reference - $BOOKER_REFERENCE not found on public-visits-booker-registry")
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
@@ -266,8 +266,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, BOOKER_REFERENCE, PRISONER_ID)
 
     // Then
-    responseSpec.expectStatus().isBadRequest
-    assertErrorResult(responseSpec, HttpStatus.BAD_REQUEST, "Prison with prison code - $PRISON_CODE not found on visit-scheduler")
+    responseSpec.expectStatus().isNotFound
+    assertErrorResult(responseSpec, HttpStatus.NOT_FOUND, "Prison with prison code - $PRISON_CODE not found on visit-scheduler")
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(PRISONER_ID)
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
@@ -531,8 +531,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, BOOKER_REFERENCE, PRISONER_ID)
 
     // Then
-    responseSpec.expectStatus().isBadRequest
-    assertErrorResult(responseSpec, HttpStatus.BAD_REQUEST, "Prisoner with id - AA112233B not found on prisoner search")
+    responseSpec.expectStatus().isNotFound
+    assertErrorResult(responseSpec, HttpStatus.NOT_FOUND, "Prisoner with id - AA112233B not found on prisoner search")
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)

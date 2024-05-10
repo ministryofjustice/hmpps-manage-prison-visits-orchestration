@@ -315,7 +315,7 @@ class VisitSchedulerClient(
           Mono.error { NotFoundException("Prison with prison code - $prisonCode not found on visit-scheduler") }
         }
       }
-      .blockOptional(apiTimeout).get()
+      .blockOptional(apiTimeout).orElseThrow { NotFoundException("Prison with prison code - $prisonCode not found on visit-scheduler") }
   }
 
   fun getNotificationsTypesForBookingReference(reference: String): List<NotificationEventType>? {

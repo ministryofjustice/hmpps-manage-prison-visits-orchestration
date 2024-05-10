@@ -40,7 +40,7 @@ class PublicBookerService(
     val prisonerDetailsList = mutableListOf<PrisonerInfoDto>()
     val prisoners = prisonVisitBookerRegistryClient.getPrisonersForBooker(bookerReference)
 
-    prisoners?.forEach { prisoner ->
+    prisoners.forEach { prisoner ->
       // get the offender details from prisoner search and validate but do not throw an exception
       var offenderSearchPrisoner: PrisonerDto? = null
       try {
@@ -66,7 +66,7 @@ class PublicBookerService(
   fun getVisitorsForBookersPrisoner(bookerReference: String, prisonerNumber: String): List<VisitorInfoDto> {
     // get the prisoner from booker registry
     prisonVisitBookerRegistryClient.getPrisonersForBooker(bookerReference)
-      ?.firstOrNull { it.prisonerNumber == prisonerNumber }
+      .firstOrNull { it.prisonerNumber == prisonerNumber }
       ?: throw NotFoundException("Prisoner with number - $prisonerNumber not found for booker reference - $bookerReference")
 
     // get the offender details from prisoner search and validate
@@ -87,24 +87,7 @@ class PublicBookerService(
       throw ValidationException(message)
     }
 
-    val visitorDetailsList = mutableListOf<VisitorInfoDto>()
-    val associatedVisitors = prisonVisitBookerRegistryClient.getVisitorsForBookersAssociatedPrisoner(bookerReference, prisonerNumber) ?: emptyList()
-
-    if (associatedVisitors.isNotEmpty()) {
-      // get approved visitors for a prisoner with a DOB and not BANNED
-      val allValidContacts = getAllValidContacts(prison, prisonerNumber)
-
-      // filter them through the associated visitor list
-      allValidContacts?.let {
-        associatedVisitors.forEach { associatedVisitor ->
-          allValidContacts.firstOrNull { it.personId == associatedVisitor.personId }?.let { contact ->
-            visitorDetailsList.add(VisitorInfoDto(contact))
-          }
-        }
-      }
-    }
-
-    return visitorDetailsList
+    return getValidVisitors(bookerReference, prisonerNumber, prison)
   }
 
   private fun getPrisonerInfo(offenderSearchPrisoner: PrisonerDto, bookerPrisoner: BookerPrisonersDto): PrisonerInfoDto? {
@@ -124,6 +107,32 @@ class PublicBookerService(
     }
 
     return null
+  }
+
+  private fun getValidVisitors(bookerReference: String, prisonerNumber: String, prison: PrisonDto): List<VisitorInfoDto> {
+    val visitorDetailsList = mutableListOf<VisitorInfoDto>()
+    val associatedVisitors = prisonVisitBookerRegistryClient.getVisitorsForBookersAssociatedPrisoner(bookerReference, prisonerNumber)
+
+    if (associatedVisitors.isNotEmpty()) {
+      // get approved visitors for a prisoner with a DOB and not BANNED
+      var allValidContacts = emptyList<PrisonerContactDto>()
+      try {
+        allValidContacts = getAllValidContacts(prison, prisonerNumber)
+      } catch (nfe: NotFoundException) {
+        logger.error("No valid contacts found for prisoner id - $prisonerNumber")
+      }
+
+      // filter them through the associated visitor list
+      if (allValidContacts.isNotEmpty()) {
+        associatedVisitors.forEach { associatedVisitor ->
+          allValidContacts.firstOrNull { it.personId == associatedVisitor.personId }?.let { contact ->
+            visitorDetailsList.add(VisitorInfoDto(contact))
+          }
+        }
+      }
+    }
+
+    return visitorDetailsList.toList()
   }
 
   private fun validatePrisoner(prisonerNumber: String, offenderSearchPrisoner: PrisonerDto): String? {
@@ -151,7 +160,7 @@ class PublicBookerService(
     return errorMessage
   }
 
-  private fun getAllValidContacts(prison: PrisonDto, prisonerNumber: String): List<PrisonerContactDto>? {
+  private fun getAllValidContacts(prison: PrisonDto, prisonerNumber: String): List<PrisonerContactDto> {
     val lastBookableDate = getLastBookableSessionDate(prison)
 
     return prisonerContactService.getPrisonersSocialContactsWithDOBAndNotBannedBeforeDate(prisonerNumber, lastBookableDate)
