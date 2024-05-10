@@ -20,7 +20,6 @@ class PrisonService(
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-
   /**
    * Gets the prison details from VSIP and also the prison name from prison-register.
    * Only use if the name is also needed.
