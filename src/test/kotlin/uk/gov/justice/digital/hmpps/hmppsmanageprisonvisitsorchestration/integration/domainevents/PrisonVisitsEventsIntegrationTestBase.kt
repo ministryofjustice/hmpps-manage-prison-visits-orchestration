@@ -40,8 +40,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerReleasedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerRestrictionChangedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.VisitorRestrictionChangedNotifier
-import uk.gov.justice.digital.hmpps.prisonertonomisupdate.integration.LocalStackContainer
-import uk.gov.justice.digital.hmpps.prisonertonomisupdate.integration.LocalStackContainer.setLocalStackProperties
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.domainevents.LocalStackContainer.setLocalStackProperties
 import uk.gov.justice.hmpps.sqs.HmppsQueue
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.HmppsTopic

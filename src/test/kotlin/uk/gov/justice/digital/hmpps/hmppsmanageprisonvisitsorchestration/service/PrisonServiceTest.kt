@@ -6,15 +6,16 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.mock
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonRegisterClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import java.time.LocalDate
 
 @ExtendWith(MockitoExtension::class)
 class PrisonServiceTest {
 
-  private val visitSchedulerService = mock<VisitSchedulerService>()
+  private val visitSchedulerClient = mock<VisitSchedulerClient>()
   private val pisonRegisterClient = mock<PrisonRegisterClient>()
-  var prisonService: PrisonService = PrisonService(visitSchedulerService, pisonRegisterClient)
+  var prisonService: PrisonService = PrisonService(visitSchedulerClient, pisonRegisterClient)
 
   @Test
   fun `works out date range correctly with give prison object`() {

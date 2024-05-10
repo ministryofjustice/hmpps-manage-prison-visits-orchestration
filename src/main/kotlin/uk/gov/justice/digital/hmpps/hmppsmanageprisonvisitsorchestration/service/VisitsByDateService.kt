@@ -49,9 +49,8 @@ class VisitsByDateService(
       val visitorCount = visit.visitors?.size ?: 0
       val visitTimeSlot = SessionTimeSlotDto(visit.startTimestamp.toLocalTime(), visit.endTimestamp.toLocalTime())
       try {
-        prisonerSearchClient.getPrisonerById(visit.prisonerId)?.let { prisoner ->
-          VisitPreviewDto(visit.prisonerId, prisoner.firstName, prisoner.lastName, visit.reference, visitorCount, visitTimeSlot)
-        } ?: VisitPreviewDto(visit.prisonerId, visit.reference, visitorCount, visitTimeSlot)
+        val prisoner = prisonerSearchClient.getPrisonerById(visit.prisonerId)
+        VisitPreviewDto(visit.prisonerId, prisoner.firstName, prisoner.lastName, visit.reference, visitorCount, visitTimeSlot)
       } catch (e: Exception) {
         VisitPreviewDto(visit.prisonerId, visit.reference, visitorCount, visitTimeSlot)
       }
