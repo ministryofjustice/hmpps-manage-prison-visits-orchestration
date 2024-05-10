@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.con
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerInfoDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerAuthFailureException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
@@ -80,7 +80,7 @@ class PublicBookerService(
 
     val prisonCode = offenderSearchPrisoner.prisonId!!
     // get the prison and validate
-    val prison = prisonService.getPrison(prisonCode)
+    val prison = prisonService.getVSIPPrison(prisonCode)
     validatePrison(prison)?.let {
       val message = MessageFormat.format(PRISON_VALIDATION_ERROR_MSG, prisonCode, prisonerNumber, it)
       logger.error(message)
@@ -92,9 +92,9 @@ class PublicBookerService(
 
   private fun getPrisonerInfo(offenderSearchPrisoner: PrisonerDto, bookerPrisoner: BookerPrisonersDto): PrisonerInfoDto? {
     val prisonCode = offenderSearchPrisoner.prisonId!!
-    val prison: PrisonDto
+    val prison: VisitSchedulerPrisonDto
     try {
-      prison = prisonService.getPrison(prisonCode)
+      prison = prisonService.getVSIPPrison(prisonCode)
     } catch (ne: NotFoundException) {
       logger.error("Prison with code - $prisonCode, not found on visit-scheduler")
       return null
@@ -109,7 +109,7 @@ class PublicBookerService(
     return null
   }
 
-  private fun getValidVisitors(bookerReference: String, prisonerNumber: String, prison: PrisonDto): List<VisitorInfoDto> {
+  private fun getValidVisitors(bookerReference: String, prisonerNumber: String, prison: VisitSchedulerPrisonDto): List<VisitorInfoDto> {
     val visitorDetailsList = mutableListOf<VisitorInfoDto>()
     val associatedVisitors = prisonVisitBookerRegistryClient.getVisitorsForBookersAssociatedPrisoner(bookerReference, prisonerNumber)
 
@@ -146,7 +146,7 @@ class PublicBookerService(
     return errorMessage
   }
 
-  private fun validatePrison(prison: PrisonDto): String? {
+  private fun validatePrison(prison: VisitSchedulerPrisonDto): String? {
     var errorMessage: String? = null
 
     if (!prisonService.isActive(prison)) {
@@ -160,13 +160,13 @@ class PublicBookerService(
     return errorMessage
   }
 
-  private fun getAllValidContacts(prison: PrisonDto, prisonerNumber: String): List<PrisonerContactDto> {
+  private fun getAllValidContacts(prison: VisitSchedulerPrisonDto, prisonerNumber: String): List<PrisonerContactDto> {
     val lastBookableDate = getLastBookableSessionDate(prison)
 
     return prisonerContactService.getPrisonersSocialContactsWithDOBAndNotBannedBeforeDate(prisonerNumber, lastBookableDate)
   }
 
-  private fun getLastBookableSessionDate(prison: PrisonDto): LocalDate {
+  private fun getLastBookableSessionDate(prison: VisitSchedulerPrisonDto): LocalDate {
     return prisonService.getLastBookableSessionDate(prison, LocalDate.now())
   }
 }
