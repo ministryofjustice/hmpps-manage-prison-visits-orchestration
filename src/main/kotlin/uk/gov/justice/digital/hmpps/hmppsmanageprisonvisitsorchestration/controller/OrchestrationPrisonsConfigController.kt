@@ -11,20 +11,18 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonService
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
 
-const val ORCHESTRATION_CONFIG_CONTROLLER_PATH: String = "/config"
+const val ORCHESTRATION_PRISONS_CONFIG_CONTROLLER_PATH: String = "/config/prisons"
 
 @RestController
 class OrchestrationPrisonsConfigController(
-  private val visitSchedulerService: VisitSchedulerService,
   private val prisonService: PrisonService,
 ) {
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
-  @GetMapping("$ORCHESTRATION_CONFIG_CONTROLLER_PATH/prisons/user-type/{type}/supported")
+  @GetMapping("$ORCHESTRATION_PRISONS_CONFIG_CONTROLLER_PATH/user-type/{type}/supported")
   @Operation(
     summary = "Get supported prisons",
     description = "Get all supported prisons id's",
@@ -63,7 +61,7 @@ class OrchestrationPrisonsConfigController(
   }
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
-  @GetMapping("$ORCHESTRATION_CONFIG_CONTROLLER_PATH/prisons/prison/{prisonCode}")
+  @GetMapping("$ORCHESTRATION_PRISONS_CONFIG_CONTROLLER_PATH/prison/{prisonCode}")
   @Operation(
     summary = "Gets prison by given prison id/code",
     description = "Gets prison by given prison id/code",
@@ -88,7 +86,7 @@ class OrchestrationPrisonsConfigController(
     @Schema(description = "prison id", example = "BHI", required = true)
     @PathVariable
     prisonCode: String,
-  ): PrisonDto? {
-    return visitSchedulerService.getPrison(prisonCode)
+  ): PrisonDto {
+    return prisonService.getPrisonWithName(prisonCode)
   }
 }

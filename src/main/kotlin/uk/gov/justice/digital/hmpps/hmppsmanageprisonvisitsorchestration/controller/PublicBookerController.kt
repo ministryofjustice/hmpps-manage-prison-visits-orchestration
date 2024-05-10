@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorBasicInfoDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerBasicInfoDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorInfoDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PublicBookerService
 
 const val PUBLIC_BOOKER_CONTROLLER_PATH: String = "/public/booker"
@@ -99,7 +99,7 @@ class PublicBookerController(
     )
     @NotBlank
     bookerReference: String,
-  ): List<PrisonerBasicInfoDto> {
+  ): List<PrisonerInfoDto> {
     return publicBookerService.getBookersPrisoners(bookerReference)
   }
 
@@ -141,7 +141,7 @@ class PublicBookerController(
     )
     @NotBlank
     prisonerNumber: String,
-  ): List<VisitorBasicInfoDto> {
+  ): List<VisitorInfoDto> {
     return publicBookerService.getVisitorsForBookersPrisoner(bookerReference, prisonerNumber)
   }
 }

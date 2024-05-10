@@ -11,6 +11,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Mono
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isNotFoundError
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
@@ -18,10 +19,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.IgnoreVisitNotificationsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
@@ -36,6 +37,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerRestrictionChangeNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionChangeNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import java.time.Duration
 import java.time.LocalDate
@@ -176,12 +178,24 @@ class VisitSchedulerClient(
       .bodyToMono<List<AvailableVisitSessionDto>>().block(apiTimeout)
   }
 
-  fun getSupportedPrisons(type: UserType): List<String>? {
+  fun getSupportedPrisons(type: UserType): List<String> {
+    val uri = "/config/prisons/user-type/${type.name}/supported"
     return webClient.get()
-      .uri("/config/prisons/user-type/${type.name}/supported")
+      .uri(uri)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono<List<String>>().block(apiTimeout)
+      .bodyToMono<List<String>>()
+      .onErrorResume {
+          e ->
+        if (!isNotFoundError(e)) {
+          LOG.error("getSupportedPrisons Failed for get request $uri")
+          Mono.error(e)
+        } else {
+          LOG.error("getSupportedPrisons NOT_FOUND for get request $uri")
+          Mono.error { NotFoundException("No Supported prisons found for UserType - $type on visit-scheduler") }
+        }
+      }
+      .blockOptional(apiTimeout).orElseThrow { NotFoundException("No Supported prisons found for UserType - $type on visit-scheduler") }
   }
 
   fun getSessionCapacity(
@@ -295,12 +309,25 @@ class VisitSchedulerClient(
       .retrieve()
       .bodyToMono<NotificationCountDto>().block(apiTimeout)
   }
-  fun getPrison(prisonCode: String): PrisonDto? {
+  fun getPrison(prisonCode: String): VisitSchedulerPrisonDto {
+    val uri = "/admin/prisons/prison/$prisonCode"
+
     return webClient.get()
-      .uri("/admin/prisons/prison/$prisonCode")
+      .uri(uri)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono<PrisonDto>().block(apiTimeout)
+      .bodyToMono<VisitSchedulerPrisonDto>()
+      .onErrorResume {
+          e ->
+        if (!isNotFoundError(e)) {
+          LOG.error("getPrison Failed for get request $uri")
+          Mono.error(e)
+        } else {
+          LOG.error("getPrison NOT_FOUND for get request $uri")
+          Mono.error { NotFoundException("Prison with prison code - $prisonCode not found on visit-scheduler") }
+        }
+      }
+      .blockOptional(apiTimeout).orElseThrow { NotFoundException("Prison with prison code - $prisonCode not found on visit-scheduler") }
   }
 
   fun getNotificationsTypesForBookingReference(reference: String): List<NotificationEventType>? {

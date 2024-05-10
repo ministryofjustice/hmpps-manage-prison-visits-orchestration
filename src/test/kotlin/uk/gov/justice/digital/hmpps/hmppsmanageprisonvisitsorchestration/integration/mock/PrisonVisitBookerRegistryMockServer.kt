@@ -26,7 +26,7 @@ class PrisonVisitBookerRegistryMockServer(@Autowired private val objectMapper: O
     )
   }
 
-  fun stubGetBookersPrisoners(bookerReference: String, bookerPrisoners: List<BookerPrisonersDto>?, httpStatus: HttpStatus = HttpStatus.OK) {
+  fun stubGetBookersPrisoners(bookerReference: String, bookerPrisoners: List<BookerPrisonersDto>?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
       WireMock.get("/public/booker/$bookerReference/prisoners?active=true")
