@@ -13,8 +13,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.HasClosedRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.DateRangeNotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.RangeNotFoundException
 import java.net.URI
 import java.time.Duration
 import java.time.LocalDate
@@ -86,7 +86,7 @@ class PrisonerContactRegistryClient(
         } else {
           val message = "getBannedRestrictionDateRage NOT FOUND get request $uri"
           LOG.error("getBannedRestrictionDateRage NOT FOUND get request $uri")
-          Mono.error(RangeNotFoundException(message, e))
+          Mono.error(DateRangeNotFoundException(message, e))
         }
       }
       .blockOptional(apiTimeout).get()

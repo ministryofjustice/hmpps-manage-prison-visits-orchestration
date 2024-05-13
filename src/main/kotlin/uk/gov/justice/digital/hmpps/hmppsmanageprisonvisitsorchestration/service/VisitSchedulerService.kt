@@ -33,7 +33,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerRestrictionChangeNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionChangeNotificationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.RangeNotFoundException
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.DateRangeNotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.NonAssociationChangedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PersonRestrictionChangeInfo
@@ -151,7 +151,7 @@ class VisitSchedulerService(
     return try {
       val updatedDateRange = visitors?.let { prisonerProfileService.getBannedRestrictionDateRage(prisonerId, visitors, dataRange) } ?: dataRange
       visitSchedulerClient.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction, updatedDateRange)
-    } catch (e: RangeNotFoundException) {
+    } catch (e: DateRangeNotFoundException) {
       LOG.error("getAvailableVisitSessions range is not returned therefor we do not have a valid date range and should return an empty list")
       emptyList()
     }
