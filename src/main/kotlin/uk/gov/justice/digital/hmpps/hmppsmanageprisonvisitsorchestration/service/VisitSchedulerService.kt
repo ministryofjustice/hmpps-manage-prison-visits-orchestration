@@ -144,7 +144,7 @@ class VisitSchedulerService(
     return visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max)
   }
 
-  fun getAvailableVisitSessions(prisonCode: String, prisonerId: String, requestedSessionRestriction: SessionRestriction?, visitors: List<Long>?): List<AvailableVisitSessionDto>? {
+  fun getAvailableVisitSessions(prisonCode: String, prisonerId: String, requestedSessionRestriction: SessionRestriction?, visitors: List<Long>?): List<AvailableVisitSessionDto> {
     val sessionRestriction = updateRequestedRestriction(requestedSessionRestriction, prisonerId, visitors)
 
     val dataRange = prisonService.getToDaysBookableDateRange(prisonCode)

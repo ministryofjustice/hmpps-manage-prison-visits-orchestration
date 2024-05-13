@@ -168,14 +168,27 @@ class VisitSchedulerClient(
       .bodyToMono<List<VisitSessionDto>>().block(apiTimeout)
   }
 
-  fun getAvailableVisitSessions(prisonId: String, prisonerId: String, sessionRestriction: SessionRestriction, dateRange: DateRange): List<AvailableVisitSessionDto>? {
+  fun getAvailableVisitSessions(prisonId: String, prisonerId: String, sessionRestriction: SessionRestriction, dateRange: DateRange): List<AvailableVisitSessionDto> {
+    val uri = "/visit-sessions/available"
+
     return webClient.get()
-      .uri("/visit-sessions/available") {
+      .uri(uri) {
         visitAvailableSessionsUriBuilder(prisonId, prisonerId, sessionRestriction, dateRange, it).build()
       }
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono<List<AvailableVisitSessionDto>>().block(apiTimeout)
+      .bodyToMono<List<AvailableVisitSessionDto>>()
+      .onErrorResume {
+          e ->
+        if (!isNotFoundError(e)) {
+          LOG.error("getAvailableVisitSessions Failed for get request $uri")
+          Mono.error(e)
+        } else {
+          LOG.error("getAvailableVisitSessions returned NOT_FOUND for get request $uri")
+          Mono.error { NotFoundException("getAvailableVisitSessions not found for - $prisonId on prison-api", e) }
+        }
+      }
+      .blockOptional(apiTimeout).get()
   }
 
   fun getSupportedPrisons(type: UserType): List<String> {
