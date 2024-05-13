@@ -325,20 +325,24 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     sessionRestriction: SessionRestriction,
     visitSessions: List<AvailableVisitSessionDto>,
     httpStatus: HttpStatus = HttpStatus.OK,
-  ) {
-    val today = LocalDate.now()
-    val fromDate = today.plusDays(visitSchedulerPrisonDto.policyNoticeDaysMin.toLong())
-    val toDate = today.plusDays(visitSchedulerPrisonDto.policyNoticeDaysMax.toLong())
-    val dateRange = DateRange(fromDate, toDate)
-
+    dateRange: DateRange? = null,
+  ): DateRange {
+    val dateRangeToUse = dateRange ?: run {
+      val today = LocalDate.now()
+      val fromDate = today.plusDays(visitSchedulerPrisonDto.policyNoticeDaysMin.toLong())
+      val toDate = today.plusDays(visitSchedulerPrisonDto.policyNoticeDaysMax.toLong())
+      DateRange(fromDate, toDate)
+    }
     stubFor(
-      get("/visit-sessions/available?prisonId=${visitSchedulerPrisonDto.code}&prisonerId=$prisonerId&sessionRestriction=${sessionRestriction.name}&fromDate=${dateRange.fromDate}&toDate=${dateRange.toDate}")
+      get("/visit-sessions/available?prisonId=${visitSchedulerPrisonDto.code}&prisonerId=$prisonerId&sessionRestriction=${sessionRestriction.name}&fromDate=${dateRangeToUse.fromDate}&toDate=${dateRangeToUse.toDate}")
         .willReturn(
           createJsonResponseBuilder()
             .withStatus(httpStatus.value())
             .withBody(getJsonString(visitSessions)),
         ),
     )
+
+    return dateRangeToUse
   }
 
   fun stubGetVisitSessions(prisonId: String, prisonerId: String, visitSessions: List<VisitSessionDto>) {
