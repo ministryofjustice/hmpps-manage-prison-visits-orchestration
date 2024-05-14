@@ -43,6 +43,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonVisitBookerRegistryMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonerContactRegistryMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.VisitSchedulerMockServer
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.WhereaboutsApiMockServer
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.stream.Collectors
@@ -60,6 +61,7 @@ abstract class IntegrationTestBase {
     val prisonRegisterMockServer = PrisonRegisterMockServer(objectMapper)
     val manageUsersApiMockServer = ManageUsersApiMockServer()
     val prisonVisitBookerRegistryMockServer = PrisonVisitBookerRegistryMockServer(objectMapper)
+    val whereaboutsApiMockServer = WhereaboutsApiMockServer(objectMapper)
 
     @BeforeAll
     @JvmStatic
@@ -71,6 +73,8 @@ abstract class IntegrationTestBase {
       prisonRegisterMockServer.start()
       manageUsersApiMockServer.start()
       prisonVisitBookerRegistryMockServer.start()
+      prisonVisitBookerRegistryMockServer.start()
+      whereaboutsApiMockServer.start()
     }
 
     @AfterAll
@@ -83,6 +87,8 @@ abstract class IntegrationTestBase {
       prisonRegisterMockServer.stop()
       manageUsersApiMockServer.stop()
       prisonVisitBookerRegistryMockServer.stop()
+      prisonVisitBookerRegistryMockServer.start()
+      whereaboutsApiMockServer.stop()
     }
 
     fun getVisitsQueryParams(
