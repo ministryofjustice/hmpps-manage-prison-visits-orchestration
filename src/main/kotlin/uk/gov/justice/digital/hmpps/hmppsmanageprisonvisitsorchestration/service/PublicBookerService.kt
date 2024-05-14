@@ -101,7 +101,7 @@ class PublicBookerService(
     }
 
     validatePrison(prison)?.let {
-      logger.error(MessageFormat.format(PRISONER_VALIDATION_ERROR_MSG, prisonCode, bookerPrisoner.prisonerNumber, it))
+      logger.error(MessageFormat.format(PRISON_VALIDATION_ERROR_MSG, prisonCode, bookerPrisoner.prisonerNumber, it))
     } ?: run {
       return PrisonerInfoDto(bookerPrisoner.prisonerNumber, offenderSearchPrisoner)
     }
