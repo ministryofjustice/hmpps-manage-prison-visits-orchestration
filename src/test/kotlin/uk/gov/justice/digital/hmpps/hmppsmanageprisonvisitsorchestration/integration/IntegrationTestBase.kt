@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -53,15 +52,14 @@ import java.util.stream.Collectors
 @ExtendWith(HmppsAuthExtension::class)
 abstract class IntegrationTestBase {
   companion object {
-    val objectMapper: ObjectMapper = ObjectMapper().registerModule(JavaTimeModule())
-    val visitSchedulerMockServer = VisitSchedulerMockServer(objectMapper)
-    val prisonApiMockServer = PrisonApiMockServer(objectMapper)
-    val prisonOffenderSearchMockServer = PrisonOffenderSearchMockServer(objectMapper)
-    val prisonerContactRegistryMockServer = PrisonerContactRegistryMockServer(objectMapper)
-    val prisonRegisterMockServer = PrisonRegisterMockServer(objectMapper)
+    val visitSchedulerMockServer = VisitSchedulerMockServer()
+    val prisonApiMockServer = PrisonApiMockServer()
+    val prisonOffenderSearchMockServer = PrisonOffenderSearchMockServer()
+    val prisonerContactRegistryMockServer = PrisonerContactRegistryMockServer()
+    val prisonRegisterMockServer = PrisonRegisterMockServer()
     val manageUsersApiMockServer = ManageUsersApiMockServer()
-    val prisonVisitBookerRegistryMockServer = PrisonVisitBookerRegistryMockServer(objectMapper)
-    val whereaboutsApiMockServer = WhereaboutsApiMockServer(objectMapper)
+    val prisonVisitBookerRegistryMockServer = PrisonVisitBookerRegistryMockServer()
+    val whereaboutsApiMockServer = WhereaboutsApiMockServer()
 
     @BeforeAll
     @JvmStatic
