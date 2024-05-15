@@ -230,7 +230,8 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     val offenderRestrictionsDto = OffenderRestrictionsDto(
       bookingId = 1,
       offenderRestrictions = listOf(
-        OffenderRestrictionDto(restrictionId = 1, restrictionType = "CLOSED", restrictionTypeDescription = "", startDate = LocalDate.now(), expiryDate = LocalDate.now(), active = true),
+        // CLOSED restriction with expiry date as NULL
+        OffenderRestrictionDto(restrictionId = 1, restrictionType = "CLOSED", restrictionTypeDescription = "", startDate = LocalDate.now(), expiryDate = null, active = true),
       ),
     )
 
