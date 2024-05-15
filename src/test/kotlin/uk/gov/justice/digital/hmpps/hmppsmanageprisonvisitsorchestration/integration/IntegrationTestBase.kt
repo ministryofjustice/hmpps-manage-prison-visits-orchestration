@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -43,6 +42,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonVisitBookerRegistryMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonerContactRegistryMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.VisitSchedulerMockServer
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.WhereaboutsApiMockServer
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.stream.Collectors
@@ -52,14 +52,14 @@ import java.util.stream.Collectors
 @ExtendWith(HmppsAuthExtension::class)
 abstract class IntegrationTestBase {
   companion object {
-    val objectMapper: ObjectMapper = ObjectMapper().registerModule(JavaTimeModule())
-    val visitSchedulerMockServer = VisitSchedulerMockServer(objectMapper)
-    val prisonApiMockServer = PrisonApiMockServer(objectMapper)
-    val prisonOffenderSearchMockServer = PrisonOffenderSearchMockServer(objectMapper)
-    val prisonerContactRegistryMockServer = PrisonerContactRegistryMockServer(objectMapper)
-    val prisonRegisterMockServer = PrisonRegisterMockServer(objectMapper)
+    val visitSchedulerMockServer = VisitSchedulerMockServer()
+    val prisonApiMockServer = PrisonApiMockServer()
+    val prisonOffenderSearchMockServer = PrisonOffenderSearchMockServer()
+    val prisonerContactRegistryMockServer = PrisonerContactRegistryMockServer()
+    val prisonRegisterMockServer = PrisonRegisterMockServer()
     val manageUsersApiMockServer = ManageUsersApiMockServer()
-    val prisonVisitBookerRegistryMockServer = PrisonVisitBookerRegistryMockServer(objectMapper)
+    val prisonVisitBookerRegistryMockServer = PrisonVisitBookerRegistryMockServer()
+    val whereaboutsApiMockServer = WhereaboutsApiMockServer()
 
     @BeforeAll
     @JvmStatic
@@ -71,6 +71,8 @@ abstract class IntegrationTestBase {
       prisonRegisterMockServer.start()
       manageUsersApiMockServer.start()
       prisonVisitBookerRegistryMockServer.start()
+      prisonVisitBookerRegistryMockServer.start()
+      whereaboutsApiMockServer.start()
     }
 
     @AfterAll
@@ -83,6 +85,8 @@ abstract class IntegrationTestBase {
       prisonRegisterMockServer.stop()
       manageUsersApiMockServer.stop()
       prisonVisitBookerRegistryMockServer.stop()
+      prisonVisitBookerRegistryMockServer.start()
+      whereaboutsApiMockServer.stop()
     }
 
     fun getVisitsQueryParams(

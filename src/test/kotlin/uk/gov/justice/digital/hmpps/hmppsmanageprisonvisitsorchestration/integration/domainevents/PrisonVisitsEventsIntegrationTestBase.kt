@@ -1,8 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.domainevents
 
-import com.fasterxml.jackson.annotation.JsonInclude.Include
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
@@ -52,9 +50,7 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
 
   companion object {
     private val localStackContainer = LocalStackContainer.instance
-    val objectMapper: ObjectMapper = ObjectMapper().registerModule(JavaTimeModule())
-      .setSerializationInclusion(Include.NON_NULL)
-    val visitSchedulerMockServer = VisitSchedulerMockServer(objectMapper)
+    val visitSchedulerMockServer = VisitSchedulerMockServer()
 
     @JvmStatic
     @DynamicPropertySource
