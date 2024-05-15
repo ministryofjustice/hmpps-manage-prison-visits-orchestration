@@ -21,7 +21,7 @@ data class OffenderRestrictionDto(
   val startDate: LocalDate,
 
   @Schema(description = "Date restriction applies to, or indefinitely if null", example = "1980-01-01")
-  val expiryDate: LocalDate,
+  val expiryDate: LocalDate? = null,
 
   @Schema(required = true, description = "true if restriction is within the start date and optional expiry date range")
   val active: Boolean,

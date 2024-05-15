@@ -67,7 +67,7 @@ class PrisonApiMockServer : WireMockServer(8093) {
     )
   }
 
-  fun stubGetPrisonerRestrictions(prisonerId: String, offenderRestrictionsDto: OffenderRestrictionsDto? = null) {
+  fun stubGetPrisonerRestrictions(prisonerId: String, offenderRestrictionsDto: OffenderRestrictionsDto? = null, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
     val responseBuilder = createJsonResponseBuilder()
 
     stubFor(
@@ -79,7 +79,7 @@ class PrisonApiMockServer : WireMockServer(8093) {
               .withBody(getJsonString(it))
           } ?: run {
             responseBuilder
-              .withStatus(HttpStatus.NOT_FOUND.value())
+              .withStatus(httpStatus.value())
           },
         ),
     )

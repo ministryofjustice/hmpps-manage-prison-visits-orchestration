@@ -8,6 +8,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
@@ -21,7 +22,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.CLOSED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.OPEN
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonerProfileService
 import java.time.LocalDate
@@ -61,14 +61,14 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     // Given
     val prisonCode = "MDI"
     val prisonerId = "AA123456B"
-    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), VisitRestriction.OPEN)
-    val visitSession2 = AvailableVisitSessionDto(LocalDate.now().plusDays(1), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), VisitRestriction.OPEN)
-    val visitSession3 = AvailableVisitSessionDto(LocalDate.now().plusDays(2), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), VisitRestriction.OPEN)
+    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val visitSession2 = AvailableVisitSessionDto(LocalDate.now().plusDays(1), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val visitSession3 = AvailableVisitSessionDto(LocalDate.now().plusDays(2), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
 
     val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18, setOf(LocalDate.now()))
     val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3))
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
-    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId)
+    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
 
     val visitorIds = listOf(1L, 2L, 3L)
     prisonerContactRegistryMockServer.stubDoVisitorsHaveClosedRestrictions(prisonerId, visitorIds = visitorIds, result = false)
@@ -88,11 +88,11 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     // Given
     val prisonCode = "MDI"
     val prisonerId = "AA123456B"
-    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), VisitRestriction.OPEN)
+    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
     val prisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18, setOf(LocalDate.now()))
     visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonDto, prisonerId, OPEN, mutableListOf(visitSession1))
     visitSchedulerMockServer.stubGetPrison(prisonCode, prisonDto)
-    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId)
+    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
 
     // When
     val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
@@ -108,13 +108,13 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     // Given
     val prisonCode = "MDI"
     val prisonerId = "AA123456B"
-    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), VisitRestriction.OPEN)
-    val visitSession2 = AvailableVisitSessionDto(LocalDate.now().plusDays(1), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), VisitRestriction.OPEN)
-    val visitSession3 = AvailableVisitSessionDto(LocalDate.now().plusDays(2), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), VisitRestriction.OPEN)
+    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val visitSession2 = AvailableVisitSessionDto(LocalDate.now().plusDays(1), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val visitSession3 = AvailableVisitSessionDto(LocalDate.now().plusDays(2), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
     val prisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18, setOf(LocalDate.now()))
     val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3))
     visitSchedulerMockServer.stubGetPrison(prisonCode, prisonDto)
-    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId)
+    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
     val visitorIds = listOf(1L, 2L, 3L)
     prisonerContactRegistryMockServer.stubDoVisitorsHaveClosedRestrictions(prisonerId, visitorIds = visitorIds, result = false)
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = null)
@@ -155,7 +155,7 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     val prisonerId = "AA123456B"
     val visitorIds = listOf(1L)
 
-    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), VisitRestriction.OPEN)
+    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
     val prisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18, setOf(LocalDate.now()))
 
     val toDay = LocalDate.now()
@@ -167,7 +167,7 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonDto, prisonerId, OPEN, mutableListOf(visitSession1), dateRange = moderatedDateRange)
 
     visitSchedulerMockServer.stubGetPrison(prisonCode, prisonDto)
-    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId)
+    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
 
     prisonerContactRegistryMockServer.stubDoVisitorsHaveClosedRestrictions(prisonerId, visitorIds = visitorIds, result = false)
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = moderatedDateRange)
@@ -186,7 +186,46 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     // Given
     val prisonCode = "MDI"
     val prisonerId = "AA123456B"
-    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), VisitRestriction.CLOSED)
+    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), CLOSED)
+
+    val offenderRestrictionsDto = OffenderRestrictionsDto(
+      bookingId = 1,
+      offenderRestrictions = listOf(
+        OffenderRestrictionDto(restrictionId = 1, restrictionType = "CLOSED", restrictionTypeDescription = "", startDate = LocalDate.now(), expiryDate = LocalDate.now(), active = true),
+      ),
+    )
+
+    val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18, setOf(LocalDate.now()))
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, CLOSED, mutableListOf(visitSession1))
+    visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
+    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictionsDto)
+
+    val visitorIds = listOf(1L, 2L, 3L)
+    prisonerContactRegistryMockServer.stubDoVisitorsHaveClosedRestrictions(prisonerId, visitorIds = visitorIds, result = false)
+    prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
+
+    // When
+    val responseSpec = callGetAvailableVisitSessions(
+      webTestClient,
+      prisonCode,
+      prisonerId,
+      OPEN,
+      visitorIds,
+      roleVSIPOrchestrationServiceHttpHeaders,
+    )
+
+    // Then
+    responseSpec.expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.size()").isEqualTo(1)
+  }
+
+  @Test
+  fun `when prisoner has CLOSED restriction with no expiry date then these only closed sessions are returned`() {
+    // Given
+    val prisonCode = "MDI"
+    val prisonerId = "AA123456B"
+    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), CLOSED)
 
     val offenderRestrictionsDto = OffenderRestrictionsDto(
       bookingId = 1,
@@ -225,12 +264,12 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     // Given
     val prisonCode = "MDI"
     val prisonerId = "AA123456B"
-    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), VisitRestriction.CLOSED)
+    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), CLOSED)
 
     val prisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18, setOf(LocalDate.now()))
     val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonDto, prisonerId, CLOSED, mutableListOf(visitSession1))
     visitSchedulerMockServer.stubGetPrison(prisonCode, prisonDto)
-    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId)
+    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
 
     val visitorIds = listOf(1L, 2L, 3L)
     prisonerContactRegistryMockServer.stubDoVisitorsHaveClosedRestrictions(prisonerId, visitorIds = visitorIds, result = true)
@@ -261,7 +300,7 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18, setOf(LocalDate.now()))
     val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf())
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
-    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId)
+    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
 
     val visitorIds = listOf(1L, 2L, 3L)
     prisonerContactRegistryMockServer.stubDoVisitorsHaveClosedRestrictions(prisonerId, visitorIds = visitorIds, result = false)
@@ -292,7 +331,7 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18, setOf(LocalDate.now()))
     val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(), NOT_FOUND)
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
-    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId)
+    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
 
     val visitorIds = listOf(1L, 2L, 3L)
     prisonerContactRegistryMockServer.stubDoVisitorsHaveClosedRestrictions(prisonerId, visitorIds = visitorIds, result = false)
@@ -311,6 +350,66 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isNotFound
     verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange)
+  }
+
+  @Test
+  fun `when call to prisoner offender search throws 404 then same 404 error status is sent back`() {
+    // Given
+    val prisonCode = "MDI"
+    val prisonerId = "AA123456B"
+
+    val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18, setOf(LocalDate.now()))
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf())
+    visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
+    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, null)
+
+    val visitorIds = listOf(1L, 2L, 3L)
+    prisonerContactRegistryMockServer.stubDoVisitorsHaveClosedRestrictions(prisonerId, visitorIds = visitorIds, result = false)
+    prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
+
+    // When
+    val responseSpec = callGetAvailableVisitSessions(
+      webTestClient,
+      prisonCode,
+      prisonerId,
+      OPEN,
+      visitorIds,
+      roleVSIPOrchestrationServiceHttpHeaders,
+    )
+
+    // Then
+    responseSpec.expectStatus().isNotFound
+    verify(visitSchedulerClient, times(0)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange)
+  }
+
+  @Test
+  fun `when call to prisoner offender search throws INTERNAL_SERVER_ERROR then same INTERNAL_SERVER_ERROR error status is sent back`() {
+    // Given
+    val prisonCode = "MDI"
+    val prisonerId = "AA123456B"
+
+    val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18, setOf(LocalDate.now()))
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf())
+    visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
+    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, null, INTERNAL_SERVER_ERROR)
+
+    val visitorIds = listOf(1L, 2L, 3L)
+    prisonerContactRegistryMockServer.stubDoVisitorsHaveClosedRestrictions(prisonerId, visitorIds = visitorIds, result = false)
+    prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
+
+    // When
+    val responseSpec = callGetAvailableVisitSessions(
+      webTestClient,
+      prisonCode,
+      prisonerId,
+      OPEN,
+      visitorIds,
+      roleVSIPOrchestrationServiceHttpHeaders,
+    )
+
+    // Then
+    responseSpec.expectStatus().is5xxServerError
+    verify(visitSchedulerClient, times(0)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange)
   }
 
   @Test

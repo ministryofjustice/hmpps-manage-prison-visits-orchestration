@@ -5,23 +5,20 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
-import org.springframework.http.HttpStatus.NOT_FOUND
-import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isNotFoundError
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.CaseLoadDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.InmateDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.PrisonerBookingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.VisitBalancesDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import java.time.Duration
 import java.util.Optional
-import kotlin.collections.ArrayList
 
 @Component
 class PrisonApiClient(
@@ -80,9 +77,10 @@ class PrisonApiClient(
       }
   }
 
-  fun getPrisonerRestrictions(prisonerId: String): OffenderRestrictionsDto? {
+  fun getPrisonerRestrictions(prisonerId: String): OffenderRestrictionsDto {
+    val uri = "/api/offenders/$prisonerId/offender-restrictions"
     return webClient.get()
-      .uri("/api/offenders/$prisonerId/offender-restrictions") {
+      .uri(uri) {
         it.queryParam("activeRestrictionsOnly", true).build()
       }
       .retrieve()
@@ -90,31 +88,13 @@ class PrisonApiClient(
       .onErrorResume {
           e ->
         if (!isNotFoundError(e)) {
-          LOG.error("getOffenderRestrictions Failed get request /api/offenders/$prisonerId/offender-restrictions")
+          LOG.error("getOffenderRestrictions Failed get request $uri")
           Mono.error(e)
         } else {
-          LOG.error("getOffenderRestrictions NOT FOUND get request /api/offenders/$prisonerId/offender-restrictions")
-          return@onErrorResume Mono.justOrEmpty(null)
+          LOG.error("getOffenderRestrictions NOT FOUND get request $uri")
+          Mono.error { NotFoundException("No Offender restrictions found for prisoner - $prisonerId on prison-api") }
         }
       }
-      .block(apiTimeout)
-  }
-
-  fun isNotFoundError(e: Throwable?) =
-    e is WebClientResponseException && e.statusCode == NOT_FOUND
-
-  fun getUserCaseLoads(): ArrayList<CaseLoadDto>? {
-    return webClient.get()
-      .uri("/api/users/me/caseLoads")
-      .retrieve()
-      .bodyToMono<ArrayList<CaseLoadDto>>()
-      .block(apiTimeout)
-  }
-
-  fun setActiveCaseLoad(caseLoadId: String) {
-    webClient.put().uri("/api/users/me/activeCaseLoad")
-      .body(BodyInserters.fromValue(caseLoadId))
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
+      .blockOptional(apiTimeout).orElseThrow { NotFoundException("No Offender restrictions found for prisoner - $prisonerId on prison-api") }
   }
 }
