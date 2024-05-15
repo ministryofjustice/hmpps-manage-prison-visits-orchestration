@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.validation.NullableNotEmpty
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -111,8 +112,15 @@ class OrchestrationSessionsController(private val visitSchedulerService: VisitSc
     @RequestParam(value = "sessionRestriction", required = false)
     @Parameter(description = "Filter sessions by session restriction - OPEN or CLOSED, if prisoner has CLOSED it will use that", example = "CLOSED", required = false)
     sessionRestriction: SessionRestriction = SessionRestriction.OPEN,
-  ): List<AvailableVisitSessionDto>? =
-    visitSchedulerService.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction)
+    @RequestParam(value = "visitors", required = false)
+    @Parameter(
+      description = "List of visitors who require visit sessions",
+      example = "4729510,4729220",
+    )
+    @NullableNotEmpty(message = "An empty visitors list is not allowed")
+    visitors: List<Long>? = null,
+  ): List<AvailableVisitSessionDto> =
+    visitSchedulerService.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction, visitors)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("/visit-sessions/capacity")

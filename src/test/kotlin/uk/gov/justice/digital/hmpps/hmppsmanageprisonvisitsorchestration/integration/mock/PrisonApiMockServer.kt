@@ -68,7 +68,7 @@ class PrisonApiMockServer(@Autowired private val objectMapper: ObjectMapper) : W
     )
   }
 
-  fun stubGetRestrictions(prisonerId: String, offenderRestrictionsDto: OffenderRestrictionsDto? = null) {
+  fun stubGetPrisonerRestrictions(prisonerId: String, offenderRestrictionsDto: OffenderRestrictionsDto? = null) {
     val responseBuilder = aResponse()
       .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
 

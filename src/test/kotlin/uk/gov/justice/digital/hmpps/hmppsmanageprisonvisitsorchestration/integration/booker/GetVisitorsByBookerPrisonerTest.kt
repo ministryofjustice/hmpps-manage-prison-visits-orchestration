@@ -247,7 +247,7 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when prisoner is in a prison not on VSIP then BAD_REQUEST status is sent back`() {
+  fun `when prisoner is in a prison not on VSIP then NOT_FOUND status is sent back`() {
     // Given
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(BOOKER_REFERENCE, listOf(bookerRegistryPrisonerDto))
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisonerVisitors(
@@ -401,6 +401,7 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
 
     // Then
     responseSpec.expectStatus().isNotFound
+    assertErrorResult(responseSpec, HttpStatus.NOT_FOUND, "Visitors for booker reference - booker-1 and prisoner id - AA112233B not found on public-visits-booker-registry")
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
     verify(visitSchedulerClientSpy, times(1)).getPrison(PRISON_CODE)
