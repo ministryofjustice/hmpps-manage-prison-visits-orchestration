@@ -14,6 +14,9 @@ data class AvailableVisitSessionDto(
   @FutureOrPresent
   val sessionDate: LocalDate,
 
+  @Schema(description = "sessionTemplateReference", example = "v9d.7ed.7u", required = true)
+  val sessionTemplateReference: String,
+
   @Schema(description = "Session time slot", required = true)
   @field:NotNull
   @Valid
