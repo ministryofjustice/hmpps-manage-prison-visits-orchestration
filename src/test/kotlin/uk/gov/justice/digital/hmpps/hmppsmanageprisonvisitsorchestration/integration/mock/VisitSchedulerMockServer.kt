@@ -1,10 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
 import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.containing
 import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import com.github.tomakehurst.wiremock.client.WireMock.get
@@ -12,9 +9,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.http.RequestMethod
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
@@ -34,11 +29,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationGroupDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerVisitsNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase.Companion.getVisitsQueryParams
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.createJsonResponseBuilder
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.getJsonString
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.ArrayList
 
-class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper) : WireMockServer(8092) {
+class VisitSchedulerMockServer : WireMockServer(8092) {
   fun stubGetVisit(reference: String, visitDto: VisitDto?) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
@@ -325,20 +322,24 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     sessionRestriction: SessionRestriction,
     visitSessions: List<AvailableVisitSessionDto>,
     httpStatus: HttpStatus = HttpStatus.OK,
-  ) {
-    val today = LocalDate.now()
-    val fromDate = today.plusDays(visitSchedulerPrisonDto.policyNoticeDaysMin.toLong())
-    val toDate = today.plusDays(visitSchedulerPrisonDto.policyNoticeDaysMax.toLong())
-    val dateRange = DateRange(fromDate, toDate)
-
+    dateRange: DateRange? = null,
+  ): DateRange {
+    val dateRangeToUse = dateRange ?: run {
+      val today = LocalDate.now()
+      val fromDate = today.plusDays(visitSchedulerPrisonDto.policyNoticeDaysMin.toLong())
+      val toDate = today.plusDays(visitSchedulerPrisonDto.policyNoticeDaysMax.toLong())
+      DateRange(fromDate, toDate)
+    }
     stubFor(
-      get("/visit-sessions/available?prisonId=${visitSchedulerPrisonDto.code}&prisonerId=$prisonerId&sessionRestriction=${sessionRestriction.name}&fromDate=${dateRange.fromDate}&toDate=${dateRange.toDate}")
+      get("/visit-sessions/available?prisonId=${visitSchedulerPrisonDto.code}&prisonerId=$prisonerId&sessionRestriction=${sessionRestriction.name}&fromDate=${dateRangeToUse.fromDate}&toDate=${dateRangeToUse.toDate}")
         .willReturn(
           createJsonResponseBuilder()
             .withStatus(httpStatus.value())
             .withBody(getJsonString(visitSessions)),
         ),
     )
+
+    return dateRangeToUse
   }
 
   fun stubGetVisitSessions(prisonId: String, prisonerId: String, visitSessions: List<VisitSessionDto>) {
@@ -452,13 +453,5 @@ class VisitSchedulerMockServer(@Autowired private val objectMapper: ObjectMapper
     queryParams.add("page=$page")
     queryParams.add("size=$size")
     return queryParams
-  }
-
-  private fun getJsonString(obj: Any): String {
-    return objectMapper.writer().writeValueAsString(obj)
-  }
-
-  private fun createJsonResponseBuilder(): ResponseDefinitionBuilder {
-    return aResponse().withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
   }
 }

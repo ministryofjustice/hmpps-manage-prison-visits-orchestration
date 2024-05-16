@@ -80,7 +80,7 @@ class PrisonApiClient(
       }
   }
 
-  fun getOffenderRestrictions(prisonerId: String): OffenderRestrictionsDto? {
+  fun getPrisonerRestrictions(prisonerId: String): OffenderRestrictionsDto? {
     return webClient.get()
       .uri("/api/offenders/$prisonerId/offender-restrictions") {
         it.queryParam("activeRestrictionsOnly", true).build()

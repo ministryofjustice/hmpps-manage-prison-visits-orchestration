@@ -1,10 +1,10 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock
 
 import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.http.HttpHeader
 import com.github.tomakehurst.wiremock.http.HttpHeaders
 import org.junit.jupiter.api.extension.AfterAllCallback
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.createJsonResponseBuilder
 
 class HmppsAuthExtension : BeforeAllCallback, AfterAllCallback, BeforeEachCallback {
 
@@ -45,7 +45,7 @@ class HmppsAuthMockServer : WireMockServer(WIREMOCK_PORT) {
 
   fun stubGrantToken() {
     stubFor(
-      post(WireMock.urlEqualTo("/auth/oauth/token"))
+      post(urlEqualTo("/auth/oauth/token"))
         .willReturn(
           aResponse()
             .withHeaders(HttpHeaders(HttpHeader("Content-Type", "application/json")))
@@ -62,8 +62,7 @@ class HmppsAuthMockServer : WireMockServer(WIREMOCK_PORT) {
   }
 
   fun stubGetUserDetails(userId: String, fullName: String? = "$userId-name") {
-    val responseBuilder = aResponse()
-      .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+    val responseBuilder = createJsonResponseBuilder()
 
     stubFor(
       get("/auth/api/user/$userId")
