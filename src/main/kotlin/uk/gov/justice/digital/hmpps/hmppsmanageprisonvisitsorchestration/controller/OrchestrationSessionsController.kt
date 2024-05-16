@@ -111,7 +111,7 @@ class OrchestrationSessionsController(private val visitSchedulerService: VisitSc
     prisonerId: String,
     @RequestParam(value = "sessionRestriction", required = false)
     @Parameter(description = "Filter sessions by session restriction - OPEN or CLOSED, if prisoner has CLOSED it will use that", example = "CLOSED", required = false)
-    sessionRestriction: SessionRestriction = SessionRestriction.OPEN,
+    sessionRestriction: SessionRestriction? = null,
     @RequestParam(value = "visitors", required = false)
     @Parameter(
       description = "List of visitors who require visit sessions",
