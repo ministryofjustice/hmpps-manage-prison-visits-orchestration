@@ -51,7 +51,7 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     private const val PRISONER_ID = "AA112233B"
   }
 
-  val bookerRegistryPrisonerDto = BookerPrisonersDto(PRISONER_ID)
+  val bookerRegistryPrisonerDto = BookerPrisonersDto(PRISONER_ID, true, listOf())
 
   val prisonDto = createPrison(prisonCode = PRISON_CODE)
 
@@ -167,8 +167,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        BookerPrisonerVisitorsDto(PRISONER_ID, adultVisitor.personId),
-        BookerPrisonerVisitorsDto(PRISONER_ID, childVisitor.personId),
+        BookerPrisonerVisitorsDto(adultVisitor.personId, true),
+        BookerPrisonerVisitorsDto(childVisitor.personId, true),
       ),
     )
 
@@ -254,8 +254,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        BookerPrisonerVisitorsDto(PRISONER_ID, adultVisitor.personId),
-        BookerPrisonerVisitorsDto(PRISONER_ID, expiredBanVisitor.personId),
+        BookerPrisonerVisitorsDto(adultVisitor.personId, true),
+        BookerPrisonerVisitorsDto(expiredBanVisitor.personId, true),
       ),
     )
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
@@ -283,8 +283,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        BookerPrisonerVisitorsDto(PRISONER_ID, adultVisitor.personId),
-        BookerPrisonerVisitorsDto(PRISONER_ID, expiredBanVisitor.personId),
+        BookerPrisonerVisitorsDto(adultVisitor.personId, true),
+        BookerPrisonerVisitorsDto(expiredBanVisitor.personId, true),
       ),
     )
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
@@ -312,8 +312,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        BookerPrisonerVisitorsDto(PRISONER_ID, adultVisitor.personId),
-        BookerPrisonerVisitorsDto(PRISONER_ID, expiredBanVisitor.personId),
+        BookerPrisonerVisitorsDto(adultVisitor.personId, true),
+        BookerPrisonerVisitorsDto(expiredBanVisitor.personId, true),
       ),
     )
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
@@ -350,8 +350,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        BookerPrisonerVisitorsDto(PRISONER_ID, adultVisitor.personId),
-        BookerPrisonerVisitorsDto(PRISONER_ID, expiredBanVisitor.personId),
+        BookerPrisonerVisitorsDto(adultVisitor.personId, true),
+        BookerPrisonerVisitorsDto(expiredBanVisitor.personId, true),
       ),
     )
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
@@ -448,8 +448,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        BookerPrisonerVisitorsDto(PRISONER_ID, adultVisitor.personId),
-        BookerPrisonerVisitorsDto(PRISONER_ID, childVisitor.personId),
+        BookerPrisonerVisitorsDto(adultVisitor.personId, true),
+        BookerPrisonerVisitorsDto(childVisitor.personId, true),
       ),
     )
 
@@ -484,8 +484,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        BookerPrisonerVisitorsDto(PRISONER_ID, adultVisitor.personId),
-        BookerPrisonerVisitorsDto(PRISONER_ID, childVisitor.personId),
+        BookerPrisonerVisitorsDto(adultVisitor.personId, true),
+        BookerPrisonerVisitorsDto(childVisitor.personId, true),
       ),
     )
 
@@ -519,8 +519,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        BookerPrisonerVisitorsDto(PRISONER_ID, adultVisitor.personId),
-        BookerPrisonerVisitorsDto(PRISONER_ID, childVisitor.personId),
+        BookerPrisonerVisitorsDto(adultVisitor.personId, true),
+        BookerPrisonerVisitorsDto(childVisitor.personId, true),
       ),
     )
 
@@ -554,8 +554,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        BookerPrisonerVisitorsDto(PRISONER_ID, adultVisitor.personId),
-        BookerPrisonerVisitorsDto(PRISONER_ID, childVisitor.personId),
+        BookerPrisonerVisitorsDto(adultVisitor.personId, true),
+        BookerPrisonerVisitorsDto(childVisitor.personId, true),
       ),
     )
 
@@ -589,8 +589,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        BookerPrisonerVisitorsDto(PRISONER_ID, adultVisitor.personId),
-        BookerPrisonerVisitorsDto(PRISONER_ID, childVisitor.personId),
+        BookerPrisonerVisitorsDto(adultVisitor.personId, true),
+        BookerPrisonerVisitorsDto(childVisitor.personId, true),
       ),
     )
 

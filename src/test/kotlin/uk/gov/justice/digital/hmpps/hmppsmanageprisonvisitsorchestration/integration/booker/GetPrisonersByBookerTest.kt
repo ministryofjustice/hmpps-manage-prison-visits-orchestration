@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonersDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.CurrentIncentive
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.IncentiveLevel
@@ -110,8 +111,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber),
-        BookerPrisonersDto(prisoner2Dto.prisonerNumber),
+        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf(BookerPrisonerVisitorsDto(1L,true))),
+        BookerPrisonersDto(prisoner2Dto.prisonerNumber, true, listOf(BookerPrisonerVisitorsDto(1L,true))),
       ),
     )
 
@@ -165,8 +166,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber),
-        BookerPrisonersDto(prisoner2Dto.prisonerNumber),
+        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf()),
+        BookerPrisonersDto(prisoner2Dto.prisonerNumber, true, listOf()),
       ),
     )
 
@@ -195,8 +196,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber),
-        BookerPrisonersDto(prisoner3Dto.prisonerNumber),
+        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf()),
+        BookerPrisonersDto(prisoner3Dto.prisonerNumber, true, listOf()),
       ),
     )
 
@@ -225,8 +226,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber),
-        BookerPrisonersDto(prisoner2Dto.prisonerNumber),
+        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf()),
+        BookerPrisonersDto(prisoner2Dto.prisonerNumber, true, listOf()),
       ),
     )
 
@@ -255,8 +256,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber),
-        BookerPrisonersDto(prisoner4Dto.prisonerNumber),
+        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf()),
+        BookerPrisonersDto(prisoner4Dto.prisonerNumber, true, listOf()),
       ),
     )
 
@@ -286,8 +287,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber),
-        BookerPrisonersDto(prisoner5Dto.prisonerNumber),
+        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf()),
+        BookerPrisonersDto(prisoner5Dto.prisonerNumber, true, listOf()),
       ),
     )
 
@@ -317,8 +318,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber),
-        BookerPrisonersDto(prisoner5Dto.prisonerNumber),
+        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf()),
+        BookerPrisonersDto(prisoner5Dto.prisonerNumber, true, listOf()),
       ),
     )
 
@@ -344,8 +345,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber),
-        BookerPrisonersDto(prisoner2Dto.prisonerNumber),
+        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf()),
+        BookerPrisonersDto(prisoner2Dto.prisonerNumber, true, listOf()),
       ),
     )
     visitSchedulerMockServer.stubGetPrison(PRISON_CODE, prisonDto)
@@ -415,8 +416,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber),
-        BookerPrisonersDto(prisoner2Dto.prisonerNumber),
+        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf()),
+        BookerPrisonersDto(prisoner2Dto.prisonerNumber, true, listOf()),
       ),
     )
     visitSchedulerMockServer.stubGetPrison(PRISON_CODE, prisonDto)
@@ -443,8 +444,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber),
-        BookerPrisonersDto(prisoner2Dto.prisonerNumber),
+        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf()),
+        BookerPrisonersDto(prisoner2Dto.prisonerNumber, true, listOf()),
       ),
     )
     visitSchedulerMockServer.stubGetPrison(PRISON_CODE, prisonDto)
@@ -465,8 +466,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber),
-        BookerPrisonersDto(prisoner2Dto.prisonerNumber),
+        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf()),
+        BookerPrisonersDto(prisoner2Dto.prisonerNumber, true, listOf()),
       ),
     )
     visitSchedulerMockServer.stubGetPrison(PRISON_CODE, null)
@@ -493,8 +494,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber),
-        BookerPrisonersDto(prisoner2Dto.prisonerNumber),
+        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf()),
+        BookerPrisonersDto(prisoner2Dto.prisonerNumber, true, listOf()),
       ),
     )
     visitSchedulerMockServer.stubGetPrison(PRISON_CODE, null, HttpStatus.INTERNAL_SERVER_ERROR)
