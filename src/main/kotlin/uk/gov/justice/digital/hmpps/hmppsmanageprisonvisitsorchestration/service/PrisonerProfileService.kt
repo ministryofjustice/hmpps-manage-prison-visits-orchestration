@@ -51,9 +51,9 @@ class PrisonerProfileService(
 
   fun hasPrisonerGotClosedRestrictions(prisonerId: String): Boolean {
     val offenderRestrictionsDto = prisonApiClient.getPrisonerRestrictions(prisonerId)
-    return offenderRestrictionsDto?.let {
+    return offenderRestrictionsDto.let {
       it.offenderRestrictions?.any { restriction -> CLOSED.name.equals(restriction.restrictionType, true) } ?: false
-    } ?: false
+    }
   }
 
   fun getBannedRestrictionDateRage(prisonerId: String, visitors: List<Long>, dataRange: DateRange): DateRange {

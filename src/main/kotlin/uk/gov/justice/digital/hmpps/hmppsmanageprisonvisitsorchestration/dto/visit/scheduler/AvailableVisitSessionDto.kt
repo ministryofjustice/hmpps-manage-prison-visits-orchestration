@@ -22,7 +22,7 @@ data class AvailableVisitSessionDto(
   @Valid
   val sessionTimeSlot: SessionTimeSlotDto,
 
-  @Schema(description = "Visit Restriction", example = "OPEN", required = true)
+  @Schema(description = "Session Restriction", example = "OPEN", required = true)
   @field:NotNull
-  val visitRestriction: SessionRestriction,
+  val sessionRestriction: SessionRestriction,
 )
