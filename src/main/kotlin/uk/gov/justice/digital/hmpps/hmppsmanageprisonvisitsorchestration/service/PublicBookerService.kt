@@ -44,14 +44,14 @@ class PublicBookerService(
       // get the offender details from prisoner search and validate but do not throw an exception
       var offenderSearchPrisoner: PrisonerDto? = null
       try {
-        offenderSearchPrisoner = prisonerSearchService.getPrisoner(prisoner.prisonerNumber)
+        offenderSearchPrisoner = prisonerSearchService.getPrisoner(prisoner.prisonerId)
       } catch (nfe: NotFoundException) {
-        logger.error("Prisoner with id - ${prisoner.prisonerNumber} not found on offender search")
+        logger.error("Prisoner with id - ${prisoner.prisonerId} not found on offender search")
       }
 
       offenderSearchPrisoner?.let {
-        validatePrisoner(prisoner.prisonerNumber, offenderSearchPrisoner)?.let {
-          logger.error(MessageFormat.format(PRISONER_VALIDATION_ERROR_MSG, prisoner.prisonerNumber, it))
+        validatePrisoner(prisoner.prisonerId, offenderSearchPrisoner)?.let {
+          logger.error(MessageFormat.format(PRISONER_VALIDATION_ERROR_MSG, prisoner.prisonerId, it))
         } ?: run {
           getPrisonerInfo(offenderSearchPrisoner, prisoner)?.let {
             prisonerDetailsList.add(it)
@@ -66,7 +66,7 @@ class PublicBookerService(
   fun getVisitorsForBookersPrisoner(bookerReference: String, prisonerNumber: String): List<VisitorInfoDto> {
     // get the prisoner from booker registry
     prisonVisitBookerRegistryClient.getPrisonersForBooker(bookerReference)
-      .firstOrNull { it.prisonerNumber == prisonerNumber }
+      .firstOrNull { it.prisonerId == prisonerNumber }
       ?: throw NotFoundException("Prisoner with number - $prisonerNumber not found for booker reference - $bookerReference")
 
     // get the offender details from prisoner search and validate
@@ -101,9 +101,9 @@ class PublicBookerService(
     }
 
     validatePrison(prison)?.let {
-      logger.error(MessageFormat.format(PRISON_VALIDATION_ERROR_MSG, prisonCode, bookerPrisoner.prisonerNumber, it))
+      logger.error(MessageFormat.format(PRISON_VALIDATION_ERROR_MSG, prisonCode, bookerPrisoner.prisonerId, it))
     } ?: run {
-      return PrisonerInfoDto(bookerPrisoner.prisonerNumber, offenderSearchPrisoner)
+      return PrisonerInfoDto(bookerPrisoner.prisonerId, offenderSearchPrisoner)
     }
 
     return null
@@ -125,7 +125,7 @@ class PublicBookerService(
       // filter them through the associated visitor list
       if (allValidContacts.isNotEmpty()) {
         associatedVisitors.forEach { associatedVisitor ->
-          allValidContacts.firstOrNull { it.personId == associatedVisitor.personId }?.let { contact ->
+          allValidContacts.firstOrNull { it.personId == associatedVisitor.visitorId }?.let { contact ->
             visitorDetailsList.add(VisitorInfoDto(contact))
           }
         }
