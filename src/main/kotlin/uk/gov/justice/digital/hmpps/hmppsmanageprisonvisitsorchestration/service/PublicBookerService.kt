@@ -39,6 +39,7 @@ class PublicBookerService(
   fun getPermittedPrisonersForBooker(bookerReference: String): List<PrisonerInfoDto> {
     val prisonerDetailsList = mutableListOf<PrisonerInfoDto>()
     val prisoners = prisonVisitBookerRegistryClient.getPermittedVisitorsForPermittedPrisonerAndBooker(bookerReference)
+    logger.debug("getPermittedPrisonersForBooker ${prisoners.size} prisoners found for bookerReference : $bookerReference")
 
     prisoners.forEach { prisoner ->
       // get the offender details from prisoner search and validate but do not throw an exception
@@ -46,12 +47,12 @@ class PublicBookerService(
       try {
         offenderSearchPrisoner = prisonerSearchService.getPrisoner(prisoner.prisonerId)
       } catch (nfe: NotFoundException) {
-        logger.error("Prisoner with id - ${prisoner.prisonerId} not found on offender search")
+        logger.error("getPermittedPrisonersForBooker Prisoner with id - ${prisoner.prisonerId} not found on offender search")
       }
 
       offenderSearchPrisoner?.let {
         validatePrisoner(prisoner.prisonerId, offenderSearchPrisoner)?.let {
-          logger.error(MessageFormat.format(PRISONER_VALIDATION_ERROR_MSG, prisoner.prisonerId, it))
+          logger.error("getPermittedPrisonersForBooker " + MessageFormat.format(PRISONER_VALIDATION_ERROR_MSG, prisoner.prisonerId, it))
         } ?: run {
           getPermittedPrisonerInfo(offenderSearchPrisoner, prisoner)?.let {
             prisonerDetailsList.add(it)
