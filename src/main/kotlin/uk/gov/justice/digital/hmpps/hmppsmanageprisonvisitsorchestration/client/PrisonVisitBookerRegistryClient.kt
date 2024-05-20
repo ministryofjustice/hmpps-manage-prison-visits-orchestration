@@ -11,11 +11,15 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonersDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import java.time.Duration
+
+const val PUBLIC_BOOKER_CONTROLLER_PATH: String = "/public/booker/{bookerReference}"
+const val PERMITTED_PRISONERS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/permitted/prisoners"
+const val PERMITTED_VISITORS: String = "$PERMITTED_PRISONERS/{prisonerId}/permitted/visitors"
 
 @Component
 class PrisonVisitBookerRegistryClient(
@@ -35,41 +39,41 @@ class PrisonVisitBookerRegistryClient(
       .bodyToMono<BookerReference>().block(apiTimeout)
   }
 
-  fun getPrisonersForBooker(bookerReference: String): List<BookerPrisonersDto> {
-    val uri = "/public/booker/$bookerReference/prisoners?active=true"
+  fun getPermittedVisitorsForPermittedPrisonerAndBooker(bookerReference: String): List<PermittedPrisonerForBookerDto> {
+    val uri = PERMITTED_PRISONERS.replace("{bookerReference}", bookerReference) + "?active=true"
     return webClient.get()
       .uri(uri)
       .retrieve()
-      .bodyToMono<List<BookerPrisonersDto>>()
+      .bodyToMono<List<PermittedPrisonerForBookerDto>>()
       .onErrorResume {
           e ->
         if (!ClientUtils.isNotFoundError(e)) {
-          logger.error("getPrisonersForBooker Failed for get request $uri")
+          logger.error("getPermittedPrisonersForBooker Failed for get request $uri")
           Mono.error(e)
         } else {
-          logger.error("getPrisonersForBooker NOT_FOUND for get request $uri")
+          logger.error("getPermittedPrisonersForBooker NOT_FOUND for get request $uri")
           Mono.error { NotFoundException("Prisoners for booker reference - $bookerReference not found on public-visits-booker-registry") }
         }
       }
       .blockOptional(apiTimeout).orElseThrow { NotFoundException("Prisoners for booker reference - $bookerReference not found on public-visits-booker-registry") }
   }
 
-  fun getVisitorsForBookersAssociatedPrisoner(bookerReference: String, prisonerNumber: String): List<BookerPrisonerVisitorsDto> {
-    val uri = "/public/booker/$bookerReference/prisoners/$prisonerNumber/visitors?active=true"
+  fun getPermittedVisitorsForBookersAssociatedPrisoner(bookerReference: String, prisonerNumber: String): List<PermittedVisitorsForPermittedPrisonerBookerDto> {
+    val uri = PERMITTED_VISITORS.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerNumber) + "?active=true"
     return webClient.get()
       .uri(uri)
       .retrieve()
-      .bodyToMono<List<BookerPrisonerVisitorsDto>>()
+      .bodyToMono<List<PermittedVisitorsForPermittedPrisonerBookerDto>>()
       .onErrorResume { e ->
         if (!ClientUtils.isNotFoundError(e)) {
-          logger.error("getVisitorsForBookersAssociatedPrisoner Failed for get request $uri")
+          logger.error("getPermittedVisitorsForBookersAssociatedPrisoner Failed for get request $uri")
           Mono.error(e)
         } else {
-          logger.error("getVisitorsForBookersAssociatedPrisoner NOT_FOUND for get request $uri")
+          logger.error("getPermittedVisitorsForBookersAssociatedPrisoner NOT_FOUND for get request $uri")
           Mono.error { NotFoundException("Visitors for booker reference - $bookerReference and prisoner id - $prisonerNumber not found on public-visits-booker-registry") }
         }
       }
       .blockOptional(apiTimeout)
-      .orElseThrow { NotFoundException("Visitors for booker reference - $bookerReference and prisoner id - $prisonerNumber not found on public-visits-booker-registry") }
+      .orElseThrow { NotFoundException("Permitted visitors for booker reference - $bookerReference and prisoner id - $prisonerNumber not found on public-visits-booker-registry") }
   }
 }

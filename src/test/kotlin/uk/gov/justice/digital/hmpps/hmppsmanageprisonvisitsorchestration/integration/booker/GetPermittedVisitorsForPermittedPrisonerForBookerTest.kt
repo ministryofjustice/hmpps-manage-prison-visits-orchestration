@@ -15,8 +15,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonersDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_VISITORS_CONTROLLER_PATH
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.RestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
@@ -24,8 +25,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 
-@DisplayName("Get visitors by booker's prisoner")
-class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
+@DisplayName("Get permitted visitors for permitted prisoner for booker")
+class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBase() {
   @SpyBean
   lateinit var prisonVisitBookerRegistryClientSpy: PrisonVisitBookerRegistryClient
 
@@ -51,7 +52,7 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     private const val PRISONER_ID = "AA112233B"
   }
 
-  val bookerRegistryPrisonerDto = BookerPrisonersDto(PRISONER_ID, true, listOf())
+  val bookerRegistryPrisonerDto = PermittedPrisonerForBookerDto(PRISONER_ID, true, listOf())
 
   val prisonDto = createPrison(prisonCode = PRISON_CODE)
 
@@ -145,17 +146,6 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     ),
   )
 
-  fun callGetVisitorsByBookersPrisoner(
-    webTestClient: WebTestClient,
-    authHttpHeaders: (HttpHeaders) -> Unit,
-    bookerReference: String,
-    prisonerNumber: String,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.get().uri("/public/booker/$bookerReference/prisoners/$prisonerNumber/visitors")
-      .headers(authHttpHeaders)
-      .exchange()
-  }
-
   @Test
   fun `when booker's prisoners has valid visitors then all allowed visitors are returned`() {
     // Given
@@ -167,8 +157,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        BookerPrisonerVisitorsDto(adultVisitor.personId, true),
-        BookerPrisonerVisitorsDto(childVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId, true),
       ),
     )
 
@@ -183,8 +173,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     assertVisitorContactBasicDetails(prisonerDetailsList[0], adultVisitor)
     assertVisitorContactBasicDetails(prisonerDetailsList[1], childVisitor)
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(PRISONER_ID)
     verify(visitSchedulerClientSpy, times(1)).getPrison(PRISON_CODE)
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(PRISONER_ID, false, null, true, BAN_END_DATE)
@@ -212,8 +202,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
 
     Assertions.assertThat(prisonerDetailsList.size).isEqualTo(0)
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(PRISONER_ID)
     verify(visitSchedulerClientSpy, times(1)).getPrison(PRISON_CODE)
     verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(PRISONER_ID, false)
@@ -239,8 +229,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isNotFound
     assertErrorResult(responseSpec, HttpStatus.NOT_FOUND, "Prisoners for booker reference - $BOOKER_REFERENCE not found on public-visits-booker-registry")
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
-    verify(prisonVisitBookerRegistryClientSpy, times(0)).getVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(0)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
     verify(prisonerSearchClientSpy, times(0)).getPrisonerById(PRISONER_ID)
     verify(visitSchedulerClientSpy, times(0)).getPrison(PRISON_CODE)
     verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(PRISONER_ID, false)
@@ -254,8 +244,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        BookerPrisonerVisitorsDto(adultVisitor.personId, true),
-        BookerPrisonerVisitorsDto(expiredBanVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(expiredBanVisitor.personId, true),
       ),
     )
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
@@ -268,9 +258,9 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isNotFound
     assertErrorResult(responseSpec, HttpStatus.NOT_FOUND, "Prison with prison code - $PRISON_CODE not found on visit-scheduler")
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(PRISONER_ID)
-    verify(prisonVisitBookerRegistryClientSpy, times(0)).getVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
+    verify(prisonVisitBookerRegistryClientSpy, times(0)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
     verify(visitSchedulerClientSpy, times(1)).getPrison(PRISON_CODE)
     verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(PRISONER_ID, false)
   }
@@ -283,8 +273,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        BookerPrisonerVisitorsDto(adultVisitor.personId, true),
-        BookerPrisonerVisitorsDto(expiredBanVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(expiredBanVisitor.personId, true),
       ),
     )
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
@@ -297,9 +287,9 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isBadRequest
     assertErrorResult(responseSpec, HttpStatus.BAD_REQUEST, "prison validation for prison code - $PRISON_CODE for prisoner number - $PRISONER_ID failed with error - Prison with code - $PRISON_CODE, is not active on visit-scheduler")
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(PRISONER_ID)
-    verify(prisonVisitBookerRegistryClientSpy, times(0)).getVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
+    verify(prisonVisitBookerRegistryClientSpy, times(0)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
     verify(visitSchedulerClientSpy, times(1)).getPrison(PRISON_CODE)
     verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(PRISONER_ID, false)
   }
@@ -312,8 +302,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        BookerPrisonerVisitorsDto(adultVisitor.personId, true),
-        BookerPrisonerVisitorsDto(expiredBanVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(expiredBanVisitor.personId, true),
       ),
     )
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
@@ -335,9 +325,9 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isBadRequest
     assertErrorResult(responseSpec, HttpStatus.BAD_REQUEST, "prison validation for prison code - $PRISON_CODE for prisoner number - $PRISONER_ID failed with error - Prison with code - $PRISON_CODE, is not active for public users on visit-scheduler")
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(PRISONER_ID)
-    verify(prisonVisitBookerRegistryClientSpy, times(0)).getVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
+    verify(prisonVisitBookerRegistryClientSpy, times(0)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
     verify(visitSchedulerClientSpy, times(1)).getPrison(PRISON_CODE)
     verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(PRISONER_ID, false)
   }
@@ -350,8 +340,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        BookerPrisonerVisitorsDto(adultVisitor.personId, true),
-        BookerPrisonerVisitorsDto(expiredBanVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(expiredBanVisitor.personId, true),
       ),
     )
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
@@ -373,9 +363,9 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isBadRequest
     assertErrorResult(responseSpec, HttpStatus.BAD_REQUEST, "prison validation for prison code - $PRISON_CODE for prisoner number - $PRISONER_ID failed with error - Prison with code - $PRISON_CODE, is not active for public users on visit-scheduler")
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(PRISONER_ID)
-    verify(prisonVisitBookerRegistryClientSpy, times(0)).getVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
+    verify(prisonVisitBookerRegistryClientSpy, times(0)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
     verify(visitSchedulerClientSpy, times(1)).getPrison(PRISON_CODE)
     verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(PRISONER_ID, false)
   }
@@ -403,10 +393,10 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isNotFound
     assertErrorResult(responseSpec, HttpStatus.NOT_FOUND, "Visitors for booker reference - booker-1 and prisoner id - AA112233B not found on public-visits-booker-registry")
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
     verify(visitSchedulerClientSpy, times(1)).getPrison(PRISON_CODE)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(PRISONER_ID)
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
     verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(PRISONER_ID, false)
   }
 
@@ -431,8 +421,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().is5xxServerError
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(PRISONER_ID)
     verify(visitSchedulerClientSpy, times(1)).getPrison(PRISON_CODE)
     verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(PRISONER_ID, false)
@@ -448,8 +438,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        BookerPrisonerVisitorsDto(adultVisitor.personId, true),
-        BookerPrisonerVisitorsDto(childVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId, true),
       ),
     )
 
@@ -467,8 +457,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
 
     Assertions.assertThat(prisonerDetailsList.size).isEqualTo(0)
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(PRISONER_ID)
     verify(visitSchedulerClientSpy, times(1)).getPrison(PRISON_CODE)
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(PRISONER_ID, false, null, true, BAN_END_DATE)
@@ -484,8 +474,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        BookerPrisonerVisitorsDto(adultVisitor.personId, true),
-        BookerPrisonerVisitorsDto(childVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId, true),
       ),
     )
 
@@ -500,8 +490,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().is5xxServerError
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(PRISONER_ID)
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(PRISONER_ID, false, null, true, BAN_END_DATE)
     verify(visitSchedulerClientSpy, times(1)).getPrison(PRISON_CODE)
@@ -519,8 +509,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        BookerPrisonerVisitorsDto(adultVisitor.personId, true),
-        BookerPrisonerVisitorsDto(childVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId, true),
       ),
     )
 
@@ -535,8 +525,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isNotFound
     assertErrorResult(responseSpec, HttpStatus.NOT_FOUND, "Prisoner with id - AA112233B not found on prisoner search")
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
-    verify(prisonVisitBookerRegistryClientSpy, times(0)).getVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(0)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(PRISONER_ID)
     verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(PRISONER_ID, false)
     verify(visitSchedulerClientSpy, times(0)).getPrison(PRISON_CODE)
@@ -554,8 +544,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        BookerPrisonerVisitorsDto(adultVisitor.personId, true),
-        BookerPrisonerVisitorsDto(childVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId, true),
       ),
     )
 
@@ -570,8 +560,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isBadRequest
     assertErrorResult(responseSpec, HttpStatus.BAD_REQUEST, "prisoner validation for prisoner number - $PRISONER_ID failed with error - Prisoner - $PRISONER_ID on prisoner search does not have a valid prison")
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
-    verify(prisonVisitBookerRegistryClientSpy, times(0)).getVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(0)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(PRISONER_ID)
     verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(PRISONER_ID, false)
     verify(visitSchedulerClientSpy, times(0)).getPrison(PRISON_CODE)
@@ -589,8 +579,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        BookerPrisonerVisitorsDto(adultVisitor.personId, true),
-        BookerPrisonerVisitorsDto(childVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId, true),
       ),
     )
 
@@ -604,8 +594,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().is5xxServerError
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
-    verify(prisonVisitBookerRegistryClientSpy, times(0)).getVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(0)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(PRISONER_ID)
     verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(PRISONER_ID, false)
     verify(visitSchedulerClientSpy, times(0)).getPrison(PRISON_CODE)
@@ -622,8 +612,8 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
 
     // And
 
-    verify(prisonVisitBookerRegistryClientSpy, times(0)).getPrisonersForBooker(BOOKER_REFERENCE)
-    verify(prisonVisitBookerRegistryClientSpy, times(0)).getVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
+    verify(prisonVisitBookerRegistryClientSpy, times(0)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(0)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
     verify(prisonerSearchClientSpy, times(0)).getPrisonerById(PRISONER_ID)
     verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(PRISONER_ID, false)
     verify(visitSchedulerClientSpy, times(0)).getPrison(PRISON_CODE)
@@ -638,15 +628,15 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isUnauthorized
 
     // And
-    verify(prisonVisitBookerRegistryClientSpy, times(0)).getPrisonersForBooker(BOOKER_REFERENCE)
-    verify(prisonVisitBookerRegistryClientSpy, times(0)).getVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
+    verify(prisonVisitBookerRegistryClientSpy, times(0)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(0)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
     verify(prisonerSearchClientSpy, times(0)).getPrisonerById(PRISONER_ID)
     verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(PRISONER_ID, false, null, true, null)
     verify(visitSchedulerClientSpy, times(0)).getPrison(PRISON_CODE)
   }
 
   private fun assertVisitorContactBasicDetails(visitorBasicInfo: VisitorInfoDto, visitorDetails: VisitorDetails) {
-    Assertions.assertThat(visitorBasicInfo.personId).isEqualTo(visitorDetails.personId)
+    Assertions.assertThat(visitorBasicInfo.visitorId).isEqualTo(visitorDetails.personId)
     Assertions.assertThat(visitorBasicInfo.firstName).isEqualTo(visitorDetails.firstName)
     Assertions.assertThat(visitorBasicInfo.lastName).isEqualTo(visitorDetails.lastName)
     Assertions.assertThat(visitorBasicInfo.dateOfBirth).isEqualTo(visitorDetails.dateOfBirth)
@@ -667,5 +657,16 @@ class GetVisitorsByBookerPrisonerTest : IntegrationTestBase() {
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<VisitorInfoDto> {
     return objectMapper.readValue(returnResult.returnResult().responseBody, Array<VisitorInfoDto>::class.java).toList()
+  }
+
+  fun callGetVisitorsByBookersPrisoner(
+    webTestClient: WebTestClient,
+    authHttpHeaders: (HttpHeaders) -> Unit,
+    bookerReference: String,
+    prisonerId: String,
+  ): WebTestClient.ResponseSpec {
+    return webTestClient.get().uri(PUBLIC_BOOKER_GET_VISITORS_CONTROLLER_PATH.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId))
+      .headers(authHttpHeaders)
+      .exchange()
   }
 }

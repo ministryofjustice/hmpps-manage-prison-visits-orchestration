@@ -12,8 +12,9 @@ import org.springframework.http.HttpStatus
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonersDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.CurrentIncentive
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.IncentiveLevel
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
@@ -24,8 +25,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-@DisplayName("Get prisoners by booker")
-class GetPrisonersByBookerTest : IntegrationTestBase() {
+@DisplayName("Get permitted prisoners for booker")
+class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
   companion object {
     private const val PRISON_CODE = "MDI"
     private const val BOOKER_REFERENCE = "booker-1"
@@ -92,16 +93,6 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonId = inactiveForPublicPrison.code,
   )
 
-  fun callGetPrisonersByBooker(
-    webTestClient: WebTestClient,
-    authHttpHeaders: (HttpHeaders) -> Unit,
-    bookerReference: String,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.get().uri("/public/booker/$bookerReference/prisoners")
-      .headers(authHttpHeaders)
-      .exchange()
-  }
-
   @Test
   fun `when booker has valid prisoners then all allowed prisoners are returned`() {
     // Given
@@ -111,8 +102,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf(BookerPrisonerVisitorsDto(1L, true))),
-        BookerPrisonersDto(prisoner2Dto.prisonerNumber, true, listOf(BookerPrisonerVisitorsDto(1L, true))),
+        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, true, listOf(PermittedVisitorsForPermittedPrisonerBookerDto(1L, true))),
+        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, true, listOf(PermittedVisitorsForPermittedPrisonerBookerDto(1L, true))),
       ),
     )
 
@@ -127,7 +118,7 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     assertPrisonerBasicDetails(prisonerDetailsList[0], prisoner1Dto)
     assertPrisonerBasicDetails(prisonerDetailsList[1], prisoner2Dto)
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(2)).getPrisonerByIdAsMono(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner1Dto.prisonerNumber)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner2Dto.prisonerNumber)
@@ -153,7 +144,7 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
 
     Assertions.assertThat(prisonerDetailsList.size).isEqualTo(0)
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(0)).getPrisonerByIdAsMono(any())
   }
 
@@ -166,8 +157,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf()),
-        BookerPrisonersDto(prisoner2Dto.prisonerNumber, true, listOf()),
+        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, true, listOf()),
+        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, true, listOf()),
       ),
     )
 
@@ -181,7 +172,7 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     Assertions.assertThat(prisonerDetailsList.size).isEqualTo(1)
     assertPrisonerBasicDetails(prisonerDetailsList[0], prisoner1Dto)
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(2)).getPrisonerByIdAsMono(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner1Dto.prisonerNumber)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner2Dto.prisonerNumber)
@@ -196,8 +187,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf()),
-        BookerPrisonersDto(prisoner3Dto.prisonerNumber, true, listOf()),
+        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, true, listOf()),
+        PermittedPrisonerForBookerDto(prisoner3Dto.prisonerNumber, true, listOf()),
       ),
     )
 
@@ -211,7 +202,7 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     Assertions.assertThat(prisonerDetailsList.size).isEqualTo(1)
     assertPrisonerBasicDetails(prisonerDetailsList[0], prisoner1Dto)
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(2)).getPrisonerByIdAsMono(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner1Dto.prisonerNumber)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner3Dto.prisonerNumber)
@@ -226,8 +217,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf()),
-        BookerPrisonersDto(prisoner2Dto.prisonerNumber, true, listOf()),
+        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, true, listOf()),
+        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, true, listOf()),
       ),
     )
 
@@ -240,7 +231,7 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
 
     Assertions.assertThat(prisonerDetailsList.size).isEqualTo(0)
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(2)).getPrisonerByIdAsMono(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner1Dto.prisonerNumber)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner2Dto.prisonerNumber)
@@ -256,8 +247,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf()),
-        BookerPrisonersDto(prisoner4Dto.prisonerNumber, true, listOf()),
+        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, true, listOf()),
+        PermittedPrisonerForBookerDto(prisoner4Dto.prisonerNumber, true, listOf()),
       ),
     )
 
@@ -271,7 +262,7 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     Assertions.assertThat(prisonerDetailsList.size).isEqualTo(1)
     assertPrisonerBasicDetails(prisonerDetailsList[0], prisoner1Dto)
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(2)).getPrisonerByIdAsMono(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner1Dto.prisonerNumber)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner4Dto.prisonerNumber)
@@ -287,8 +278,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf()),
-        BookerPrisonersDto(prisoner5Dto.prisonerNumber, true, listOf()),
+        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, true, listOf()),
+        PermittedPrisonerForBookerDto(prisoner5Dto.prisonerNumber, true, listOf()),
       ),
     )
 
@@ -302,7 +293,7 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     Assertions.assertThat(prisonerDetailsList.size).isEqualTo(1)
     assertPrisonerBasicDetails(prisonerDetailsList[0], prisoner1Dto)
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(2)).getPrisonerByIdAsMono(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner1Dto.prisonerNumber)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner5Dto.prisonerNumber)
@@ -318,8 +309,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf()),
-        BookerPrisonersDto(prisoner5Dto.prisonerNumber, true, listOf()),
+        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, true, listOf()),
+        PermittedPrisonerForBookerDto(prisoner5Dto.prisonerNumber, true, listOf()),
       ),
     )
 
@@ -333,7 +324,7 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     Assertions.assertThat(prisonerDetailsList.size).isEqualTo(1)
     assertPrisonerBasicDetails(prisonerDetailsList[0], prisoner1Dto)
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(2)).getPrisonerByIdAsMono(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner1Dto.prisonerNumber)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner5Dto.prisonerNumber)
@@ -345,8 +336,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf()),
-        BookerPrisonersDto(prisoner2Dto.prisonerNumber, true, listOf()),
+        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, true, listOf()),
+        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, true, listOf()),
       ),
     )
     visitSchedulerMockServer.stubGetPrison(PRISON_CODE, prisonDto)
@@ -362,7 +353,7 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
 
     Assertions.assertThat(prisonerDetailsList.size).isEqualTo(0)
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(2)).getPrisonerByIdAsMono(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner1Dto.prisonerNumber)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner2Dto.prisonerNumber)
@@ -385,7 +376,7 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
 
     // Then
     responseSpec.expectStatus().isNotFound
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(0)).getPrisonerByIdAsMono(any())
   }
 
@@ -406,7 +397,7 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
 
     // Then
     responseSpec.expectStatus().is5xxServerError
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(0)).getPrisonerByIdAsMono(any())
   }
 
@@ -416,8 +407,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf()),
-        BookerPrisonersDto(prisoner2Dto.prisonerNumber, true, listOf()),
+        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, true, listOf()),
+        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, true, listOf()),
       ),
     )
     visitSchedulerMockServer.stubGetPrison(PRISON_CODE, prisonDto)
@@ -432,7 +423,7 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     val prisonerDetailsList = getResults(returnResult)
     Assertions.assertThat(prisonerDetailsList.size).isEqualTo(0)
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(2)).getPrisonerByIdAsMono(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner1Dto.prisonerNumber)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner2Dto.prisonerNumber)
@@ -444,8 +435,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf()),
-        BookerPrisonersDto(prisoner2Dto.prisonerNumber, true, listOf()),
+        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, true, listOf()),
+        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, true, listOf()),
       ),
     )
     visitSchedulerMockServer.stubGetPrison(PRISON_CODE, prisonDto)
@@ -456,7 +447,7 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
 
     // Then
     responseSpec.expectStatus().is5xxServerError
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner1Dto.prisonerNumber)
   }
 
@@ -466,8 +457,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf()),
-        BookerPrisonersDto(prisoner2Dto.prisonerNumber, true, listOf()),
+        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, true, listOf()),
+        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, true, listOf()),
       ),
     )
     visitSchedulerMockServer.stubGetPrison(PRISON_CODE, null)
@@ -482,7 +473,7 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     val prisonerDetailsList = getResults(returnResult)
     Assertions.assertThat(prisonerDetailsList.size).isEqualTo(0)
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(2)).getPrisonerByIdAsMono(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner1Dto.prisonerNumber)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner2Dto.prisonerNumber)
@@ -494,8 +485,8 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        BookerPrisonersDto(prisoner1Dto.prisonerNumber, true, listOf()),
-        BookerPrisonersDto(prisoner2Dto.prisonerNumber, true, listOf()),
+        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, true, listOf()),
+        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, true, listOf()),
       ),
     )
     visitSchedulerMockServer.stubGetPrison(PRISON_CODE, null, HttpStatus.INTERNAL_SERVER_ERROR)
@@ -506,7 +497,7 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
 
     // Then
     responseSpec.expectStatus().is5xxServerError
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPrisonersForBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForPermittedPrisonerAndBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner1Dto.prisonerNumber)
   }
 
@@ -521,7 +512,7 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
 
     // And
 
-    verify(prisonVisitBookerRegistryClientSpy, times(0)).getPrisonersForBooker(any())
+    verify(prisonVisitBookerRegistryClientSpy, times(0)).getPermittedVisitorsForPermittedPrisonerAndBooker(any())
     verify(prisonerSearchClientSpy, times(0)).getPrisonerByIdAsMono(any())
   }
 
@@ -535,7 +526,7 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
 
     // And
 
-    verify(prisonVisitBookerRegistryClientSpy, times(0)).getPrisonersForBooker(any())
+    verify(prisonVisitBookerRegistryClientSpy, times(0)).getPermittedVisitorsForPermittedPrisonerAndBooker(any())
     verify(prisonerSearchClientSpy, times(0)).getPrisonerByIdAsMono(any())
   }
 
@@ -552,5 +543,15 @@ class GetPrisonersByBookerTest : IntegrationTestBase() {
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<PrisonerInfoDto> {
     return objectMapper.readValue(returnResult.returnResult().responseBody, Array<PrisonerInfoDto>::class.java).toList()
+  }
+
+  fun callGetPrisonersByBooker(
+    webTestClient: WebTestClient,
+    authHttpHeaders: (HttpHeaders) -> Unit,
+    bookerReference: String,
+  ): WebTestClient.ResponseSpec {
+    return webTestClient.get().uri(PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH.replace("{bookerReference}", bookerReference))
+      .headers(authHttpHeaders)
+      .exchange()
   }
 }
