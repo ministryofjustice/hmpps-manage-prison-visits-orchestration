@@ -6,8 +6,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonersDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
@@ -36,9 +36,9 @@ class PublicBookerService(
     return prisonVisitBookerRegistryClient.bookerAuthorisation(createBookerAuthDetail) ?: throw BookerAuthFailureException("Failed to authorise booker with details - $createBookerAuthDetail")
   }
 
-  fun getBookersPrisoners(bookerReference: String): List<PrisonerInfoDto> {
+  fun getPermittedPrisonersForBooker(bookerReference: String): List<PrisonerInfoDto> {
     val prisonerDetailsList = mutableListOf<PrisonerInfoDto>()
-    val prisoners = prisonVisitBookerRegistryClient.getPrisonersForBooker(bookerReference)
+    val prisoners = prisonVisitBookerRegistryClient.getPermittedVisitorsForPermittedPrisonerAndBooker(bookerReference)
 
     prisoners.forEach { prisoner ->
       // get the offender details from prisoner search and validate but do not throw an exception
@@ -53,7 +53,7 @@ class PublicBookerService(
         validatePrisoner(prisoner.prisonerId, offenderSearchPrisoner)?.let {
           logger.error(MessageFormat.format(PRISONER_VALIDATION_ERROR_MSG, prisoner.prisonerId, it))
         } ?: run {
-          getPrisonerInfo(offenderSearchPrisoner, prisoner)?.let {
+          getPermittedPrisonerInfo(offenderSearchPrisoner, prisoner)?.let {
             prisonerDetailsList.add(it)
           }
         }
@@ -63,9 +63,8 @@ class PublicBookerService(
     return prisonerDetailsList
   }
 
-  fun getVisitorsForBookersPrisoner(bookerReference: String, prisonerNumber: String): List<VisitorInfoDto> {
-    // get the prisoner from booker registry
-    prisonVisitBookerRegistryClient.getPrisonersForBooker(bookerReference)
+  fun getPermittedVisitorsForPermittedPrisonerAndBooker(bookerReference: String, prisonerNumber: String): List<VisitorInfoDto> {
+    prisonVisitBookerRegistryClient.getPermittedVisitorsForPermittedPrisonerAndBooker(bookerReference)
       .firstOrNull { it.prisonerId == prisonerNumber }
       ?: throw NotFoundException("Prisoner with number - $prisonerNumber not found for booker reference - $bookerReference")
 
@@ -90,7 +89,7 @@ class PublicBookerService(
     return getValidVisitors(bookerReference, prisonerNumber, prison)
   }
 
-  private fun getPrisonerInfo(offenderSearchPrisoner: PrisonerDto, bookerPrisoner: BookerPrisonersDto): PrisonerInfoDto? {
+  private fun getPermittedPrisonerInfo(offenderSearchPrisoner: PrisonerDto, bookerPrisoner: PermittedPrisonerForBookerDto): PrisonerInfoDto? {
     val prisonCode = offenderSearchPrisoner.prisonId!!
     val prison: VisitSchedulerPrisonDto
     try {
@@ -111,7 +110,7 @@ class PublicBookerService(
 
   private fun getValidVisitors(bookerReference: String, prisonerNumber: String, prison: VisitSchedulerPrisonDto): List<VisitorInfoDto> {
     val visitorDetailsList = mutableListOf<VisitorInfoDto>()
-    val associatedVisitors = prisonVisitBookerRegistryClient.getVisitorsForBookersAssociatedPrisoner(bookerReference, prisonerNumber)
+    val associatedVisitors = prisonVisitBookerRegistryClient.getPermittedVisitorsForBookersAssociatedPrisoner(bookerReference, prisonerNumber)
 
     if (associatedVisitors.isNotEmpty()) {
       // get approved visitors for a prisoner with a DOB and not BANNED
