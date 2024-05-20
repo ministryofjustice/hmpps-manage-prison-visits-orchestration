@@ -96,12 +96,12 @@ class PublicBookerService(
     try {
       prison = prisonService.getVSIPPrison(prisonCode)
     } catch (ne: NotFoundException) {
-      logger.error("Prison with code - $prisonCode, not found on visit-scheduler")
+      logger.error("getPermittedPrisonerInfo Prison with code - $prisonCode, not found on visit-scheduler")
       return null
     }
 
     validatePrison(prison)?.let {
-      logger.error(MessageFormat.format(PRISON_VALIDATION_ERROR_MSG, prisonCode, bookerPrisoner.prisonerId, it))
+      logger.error("getPermittedPrisonerInfo " + MessageFormat.format(PRISON_VALIDATION_ERROR_MSG, prisonCode, bookerPrisoner.prisonerId, it))
     } ?: run {
       return PrisonerInfoDto(bookerPrisoner.prisonerId, offenderSearchPrisoner)
     }
