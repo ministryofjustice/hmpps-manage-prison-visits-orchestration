@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
@@ -45,44 +46,18 @@ class VisitSchedulerSessionsService(
     val dateRange = prisonService.getToDaysBookableDateRange(prisonCode)
     var availableVisitSessions = try {
       val updatedDateRange =
-        visitors?.let { prisonerProfileService.getBannedRestrictionDateRage(prisonerId, visitors, dateRange) }
-          ?: dateRange
+        visitors?.let { prisonerProfileService.getBannedRestrictionDateRage(prisonerId, visitors, dateRange) } ?: dateRange
       visitSchedulerClient.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction, updatedDateRange)
     } catch (e: DateRangeNotFoundException) {
       LOG.error("getAvailableVisitSessions range is not returned therefore we do not have a valid date range and should return an empty list")
       emptyList()
     }
 
-    availableVisitSessions = if (withAppointmentsCheck && availableVisitSessions.isNotEmpty()) {
-      val higherPriorityAppointments = appointmentsService.getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
-      availableVisitSessions.filterNot { availableSession ->
-        val higherPriorityAppointmentsForVisitDate = getHigherPriorityAppointmentsForDate(higherPriorityAppointments, availableSession.sessionDate)
-        val overridingAppointments = getOverridingAppointments(availableSession, higherPriorityAppointmentsForVisitDate)
-        overridingAppointments.isNotEmpty().also { hasOverridingAppointment ->
-          if (hasOverridingAppointment) {
-            LOG.info(
-              CLASHING_APPOINTMENT_LOG_MSG,
-              prisonerId,
-              availableSession.sessionDate,
-              availableSession.sessionTimeSlot.startTime,
-              availableSession.sessionTimeSlot.endTime,
-              overridingAppointments.size,
-              getOverridingEventDetails(overridingAppointments),
-            )
-          }
-        }
-      }
-    } else {
-      availableVisitSessions
+    if (withAppointmentsCheck && availableVisitSessions.isNotEmpty()) {
+      availableVisitSessions = filterAvailableVisitsByHigherPriorityAppointments(prisonerId, dateRange, availableVisitSessions)
     }
 
-    return availableVisitSessions.sortedWith(
-      compareBy(
-        { it.sessionDate },
-        { it.sessionTimeSlot.startTime },
-        { it.sessionTimeSlot.endTime },
-      ),
-    )
+    return availableVisitSessions.sortedWith(getAvailableVisitSessionsSortOrder())
   }
 
   fun getSessionCapacity(
@@ -109,6 +84,19 @@ class VisitSchedulerSessionsService(
       CLOSED
     } else {
       requestedSessionRestriction ?: OPEN
+    }
+  }
+
+  private fun filterAvailableVisitsByHigherPriorityAppointments(prisonerId: String, dateRange: DateRange, availableVisitSessions: List<AvailableVisitSessionDto>): List<AvailableVisitSessionDto> {
+    val higherPriorityAppointments = appointmentsService.getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
+    return availableVisitSessions.filterNot { availableSession ->
+      val higherPriorityAppointmentsForDate = getHigherPriorityAppointmentsForDate(higherPriorityAppointments, availableSession.sessionDate)
+      val overridingAppointments = getOverridingAppointments(availableSession, higherPriorityAppointmentsForDate)
+      overridingAppointments.isNotEmpty().also { hasOverridingAppointment ->
+        if (hasOverridingAppointment) {
+          logClashingAppointment(prisonerId, availableSession, overridingAppointments)
+        }
+      }
     }
   }
 
@@ -156,9 +144,28 @@ class VisitSchedulerSessionsService(
     visitSessionEndTime: LocalTime,
   ): Boolean {
     return (
-      ((visitSessionStartTime >= scheduledEventStartTime) && (visitSessionStartTime < scheduledEventEndTime)) ||
-        ((visitSessionEndTime > scheduledEventStartTime) && (visitSessionEndTime <= scheduledEventEndTime)) ||
-        ((scheduledEventStartTime >= visitSessionStartTime) && (scheduledEventEndTime <= visitSessionEndTime))
+      visitSessionStartTime.isBefore(scheduledEventEndTime) &&
+        visitSessionEndTime.isAfter(scheduledEventStartTime)
       )
+  }
+
+  private fun logClashingAppointment(prisonerId: String, availableSession: AvailableVisitSessionDto, overridingAppointments: List<ScheduledEventDto>) {
+    LOG.info(
+      CLASHING_APPOINTMENT_LOG_MSG,
+      prisonerId,
+      availableSession.sessionDate,
+      availableSession.sessionTimeSlot.startTime,
+      availableSession.sessionTimeSlot.endTime,
+      overridingAppointments.size,
+      getOverridingEventDetails(overridingAppointments),
+    )
+  }
+
+  private fun getAvailableVisitSessionsSortOrder(): Comparator<AvailableVisitSessionDto> {
+    return compareBy(
+      { it.sessionDate },
+      { it.sessionTimeSlot.startTime },
+      { it.sessionTimeSlot.endTime },
+    )
   }
 }
