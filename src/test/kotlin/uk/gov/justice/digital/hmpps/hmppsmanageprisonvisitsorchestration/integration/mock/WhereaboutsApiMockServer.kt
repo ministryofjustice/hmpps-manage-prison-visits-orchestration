@@ -6,14 +6,20 @@ import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.ScheduledEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.createJsonResponseBuilder
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.getJsonString
+import java.time.LocalDate
 
 class WhereaboutsApiMockServer : WireMockServer(8099) {
 
-  fun stubGetEvents(prisonerNumber: String, events: List<ScheduledEventDto>?, httpStatus: HttpStatus = HttpStatus.OK) {
+  fun stubGetEvents(
+    prisonerId: String,
+    fromDate: LocalDate,
+    toDate: LocalDate,
+    events: List<ScheduledEventDto>?,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
     val responseBuilder = createJsonResponseBuilder()
-
     stubFor(
-      WireMock.put("/events/$prisonerNumber")
+      WireMock.get("/events/$prisonerId?fromDate=$fromDate&toDate=$toDate")
         .willReturn(
           if (events == null) {
             responseBuilder

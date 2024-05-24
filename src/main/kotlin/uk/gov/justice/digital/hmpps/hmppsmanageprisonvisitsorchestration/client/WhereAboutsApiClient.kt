@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -16,6 +18,10 @@ class WhereAboutsApiClient(
   @Qualifier("whereAboutsApiWebClient") private val webClient: WebClient,
   @Value("\${whereabouts.api.timeout:10s}") private val apiTimeout: Duration,
 ) {
+  companion object {
+    val LOG: Logger = LoggerFactory.getLogger(this::class.java)
+  }
+
   fun getEvents(prisonerId: String, fromDate: LocalDate, toDate: LocalDate): List<ScheduledEventDto> {
     val uri = "/events/$prisonerId"
     return webClient.get()
@@ -27,10 +33,10 @@ class WhereAboutsApiClient(
       .bodyToMono<List<ScheduledEventDto>>()
       .onErrorResume { e ->
         if (!ClientUtils.isNotFoundError(e)) {
-          VisitSchedulerClient.LOG.error("getEvents Failed for get request $uri")
+          LOG.error("getEvents Failed for get request $uri")
           Mono.error(e)
         } else {
-          VisitSchedulerClient.LOG.error("getEvents NOT_FOUND for get request $uri")
+          LOG.error("getEvents NOT_FOUND for get request $uri")
           Mono.error { NotFoundException("No Events found for Prisoner - $prisonerId on whereabouts-api") }
         }
       }

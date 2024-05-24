@@ -26,7 +26,7 @@ prison-register:
 
 whereabouts:
   api:
-    url: https://prison-register-dev.hmpps.service.justice.gov.uk
+    url: http://localhost:8099
 
 prisoner:
   search:

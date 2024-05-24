@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.ScheduledEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.HmppsAuthExtension
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.ManageUsersApiMockServer
@@ -296,6 +297,28 @@ abstract class IntegrationTestBase {
     )
   }
 
+  final fun createScheduledEvent(
+    bookingId: Long,
+    eventDate: LocalDate,
+    eventType: String = "APP",
+    eventTypeDesc: String = "Appointment",
+    eventSubType: String,
+    eventSubTypeDesc: String,
+    eventStartTime: LocalDateTime? = null,
+    eventEndTime: LocalDateTime? = null,
+  ): ScheduledEventDto {
+    return ScheduledEventDto(
+      bookingId = bookingId,
+      eventDate = eventDate,
+      eventType = eventType,
+      eventTypeDesc = eventTypeDesc,
+      eventSubType = eventSubType,
+      eventSubTypeDesc = eventSubTypeDesc,
+      startTime = eventStartTime,
+      endTime = eventEndTime,
+    )
+  }
+
   fun getOrchestrationVisitsBySessionTemplateQueryParams(
     sessionTemplateReference: String?,
     sessionDate: LocalDate,
@@ -348,6 +371,27 @@ abstract class IntegrationTestBase {
   ): WebTestClient.ResponseSpec {
     return webTestClient.get()
       .uri("/visits/search/future/$prisonerId")
+      .headers(authHttpHeaders)
+      .exchange()
+  }
+
+  fun callGetAvailableVisitSessions(
+    webTestClient: WebTestClient,
+    prisonCode: String,
+    prisonerId: String,
+    sessionRestriction: SessionRestriction,
+    visitorIds: List<Long>? = null,
+    withAppointmentsCheck: Boolean,
+    authHttpHeaders: (HttpHeaders) -> Unit,
+  ): WebTestClient.ResponseSpec {
+    val uri = visitorIds?.let {
+      val visitorIdsString = it.joinToString(",")
+      "/visit-sessions/available?prisonId=$prisonCode&prisonerId=$prisonerId&sessionRestriction=$sessionRestriction&visitors=$visitorIdsString&withAppointmentsCheck=$withAppointmentsCheck"
+    } ?: run {
+      "/visit-sessions/available?prisonId=$prisonCode&prisonerId=$prisonerId&sessionRestriction=$sessionRestriction&withAppointmentsCheck=$withAppointmentsCheck"
+    }
+
+    return webTestClient.get().uri(uri)
       .headers(authHttpHeaders)
       .exchange()
   }

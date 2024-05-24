@@ -18,13 +18,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerSessionsService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.validation.NullableNotEmpty
 import java.time.LocalDate
 import java.time.LocalTime
 
 @RestController
-class OrchestrationSessionsController(private val visitSchedulerService: VisitSchedulerService) {
+class OrchestrationSessionsController(private val visitSchedulerSessionsService: VisitSchedulerSessionsService) {
 
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -78,7 +78,7 @@ class OrchestrationSessionsController(private val visitSchedulerService: VisitSc
     )
     max: Int?,
   ): List<VisitSessionDto>? =
-    visitSchedulerService.getVisitSessions(prisonCode, prisonerId, min, max)
+    visitSchedulerSessionsService.getVisitSessions(prisonCode, prisonerId, min, max)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("/visit-sessions/available")
@@ -119,8 +119,13 @@ class OrchestrationSessionsController(private val visitSchedulerService: VisitSc
     )
     @NullableNotEmpty(message = "An empty visitors list is not allowed")
     visitors: List<Long>? = null,
+    @RequestParam(value = "withAppointmentsCheck", required = false)
+    @Parameter(
+      description = "Defaults to true if not passed. If true, will not return visit times that clash with higher priority legal or medical appointments.",
+    )
+    withAppointmentsCheck: Boolean? = true,
   ): List<AvailableVisitSessionDto> =
-    visitSchedulerService.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction, visitors)
+    visitSchedulerSessionsService.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction, visitors, withAppointmentsCheck ?: true)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("/visit-sessions/capacity")
@@ -177,7 +182,7 @@ class OrchestrationSessionsController(private val visitSchedulerService: VisitSc
       example = "14:30:00",
     )
     sessionEndTime: LocalTime,
-  ): SessionCapacityDto? = visitSchedulerService.getSessionCapacity(prisonCode, sessionDate, sessionStartTime, sessionEndTime)
+  ): SessionCapacityDto? = visitSchedulerSessionsService.getSessionCapacity(prisonCode, sessionDate, sessionStartTime, sessionEndTime)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("/visit-sessions/schedule")
@@ -216,5 +221,5 @@ class OrchestrationSessionsController(private val visitSchedulerService: VisitSc
       example = "2023-01-31",
     )
     sessionDate: LocalDate,
-  ): List<SessionScheduleDto>? = visitSchedulerService.getSessionSchedule(prisonCode, sessionDate)
+  ): List<SessionScheduleDto>? = visitSchedulerSessionsService.getSessionSchedule(prisonCode, sessionDate)
 }
