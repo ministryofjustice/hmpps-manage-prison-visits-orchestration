@@ -8,4 +8,7 @@ data class BookingOrchestrationRequestDto(
   @Schema(description = "application method", required = true)
   @field:NotNull
   val applicationMethodType: ApplicationMethodType,
+  @Schema(description = "allow over booking method", required = false)
+  @field:NotNull
+  val allowOverBooking: Boolean = false,
 )

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.isNull
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Value
@@ -126,7 +127,7 @@ class GetPrisonerProfileTest(
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -150,12 +151,12 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, null, null, contactsDto)
 
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -170,11 +171,11 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, null)
     prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsDto, HttpStatus.NOT_FOUND)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, null, null, contactsDto, HttpStatus.NOT_FOUND)
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -201,7 +202,7 @@ class GetPrisonerProfileTest(
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     responseSpec.expectStatus().is4xxClientError
@@ -219,7 +220,7 @@ class GetPrisonerProfileTest(
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -247,7 +248,7 @@ class GetPrisonerProfileTest(
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -274,7 +275,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
     stubGetVisits(listOf(visit1, visit2))
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -306,7 +307,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
     stubGetVisits(listOf(visit1, visit2))
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -332,7 +333,7 @@ class GetPrisonerProfileTest(
     stubGetVisits(mutableListOf())
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -355,11 +356,11 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, null, null, contactsDto)
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -380,7 +381,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is only done once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false))
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), isNull(), isNull(), isNull())
   }
 
   @Test
@@ -399,11 +400,11 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, null, null, contactsDto)
     stubGetVisits(listOf(visit3))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -422,7 +423,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is made once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false))
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), isNull(), isNull(), isNull())
   }
 
   @Test
@@ -434,11 +435,11 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
 
     // as we are passing null as contacts parameter a 404 will be returned
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, null)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, null, null, null)
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -458,7 +459,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is made once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false))
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), isNull(), isNull(), isNull())
   }
 
   @Test
@@ -470,11 +471,11 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
 
     // as we are passing null as contacts parameter a 404 will be returned
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, null, HttpStatus.BAD_REQUEST)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, null, null, null, HttpStatus.BAD_REQUEST)
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -494,7 +495,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is made once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false))
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), isNull(), isNull(), isNull())
   }
 
   @Test
@@ -504,12 +505,12 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, null, null, contactsDto)
     prisonRegisterMockServer.stubGetPrisons(prisons)
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -536,12 +537,12 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, null, null, contactsDto)
     prisonRegisterMockServer.stubGetPrisons(prisons)
     stubGetVisits(listOf(incorrectPrisonVisit))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -565,14 +566,14 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, null, null, contactsDto)
 
     // as we are passing null as prisons parameter a 404 will be returned
     prisonRegisterMockServer.stubGetPrisons(null)
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -596,14 +597,14 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, null, null, contactsDto)
 
     // as we are passing null as prisons parameter a BAD_REQUEST will be returned
     prisonRegisterMockServer.stubGetPrisons(null)
     stubGetVisits(listOf(visit1, visit2))
 
     // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVisitSchedulerHttpHeaders, PRISON_CODE, PRISONER_ID)
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()

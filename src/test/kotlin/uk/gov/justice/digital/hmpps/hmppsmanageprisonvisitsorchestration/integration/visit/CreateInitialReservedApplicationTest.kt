@@ -8,8 +8,8 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.CreateApplicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
-@DisplayName("Reserve Visit Slot tests")
-class CreateInitialApplicationTest : IntegrationTestBase() {
+@DisplayName("Create reserve application tests")
+class CreateInitialReservedApplicationTest : IntegrationTestBase() {
   fun createInitialApplication(
     webTestClient: WebTestClient,
     createApplicationDto: CreateApplicationDto,
@@ -31,7 +31,7 @@ class CreateInitialApplicationTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubCreateApplication(applicationDto)
 
     // When
-    val responseSpec = createInitialApplication(webTestClient, createApplicationDto, roleVisitSchedulerHttpHeaders)
+    val responseSpec = createInitialApplication(webTestClient, createApplicationDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isCreated
@@ -48,7 +48,7 @@ class CreateInitialApplicationTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubCreateApplication(applicationDto)
 
     // When
-    val responseSpec = createInitialApplication(webTestClient, reserveVisitSlotDto, roleVisitSchedulerHttpHeaders)
+    val responseSpec = createInitialApplication(webTestClient, reserveVisitSlotDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isBadRequest

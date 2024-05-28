@@ -20,7 +20,7 @@ class FutureVisitsByPrisonerTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetFutureVisits(prisonerId, visitsList)
 
     // When
-    val responseSpec = callFutureVisits(webTestClient, prisonerId, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callFutureVisits(webTestClient, prisonerId, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk
@@ -38,7 +38,7 @@ class FutureVisitsByPrisonerTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetFutureVisits(prisonerId, emptyList)
 
     // When
-    val responseSpec = callFutureVisits(webTestClient, prisonerId, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callFutureVisits(webTestClient, prisonerId, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk

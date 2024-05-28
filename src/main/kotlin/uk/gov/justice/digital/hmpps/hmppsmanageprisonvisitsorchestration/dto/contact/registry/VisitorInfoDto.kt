@@ -3,10 +3,10 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.co
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
-@Schema(description = "A contact for a prisoner")
-class VisitorBasicInfoDto(
+@Schema(description = "A visitor for a prisoner")
+data class VisitorInfoDto(
   @Schema(description = "Identifier for this contact (Person in NOMIS)", example = "5871791", required = true)
-  val personId: Long,
+  val visitorId: Long,
   @Schema(description = "First name", example = "John", required = true)
   val firstName: String,
   @Schema(description = "Last name", example = "Smith", required = true)
@@ -15,7 +15,7 @@ class VisitorBasicInfoDto(
   val dateOfBirth: LocalDate?,
 ) {
   constructor(contact: PrisonerContactDto) : this(
-    personId = contact.personId!!,
+    visitorId = contact.personId!!,
     firstName = contact.firstName,
     lastName = contact.lastName,
     dateOfBirth = contact.dateOfBirth,

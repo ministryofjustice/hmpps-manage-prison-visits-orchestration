@@ -24,7 +24,7 @@ class GetVisitNotificationsTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetVisitNotificationTypes(bookingReference, PRISONER_RELEASED_EVENT, PRISONER_RESTRICTION_CHANGE_EVENT)
 
     // When
-    val responseSpec = callGetVisitNotificationTypes(webTestClient, bookingReference, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callGetVisitNotificationTypes(webTestClient, bookingReference, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk

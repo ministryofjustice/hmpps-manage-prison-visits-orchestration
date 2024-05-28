@@ -13,17 +13,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationNotificationGroupDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationPrisonerVisitsNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.IgnoreVisitNotificationsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
@@ -40,8 +34,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerRestrictionChangeInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.VisitorRestrictionChangeInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.NonAssociationDomainEventType
-import java.time.LocalDate
-import java.time.LocalTime
 
 @Service
 class VisitSchedulerService(
@@ -111,7 +103,7 @@ class VisitSchedulerService(
   fun bookVisit(applicationReference: String, requestDto: BookingOrchestrationRequestDto): VisitDto? {
     return visitSchedulerClient.bookVisitSlot(
       applicationReference,
-      BookingRequestDto(authenticationHelperService.currentUserName, requestDto.applicationMethodType),
+      BookingRequestDto(authenticationHelperService.currentUserName, requestDto.applicationMethodType, requestDto.allowOverBooking),
     )
   }
 
@@ -134,26 +126,6 @@ class VisitSchedulerService(
         authenticationHelperService.currentUserName,
       ),
     )
-  }
-
-  fun getVisitSessions(prisonCode: String, prisonerId: String?, min: Int?, max: Int?): List<VisitSessionDto>? {
-    return visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max)
-  }
-
-  fun getAvailableVisitSessions(prisonCode: String, prisonerId: String, visitRestriction: VisitRestriction, min: Int?, max: Int?): List<AvailableVisitSessionDto>? {
-    return visitSchedulerClient.getAvailableVisitSessions(prisonCode, prisonerId, visitRestriction, min, max)
-  }
-
-  fun getSupportedPrisons(): List<String>? {
-    return visitSchedulerClient.getSupportedPrisons()
-  }
-
-  fun getSessionCapacity(prisonCode: String, sessionDate: LocalDate, sessionStartTime: LocalTime, sessionEndTime: LocalTime): SessionCapacityDto? {
-    return visitSchedulerClient.getSessionCapacity(prisonCode, sessionDate, sessionStartTime, sessionEndTime)
-  }
-
-  fun getSessionSchedule(prisonCode: String, sessionDate: LocalDate): List<SessionScheduleDto>? {
-    return visitSchedulerClient.getSessionSchedule(prisonCode, sessionDate)
   }
 
   fun processNonAssociations(info: NonAssociationChangedInfo, type: NonAssociationDomainEventType) {
@@ -203,10 +175,6 @@ class VisitSchedulerService(
       }
       OrchestrationNotificationGroupDto(group.reference, group.type, affectedVisits)
     }
-  }
-
-  fun getPrison(prisonCode: String): PrisonDto? {
-    return visitSchedulerClient.getPrison(prisonCode)
   }
 
   fun getNotificationsTypesForBookingReference(reference: String): List<NotificationEventType>? {

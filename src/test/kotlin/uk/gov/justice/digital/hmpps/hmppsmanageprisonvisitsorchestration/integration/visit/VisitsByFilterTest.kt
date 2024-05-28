@@ -18,7 +18,7 @@ class VisitsByFilterTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetVisits(null, prisonerId, listOf(visitStatus), startDate = null, endDate = null, 1, 10, visitsList)
 
     // When
-    val responseSpec = callGetVisits(webTestClient, prisonerId, listOf(visitStatus), null, null, 1, 10, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callGetVisits(webTestClient, prisonerId, listOf(visitStatus), null, null, 1, 10, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -36,7 +36,7 @@ class VisitsByFilterTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetVisits(null, prisonerId, listOf(visitStatus), startDate = null, endDate = null, 1, 10, emptyList)
 
     // When
-    val responseSpec = callGetVisits(webTestClient, prisonerId, listOf(visitStatus), null, null, 1, 10, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callGetVisits(webTestClient, prisonerId, listOf(visitStatus), null, null, 1, 10, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk

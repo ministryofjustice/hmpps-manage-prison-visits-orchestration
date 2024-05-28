@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.prisonertonomisupdate.integration
+package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.domainevents
 
 import org.slf4j.LoggerFactory
 import org.springframework.test.context.DynamicPropertyRegistry

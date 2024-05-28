@@ -5,10 +5,10 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTimeSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
-import uk.gov.justice.digital.hmpps.visitscheduler.dto.sessions.SessionTimeSlotDto
 import java.time.LocalDate
 
 @Service
@@ -49,9 +49,8 @@ class VisitsByDateService(
       val visitorCount = visit.visitors?.size ?: 0
       val visitTimeSlot = SessionTimeSlotDto(visit.startTimestamp.toLocalTime(), visit.endTimestamp.toLocalTime())
       try {
-        prisonerSearchClient.getPrisonerById(visit.prisonerId)?.let { prisoner ->
-          VisitPreviewDto(visit.prisonerId, prisoner.firstName, prisoner.lastName, visit.reference, visitorCount, visitTimeSlot)
-        } ?: VisitPreviewDto(visit.prisonerId, visit.reference, visitorCount, visitTimeSlot)
+        val prisoner = prisonerSearchClient.getPrisonerById(visit.prisonerId)
+        VisitPreviewDto(visit.prisonerId, prisoner.firstName, prisoner.lastName, visit.reference, visitorCount, visitTimeSlot)
       } catch (e: Exception) {
         VisitPreviewDto(visit.prisonerId, visit.reference, visitorCount, visitTimeSlot)
       }

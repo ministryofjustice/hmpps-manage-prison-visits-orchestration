@@ -6,12 +6,12 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.CreateApplicationRestriction
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import java.time.LocalDate
 
 data class ChangeApplicationDto(
-  @Schema(description = "Visit Restriction", example = "OPEN", required = false)
-  val applicationRestriction: CreateApplicationRestriction? = null,
+  @Schema(description = "Session Restriction", example = "OPEN", required = false)
+  val applicationRestriction: SessionRestriction? = null,
   @Schema(description = "Session template reference", example = "v9d.7ed.7u", required = true)
   @field:NotBlank
   val sessionTemplateReference: String,
@@ -27,4 +27,7 @@ data class ChangeApplicationDto(
   @Schema(description = "additional support associated with the visit, if null support will not be updated", required = false)
   @Valid
   var visitorSupport: ApplicationSupportDto? = null,
+  @Schema(description = "allow over booking", required = false)
+  @field:NotNull
+  val allowOverBooking: Boolean = false,
 )

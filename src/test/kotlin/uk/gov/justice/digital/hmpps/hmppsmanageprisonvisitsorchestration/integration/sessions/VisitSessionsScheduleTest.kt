@@ -6,11 +6,11 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionDateRangeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTimeSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.visitscheduler.dto.sessions.SessionDateRangeDto
-import uk.gov.justice.digital.hmpps.visitscheduler.dto.sessions.SessionTimeSlotDto
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -57,7 +57,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     )
 
     // When
-    val responseSpec = callVisitsSessionsSchedule(webTestClient, prisonCode, sessionDate, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callVisitsSessionsSchedule(webTestClient, prisonCode, sessionDate, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -93,7 +93,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetSessionSchedule(prisonCode, sessionDate, mutableListOf())
 
     // When
-    val responseSpec = callVisitsSessionsSchedule(webTestClient, prisonCode, sessionDate, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callVisitsSessionsSchedule(webTestClient, prisonCode, sessionDate, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk

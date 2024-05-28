@@ -36,7 +36,7 @@ class VisitSessionsCapacityTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetSessionCapacity(prisonCode, sessionDate, sessionStartTime, sessionEndTime, sessionCapacityDto)
 
     // When
-    val responseSpec = callVisitsSessionsCapacity(webTestClient, prisonCode, sessionDate, sessionStartTime, sessionEndTime, sessionCapacityDto, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callVisitsSessionsCapacity(webTestClient, prisonCode, sessionDate, sessionStartTime, sessionEndTime, sessionCapacityDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -57,7 +57,7 @@ class VisitSessionsCapacityTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetSessionCapacity(prisonCode, sessionDate, sessionStartTime, sessionEndTime, sessionCapacityDto)
 
     // When
-    val responseSpec = callVisitsSessionsCapacity(webTestClient, prisonCode, sessionDate, sessionStartTime, sessionEndTime, sessionCapacityDto, roleVisitSchedulerHttpHeaders)
+    val responseSpec = callVisitsSessionsCapacity(webTestClient, prisonCode, sessionDate, sessionStartTime, sessionEndTime, sessionCapacityDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound

@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -12,22 +11,29 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDO
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.testcontainers.shaded.org.apache.commons.lang3.RandomUtils
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.RestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonNameDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.CurrentIncentive
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ApplicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ChangeApplicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.CreateApplicationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.CreateApplicationRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.OutcomeStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.ScheduledEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.HmppsAuthExtension
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.ManageUsersApiMockServer
@@ -37,9 +43,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonVisitBookerRegistryMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonerContactRegistryMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.VisitSchedulerMockServer
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.WhereaboutsApiMockServer
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.ArrayList
 import java.util.stream.Collectors
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -47,14 +53,14 @@ import java.util.stream.Collectors
 @ExtendWith(HmppsAuthExtension::class)
 abstract class IntegrationTestBase {
   companion object {
-    val objectMapper: ObjectMapper = ObjectMapper().registerModule(JavaTimeModule())
-    val visitSchedulerMockServer = VisitSchedulerMockServer(objectMapper)
-    val prisonApiMockServer = PrisonApiMockServer(objectMapper)
-    val prisonOffenderSearchMockServer = PrisonOffenderSearchMockServer(objectMapper)
-    val prisonerContactRegistryMockServer = PrisonerContactRegistryMockServer(objectMapper)
-    val prisonRegisterMockServer = PrisonRegisterMockServer(objectMapper)
+    val visitSchedulerMockServer = VisitSchedulerMockServer()
+    val prisonApiMockServer = PrisonApiMockServer()
+    val prisonOffenderSearchMockServer = PrisonOffenderSearchMockServer()
+    val prisonerContactRegistryMockServer = PrisonerContactRegistryMockServer()
+    val prisonRegisterMockServer = PrisonRegisterMockServer()
     val manageUsersApiMockServer = ManageUsersApiMockServer()
-    val prisonVisitBookerRegistryMockServer = PrisonVisitBookerRegistryMockServer(objectMapper)
+    val prisonVisitBookerRegistryMockServer = PrisonVisitBookerRegistryMockServer()
+    val whereaboutsApiMockServer = WhereaboutsApiMockServer()
 
     @BeforeAll
     @JvmStatic
@@ -66,6 +72,8 @@ abstract class IntegrationTestBase {
       prisonRegisterMockServer.start()
       manageUsersApiMockServer.start()
       prisonVisitBookerRegistryMockServer.start()
+      prisonVisitBookerRegistryMockServer.start()
+      whereaboutsApiMockServer.start()
     }
 
     @AfterAll
@@ -78,6 +86,8 @@ abstract class IntegrationTestBase {
       prisonRegisterMockServer.stop()
       manageUsersApiMockServer.stop()
       prisonVisitBookerRegistryMockServer.stop()
+      prisonVisitBookerRegistryMockServer.start()
+      whereaboutsApiMockServer.stop()
     }
 
     fun getVisitsQueryParams(
@@ -112,7 +122,7 @@ abstract class IntegrationTestBase {
   @Autowired
   lateinit var webTestClient: WebTestClient
 
-  lateinit var roleVisitSchedulerHttpHeaders: (HttpHeaders) -> Unit
+  lateinit var roleVSIPOrchestrationServiceHttpHeaders: (HttpHeaders) -> Unit
 
   @Autowired
   protected lateinit var jwtAuthHelper: JwtAuthHelper
@@ -122,7 +132,7 @@ abstract class IntegrationTestBase {
 
   @BeforeEach
   internal fun setUp() {
-    roleVisitSchedulerHttpHeaders = setAuthorisation(roles = listOf("ROLE_VISIT_SCHEDULER"))
+    roleVSIPOrchestrationServiceHttpHeaders = setAuthorisation(roles = listOf("ROLE_VSIP_ORCHESTRATION_SERVICE"))
   }
 
   internal fun setAuthorisation(
@@ -214,10 +224,13 @@ abstract class IntegrationTestBase {
     return CreateApplicationDto(
       prisonerId = prisonerId,
       sessionTemplateReference = sessionTemplateReference,
-      applicationRestriction = CreateApplicationRestriction.OPEN,
+      applicationRestriction = SessionRestriction.OPEN,
       sessionDate = sessionDate!!,
       visitContact = null,
       visitors = setOf(visitor),
+      userType = STAFF,
+      actionedBy = "Aled",
+      allowOverBooking = true,
     )
   }
 
@@ -248,17 +261,19 @@ abstract class IntegrationTestBase {
       visitors = visitors!!,
       completed = false,
       reserved = false,
+      userType = PUBLIC,
     )
   }
 
   fun createChangeApplicationDto(): ChangeApplicationDto {
     val visitor = VisitorDto(1, false)
     return ChangeApplicationDto(
-      applicationRestriction = CreateApplicationRestriction.OPEN,
+      applicationRestriction = SessionRestriction.OPEN,
       sessionDate = LocalDate.now(),
       visitContact = null,
       visitors = setOf(visitor),
       sessionTemplateReference = "aa-bb-cc-dd",
+      allowOverBooking = false,
     )
   }
 
@@ -279,6 +294,28 @@ abstract class IntegrationTestBase {
     return PrisonNameDto(
       prisonId = prisonCode,
       prisonName = name,
+    )
+  }
+
+  final fun createScheduledEvent(
+    bookingId: Long,
+    eventDate: LocalDate,
+    eventType: String = "APP",
+    eventTypeDesc: String = "Appointment",
+    eventSubType: String,
+    eventSubTypeDesc: String,
+    eventStartTime: LocalDateTime? = null,
+    eventEndTime: LocalDateTime? = null,
+  ): ScheduledEventDto {
+    return ScheduledEventDto(
+      bookingId = bookingId,
+      eventDate = eventDate,
+      eventType = eventType,
+      eventTypeDesc = eventTypeDesc,
+      eventSubType = eventSubType,
+      eventSubTypeDesc = eventSubTypeDesc,
+      startTime = eventStartTime,
+      endTime = eventEndTime,
     )
   }
 
@@ -338,12 +375,33 @@ abstract class IntegrationTestBase {
       .exchange()
   }
 
+  fun callGetAvailableVisitSessions(
+    webTestClient: WebTestClient,
+    prisonCode: String,
+    prisonerId: String,
+    sessionRestriction: SessionRestriction,
+    visitorIds: List<Long>? = null,
+    withAppointmentsCheck: Boolean,
+    authHttpHeaders: (HttpHeaders) -> Unit,
+  ): WebTestClient.ResponseSpec {
+    val uri = visitorIds?.let {
+      val visitorIdsString = it.joinToString(",")
+      "/visit-sessions/available?prisonId=$prisonCode&prisonerId=$prisonerId&sessionRestriction=$sessionRestriction&visitors=$visitorIdsString&withAppointmentsCheck=$withAppointmentsCheck"
+    } ?: run {
+      "/visit-sessions/available?prisonId=$prisonCode&prisonerId=$prisonerId&sessionRestriction=$sessionRestriction&withAppointmentsCheck=$withAppointmentsCheck"
+    }
+
+    return webTestClient.get().uri(uri)
+      .headers(authHttpHeaders)
+      .exchange()
+  }
+
   final fun createPrisoner(
     prisonerId: String,
     firstName: String,
     lastName: String,
     dateOfBirth: LocalDate,
-    prisonId: String = "MDI",
+    prisonId: String? = "MDI",
     prisonName: String = "HMP Leeds",
     cellLocation: String? = null,
     currentIncentive: CurrentIncentive? = null,
@@ -360,7 +418,7 @@ abstract class IntegrationTestBase {
     )
   }
 
-  private fun createContactDto(personId: Long, firstName: String, lastName: String, dateOfBirth: LocalDate?, approvedVisitor: Boolean): PrisonerContactDto {
+  private fun createContactDto(personId: Long, firstName: String, lastName: String, dateOfBirth: LocalDate?, approvedVisitor: Boolean, restrictions: List<RestrictionDto>): PrisonerContactDto {
     return PrisonerContactDto(
       personId = personId,
       firstName = firstName,
@@ -371,13 +429,52 @@ abstract class IntegrationTestBase {
       contactType = "S",
       emergencyContact = true,
       nextOfKin = true,
+      restrictions = restrictions,
     )
   }
 
   final fun createContactsList(visitorDetails: List<VisitorDetails>): List<PrisonerContactDto> {
     return visitorDetails.stream().map {
-      createContactDto(it.personId, it.firstName, it.lastName, it.dateOfBirth, it.approved)
+      createContactDto(it.personId, it.firstName, it.lastName, it.dateOfBirth, it.approved, it.restrictions)
     }.collect(Collectors.toList())
+  }
+
+  final fun createVisitor(
+    visitorId: Int = RandomUtils.nextInt(),
+    firstName: String,
+    lastName: String,
+    dateOfBirth: LocalDate?,
+    approved: Boolean = true,
+    restrictions: List<RestrictionDto> = emptyList(),
+  ): VisitorDetails {
+    return VisitorDetails(visitorId.toLong(), firstName, lastName, dateOfBirth, approved, restrictions = restrictions)
+  }
+
+  final fun createPrison(
+    prisonCode: String = "HEI",
+    active: Boolean = true,
+    policyNoticeDaysMin: Int = 2,
+    policyNoticeDaysMax: Int = 28,
+    maxTotalVisitors: Int = 6,
+    maxAdultVisitors: Int = 3,
+    maxChildVisitors: Int = 3,
+    adultAgeYears: Int = 18,
+    clients: List<PrisonUserClientDto> = listOf(
+      PrisonUserClientDto(STAFF, true),
+      PrisonUserClientDto(PUBLIC, true),
+    ),
+  ): VisitSchedulerPrisonDto {
+    return VisitSchedulerPrisonDto(
+      prisonCode,
+      active,
+      policyNoticeDaysMin,
+      policyNoticeDaysMax,
+      maxTotalVisitors,
+      maxAdultVisitors,
+      maxChildVisitors,
+      adultAgeYears,
+      clients = clients,
+    )
   }
 
   class VisitorDetails(
@@ -386,5 +483,6 @@ abstract class IntegrationTestBase {
     val lastName: String,
     val dateOfBirth: LocalDate? = null,
     val approved: Boolean = true,
+    val restrictions: List<RestrictionDto> = emptyList(),
   )
 }

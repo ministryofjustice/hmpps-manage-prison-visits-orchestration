@@ -1,21 +1,21 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.InmateDetailDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.PrisonerBookingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.VisitBalancesDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.createJsonResponseBuilder
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.getJsonString
 
-class PrisonApiMockServer(@Autowired private val objectMapper: ObjectMapper) : WireMockServer(8093) {
+class PrisonApiMockServer : WireMockServer(8093) {
   fun stubGetInmateDetails(prisonerId: String, inmateDetail: InmateDetailDto?) {
-    val responseBuilder = aResponse()
-      .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+    val responseBuilder = createJsonResponseBuilder()
 
     stubFor(
       get("/api/offenders/$prisonerId")
@@ -67,7 +67,21 @@ class PrisonApiMockServer(@Autowired private val objectMapper: ObjectMapper) : W
     )
   }
 
-  private fun getJsonString(obj: Any): String {
-    return objectMapper.writer().withDefaultPrettyPrinter().writeValueAsString(obj)
+  fun stubGetPrisonerRestrictions(prisonerId: String, offenderRestrictionsDto: OffenderRestrictionsDto? = null, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      get("/api/offenders/$prisonerId/offender-restrictions?activeRestrictionsOnly=true")
+        .willReturn(
+          offenderRestrictionsDto?.let {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(it))
+          } ?: run {
+            responseBuilder
+              .withStatus(httpStatus.value())
+          },
+        ),
+    )
   }
 }
