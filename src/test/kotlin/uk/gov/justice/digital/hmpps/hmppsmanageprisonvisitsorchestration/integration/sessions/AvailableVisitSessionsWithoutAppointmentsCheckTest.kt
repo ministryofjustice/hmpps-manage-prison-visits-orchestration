@@ -7,10 +7,8 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.boot.test.mock.mockito.SpyBean
-import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.HttpStatus.NOT_FOUND
-import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionDto
@@ -19,42 +17,25 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTimeSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.CLOSED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.OPEN
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AppointmentsService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonerProfileService
 import java.time.LocalDate
 import java.time.LocalTime
 
-@DisplayName("Get available visit sessions")
-class AvailableVisitSessionsTest : IntegrationTestBase() {
+@DisplayName("Get available visit sessions without appointments check")
+class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase() {
 
   @SpyBean
   private lateinit var visitSchedulerClient: VisitSchedulerClient
 
   @SpyBean
+  private lateinit var appointmentsService: AppointmentsService
+
+  @SpyBean
   private lateinit var prisonerProfileService: PrisonerProfileService
-
-  fun callGetAvailableVisitSessions(
-    webTestClient: WebTestClient,
-    prisonCode: String,
-    prisonerId: String,
-    sessionRestriction: SessionRestriction,
-    visitorIds: List<Long>? = null,
-    authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    val uri = visitorIds?.let {
-      val visitorIdsString = it.joinToString(",")
-      "/visit-sessions/available?prisonId=$prisonCode&prisonerId=$prisonerId&sessionRestriction=$sessionRestriction&visitors=$visitorIdsString"
-    } ?: run {
-      "/visit-sessions/available?prisonId=$prisonCode&prisonerId=$prisonerId&sessionRestriction=$sessionRestriction"
-    }
-
-    return webTestClient.get().uri(uri)
-      .headers(authHttpHeaders)
-      .exchange()
-  }
 
   @Test
   fun `when visit sessions for parameters are available then these sessions are returned`() {
@@ -75,12 +56,13 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, false, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(3)
+    verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
   @Test
@@ -95,12 +77,13 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, withAppointmentsCheck = false, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(1)
+    verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
   @Test
@@ -120,7 +103,7 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = null)
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, withAppointmentsCheck = false, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -129,6 +112,7 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
 
     verify(prisonerProfileService, times(1)).getBannedRestrictionDateRage(any(), any(), any())
     verify(visitSchedulerClient, times(0)).getAvailableVisitSessions(any(), any(), any(), any())
+    verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
   @Test
@@ -139,7 +123,7 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     val visitorIds = listOf<Long>()
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, withAppointmentsCheck = false, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
 
@@ -173,12 +157,13 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = moderatedDateRange)
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, withAppointmentsCheck = false, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(1)
+    verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
   @Test
@@ -211,6 +196,7 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
       prisonerId,
       OPEN,
       visitorIds,
+      false,
       roleVSIPOrchestrationServiceHttpHeaders,
     )
 
@@ -218,6 +204,7 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(1)
+    verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
   @Test
@@ -251,6 +238,7 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
       prisonerId,
       OPEN,
       visitorIds,
+      false,
       roleVSIPOrchestrationServiceHttpHeaders,
     )
 
@@ -258,6 +246,7 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(1)
+    verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
   @Test
@@ -283,6 +272,7 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
       prisonerId,
       OPEN,
       visitorIds,
+      false,
       roleVSIPOrchestrationServiceHttpHeaders,
     )
 
@@ -290,6 +280,7 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(1)
+    verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
   @Test
@@ -314,6 +305,7 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
       prisonerId,
       OPEN,
       visitorIds,
+      false,
       roleVSIPOrchestrationServiceHttpHeaders,
     )
 
@@ -321,6 +313,7 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
     responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(0)
+    verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
   @Test
@@ -345,12 +338,14 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
       prisonerId,
       OPEN,
       visitorIds,
+      false,
       roleVSIPOrchestrationServiceHttpHeaders,
     )
 
     // Then
     responseSpec.expectStatus().isNotFound
     verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange)
+    verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
   @Test
@@ -375,12 +370,14 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
       prisonerId,
       OPEN,
       visitorIds,
+      false,
       roleVSIPOrchestrationServiceHttpHeaders,
     )
 
     // Then
     responseSpec.expectStatus().isNotFound
     verify(visitSchedulerClient, times(0)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange)
+    verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
   @Test
@@ -405,12 +402,14 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
       prisonerId,
       OPEN,
       visitorIds,
+      false,
       roleVSIPOrchestrationServiceHttpHeaders,
     )
 
     // Then
     responseSpec.expectStatus().is5xxServerError
     verify(visitSchedulerClient, times(0)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange)
+    verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
   @Test
@@ -428,6 +427,7 @@ class AvailableVisitSessionsTest : IntegrationTestBase() {
       prisonerId,
       CLOSED,
       visitorIds,
+      false,
       invalidRole,
     )
 

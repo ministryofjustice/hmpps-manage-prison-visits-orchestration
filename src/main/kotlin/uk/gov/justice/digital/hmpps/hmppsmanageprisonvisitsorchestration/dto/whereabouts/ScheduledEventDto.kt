@@ -80,4 +80,8 @@ data class ScheduledEventDto(
 
   @Schema(description = "Staff member who created the appointment")
   val createUserId: String? = null,
-)
+) {
+  override fun toString(): String {
+    return "Event with booking id - $bookingId, type - $eventTypeDesc ($eventType), subtype - $eventSubTypeDesc ($eventSubType), dated - $eventDate from - ${startTime?.toLocalTime()} to - ${endTime?.toLocalTime()}"
+  }
+}
