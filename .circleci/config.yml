@@ -181,6 +181,13 @@ workflows:
               ignore:
                 - main
 
+      - hmpps/build_multiplatform_docker:
+          name: build_docker
+          filters:
+            branches:
+              ignore:
+                - main
+
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
