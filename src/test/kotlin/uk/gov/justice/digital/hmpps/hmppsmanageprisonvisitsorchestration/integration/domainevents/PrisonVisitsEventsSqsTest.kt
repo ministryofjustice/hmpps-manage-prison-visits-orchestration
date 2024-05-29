@@ -149,7 +149,6 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     val sentRequestToVsip = PrisonerReceivedNotificationDto(
       prisonerNumber = "TEST",
       reason = TRANSFERRED,
-      detail = "Moved Prison",
       prisonCode = "BRI",
     )
 
