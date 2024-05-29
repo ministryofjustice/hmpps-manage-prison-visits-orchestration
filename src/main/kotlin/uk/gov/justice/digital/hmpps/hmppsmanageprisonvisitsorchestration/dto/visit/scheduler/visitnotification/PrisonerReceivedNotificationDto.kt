@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification
 
 import jakarta.validation.constraints.NotBlank
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ReleaseReasonType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonerReceivedReasonType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerReceivedInfo
 
 data class PrisonerReceivedNotificationDto(
@@ -9,7 +9,7 @@ data class PrisonerReceivedNotificationDto(
   val prisonerNumber: String,
 
   @NotBlank
-  val reason: ReleaseReasonType,
+  val reason: PrisonerReceivedReasonType,
 
   @NotBlank
   val prisonCode: String,

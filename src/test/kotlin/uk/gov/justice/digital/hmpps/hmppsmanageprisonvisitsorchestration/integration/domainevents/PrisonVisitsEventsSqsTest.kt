@@ -17,10 +17,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_RESTRICTION_CHANGE_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_VISITOR_RESTRICTION_CHANGE_PATH
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.CurrentLocation
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.CurrentPrisonStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ReleaseReasonType.RELEASED
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ReleaseReasonType.TRANSFERRED
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonerReceivedReasonType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonerReleaseReasonType.RELEASED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionChangeNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
@@ -139,18 +137,10 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     // Given
     val prisonerReceivedAdditionalInfo = PrisonerReceivedInfo(
       prisonerNumber = "TEST",
-      reason = TRANSFERRED,
-      detail = "Moved Prison",
-      currentLocation = CurrentLocation.IN_PRISON,
-      currentPrisonStatus = CurrentPrisonStatus.NOT_UNDER_PRISON_CARE,
-      prisonCode = "BRI",
-      nomisMovementReasonCode = "TEST",
-    )
-    val sentRequestToVsip = PrisonerReceivedNotificationDto(
-      prisonerNumber = "TEST",
-      reason = TRANSFERRED,
+      reason = PrisonerReceivedReasonType.TRANSFERRED,
       prisonCode = "BRI",
     )
+    val sentRequestToVsip = PrisonerReceivedNotificationDto(prisonerReceivedAdditionalInfo)
 
     val domainEvent = createDomainEventJson(PRISONER_RECEIVED_TYPE, createPrisonerReceivedAdditionalInformationJson(prisonerReceivedAdditionalInfo))
     val publishRequest = createDomainEventPublishRequest(PRISONER_RECEIVED_TYPE, domainEvent)
