@@ -13,6 +13,7 @@ import org.mockito.kotlin.verify
 import software.amazon.awssdk.services.sns.model.PublishRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_NON_ASSOCIATION_CHANGE_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PERSON_RESTRICTION_CHANGE_PATH
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_ALERTS_ADDED_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_RECEIVED_CHANGE_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_RESTRICTION_CHANGE_PATH
@@ -20,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ReleaseReasonType.RELEASED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionChangeNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertsAddedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerRestrictionChangeNotificationDto
@@ -29,6 +31,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.INSERTED_INCENTIVES_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.NonAssociationDomainEventType.NON_ASSOCIATION_CREATED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PERSON_RESTRICTION_CHANGED_TYPE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_ALERTS_UPDATED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_NON_ASSOCIATION_DETAIL_CREATED_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_RECEIVED_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_RELEASED_TYPE
@@ -240,6 +243,64 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     // Then
     assertStandardCalls(prisonerNonAssociationCreatedNotifier, VISIT_NOTIFICATION_NON_ASSOCIATION_CHANGE_PATH, sentRequestToVsip)
     await untilAsserted { verify(visitSchedulerClient, times(1)).processNonAssociations(any()) }
+  }
+
+  @Test
+  fun `test prisoner add alerts event is processed when alerts are added`() {
+    // Given
+    val prisonerNumber = "A8713DY"
+    val bookingId = 100L
+    val alertsAdded = listOf("AL1", "AL2")
+    val alertsRemoved = emptyList<String>()
+
+    val sentRequestToVsip = PrisonerAlertsAddedNotificationDto(
+      prisonerNumber,
+      alertsAdded,
+    )
+
+    val domainEvent = createDomainEventJson(
+      PRISONER_ALERTS_UPDATED,
+      createAlertsUpdatedAdditionalInformationJson(
+        prisonerNumber,
+        bookingId,
+        alertsAdded,
+        alertsRemoved,
+      ),
+    )
+    val publishRequest = createDomainEventPublishRequest(PRISONER_ALERTS_UPDATED, domainEvent)
+
+    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERTS_ADDED_PATH)
+
+    // When
+    sendSqSMessage(publishRequest)
+
+    // Then
+    assertStandardCalls(prisonerAlertsUpdatedNotifier, VISIT_NOTIFICATION_PRISONER_ALERTS_ADDED_PATH, sentRequestToVsip)
+    await untilAsserted { verify(visitSchedulerClient, times(1)).processPrisonerAlertsAdded(sendDto = sentRequestToVsip) }
+  }
+
+  @Test
+  fun `test prisoner add alerts event is not processed when no alerts are added and only removed`() {
+    // Given
+    val prisonerNumber = "A8713DY"
+    val bookingId = 100L
+    val alertsAdded = emptyList<String>()
+    val alertsRemoved = listOf("AL1", "AL2")
+
+    val domainEvent = createDomainEventJson(
+      PRISONER_ALERTS_UPDATED,
+      createAlertsUpdatedAdditionalInformationJson(prisonerNumber, bookingId, alertsAdded, alertsRemoved),
+    )
+    val publishRequest = createDomainEventPublishRequest(PRISONER_ALERTS_UPDATED, domainEvent)
+
+    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERTS_ADDED_PATH)
+
+    // When
+    sendSqSMessage(publishRequest)
+
+    // Then
+    verify(prisonerAlertsUpdatedNotifier, times(0)).processEvent(any())
+    await untilAsserted { verify(visitSchedulerClient, times(0)).processPrisonerAlertsAdded(any()) }
   }
 
   @Test

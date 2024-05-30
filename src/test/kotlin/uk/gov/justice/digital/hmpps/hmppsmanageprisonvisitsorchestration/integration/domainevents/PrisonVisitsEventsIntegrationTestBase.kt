@@ -28,13 +28,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.DomainEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.EventFeatureSwitch
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PersonRestrictionChangedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertsUpdatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerIncentivesDeletedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerIncentivesInsertedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerIncentivesUpdatedNotifier
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerNonAssociationNotifierAmendedNotifier
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerNonAssociationNotifierClosedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerNonAssociationNotifierCreatedNotifier
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerNonAssociationNotifierDeletedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerReceivedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerReleasedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerRestrictionChangedNotifier
@@ -70,9 +68,6 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
       visitSchedulerMockServer.stop()
     }
   }
-
-  @Autowired
-  lateinit var domainEventListenerService: DomainEventListenerService
 
   @SpyBean
   lateinit var eventFeatureSwitch: EventFeatureSwitch
@@ -114,13 +109,7 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
   lateinit var prisonerNonAssociationCreatedNotifier: PrisonerNonAssociationNotifierCreatedNotifier
 
   @SpyBean
-  lateinit var prisonerNonAssociationNotifierClosedNotifier: PrisonerNonAssociationNotifierClosedNotifier
-
-  @SpyBean
-  lateinit var prisonerNonAssociationNotifierAmendedNotifier: PrisonerNonAssociationNotifierAmendedNotifier
-
-  @SpyBean
-  lateinit var prisonerNonAssociationDeleteNotifier: PrisonerNonAssociationNotifierDeletedNotifier
+  lateinit var prisonerAlertsUpdatedNotifier: PrisonerAlertsUpdatedNotifier
 
   @Autowired
   protected lateinit var objectMapper: ObjectMapper
@@ -190,10 +179,24 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
   }
 
   fun createNonAssociationAdditionalInformationJson(): String {
-    val jsonVales = HashMap<String, String>()
-    jsonVales["nsPrisonerNumber1"] = "A8713DY"
-    jsonVales["nsPrisonerNumber2"] = "B2022DY"
-    return createAdditionalInformationJson(jsonVales)
+    val jsonValues = HashMap<String, String>()
+    jsonValues["nsPrisonerNumber1"] = "A8713DY"
+    jsonValues["nsPrisonerNumber2"] = "B2022DY"
+    return createAdditionalInformationJson(jsonValues)
+  }
+
+  fun createAlertsUpdatedAdditionalInformationJson(
+    prisonerNumber: String,
+    bookingId: Long,
+    alertsAdded: List<String>? = emptyList(),
+    alertsRemoved: List<String>? = emptyList(),
+  ): String {
+    val jsonValues = HashMap<String, Any>()
+    jsonValues["nomsNumber"] = prisonerNumber
+    jsonValues["bookingId"] = bookingId
+    jsonValues["alertsAdded"] = alertsAdded ?: emptyList<String>()
+    jsonValues["alertsRemoved"] = alertsRemoved ?: emptyList<String>()
+    return createAdditionalInformationJson(jsonValues)
   }
 
   fun createAdditionalInformationJson(
@@ -204,33 +207,37 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     contactPersonId: String? = null,
     reason: String? = null,
   ): String {
-    val jsonVales = HashMap<String, String>()
+    val jsonValues = HashMap<String, Any>()
     nomsNumber?.let {
-      jsonVales["nomsNumber"] = nomsNumber
+      jsonValues["nomsNumber"] = nomsNumber
     }
     personId?.let {
-      jsonVales["personId"] = personId
+      jsonValues["personId"] = personId
     }
     effectiveDate?.let {
-      jsonVales["effectiveDate"] = effectiveDate
+      jsonValues["effectiveDate"] = effectiveDate
     }
     contactPersonId?.let {
-      jsonVales["contactPersonId"] = contactPersonId
+      jsonValues["contactPersonId"] = contactPersonId
     }
     prisonCode?.let {
-      jsonVales["prisonId"] = prisonCode
+      jsonValues["prisonId"] = prisonCode
     }
     reason?.let {
-      jsonVales["reason"] = reason
+      jsonValues["reason"] = reason
     }
-    return createAdditionalInformationJson(jsonVales)
+    return createAdditionalInformationJson(jsonValues)
   }
 
-  fun createAdditionalInformationJson(jsonValues: Map<String, String>): String {
+  fun createAdditionalInformationJson(jsonValues: Map<String, Any>): String {
     val builder = StringBuilder()
     builder.append("{")
     jsonValues.entries.forEachIndexed { index, entry ->
-      builder.append("\"${entry.key}\":\"${entry.value}\"")
+      if (entry.value is List<*>) {
+        builder.append("\"${entry.key}\":[${(entry.value as List<*>).joinToString { "\"" + it + "\"" }}]")
+      } else {
+        builder.append("\"${entry.key}\":\"${entry.value}\"")
+      }
       if (index < jsonValues.size - 1) {
         builder.append(",")
       }
