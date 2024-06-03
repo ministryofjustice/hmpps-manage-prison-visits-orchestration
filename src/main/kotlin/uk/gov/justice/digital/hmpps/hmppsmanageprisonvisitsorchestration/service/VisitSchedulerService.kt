@@ -155,7 +155,7 @@ class VisitSchedulerService(
   }
 
   fun processPrisonerAlertsUpdated(info: PrisonerAlertsUpdatedNotificationInfo) {
-    visitSchedulerClient.processPrisonerAlertsAdded(PrisonerAlertsAddedNotificationDto(info))
+    visitSchedulerClient.processPrisonerAlertsUpdated(PrisonerAlertsAddedNotificationDto(info))
   }
 
   fun getNotificationCountForPrison(prisonCode: String): NotificationCountDto? {

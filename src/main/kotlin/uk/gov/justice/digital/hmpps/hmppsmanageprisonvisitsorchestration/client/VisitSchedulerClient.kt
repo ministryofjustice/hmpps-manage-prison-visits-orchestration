@@ -55,7 +55,7 @@ const val VISIT_NOTIFICATION_PRISONER_RECEIVED_CHANGE_PATH: String = "$VISIT_NOT
 const val VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/released"
 const val VISIT_NOTIFICATION_PRISONER_RESTRICTION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/restriction/changed"
 const val VISIT_NOTIFICATION_VISITOR_RESTRICTION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/visitor/restriction/changed"
-const val VISIT_NOTIFICATION_PRISONER_ALERTS_ADDED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alerts/added"
+const val VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alerts/updated"
 
 @Component
 class VisitSchedulerClient(
@@ -303,13 +303,13 @@ class VisitSchedulerClient(
       .block(apiTimeout)
   }
 
-  fun processPrisonerAlertsAdded(sendDto: PrisonerAlertsAddedNotificationDto) {
+  fun processPrisonerAlertsUpdated(sendDto: PrisonerAlertsAddedNotificationDto) {
     webClient.post()
-      .uri(VISIT_NOTIFICATION_PRISONER_ALERTS_ADDED_PATH)
+      .uri(VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH)
       .body(BodyInserters.fromValue(sendDto))
       .retrieve()
       .toBodilessEntity()
-      .doOnError { e -> LOG.error("Could not processPrisonerAlertsAdded :", e) }
+      .doOnError { e -> LOG.error("Could not process prisoner alert updates :", e) }
       .block(apiTimeout)
   }
 

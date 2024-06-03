@@ -13,7 +13,7 @@ import org.mockito.kotlin.verify
 import software.amazon.awssdk.services.sns.model.PublishRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_NON_ASSOCIATION_CHANGE_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PERSON_RESTRICTION_CHANGE_PATH
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_ALERTS_ADDED_PATH
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_RECEIVED_CHANGE_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_RESTRICTION_CHANGE_PATH
@@ -273,14 +273,14 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     )
     val publishRequest = createDomainEventPublishRequest(PRISONER_ALERTS_UPDATED, domainEvent)
 
-    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERTS_ADDED_PATH)
+    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH)
 
     // When
     sendSqSMessage(publishRequest)
 
     // Then
-    assertStandardCalls(prisonerAlertsUpdatedNotifier, VISIT_NOTIFICATION_PRISONER_ALERTS_ADDED_PATH, sentRequestToVsip)
-    await untilAsserted { verify(visitSchedulerClient, times(1)).processPrisonerAlertsAdded(sendDto = sentRequestToVsip) }
+    assertStandardCalls(prisonerAlertsUpdatedNotifier, VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH, sentRequestToVsip)
+    await untilAsserted { verify(visitSchedulerClient, times(1)).processPrisonerAlertsUpdated(sendDto = sentRequestToVsip) }
   }
 
   @Test
@@ -297,14 +297,14 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     )
     val publishRequest = createDomainEventPublishRequest(PRISONER_ALERTS_UPDATED, domainEvent)
 
-    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERTS_ADDED_PATH)
+    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH)
 
     // When
     sendSqSMessage(publishRequest)
 
     // Then
     verify(prisonerAlertsUpdatedNotifier, times(0)).processEvent(any())
-    await untilAsserted { verify(visitSchedulerClient, times(0)).processPrisonerAlertsAdded(any()) }
+    await untilAsserted { verify(visitSchedulerClient, times(0)).processPrisonerAlertsUpdated(any()) }
   }
 
   @Test

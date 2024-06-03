@@ -7,7 +7,7 @@ data class PrisonerAlertsUpdatedNotificationInfo(
   @NotBlank
   @JsonProperty("nomsNumber")
   val nomsNumber: String,
-  @NotBlank
+
   @JsonProperty("alertsAdded")
   val alertsAdded: List<String>,
 )

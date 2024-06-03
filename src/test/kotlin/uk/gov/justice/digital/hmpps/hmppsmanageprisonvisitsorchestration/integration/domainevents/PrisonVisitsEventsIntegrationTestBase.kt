@@ -240,20 +240,33 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     return createAdditionalInformationJson(jsonValues)
   }
 
-  fun createAdditionalInformationJson(jsonValues: Map<String, Any>): String {
+  private fun createAdditionalInformationJson(jsonValues: Map<String, Any>): String {
     val builder = StringBuilder()
     builder.append("{")
     jsonValues.entries.forEachIndexed { index, entry ->
-      if (entry.value is List<*>) {
-        builder.append("\"${entry.key}\":[${(entry.value as List<*>).joinToString { "\"" + it + "\"" }}]")
-      } else {
-        builder.append("\"${entry.key}\":\"${entry.value}\"")
-      }
+      builder.append(getJsonString(entry))
+
       if (index < jsonValues.size - 1) {
         builder.append(",")
       }
     }
     builder.append("}")
     return builder.toString()
+  }
+
+  private fun getJsonString(entry: Map.Entry<String, Any>): String {
+    return when (entry.value) {
+      is List<*> -> {
+        ("\"${entry.key}\":[${(entry.value as List<*>).joinToString { "\"" + it + "\"" }}]")
+      }
+
+      is Number -> {
+        ("\"${entry.key}\":${entry.value}")
+      }
+
+      else -> {
+        ("\"${entry.key}\":\"${entry.value}\"")
+      }
+    }
   }
 }
