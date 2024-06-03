@@ -13,7 +13,7 @@ class PrisonerAlertsUpdatedNotifier : EventNotifier() {
 
     // ignore events which only have alerts removed
     if (info.alertsAdded.isNotEmpty()) {
-      getVisitSchedulerService().processPrisonerAlertsUpdated(info)
+      getVisitSchedulerService().processPrisonerAlertsUpdated(info, domainEvent.description)
     }
   }
 }

@@ -179,6 +179,9 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     return "{\"eventType\":\"$eventType\",\"additionalInformation\":$additionalInformation}"
   }
 
+  fun createDomainEventJson(eventType: String, description: String, additionalInformation: String): String {
+    return "{\"eventType\":\"$eventType\",\"description\":\"$description\",\"additionalInformation\":$additionalInformation}"
+  }
   fun createNonAssociationAdditionalInformationJson(): String {
     val jsonValues = HashMap<String, String>()
     jsonValues["nsPrisonerNumber1"] = "A8713DY"

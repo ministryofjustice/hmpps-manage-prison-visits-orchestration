@@ -154,8 +154,9 @@ class VisitSchedulerService(
     visitSchedulerClient.processVisitorRestrictionChange(VisitorRestrictionChangeNotificationDto(info))
   }
 
-  fun processPrisonerAlertsUpdated(info: PrisonerAlertsUpdatedNotificationInfo) {
-    visitSchedulerClient.processPrisonerAlertsUpdated(PrisonerAlertsAddedNotificationDto(info))
+  fun processPrisonerAlertsUpdated(info: PrisonerAlertsUpdatedNotificationInfo, description: String?) {
+    val alertDescription = description ?: "${info.alertsAdded.size} alerts added"
+    visitSchedulerClient.processPrisonerAlertsUpdated(PrisonerAlertsAddedNotificationDto(info, alertDescription))
   }
 
   fun getNotificationCountForPrison(prisonCode: String): NotificationCountDto? {

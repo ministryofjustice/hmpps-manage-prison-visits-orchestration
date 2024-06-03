@@ -250,20 +250,59 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
   }
 
   @Test
+  fun `test prisoner add alerts event is processed when alerts are added but no description passed`() {
+    // Given
+    val prisonerNumber = "A8713DY"
+    val bookingId = 100L
+    val alertsAdded = listOf("AL1", "AL2")
+    val alertsRemoved = emptyList<String>()
+    val description = "${alertsAdded.size} alerts added"
+
+    val sentRequestToVsip = PrisonerAlertsAddedNotificationDto(
+      prisonerNumber,
+      alertsAdded,
+      description,
+    )
+
+    val domainEvent = createDomainEventJson(
+      PRISONER_ALERTS_UPDATED,
+      createAlertsUpdatedAdditionalInformationJson(
+        prisonerNumber,
+        bookingId,
+        alertsAdded,
+        alertsRemoved,
+      ),
+    )
+    val publishRequest = createDomainEventPublishRequest(PRISONER_ALERTS_UPDATED, domainEvent)
+
+    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH)
+
+    // When
+    sendSqSMessage(publishRequest)
+
+    // Then
+    assertStandardCalls(prisonerAlertsUpdatedNotifier, VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH, sentRequestToVsip)
+    await untilAsserted { verify(visitSchedulerClient, times(1)).processPrisonerAlertsUpdated(sendDto = sentRequestToVsip) }
+  }
+
+  @Test
   fun `test prisoner add alerts event is processed when alerts are added`() {
     // Given
     val prisonerNumber = "A8713DY"
     val bookingId = 100L
     val alertsAdded = listOf("AL1", "AL2")
     val alertsRemoved = emptyList<String>()
+    val description = "2 alerts added"
 
     val sentRequestToVsip = PrisonerAlertsAddedNotificationDto(
       prisonerNumber,
       alertsAdded,
+      description,
     )
 
     val domainEvent = createDomainEventJson(
       PRISONER_ALERTS_UPDATED,
+      description,
       createAlertsUpdatedAdditionalInformationJson(
         prisonerNumber,
         bookingId,
@@ -290,9 +329,11 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     val bookingId = 100L
     val alertsAdded = emptyList<String>()
     val alertsRemoved = listOf("AL1", "AL2")
+    val description = "2 alerts removed"
 
     val domainEvent = createDomainEventJson(
       PRISONER_ALERTS_UPDATED,
+      description,
       createAlertsUpdatedAdditionalInformationJson(prisonerNumber, bookingId, alertsAdded, alertsRemoved),
     )
     val publishRequest = createDomainEventPublishRequest(PRISONER_ALERTS_UPDATED, domainEvent)

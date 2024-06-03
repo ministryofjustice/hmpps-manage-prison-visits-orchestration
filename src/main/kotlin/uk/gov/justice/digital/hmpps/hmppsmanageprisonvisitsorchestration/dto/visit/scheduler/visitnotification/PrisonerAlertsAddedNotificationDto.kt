@@ -10,10 +10,13 @@ data class PrisonerAlertsAddedNotificationDto(
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   val alertsAdded: List<String>,
+
+  val description: String,
 ) {
 
-  constructor(info: PrisonerAlertsUpdatedNotificationInfo) : this(
+  constructor(info: PrisonerAlertsUpdatedNotificationInfo, description: String) : this(
     info.nomsNumber,
     info.alertsAdded,
+    description = description,
   )
 }
