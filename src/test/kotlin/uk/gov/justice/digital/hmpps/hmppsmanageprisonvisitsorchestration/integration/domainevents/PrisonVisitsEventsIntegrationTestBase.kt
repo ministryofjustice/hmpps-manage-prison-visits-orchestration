@@ -27,7 +27,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.DomainEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.EventFeatureSwitch
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerReceivedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PersonRestrictionChangedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertsUpdatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerIncentivesDeletedNotifier
@@ -201,16 +200,6 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     jsonValues["alertsAdded"] = alertsAdded ?: emptyList<String>()
     jsonValues["alertsRemoved"] = alertsRemoved ?: emptyList<String>()
     return createAdditionalInformationJson(jsonValues)
-  }
-
-  fun createPrisonerReceivedAdditionalInformationJson(prisonerReceivedInfo: PrisonerReceivedInfo): String {
-    val jsonVales = HashMap<String, String>()
-
-    jsonVales["nomsNumber"] = prisonerReceivedInfo.prisonerNumber
-    jsonVales["reason"] = prisonerReceivedInfo.reason.name
-    jsonVales["prisonId"] = prisonerReceivedInfo.prisonCode
-
-    return createAdditionalInformationJson(jsonVales)
   }
 
   fun createAdditionalInformationJson(

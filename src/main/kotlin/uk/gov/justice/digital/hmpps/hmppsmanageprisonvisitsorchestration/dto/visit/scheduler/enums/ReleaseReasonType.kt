@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums
 
 @Suppress("unused")
-enum class PrisonerReleaseReasonType {
+enum class ReleaseReasonType {
   TEMPORARY_ABSENCE_RELEASE,
   RELEASED_TO_HOSPITAL,
   RELEASED,
