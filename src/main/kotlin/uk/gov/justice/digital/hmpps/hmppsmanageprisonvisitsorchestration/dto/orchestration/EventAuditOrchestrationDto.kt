@@ -1,17 +1,16 @@
-package uk.gov.justice.digital.hmpps.visitscheduler.dto.audit
+package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration
 
 import io.swagger.v3.oas.annotations.media.Schema
-import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ActionedByDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.EventAuditType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.validation.NullableNotBlank
 import java.time.LocalDateTime
 
 @Schema(description = "Event Audit")
-class EventAuditDto(
+class EventAuditOrchestrationDto(
 
   @Schema(description = "The type of event", required = true)
   @field:NotNull
@@ -21,12 +20,14 @@ class EventAuditDto(
   @field:NotNull
   val applicationMethodType: ApplicationMethodType,
 
-  @Schema(description = "Event actioned by information", required = true)
-  @field:NotNull
-  @field:Valid
-  val actionedBy: ActionedByDto,
+  @Schema(description = "Actioned by full name", example = "Aled Evans", required = false)
+  val actionedByFullName: String? = null,
 
-  @Schema(description = "Session template used for this event", required = false)
+  @Schema(description = "User type", example = "STAFF", required = false)
+  @field:NotNull
+  val userType: UserType,
+
+  @Schema(description = "Session template used for this event ", required = false)
   var sessionTemplateReference: String? = null,
 
   @Schema(description = "Notes added against the event", required = false)

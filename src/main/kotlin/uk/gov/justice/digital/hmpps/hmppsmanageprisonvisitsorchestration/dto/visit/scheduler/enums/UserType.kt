@@ -3,4 +3,5 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 enum class UserType {
   STAFF,
   PUBLIC,
+  SYSTEM,
 }

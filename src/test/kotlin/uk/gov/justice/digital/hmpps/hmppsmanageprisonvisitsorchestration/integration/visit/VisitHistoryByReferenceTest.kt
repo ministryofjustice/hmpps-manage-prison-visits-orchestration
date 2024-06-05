@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.visit
 
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -14,11 +14,20 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ManageUsersApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ActionedByDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType.EMAIL
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType.NOT_APPLICABLE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.EventAuditType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.EventAuditType.BOOKED_VISIT
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.EventAuditType.CANCELLED_VISIT
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.EventAuditType.IGNORE_VISIT_NOTIFICATIONS_EVENT
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.EventAuditType.NON_ASSOCIATION_EVENT
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.EventAuditType.UPDATED_VISIT
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.SYSTEM
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.visitscheduler.dto.audit.EventAuditDto
 
 private const val NOT_KNOWN = "NOT_KNOWN"
 
@@ -43,23 +52,27 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
   fun `when visit exists the full details search by reference returns the visit full names`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val createdBy = "created-user"
-    val lastUpdatedBy = "updated-user"
-    val cancelledBy = "cancelled-user"
+    val createdByUserName = "created-user"
+    val lastUpdatedByUserName = "updated-user"
+    val cancelledByUserName = "cancelled-user"
+
+    val createdBy = ActionedByDto(bookerReference = null, userName = createdByUserName, userType = STAFF)
+    val lastUpdatedBy = ActionedByDto(bookerReference = null, userName = lastUpdatedByUserName, userType = STAFF)
+    val cancelledBy = ActionedByDto(bookerReference = null, userName = cancelledByUserName, userType = STAFF)
 
     val eventList = mutableListOf(
-      EventAuditDto(type = EventAuditType.BOOKED_VISIT, actionedBy = createdBy, applicationMethodType = EMAIL),
-      EventAuditDto(type = EventAuditType.UPDATED_VISIT, actionedBy = lastUpdatedBy, applicationMethodType = EMAIL),
-      EventAuditDto(type = EventAuditType.CANCELLED_VISIT, actionedBy = cancelledBy, applicationMethodType = EMAIL),
-      EventAuditDto(type = EventAuditType.IGNORE_VISIT_NOTIFICATIONS_EVENT, actionedBy = createdBy, applicationMethodType = NOT_APPLICABLE, text = "ignore for now"),
-      EventAuditDto(type = EventAuditType.IGNORE_VISIT_NOTIFICATIONS_EVENT, actionedBy = cancelledBy, applicationMethodType = NOT_APPLICABLE, text = "ignore again"),
+      EventAuditDto(type = BOOKED_VISIT, actionedBy = createdBy, applicationMethodType = EMAIL),
+      EventAuditDto(type = UPDATED_VISIT, actionedBy = lastUpdatedBy, applicationMethodType = EMAIL),
+      EventAuditDto(type = CANCELLED_VISIT, actionedBy = cancelledBy, applicationMethodType = EMAIL),
+      EventAuditDto(type = IGNORE_VISIT_NOTIFICATIONS_EVENT, actionedBy = createdBy, applicationMethodType = NOT_APPLICABLE, text = "ignore for now"),
+      EventAuditDto(type = IGNORE_VISIT_NOTIFICATIONS_EVENT, actionedBy = cancelledBy, applicationMethodType = NOT_APPLICABLE, text = "ignore again"),
     )
 
     visitSchedulerMockServer.stubGetVisitHistory(reference, eventList)
 
-    manageUsersApiMockServer.stubGetUserDetails(createdBy, "Aled")
-    manageUsersApiMockServer.stubGetUserDetails(lastUpdatedBy, "Ben")
-    manageUsersApiMockServer.stubGetUserDetails(cancelledBy, "Dhiraj")
+    manageUsersApiMockServer.stubGetUserDetails(createdByUserName, "Aled")
+    manageUsersApiMockServer.stubGetUserDetails(lastUpdatedByUserName, "Ben")
+    manageUsersApiMockServer.stubGetUserDetails(cancelledByUserName, "Dhiraj")
 
     val visitDto = createVisitDto(reference = reference)
     visitSchedulerMockServer.stubGetVisit(reference, visitDto)
@@ -70,18 +83,63 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isOk
     val visitHistoryDetailsDto = getVisitHistoryDetailsDto(responseSpec)
-    Assertions.assertThat(visitHistoryDetailsDto.visit.reference).isEqualTo(visitDto.reference)
+    assertThat(visitHistoryDetailsDto.visit.reference).isEqualTo(visitDto.reference)
 
-    Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[0].actionedBy).isEqualTo("Aled")
-    Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[0].text).isNull()
-    Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[1].actionedBy).isEqualTo("Ben")
-    Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[1].text).isNull()
-    Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[2].actionedBy).isEqualTo("Dhiraj")
-    Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[2].text).isNull()
-    Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[3].actionedBy).isEqualTo("Aled")
-    Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[3].text).isEqualTo("ignore for now")
-    Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[4].actionedBy).isEqualTo("Dhiraj")
-    Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[4].text).isEqualTo("ignore again")
+    assertThat(visitHistoryDetailsDto.eventsAudit[0].actionedByFullName).isEqualTo("Aled")
+    assertThat(visitHistoryDetailsDto.eventsAudit[0].text).isNull()
+    assertThat(visitHistoryDetailsDto.eventsAudit[1].actionedByFullName).isEqualTo("Ben")
+    assertThat(visitHistoryDetailsDto.eventsAudit[1].text).isNull()
+    assertThat(visitHistoryDetailsDto.eventsAudit[2].actionedByFullName).isEqualTo("Dhiraj")
+    assertThat(visitHistoryDetailsDto.eventsAudit[2].text).isNull()
+    assertThat(visitHistoryDetailsDto.eventsAudit[3].actionedByFullName).isEqualTo("Aled")
+    assertThat(visitHistoryDetailsDto.eventsAudit[3].text).isEqualTo("ignore for now")
+    assertThat(visitHistoryDetailsDto.eventsAudit[4].actionedByFullName).isEqualTo("Dhiraj")
+    assertThat(visitHistoryDetailsDto.eventsAudit[4].text).isEqualTo("ignore again")
+  }
+
+  @Test
+  fun `when visit history is requested only user full names are given for visits that are created by Staff`() {
+    // Given
+    val reference = "aa-bb-cc-dd"
+    val lastUpdatedByUserName = "updated-user"
+    val cancelledByUserName = "cancelled-user"
+
+    val createdBy = ActionedByDto(bookerReference = "asd-asd-asd", userName = null, userType = PUBLIC)
+    val lastUpdatedBy = ActionedByDto(bookerReference = null, userName = lastUpdatedByUserName, userType = STAFF)
+    val cancelledBy = ActionedByDto(bookerReference = null, userName = cancelledByUserName, userType = STAFF)
+    val notification = ActionedByDto(bookerReference = null, userName = null, userType = SYSTEM)
+
+    val eventList = mutableListOf(
+      EventAuditDto(type = BOOKED_VISIT, actionedBy = createdBy, applicationMethodType = EMAIL),
+      EventAuditDto(type = UPDATED_VISIT, actionedBy = lastUpdatedBy, applicationMethodType = EMAIL),
+      EventAuditDto(type = CANCELLED_VISIT, actionedBy = cancelledBy, applicationMethodType = EMAIL),
+      EventAuditDto(type = NON_ASSOCIATION_EVENT, actionedBy = notification, applicationMethodType = EMAIL),
+    )
+
+    visitSchedulerMockServer.stubGetVisitHistory(reference, eventList)
+
+    manageUsersApiMockServer.stubGetUserDetails(lastUpdatedByUserName, "Ben")
+    manageUsersApiMockServer.stubGetUserDetails(cancelledByUserName, "Dhiraj")
+
+    val visitDto = createVisitDto(reference = reference)
+    visitSchedulerMockServer.stubGetVisit(reference, visitDto)
+
+    // When
+    val responseSpec = callVisitHistoryByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isOk
+    val visitHistoryDetailsDto = getVisitHistoryDetailsDto(responseSpec)
+    assertThat(visitHistoryDetailsDto.visit.reference).isEqualTo(visitDto.reference)
+
+    assertThat(visitHistoryDetailsDto.eventsAudit[0].actionedByFullName).isNull()
+    assertThat(visitHistoryDetailsDto.eventsAudit[0].userType).isEqualTo(PUBLIC)
+    assertThat(visitHistoryDetailsDto.eventsAudit[1].actionedByFullName).isEqualTo("Ben")
+    assertThat(visitHistoryDetailsDto.eventsAudit[1].userType).isEqualTo(STAFF)
+    assertThat(visitHistoryDetailsDto.eventsAudit[2].actionedByFullName).isEqualTo("Dhiraj")
+    assertThat(visitHistoryDetailsDto.eventsAudit[2].userType).isEqualTo(STAFF)
+    assertThat(visitHistoryDetailsDto.eventsAudit[3].actionedByFullName).isNull()
+    assertThat(visitHistoryDetailsDto.eventsAudit[3].userType).isEqualTo(SYSTEM)
   }
 
   private fun getVisitHistoryDetailsDto(responseSpec: ResponseSpec) =
@@ -91,16 +149,18 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
   fun `when all user details then only call auth once `() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val actionedBy = "created-user"
+    val actionedByUserName = "created-user"
+
+    val actionedBy = ActionedByDto(bookerReference = null, userName = actionedByUserName, userType = STAFF)
 
     val eventList = mutableListOf(
-      EventAuditDto(type = EventAuditType.BOOKED_VISIT, actionedBy = actionedBy, applicationMethodType = EMAIL),
-      EventAuditDto(type = EventAuditType.UPDATED_VISIT, actionedBy = actionedBy, applicationMethodType = EMAIL),
-      EventAuditDto(type = EventAuditType.CANCELLED_VISIT, actionedBy = actionedBy, applicationMethodType = EMAIL),
+      EventAuditDto(type = BOOKED_VISIT, actionedBy = actionedBy, applicationMethodType = EMAIL),
+      EventAuditDto(type = UPDATED_VISIT, actionedBy = actionedBy, applicationMethodType = EMAIL),
+      EventAuditDto(type = CANCELLED_VISIT, actionedBy = actionedBy, applicationMethodType = EMAIL),
     )
 
     visitSchedulerMockServer.stubGetVisitHistory(reference, eventList)
-    manageUsersApiMockServer.stubGetUserDetails(actionedBy, "Aled")
+    manageUsersApiMockServer.stubGetUserDetails(actionedByUserName, "Aled")
     val visitDto = createVisitDto(reference = reference)
     visitSchedulerMockServer.stubGetVisit(reference, visitDto)
 
@@ -117,15 +177,17 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
   fun `when visit exists but userid is NOT_KNOWN search by reference returns the visit and names as NOT_KNOWN`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val actionedBy = NOT_KNOWN
+    val actionedByUserName = NOT_KNOWN
+
+    val actionedBy = ActionedByDto(bookerReference = null, userName = actionedByUserName, userType = STAFF)
 
     val eventList = mutableListOf(
-      EventAuditDto(type = EventAuditType.BOOKED_VISIT, actionedBy = actionedBy, applicationMethodType = EMAIL),
+      EventAuditDto(type = BOOKED_VISIT, actionedBy = actionedBy, applicationMethodType = EMAIL),
     )
 
     visitSchedulerMockServer.stubGetVisitHistory(reference, eventList)
 
-    manageUsersApiMockServer.stubGetUserDetails(actionedBy, "Aled")
+    manageUsersApiMockServer.stubGetUserDetails(actionedByUserName, "Aled")
 
     val visitDto = createVisitDto(reference = reference)
     visitSchedulerMockServer.stubGetVisit(reference, visitDto)
@@ -137,18 +199,23 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
     responseSpec.expectStatus().isOk
 
     val visitHistoryDetailsDto = getVisitHistoryDetailsDto(responseSpec)
-    Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[0].actionedBy).isEqualTo(NOT_KNOWN)
+    assertThat(visitHistoryDetailsDto.eventsAudit[0].actionedByFullName).isEqualTo(NOT_KNOWN)
   }
 
   @Test
   fun `when visit exists but userid is null search by reference returns the visit and names as null`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val createdBy = "invalid-user"
+    val createdByName = "invalid-user"
+
+    val createdBy = ActionedByDto(bookerReference = null, userName = createdByName, userType = STAFF)
+    val updatedBy = ActionedByDto(bookerReference = null, userName = null, userType = STAFF)
+    val cancelBy = ActionedByDto(bookerReference = null, userName = null, userType = STAFF)
+
     val eventList = mutableListOf(
-      EventAuditDto(type = EventAuditType.BOOKED_VISIT, actionedBy = createdBy, applicationMethodType = EMAIL),
-      EventAuditDto(type = EventAuditType.UPDATED_VISIT, actionedBy = null, applicationMethodType = EMAIL),
-      EventAuditDto(type = EventAuditType.CANCELLED_VISIT, actionedBy = null, applicationMethodType = EMAIL),
+      EventAuditDto(type = BOOKED_VISIT, actionedBy = createdBy, applicationMethodType = EMAIL),
+      EventAuditDto(type = UPDATED_VISIT, actionedBy = updatedBy, applicationMethodType = EMAIL),
+      EventAuditDto(type = CANCELLED_VISIT, actionedBy = cancelBy, applicationMethodType = EMAIL),
     )
 
     visitSchedulerMockServer.stubGetVisitHistory(reference, eventList)
@@ -162,9 +229,9 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isOk
     val visitHistoryDetailsDto = getVisitHistoryDetailsDto(responseSpec)
-    Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[0].actionedBy).isEqualTo(createdBy)
-    Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[1].actionedBy).isNull()
-    Assertions.assertThat(visitHistoryDetailsDto.eventsAudit[2].actionedBy).isNull()
+    assertThat(visitHistoryDetailsDto.eventsAudit[0].actionedByFullName).isEqualTo(createdByName)
+    assertThat(visitHistoryDetailsDto.eventsAudit[1].actionedByFullName).isNull()
+    assertThat(visitHistoryDetailsDto.eventsAudit[2].actionedByFullName).isNull()
   }
 
   @Test
