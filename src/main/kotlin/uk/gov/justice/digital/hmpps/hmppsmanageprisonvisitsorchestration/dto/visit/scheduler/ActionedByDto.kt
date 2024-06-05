@@ -7,7 +7,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 @Schema(description = "Actioned By")
 class ActionedByDto(
 
-  @Schema(description = "booker reference", example = "asd-aed-vhj", required = true)
+  @Schema(description = "booker reference", example = "asd-aed-vhj", required = false)
   val bookerReference: String?,
 
   @Schema(description = "User Name", example = "AS/ALED", required = false)
