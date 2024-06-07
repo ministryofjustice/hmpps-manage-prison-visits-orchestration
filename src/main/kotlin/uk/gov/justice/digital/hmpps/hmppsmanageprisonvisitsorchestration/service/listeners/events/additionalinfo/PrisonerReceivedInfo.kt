@@ -12,8 +12,4 @@ data class PrisonerReceivedInfo(
   @NotBlank
   @JsonProperty("reason")
   val reason: PrisonerReceivedReasonType,
-
-  @NotBlank
-  @JsonProperty("prisonId")
-  val prisonCode: String,
 )

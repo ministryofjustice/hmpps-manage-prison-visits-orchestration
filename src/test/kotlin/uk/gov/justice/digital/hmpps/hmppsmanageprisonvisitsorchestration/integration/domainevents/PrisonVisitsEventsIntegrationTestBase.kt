@@ -202,7 +202,6 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
 
     jsonVales["nomsNumber"] = prisonerReceivedInfo.prisonerNumber
     jsonVales["reason"] = prisonerReceivedInfo.reason.name
-    jsonVales["prisonId"] = prisonerReceivedInfo.prisonCode
 
     return createAdditionalInformationJson(jsonVales)
   }
