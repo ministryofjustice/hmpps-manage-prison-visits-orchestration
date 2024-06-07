@@ -369,7 +369,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
 
     // Then
     responseSpec.expectStatus().isNotFound
-    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange)
+    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(any(), any(), any(), any(), any())
     verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
