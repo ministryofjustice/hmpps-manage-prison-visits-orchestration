@@ -13,8 +13,8 @@ hmpps.sqs:
     domainevents:
       arn: arn:aws:sns:eu-west-2:000000000000:${random.uuid}
 
-#visit-scheduler.api.url: https://visit-scheduler-dev.prison.service.justice.gov.uk/
-visit-scheduler.api.url:  http://localhost:8081
+visit-scheduler.api.url: https://visit-scheduler-dev.prison.service.justice.gov.uk/
+#visit-scheduler.api.url:  http://localhost:8081
 
 hmpps.auth.url: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
 
