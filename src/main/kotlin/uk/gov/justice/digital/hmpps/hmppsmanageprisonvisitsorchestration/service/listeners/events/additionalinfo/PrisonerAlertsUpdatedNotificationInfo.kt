@@ -10,4 +10,7 @@ data class PrisonerAlertsUpdatedNotificationInfo(
 
   @JsonProperty("alertsAdded")
   val alertsAdded: List<String>,
+
+  @JsonProperty("alertsRemoved")
+  val alertsRemoved: List<String>,
 )

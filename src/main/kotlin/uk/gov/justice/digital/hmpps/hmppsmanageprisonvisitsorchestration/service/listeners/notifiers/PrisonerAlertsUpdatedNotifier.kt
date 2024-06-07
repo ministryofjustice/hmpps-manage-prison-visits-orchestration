@@ -10,10 +10,6 @@ const val PRISONER_ALERTS_UPDATED = "prisoner-offender-search.prisoner.alerts-up
 class PrisonerAlertsUpdatedNotifier : EventNotifier() {
   override fun processEvent(domainEvent: DomainEvent) {
     val info = getAdditionalInfo(domainEvent, PrisonerAlertsUpdatedNotificationInfo::class.java)
-
-    // ignore events which only have alerts removed
-    if (info.alertsAdded.isNotEmpty()) {
-      getVisitSchedulerService().processPrisonerAlertsUpdated(info, domainEvent.description)
-    }
+    getVisitSchedulerService().processPrisonerAlertsUpdated(info, domainEvent.description)
   }
 }

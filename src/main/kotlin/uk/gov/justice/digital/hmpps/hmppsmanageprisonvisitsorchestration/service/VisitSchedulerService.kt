@@ -155,7 +155,7 @@ class VisitSchedulerService(
   }
 
   fun processPrisonerAlertsUpdated(info: PrisonerAlertsUpdatedNotificationInfo, description: String?) {
-    val alertDescription = description ?: "${info.alertsAdded.size} alerts added"
+    val alertDescription = description ?: "${info.alertsAdded.size} alert(s) added, ${info.alertsRemoved.size} alert(s) removed."
     visitSchedulerClient.processPrisonerAlertsUpdated(PrisonerAlertsAddedNotificationDto(info, alertDescription))
   }
 

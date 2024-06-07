@@ -260,11 +260,13 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     val sentRequestToVsip = PrisonerAlertsAddedNotificationDto(
       prisonerNumber,
       alertsAdded,
+      alertsRemoved,
       description,
     )
 
     val domainEvent = createDomainEventJson(
       PRISONER_ALERTS_UPDATED,
+      description,
       createAlertsUpdatedAdditionalInformationJson(
         prisonerNumber,
         bookingId,
@@ -296,6 +298,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     val sentRequestToVsip = PrisonerAlertsAddedNotificationDto(
       prisonerNumber,
       alertsAdded,
+      alertsRemoved,
       description,
     )
 
@@ -322,13 +325,20 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
   }
 
   @Test
-  fun `test prisoner add alerts event is not processed when no alerts are added and only removed`() {
+  fun `test prisoner add alerts event is processed when no alerts are added and only removed`() {
     // Given
     val prisonerNumber = "A8713DY"
     val bookingId = 100L
     val alertsAdded = emptyList<String>()
     val alertsRemoved = listOf("AL1", "AL2")
     val description = "2 alerts removed"
+
+    val sentRequestToVsip = PrisonerAlertsAddedNotificationDto(
+      prisonerNumber,
+      alertsAdded,
+      alertsRemoved,
+      description,
+    )
 
     val domainEvent = createDomainEventJson(
       PRISONER_ALERTS_UPDATED,
@@ -344,7 +354,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
 
     // Then
     verify(prisonerAlertsUpdatedNotifier, times(0)).processEvent(any())
-    await untilAsserted { verify(visitSchedulerClient, times(0)).processPrisonerAlertsUpdated(any()) }
+    await untilAsserted { verify(visitSchedulerClient, times(1)).processPrisonerAlertsUpdated(sendDto = sentRequestToVsip) }
   }
 
   @Test
