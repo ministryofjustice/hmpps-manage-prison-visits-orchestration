@@ -124,8 +124,14 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       description = "Defaults to true if not passed. If true, will not return visit times that clash with higher priority legal or medical appointments.",
     )
     withAppointmentsCheck: Boolean? = true,
+    @RequestParam(value = "excludedApplicationReference", required = false)
+    @Parameter(
+      description = "The current application reference be to exclude from capacity count and double booking",
+      example = "dfs-wjs-eqr",
+    )
+    excludedApplicationReference: String? = null,
   ): List<AvailableVisitSessionDto> =
-    visitSchedulerSessionsService.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction, visitors, withAppointmentsCheck ?: true)
+    visitSchedulerSessionsService.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction, visitors, withAppointmentsCheck ?: true, excludedApplicationReference)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("/visit-sessions/capacity")
