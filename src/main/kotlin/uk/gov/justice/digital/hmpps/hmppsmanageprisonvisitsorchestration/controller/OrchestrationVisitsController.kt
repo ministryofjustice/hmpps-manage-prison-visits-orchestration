@@ -37,6 +37,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.validat
 import java.time.LocalDate
 
 const val ORCHESTRATION_VISIT_CONTROLLER_PATH: String = "/visits"
+const val ORCHESTRATION_GET_FUTURE_PUBLIC_BOOKED_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/booked/visits/future"
 
 @RestController
 class OrchestrationVisitsController(
@@ -113,6 +114,41 @@ class OrchestrationVisitsController(
   )
   fun getVisitHistoryByReference(@PathVariable reference: String): VisitHistoryDetailsDto? {
     return visitSchedulerService.getVisitHistoryByReference(reference)
+  }
+
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @GetMapping(ORCHESTRATION_GET_FUTURE_PUBLIC_BOOKED_VISITS_BY_BOOKER_REFERENCE)
+  @Operation(
+    summary = "Get future public booked visits by booker reference",
+    description = "Get future public booked visits by booker reference",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Future public booked visits returned",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to get future booked visits by booker reference",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getFuturePublicBookedVisitsByBookerReference(
+    @Schema(description = "bookerReference", example = "asd-aed-vhj", required = true)
+    @PathVariable
+    bookerReference: String,
+  ): List<VisitDto> {
+    return visitSchedulerService.getFuturePublicBookedVisitsByBookerReference(bookerReference)
   }
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")

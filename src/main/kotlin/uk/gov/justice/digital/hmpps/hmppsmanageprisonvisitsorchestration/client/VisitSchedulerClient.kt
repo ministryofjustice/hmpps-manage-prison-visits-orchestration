@@ -54,6 +54,7 @@ const val VISIT_NOTIFICATION_PRISONER_RECEIVED_CHANGE_PATH: String = "$VISIT_NOT
 const val VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/released"
 const val VISIT_NOTIFICATION_PRISONER_RESTRICTION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/restriction/changed"
 const val VISIT_NOTIFICATION_VISITOR_RESTRICTION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/visitor/restriction/changed"
+const val GET_FUTURE_PUBLIC_BOOKED_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/booked/visits/future"
 
 @Component
 class VisitSchedulerClient(
@@ -64,6 +65,15 @@ class VisitSchedulerClient(
 
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
+  }
+
+  fun getFuturePublicBookedVisitsByBookerReference(bookerReference: String): List<VisitDto> {
+    return webClient.get()
+      .uri(GET_FUTURE_PUBLIC_BOOKED_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<List<VisitDto>>()
+      .blockOptional(apiTimeout).orElseGet { listOf<VisitDto>() }
   }
 
   fun getVisitByReference(reference: String): VisitDto? {

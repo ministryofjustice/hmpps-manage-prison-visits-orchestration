@@ -97,6 +97,10 @@ class VisitSchedulerService(
     return Page.empty()
   }
 
+  fun getFuturePublicBookedVisitsByBookerReference(bookerReference: String): List<VisitDto> {
+    return visitSchedulerClient.getFuturePublicBookedVisitsByBookerReference(bookerReference)
+  }
+
   fun findFutureVisitsForPrisoner(prisonerId: String): List<VisitDto> {
     return visitSchedulerClient.getFutureVisitsForPrisoner(prisonerId) ?: emptyList()
   }
