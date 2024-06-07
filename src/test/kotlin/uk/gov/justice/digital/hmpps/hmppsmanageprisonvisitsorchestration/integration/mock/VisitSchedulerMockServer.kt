@@ -10,7 +10,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.http.RequestMethod
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import org.springframework.http.HttpStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_FUTURE_PUBLIC_VISITS_BY_BOOKER_REFERENCE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_FUTURE_PUBLIC_BOOKED_VISITS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
@@ -168,7 +168,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     visits: List<VisitDto>,
   ) {
     stubFor(
-      get(GET_FUTURE_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
+      get(GET_FUTURE_PUBLIC_BOOKED_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
         .willReturn(
           createJsonResponseBuilder()
             .withStatus(HttpStatus.OK.value()).withBody(
