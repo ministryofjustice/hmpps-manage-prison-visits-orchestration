@@ -201,7 +201,7 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     val jsonVales = HashMap<String, String>()
 
     jsonVales["nomsNumber"] = prisonerReceivedInfo.prisonerNumber
-    jsonVales["prisonCode"] = prisonerReceivedInfo.prisonCode
+    jsonVales["prisonId"] = prisonerReceivedInfo.prisonCode
     jsonVales["reason"] = prisonerReceivedInfo.reason.name
 
     return createAdditionalInformationJson(jsonVales)
