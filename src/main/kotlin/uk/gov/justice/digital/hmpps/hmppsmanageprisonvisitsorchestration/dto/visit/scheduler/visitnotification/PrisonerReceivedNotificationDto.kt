@@ -9,11 +9,15 @@ data class PrisonerReceivedNotificationDto(
   val prisonerNumber: String,
 
   @NotBlank
+  val prisonCode: String,
+
+  @NotBlank
   val reason: PrisonerReceivedReasonType,
 ) {
 
   constructor(info: PrisonerReceivedInfo) : this (
     prisonerNumber = info.prisonerNumber,
+    prisonCode = info.prisonCode,
     reason = info.reason,
   )
 }
