@@ -190,12 +190,13 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
   }
 
   fun createPrisonerReceivedAdditionalInformationJson(prisonerReceivedInfo: PrisonerReceivedInfo): String {
-    val jsonVales = HashMap<String, String>()
+    val jsonValues = HashMap<String, String>()
 
-    jsonVales["nomsNumber"] = prisonerReceivedInfo.prisonerNumber
-    jsonVales["reason"] = prisonerReceivedInfo.reason.name
+    jsonValues["nomsNumber"] = prisonerReceivedInfo.prisonerNumber
+    jsonValues["prisonId"] = prisonerReceivedInfo.prisonCode
+    jsonValues["reason"] = prisonerReceivedInfo.reason.name
 
-    return createAdditionalInformationJson(jsonVales)
+    return createAdditionalInformationJson(jsonValues)
   }
 
   fun createAlertsUpdatedAdditionalInformationJson(

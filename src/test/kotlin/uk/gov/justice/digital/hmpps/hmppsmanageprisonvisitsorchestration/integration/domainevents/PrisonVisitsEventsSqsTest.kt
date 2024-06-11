@@ -140,6 +140,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     // Given
     val prisonerReceivedAdditionalInfo = PrisonerReceivedInfo(
       prisonerNumber = "TEST",
+      prisonCode = "MDI",
       reason = PrisonerReceivedReasonType.TRANSFERRED,
     )
     val sentRequestToVsip = PrisonerReceivedNotificationDto(prisonerReceivedAdditionalInfo)
