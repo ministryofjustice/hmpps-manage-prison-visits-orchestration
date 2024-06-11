@@ -4,10 +4,12 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Mono
@@ -341,6 +343,24 @@ class VisitSchedulerClient(
         }
       }
       .blockOptional(apiTimeout).orElseThrow { NotFoundException("Prison with prison code - $prisonCode not found on visit-scheduler") }
+  }
+
+  fun getPrisonAsMono(prisonCode: String): Mono<Optional<VisitSchedulerPrisonDto>> {
+    val uri = "/admin/prisons/prison/$prisonCode"
+
+    return webClient.get()
+      .uri(uri)
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<Optional<VisitSchedulerPrisonDto>>()
+      .onErrorResume { e ->
+        if (e is WebClientResponseException && e.statusCode == HttpStatus.NOT_FOUND) {
+          // return an Optional.empty element if 404 is thrown
+          return@onErrorResume Mono.just(Optional.empty())
+        } else {
+          Mono.error(e)
+        }
+      }
   }
 
   fun getNotificationsTypesForBookingReference(reference: String): List<NotificationEventType>? {

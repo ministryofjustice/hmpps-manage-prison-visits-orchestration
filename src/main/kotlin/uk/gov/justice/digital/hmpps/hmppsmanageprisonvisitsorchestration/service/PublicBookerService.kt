@@ -5,9 +5,9 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerInfoClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
@@ -25,11 +25,26 @@ class PublicBookerService(
   private val prisonerSearchService: PrisonerSearchService,
   private val prisonerContactService: PrisonerContactService,
   private val prisonService: PrisonService,
+  private val prisonerInfoClient: PrisonerInfoClient,
 ) {
   companion object {
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
     const val PRISONER_VALIDATION_ERROR_MSG = "prisoner validation for prisoner number - {0} failed with error - {1}"
     const val PRISON_VALIDATION_ERROR_MSG = "prison validation for prison code - {0} for prisoner number - {1} failed with error - {2}"
+
+    fun validatePrison(prison: VisitSchedulerPrisonDto, prisonService: PrisonService): String? {
+      var errorMessage: String? = null
+
+      if (!prisonService.isActive(prison)) {
+        errorMessage = "Prison with code - ${prison.code}, is not active on visit-scheduler"
+      } else {
+        if (!prisonService.isActive(prison, UserType.PUBLIC)) {
+          errorMessage = "Prison with code - ${prison.code}, is not active for public users on visit-scheduler"
+        }
+      }
+
+      return errorMessage
+    }
   }
 
   fun bookerAuthorisation(createBookerAuthDetail: AuthDetailDto): BookerReference {
@@ -54,7 +69,7 @@ class PublicBookerService(
         validatePrisoner(prisoner.prisonerId, offenderSearchPrisoner)?.let {
           logger.error("getPermittedPrisonersForBooker " + MessageFormat.format(PRISONER_VALIDATION_ERROR_MSG, prisoner.prisonerId, it))
         } ?: run {
-          getPermittedPrisonerInfo(offenderSearchPrisoner, prisoner)?.let {
+          prisonerInfoClient.getPermittedPrisonerInfo(offenderSearchPrisoner, prisoner)?.let {
             prisonerDetailsList.add(it)
           }
         }
@@ -81,32 +96,13 @@ class PublicBookerService(
     val prisonCode = offenderSearchPrisoner.prisonId!!
     // get the prison and validate
     val prison = prisonService.getVSIPPrison(prisonCode)
-    validatePrison(prison)?.let {
+    validatePrison(prison, prisonService)?.let {
       val message = MessageFormat.format(PRISON_VALIDATION_ERROR_MSG, prisonCode, prisonerNumber, it)
       logger.error(message)
       throw ValidationException(message)
     }
 
     return getValidVisitors(bookerReference, prisonerNumber, prison)
-  }
-
-  private fun getPermittedPrisonerInfo(offenderSearchPrisoner: PrisonerDto, bookerPrisoner: PermittedPrisonerForBookerDto): PrisonerInfoDto? {
-    val prisonCode = offenderSearchPrisoner.prisonId!!
-    val prison: VisitSchedulerPrisonDto
-    try {
-      prison = prisonService.getVSIPPrison(prisonCode)
-    } catch (ne: NotFoundException) {
-      logger.error("getPermittedPrisonerInfo Prison with code - $prisonCode, not found on visit-scheduler")
-      return null
-    }
-
-    validatePrison(prison)?.let {
-      logger.error("getPermittedPrisonerInfo " + MessageFormat.format(PRISON_VALIDATION_ERROR_MSG, prisonCode, bookerPrisoner.prisonerId, it))
-    } ?: run {
-      return PrisonerInfoDto(bookerPrisoner.prisonerId, offenderSearchPrisoner)
-    }
-
-    return null
   }
 
   private fun getValidVisitors(bookerReference: String, prisonerNumber: String, prison: VisitSchedulerPrisonDto): List<VisitorInfoDto> {
@@ -141,20 +137,6 @@ class PublicBookerService(
     if (offenderSearchPrisoner.prisonId == null) {
       // if the offender was found but without a prison code throw an exception
       errorMessage = "Prisoner - $prisonerNumber on prisoner search does not have a valid prison"
-    }
-
-    return errorMessage
-  }
-
-  private fun validatePrison(prison: VisitSchedulerPrisonDto): String? {
-    var errorMessage: String? = null
-
-    if (!prisonService.isActive(prison)) {
-      errorMessage = "Prison with code - ${prison.code}, is not active on visit-scheduler"
-    } else {
-      if (!prisonService.isActive(prison, UserType.PUBLIC)) {
-        errorMessage = "Prison with code - ${prison.code}, is not active for public users on visit-scheduler"
-      }
     }
 
     return errorMessage
