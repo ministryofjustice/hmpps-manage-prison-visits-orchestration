@@ -14,6 +14,7 @@ data class PrisonerAlertsAddedNotificationDto(
   @JsonInclude(JsonInclude.Include.NON_NULL)
   val alertsRemoved: List<String>,
 
+  @NotBlank
   val description: String,
 ) {
 
