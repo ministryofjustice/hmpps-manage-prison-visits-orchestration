@@ -10,6 +10,10 @@ data class PrisonerReceivedInfo(
   val prisonerNumber: String,
 
   @NotBlank
+  @JsonProperty("prisonId")
+  val prisonCode: String,
+
+  @NotBlank
   @JsonProperty("reason")
   val reason: PrisonerReceivedReasonType,
 )

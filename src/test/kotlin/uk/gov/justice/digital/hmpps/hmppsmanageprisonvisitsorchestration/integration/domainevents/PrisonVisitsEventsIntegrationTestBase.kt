@@ -191,19 +191,20 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
   }
 
   fun createNonAssociationAdditionalInformationJson(): String {
-    val jsonVales = HashMap<String, String>()
-    jsonVales["nsPrisonerNumber1"] = "A8713DY"
-    jsonVales["nsPrisonerNumber2"] = "B2022DY"
-    return createAdditionalInformationJson(jsonVales)
+    val jsonValues = HashMap<String, String>()
+    jsonValues["nsPrisonerNumber1"] = "A8713DY"
+    jsonValues["nsPrisonerNumber2"] = "B2022DY"
+    return createAdditionalInformationJson(jsonValues)
   }
 
   fun createPrisonerReceivedAdditionalInformationJson(prisonerReceivedInfo: PrisonerReceivedInfo): String {
-    val jsonVales = HashMap<String, String>()
+    val jsonValues = HashMap<String, String>()
 
-    jsonVales["nomsNumber"] = prisonerReceivedInfo.prisonerNumber
-    jsonVales["reason"] = prisonerReceivedInfo.reason.name
+    jsonValues["nomsNumber"] = prisonerReceivedInfo.prisonerNumber
+    jsonValues["prisonId"] = prisonerReceivedInfo.prisonCode
+    jsonValues["reason"] = prisonerReceivedInfo.reason.name
 
-    return createAdditionalInformationJson(jsonVales)
+    return createAdditionalInformationJson(jsonValues)
   }
 
   fun createAdditionalInformationJson(
@@ -214,26 +215,26 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     contactPersonId: String? = null,
     reason: String? = null,
   ): String {
-    val jsonVales = HashMap<String, String>()
+    val jsonValues = HashMap<String, String>()
     nomsNumber?.let {
-      jsonVales["nomsNumber"] = nomsNumber
+      jsonValues["nomsNumber"] = nomsNumber
     }
     personId?.let {
-      jsonVales["personId"] = personId
+      jsonValues["personId"] = personId
     }
     effectiveDate?.let {
-      jsonVales["effectiveDate"] = effectiveDate
+      jsonValues["effectiveDate"] = effectiveDate
     }
     contactPersonId?.let {
-      jsonVales["contactPersonId"] = contactPersonId
+      jsonValues["contactPersonId"] = contactPersonId
     }
     prisonCode?.let {
-      jsonVales["prisonId"] = prisonCode
+      jsonValues["prisonId"] = prisonCode
     }
     reason?.let {
-      jsonVales["reason"] = reason
+      jsonValues["reason"] = reason
     }
-    return createAdditionalInformationJson(jsonVales)
+    return createAdditionalInformationJson(jsonValues)
   }
 
   fun createAdditionalInformationJson(jsonValues: Map<String, String>): String {
