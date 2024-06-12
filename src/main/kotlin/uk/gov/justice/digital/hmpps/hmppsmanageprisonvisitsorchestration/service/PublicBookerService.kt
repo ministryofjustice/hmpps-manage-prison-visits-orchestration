@@ -6,16 +6,18 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerInfoClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.BookerPrisonerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerAuthFailureException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.PublicBookerValidationUtil
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.PublicBookerValidationUtil.Companion.PRISONER_VALIDATION_ERROR_MSG
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.PublicBookerValidationUtil.Companion.PRISON_VALIDATION_ERROR_MSG
 import java.text.MessageFormat
 import java.time.LocalDate
 
@@ -26,33 +28,18 @@ class PublicBookerService(
   private val prisonerContactService: PrisonerContactService,
   private val prisonService: PrisonService,
   private val prisonerInfoClient: PrisonerInfoClient,
+  private val publicBookerValidationUtil: PublicBookerValidationUtil,
 ) {
   companion object {
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
-    const val PRISONER_VALIDATION_ERROR_MSG = "prisoner validation for prisoner number - {0} failed with error - {1}"
-    const val PRISON_VALIDATION_ERROR_MSG = "prison validation for prison code - {0} for prisoner number - {1} failed with error - {2}"
-
-    fun validatePrison(prison: VisitSchedulerPrisonDto, prisonService: PrisonService): String? {
-      var errorMessage: String? = null
-
-      if (!prisonService.isActive(prison)) {
-        errorMessage = "Prison with code - ${prison.code}, is not active on visit-scheduler"
-      } else {
-        if (!prisonService.isActive(prison, UserType.PUBLIC)) {
-          errorMessage = "Prison with code - ${prison.code}, is not active for public users on visit-scheduler"
-        }
-      }
-
-      return errorMessage
-    }
   }
 
   fun bookerAuthorisation(createBookerAuthDetail: AuthDetailDto): BookerReference {
     return prisonVisitBookerRegistryClient.bookerAuthorisation(createBookerAuthDetail) ?: throw BookerAuthFailureException("Failed to authorise booker with details - $createBookerAuthDetail")
   }
 
-  fun getPermittedPrisonersForBooker(bookerReference: String): List<PrisonerInfoDto> {
-    val prisonerDetailsList = mutableListOf<PrisonerInfoDto>()
+  fun getPermittedPrisonersForBooker(bookerReference: String): List<BookerPrisonerInfoDto> {
+    val prisonerDetailsList = mutableListOf<BookerPrisonerInfoDto>()
     val prisoners = prisonVisitBookerRegistryClient.getPermittedVisitorsForPermittedPrisonerAndBooker(bookerReference)
     logger.debug("getPermittedPrisonersForBooker ${prisoners.size} prisoners found for bookerReference : $bookerReference")
 
@@ -66,7 +53,7 @@ class PublicBookerService(
       }
 
       offenderSearchPrisoner?.let {
-        validatePrisoner(prisoner.prisonerId, offenderSearchPrisoner)?.let {
+        publicBookerValidationUtil.validatePrisoner(prisoner.prisonerId, offenderSearchPrisoner)?.let {
           logger.error("getPermittedPrisonersForBooker " + MessageFormat.format(PRISONER_VALIDATION_ERROR_MSG, prisoner.prisonerId, it))
         } ?: run {
           prisonerInfoClient.getPermittedPrisonerInfo(offenderSearchPrisoner, prisoner)?.let {
@@ -87,7 +74,7 @@ class PublicBookerService(
     // get the offender details from prisoner search and validate
     val offenderSearchPrisoner = prisonerSearchService.getPrisoner(prisonerNumber)
 
-    validatePrisoner(prisonerNumber, offenderSearchPrisoner)?.let {
+    publicBookerValidationUtil.validatePrisoner(prisonerNumber, offenderSearchPrisoner)?.let {
       val message = MessageFormat.format(PRISONER_VALIDATION_ERROR_MSG, prisonerNumber, it)
       logger.error(message)
       throw ValidationException(message)
@@ -96,7 +83,7 @@ class PublicBookerService(
     val prisonCode = offenderSearchPrisoner.prisonId!!
     // get the prison and validate
     val prison = prisonService.getVSIPPrison(prisonCode)
-    validatePrison(prison, prisonService)?.let {
+    publicBookerValidationUtil.validatePrison(prison, prisonService)?.let {
       val message = MessageFormat.format(PRISON_VALIDATION_ERROR_MSG, prisonCode, prisonerNumber, it)
       logger.error(message)
       throw ValidationException(message)
@@ -129,17 +116,6 @@ class PublicBookerService(
     }
 
     return visitorDetailsList.toList()
-  }
-
-  private fun validatePrisoner(prisonerNumber: String, offenderSearchPrisoner: PrisonerDto): String? {
-    var errorMessage: String? = null
-
-    if (offenderSearchPrisoner.prisonId == null) {
-      // if the offender was found but without a prison code throw an exception
-      errorMessage = "Prisoner - $prisonerNumber on prisoner search does not have a valid prison"
-    }
-
-    return errorMessage
   }
 
   private fun getAllValidContacts(prison: VisitSchedulerPrisonDto, prisonerNumber: String): List<PrisonerContactDto> {
