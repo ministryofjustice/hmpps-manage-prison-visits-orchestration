@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.servic
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonerReceivedReasonType
 
 data class PrisonerReceivedInfo(
@@ -10,6 +11,10 @@ data class PrisonerReceivedInfo(
   val prisonerNumber: String,
 
   @NotBlank
+  @JsonProperty("prisonId")
+  val prisonCode: String,
+
+  @NotNull
   @JsonProperty("reason")
   val reason: PrisonerReceivedReasonType,
 )
