@@ -407,7 +407,7 @@ abstract class IntegrationTestBase {
     currentIncentive: CurrentIncentive? = null,
   ): PrisonerDto {
     return PrisonerDto(
-      prisonerId = prisonerId,
+      prisonerNumber = prisonerId,
       firstName = firstName,
       lastName = lastName,
       dateOfBirth = dateOfBirth,

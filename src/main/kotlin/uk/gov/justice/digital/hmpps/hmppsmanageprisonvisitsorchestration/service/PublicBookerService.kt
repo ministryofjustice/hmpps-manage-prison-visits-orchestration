@@ -4,8 +4,8 @@ import jakarta.validation.ValidationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.BookerPrisonerInfoClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerInfoClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.BookerPrisonerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
@@ -27,7 +27,7 @@ class PublicBookerService(
   private val prisonerSearchService: PrisonerSearchService,
   private val prisonerContactService: PrisonerContactService,
   private val prisonService: PrisonService,
-  private val prisonerInfoClient: PrisonerInfoClient,
+  private val bookerPrisonerInfoClient: BookerPrisonerInfoClient,
   private val publicBookerValidationUtil: PublicBookerValidationUtil,
 ) {
   companion object {
@@ -56,7 +56,7 @@ class PublicBookerService(
         publicBookerValidationUtil.validatePrisoner(prisoner.prisonerId, offenderSearchPrisoner)?.let {
           logger.error("getPermittedPrisonersForBooker " + MessageFormat.format(PRISONER_VALIDATION_ERROR_MSG, prisoner.prisonerId, it))
         } ?: run {
-          prisonerInfoClient.getPermittedPrisonerInfo(offenderSearchPrisoner, prisoner)?.let {
+          bookerPrisonerInfoClient.getPermittedPrisonerInfo(offenderSearchPrisoner, prisoner)?.let {
             prisonerDetailsList.add(it)
           }
         }

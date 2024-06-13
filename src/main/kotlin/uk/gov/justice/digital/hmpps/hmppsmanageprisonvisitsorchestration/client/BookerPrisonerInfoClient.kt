@@ -17,7 +17,7 @@ import java.time.Duration
 import kotlin.jvm.optionals.getOrNull
 
 @Component
-class PrisonerInfoClient(
+class BookerPrisonerInfoClient(
   private val prisonApiClient: PrisonApiClient,
   private val prisonService: PrisonService,
   private val visitSchedulerClient: VisitSchedulerClient,
@@ -35,7 +35,7 @@ class PrisonerInfoClient(
   ): BookerPrisonerInfoDto? {
     val prisonCode = offenderSearchPrisoner.prisonId!!
     val prisonMono = visitSchedulerClient.getPrisonAsMono(prisonCode)
-    val visitBalancesDtoMono = prisonApiClient.getVisitBalancesAsMono(offenderSearchPrisoner.prisonerId)
+    val visitBalancesDtoMono = prisonApiClient.getVisitBalancesAsMono(offenderSearchPrisoner.prisonerNumber)
 
     Mono.zip(prisonMono, visitBalancesDtoMono).block(apiTimeout).also {
       val prison = it?.t1?.getOrNull()

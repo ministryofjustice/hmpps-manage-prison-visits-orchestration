@@ -1,13 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search
 
-import com.fasterxml.jackson.annotation.JsonAlias
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
-open class PrisonerDto(
+data class PrisonerDto(
   @Schema(required = true, description = "Prisoner Number", example = "A1234AA")
-  @JsonAlias("prisonerNumber")
-  val prisonerId: String,
+  val prisonerNumber: String,
 
   @Schema(required = true, description = "First Name", example = "Robert")
   val firstName: String,

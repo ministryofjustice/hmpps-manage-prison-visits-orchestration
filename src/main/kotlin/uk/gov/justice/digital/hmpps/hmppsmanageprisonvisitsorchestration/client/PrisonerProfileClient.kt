@@ -38,12 +38,18 @@ class PrisonerProfileClient(
 
     return Mono.zip(prisonerMono, inmateDetailMono, visitBalancesMono, prisonerBookingSummaryMono, visitSchedulerMono)
       .map {
+        val prisoner = it.t1 ?: throw InvalidPrisonerProfileException("Unable to retrieve offender details from Prisoner Search API")
+        val inmateDetails = it.t2 ?: throw InvalidPrisonerProfileException("Unable to retrieve inmate details from Prison API")
+        val visitBalances = if (it.t3.isEmpty) null else it.t3.get()
+        val prisonerBookingSummary = it.t4.content.firstOrNull()
+        val visits = it.t5.content.map { visitDto -> VisitSummaryDto(visitDto = visitDto) }
+
         PrisonerProfileDto(
-          it.t1 ?: throw InvalidPrisonerProfileException("Unable to retrieve offender details from Prisoner Search API"),
-          it.t2 ?: throw InvalidPrisonerProfileException("Unable to retrieve inmate details from Prison API"),
-          if (it.t3.isEmpty) null else it.t3.get(),
-          it.t4.content.firstOrNull(),
-          it.t5.content.map { visitDto -> VisitSummaryDto(visitDto = visitDto) },
+          prisoner,
+          inmateDetails,
+          visitBalances,
+          prisonerBookingSummary,
+          visits,
         )
       }
       .block(apiTimeout)?.also { prisonerProfile ->
