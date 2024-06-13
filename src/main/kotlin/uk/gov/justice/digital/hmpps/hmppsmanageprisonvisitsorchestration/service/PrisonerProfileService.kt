@@ -62,8 +62,8 @@ class PrisonerProfileService(
 
   private fun validatePrisonersPrisonId(prisonerProfile: PrisonerProfileDto?, prisonId: String) {
     prisonerProfile?.let {
-      require(it.prisonId == prisonId) {
-        throw ValidationException("Prisoner's prison ID - ${it.prisonId} does not match prisonId parameter - $prisonId")
+      require(it.prisoner.prisonId == prisonId) {
+        throw ValidationException("Prisoner's prison ID - ${it.prisoner.prisonId} does not match prisonId parameter - $prisonId")
       }
     }
   }

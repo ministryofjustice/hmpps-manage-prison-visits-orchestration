@@ -1,57 +1,35 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.Valid
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.AlertDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.InmateDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.PrisonerBookingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.VisitBalancesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSummaryDto
-import java.time.LocalDate
 
 data class PrisonerProfileDto(
-  @Schema(required = true, description = "Prisoner Number", example = "A1234AA")
-  val prisonerId: String,
+  @Valid
+  @Schema(description = "Prisoner Details", required = true)
+  val prisoner: PrisonerDto,
 
-  @Schema(description = "Prison ID", example = "MDI")
-  val prisonId: String?,
-
-  @Schema(required = true, description = "First Name", example = "Robert")
-  val firstName: String,
-
-  @Schema(required = true, description = "Last name", example = "Larsen")
-  val lastName: String,
-
-  @Schema(required = false, description = "Date of Birth", example = "1975-04-02")
-  val dateOfBirth: LocalDate,
-
-  @Schema(description = "In prison cell location", example = "A-1-002")
-  val cellLocation: String?,
-
-  @Schema(description = "Prison Name", example = "HMP Leeds")
-  val prisonName: String?,
-
-  @Schema(description = "Category description (from list of assessments)", example = "Category C")
+  @Schema(description = "Category description (from list of assessments)", example = "Category C", required = false)
   val category: String?,
 
-  @Schema(
-    description = "Convicted Status",
-    name = "convictedStatus",
-    example = "Convicted",
-    allowableValues = ["Convicted", "Remand"],
-  )
+  @Schema(description = "Convicted Status", name = "convictedStatus", example = "Convicted", allowableValues = ["Convicted", "Remand"], required = false)
   val convictedStatus: String?,
 
-  @Schema(description = "Incentive level", example = "Standard")
+  @Schema(description = "Incentive level", example = "Standard", required = false)
   val incentiveLevel: String?,
 
-  @Schema(description = "Alert")
+  @Schema(description = "Prisoner alerts", required = false)
   val alerts: List<AlertDto>?,
 
-  @Schema(description = "Balances of visit orders and privilege visit orders")
+  @Schema(description = "Balances of visit orders and privileged visit orders", required = false)
   val visitBalances: VisitBalancesDto? = null,
 
-  @Schema(description = "Past and future visits for the prisoner based on configured duration.")
+  @Schema(description = "Past and future visits for the prisoner based on configured duration, empty list if no visits.", required = true)
   val visits: List<VisitSummaryDto>,
 ) {
   constructor(
@@ -61,13 +39,7 @@ data class PrisonerProfileDto(
     prisonerBookingSummary: PrisonerBookingSummaryDto?,
     visits: List<VisitSummaryDto>,
   ) : this(
-    prisonerId = prisoner.prisonerNumber,
-    prisonId = prisoner.prisonId,
-    firstName = prisoner.firstName,
-    lastName = prisoner.lastName,
-    dateOfBirth = prisoner.dateOfBirth,
-    cellLocation = prisoner.cellLocation,
-    prisonName = prisoner.prisonName,
+    prisoner = prisoner,
     category = inmateDetail.category,
     convictedStatus = prisonerBookingSummary?.convictedStatus,
     incentiveLevel = prisoner.currentIncentive?.level?.description,

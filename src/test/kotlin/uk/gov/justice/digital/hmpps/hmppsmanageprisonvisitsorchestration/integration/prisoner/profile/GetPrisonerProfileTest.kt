@@ -624,13 +624,7 @@ class GetPrisonerProfileTest(
   }
 
   private fun assertPrisonerDtoDetails(prisonerProfile: PrisonerProfileDto, prisonerDto: PrisonerDto) {
-    Assertions.assertThat(prisonerProfile.prisonerId).isEqualTo(prisonerDto.prisonerNumber)
-    Assertions.assertThat(prisonerProfile.firstName).isEqualTo(prisonerDto.firstName)
-    Assertions.assertThat(prisonerProfile.lastName).isEqualTo(prisonerDto.lastName)
-    Assertions.assertThat(prisonerProfile.dateOfBirth).isEqualTo(prisonerDto.dateOfBirth)
-    Assertions.assertThat(prisonerProfile.prisonId).isEqualTo(prisonerDto.prisonId)
-    Assertions.assertThat(prisonerProfile.prisonName).isEqualTo(prisonerDto.prisonName)
-    Assertions.assertThat(prisonerProfile.cellLocation).isEqualTo(prisonerDto.cellLocation)
+    Assertions.assertThat(prisonerProfile.prisoner).isEqualTo(prisonerDto)
   }
 
   private fun assertInmateDetails(prisonerProfile: PrisonerProfileDto, inmateDetails: InmateDetailDto) {
