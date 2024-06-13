@@ -14,11 +14,7 @@ class VisitBalancesUtil {
     val latestIepAdjustDate = calculateIepAdjustDate(visitBalance, dateFrom)
     val latestPrivilegedIepAdjustDate = calculatePrivilegedIepAdjustDate(visitBalance, dateFrom)
 
-    return if (latestIepAdjustDate.isBefore(latestPrivilegedIepAdjustDate)) {
-      latestIepAdjustDate
-    } else {
-      latestPrivilegedIepAdjustDate
-    }
+    return minOf(latestIepAdjustDate, latestPrivilegedIepAdjustDate)
   }
 
   private fun calculateIepAdjustDate(visitBalance: VisitBalancesDto?, dateFrom: LocalDate): LocalDate {
