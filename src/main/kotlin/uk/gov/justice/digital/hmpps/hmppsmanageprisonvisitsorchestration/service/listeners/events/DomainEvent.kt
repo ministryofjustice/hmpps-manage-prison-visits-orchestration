@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.servic
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import org.springframework.context.ApplicationEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.deserializers.RawJsonDeserializer
 
 data class DomainEvent(
@@ -13,4 +12,4 @@ data class DomainEvent(
 
   @JsonProperty("description")
   val description: String? = null,
-) : ApplicationEvent("")
+)
