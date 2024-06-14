@@ -10,4 +10,9 @@ class PrisonerIncentivesInsertedNotifier : EventNotifier() {
 
   override fun processEvent(domainEvent: DomainEvent) {
   }
+
+  override fun isProcessableEvent(domainEvent: DomainEvent): Boolean {
+    // TODO - implement
+    return true
+  }
 }

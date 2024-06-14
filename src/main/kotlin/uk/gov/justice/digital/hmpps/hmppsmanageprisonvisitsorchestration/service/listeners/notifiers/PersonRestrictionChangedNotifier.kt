@@ -12,4 +12,9 @@ class PersonRestrictionChangedNotifier : EventNotifier() {
     val info = getAdditionalInfo(domainEvent, PersonRestrictionChangeInfo::class.java)
     getVisitSchedulerService().processPersonRestrictionChange(info)
   }
+
+  override fun isProcessableEvent(domainEvent: DomainEvent): Boolean {
+    // TODO - implement
+    return true
+  }
 }

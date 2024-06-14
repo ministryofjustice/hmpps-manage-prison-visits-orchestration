@@ -25,7 +25,9 @@ abstract class EventNotifier() : IEventNotifier {
 
   final override fun process(domainEvent: DomainEvent) {
     LOG.debug("Entered process for ${this::class.java.name} type: ${domainEvent.eventType}")
-    this.processEvent(domainEvent)
+    if (this.isProcessableEvent(domainEvent)) {
+      this.processEvent(domainEvent)
+    }
   }
 
   fun <T> getAdditionalInfo(domainEvent: DomainEvent, target: Class<T>): T {
@@ -35,4 +37,6 @@ abstract class EventNotifier() : IEventNotifier {
   fun getVisitSchedulerService() = visitSchedulerService
 
   abstract fun processEvent(domainEvent: DomainEvent)
+
+  abstract fun isProcessableEvent(domainEvent: DomainEvent): Boolean
 }
