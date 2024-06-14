@@ -7,14 +7,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonService
 
 @Component
-class PublicBookerValidationUtil {
+class PublicBookerValidationUtil(private val prisonService: PrisonService) {
   companion object {
     const val PRISONER_VALIDATION_ERROR_MSG = "prisoner validation for prisoner number - {0} failed with error - {1}"
     const val PRISON_VALIDATION_ERROR_MSG =
       "prison validation for prison code - {0} for prisoner number - {1} failed with error - {2}"
   }
 
-  fun validatePrison(prison: VisitSchedulerPrisonDto, prisonService: PrisonService): String? {
+  fun validatePrison(prison: VisitSchedulerPrisonDto): String? {
     var errorMessage: String? = null
 
     if (!prisonService.isActive(prison)) {

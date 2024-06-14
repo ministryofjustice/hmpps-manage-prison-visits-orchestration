@@ -10,7 +10,7 @@ class VisitBalancesUtilTest {
   @Test
   fun `test available VOs is a total of VO and PVO`() {
     // Given
-    val visitBalance = VisitBalancesDto(3, 4, null, null)
+    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = null, latestPrivIepAdjustDate = null)
 
     // When
     val availableVos = VisitBalancesUtil().calculateAvailableVos(visitBalance)
@@ -24,7 +24,7 @@ class VisitBalancesUtilTest {
     // Given
     val latestIepAdjustDate = LocalDate.now().plusDays(3)
     val latestPrivIepAdjustDate = LocalDate.now().plusDays(7)
-    val visitBalance = VisitBalancesDto(3, 4, latestIepAdjustDate, latestPrivIepAdjustDate)
+    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
     val renewalDate = VisitBalancesUtil().calculateVoRenewalDate(visitBalance)
 
     // Then
@@ -36,7 +36,7 @@ class VisitBalancesUtilTest {
     // Given
     val latestIepAdjustDate = LocalDate.now().plusDays(14)
     val latestPrivIepAdjustDate = LocalDate.now().plusDays(8)
-    val visitBalance = VisitBalancesDto(3, 4, latestIepAdjustDate, latestPrivIepAdjustDate)
+    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
     val renewalDate = VisitBalancesUtil().calculateVoRenewalDate(visitBalance)
 
     // Then
@@ -47,7 +47,7 @@ class VisitBalancesUtilTest {
   fun `test VO Renewal date is passed date when both are same`() {
     // Given
     val date = LocalDate.now().plusDays(14)
-    val visitBalance = VisitBalancesDto(3, 4, date, date)
+    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = date, latestPrivIepAdjustDate = date)
     val renewalDate = VisitBalancesUtil().calculateVoRenewalDate(visitBalance)
 
     // Then
@@ -59,7 +59,7 @@ class VisitBalancesUtilTest {
     // Given
     val latestIepAdjustDate = LocalDate.now().plusMonths(1).withDayOfMonth(2)
     val latestPrivIepAdjustDate = null
-    val visitBalance = VisitBalancesDto(3, 4, latestIepAdjustDate, latestPrivIepAdjustDate)
+    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
     val renewalDate = VisitBalancesUtil().calculateVoRenewalDate(visitBalance)
     // Then
     Assertions.assertThat(renewalDate).isEqualTo(LocalDate.now().plusMonths(1).withDayOfMonth(1))
@@ -70,7 +70,7 @@ class VisitBalancesUtilTest {
     // Given
     val latestIepAdjustDate = null
     val latestPrivIepAdjustDate = LocalDate.now().plusDays(15)
-    val visitBalance = VisitBalancesDto(3, 4, latestIepAdjustDate, latestPrivIepAdjustDate)
+    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
     val renewalDate = VisitBalancesUtil().calculateVoRenewalDate(visitBalance)
 
     // Then
@@ -80,7 +80,7 @@ class VisitBalancesUtilTest {
   @Test
   fun `test VO Renewal date is first day of month after when both are null and current date is less than 14 days away from end of month`() {
     // Given
-    val visitBalance = VisitBalancesDto(3, 4, null, null)
+    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = null, latestPrivIepAdjustDate = null)
 
     // calculating from 21st June 2024 - renewal date will be 01st Jul 2024
     val dateFrom = LocalDate.of(2024, 6, 21)
@@ -95,7 +95,7 @@ class VisitBalancesUtilTest {
   @Test
   fun `test VO Renewal date is dateFrom add 14 days when both are null and current date is more than 14 days away from end of month`() {
     // Given
-    val visitBalance = VisitBalancesDto(3, 4, null, null)
+    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = null, latestPrivIepAdjustDate = null)
 
     // calculating from 16th June 2024 - renewal date will be 30th Jun 2024
     val dateFrom = LocalDate.of(2024, 6, 16)
@@ -110,7 +110,7 @@ class VisitBalancesUtilTest {
   @Test
   fun `test VO Renewal date is dateFrom add 14 days when both are null and current date is 13 days away from end of month`() {
     // Given
-    val visitBalance = VisitBalancesDto(3, 4, null, null)
+    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = null, latestPrivIepAdjustDate = null)
 
     // calculating from 17th June 2024 - renewal date will be 01st Jul 2024 as both are on the 1st
     val dateFrom = LocalDate.of(2024, 6, 17)

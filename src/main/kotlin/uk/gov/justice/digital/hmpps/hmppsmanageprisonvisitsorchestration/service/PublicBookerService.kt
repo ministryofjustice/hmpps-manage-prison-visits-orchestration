@@ -83,7 +83,7 @@ class PublicBookerService(
     val prisonCode = offenderSearchPrisoner.prisonId!!
     // get the prison and validate
     val prison = prisonService.getVSIPPrison(prisonCode)
-    publicBookerValidationUtil.validatePrison(prison, prisonService)?.let {
+    publicBookerValidationUtil.validatePrison(prison)?.let {
       val message = MessageFormat.format(PRISON_VALIDATION_ERROR_MSG, prisonCode, prisonerNumber, it)
       logger.error(message)
       throw ValidationException(message)

@@ -8,7 +8,6 @@ import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.BookerPrisonerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.PublicBookerValidationUtil
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.PublicBookerValidationUtil.Companion.PRISON_VALIDATION_ERROR_MSG
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.VisitBalancesUtil
@@ -19,7 +18,6 @@ import kotlin.jvm.optionals.getOrNull
 @Component
 class BookerPrisonerInfoClient(
   private val prisonApiClient: PrisonApiClient,
-  private val prisonService: PrisonService,
   private val visitSchedulerClient: VisitSchedulerClient,
   private val publicBookerValidationUtil: PublicBookerValidationUtil,
   private val visitBalancesUtil: VisitBalancesUtil,
@@ -41,7 +39,7 @@ class BookerPrisonerInfoClient(
       val prison = it?.t1?.getOrNull()
       val visitBalancesDto = it?.t2?.getOrNull()
       if (prison != null) {
-        publicBookerValidationUtil.validatePrison(prison, prisonService)?.let { msg ->
+        publicBookerValidationUtil.validatePrison(prison)?.let { msg ->
           LOG.error(
             "getPermittedPrisonerInfo - ${
               MessageFormat.format(
@@ -58,7 +56,7 @@ class BookerPrisonerInfoClient(
           visitBalancesUtil.calculateVoRenewalDate(visitBalancesDto),
         )
       } else {
-        LOG.error("getPermittedPrisonerInfo Prison with code - $prisonCode, not found on visit-scheduler")
+        LOG.error("getPermittedPrisonerInfo Prison with code - $prisonCode, not enabled on visit-scheduler")
         return null
       }
     }
