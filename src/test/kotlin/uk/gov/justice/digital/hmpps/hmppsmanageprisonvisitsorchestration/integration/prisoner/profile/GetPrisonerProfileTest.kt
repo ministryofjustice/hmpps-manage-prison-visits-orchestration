@@ -151,7 +151,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, null, null, contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, null, contactsDto)
 
     stubGetVisits(listOf(visit1, visit2))
 
@@ -171,7 +171,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, null)
     prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, null, null, contactsDto, HttpStatus.NOT_FOUND)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, null, contactsDto, HttpStatus.NOT_FOUND)
     stubGetVisits(listOf(visit1, visit2))
 
     // When
@@ -356,7 +356,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, null, null, contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, null, contactsDto)
     stubGetVisits(listOf(visit1, visit2))
 
     // When
@@ -381,7 +381,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is only done once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), isNull(), isNull(), isNull())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), eq(false), isNull(), isNull(), isNull())
   }
 
   @Test
@@ -400,7 +400,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, null, null, contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, null, contactsDto)
     stubGetVisits(listOf(visit3))
 
     // When
@@ -423,7 +423,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is made once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), isNull(), isNull(), isNull())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), eq(false), isNull(), isNull(), isNull())
   }
 
   @Test
@@ -435,7 +435,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
 
     // as we are passing null as contacts parameter a 404 will be returned
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, null, null, null)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, null, null)
     stubGetVisits(listOf(visit1, visit2))
 
     // When
@@ -459,7 +459,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is made once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), isNull(), isNull(), isNull())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), eq(false), isNull(), isNull(), isNull())
   }
 
   @Test
@@ -471,7 +471,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
 
     // as we are passing null as contacts parameter a 404 will be returned
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, null, null, null, HttpStatus.BAD_REQUEST)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, null, null, HttpStatus.BAD_REQUEST)
     stubGetVisits(listOf(visit1, visit2))
 
     // When
@@ -495,7 +495,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is made once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), isNull(), isNull(), isNull())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), eq(false), isNull(), isNull(), isNull())
   }
 
   @Test
@@ -505,7 +505,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, null, null, contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, null, contactsDto)
     prisonRegisterMockServer.stubGetPrisons(prisons)
     stubGetVisits(listOf(visit1, visit2))
 
@@ -537,7 +537,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, null, null, contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, null, contactsDto)
     prisonRegisterMockServer.stubGetPrisons(prisons)
     stubGetVisits(listOf(incorrectPrisonVisit))
 
@@ -566,7 +566,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, null, null, contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, null, contactsDto)
 
     // as we are passing null as prisons parameter a 404 will be returned
     prisonRegisterMockServer.stubGetPrisons(null)
@@ -597,7 +597,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, null, null, contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, null, contactsDto)
 
     // as we are passing null as prisons parameter a BAD_REQUEST will be returned
     prisonRegisterMockServer.stubGetPrisons(null)
