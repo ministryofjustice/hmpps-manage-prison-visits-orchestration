@@ -35,8 +35,14 @@ class PrisonerContactRegistryClient(
     personId: Long? = null,
     hasDateOfBirth: Boolean? = null,
     notBannedBeforeDate: LocalDate? = null,
+    approvedVisitorsOnly: Boolean = true,
   ): List<PrisonerContactDto> {
-    val uri = "/prisoners/$prisonerId/approved/social/contacts"
+    val uri = if (approvedVisitorsOnly) {
+      "/prisoners/$prisonerId/approved/social/contacts"
+    } else {
+      "/prisoners/$prisonerId/contacts/social"
+    }
+
     return webClient.get().uri(uri) {
       getApprovedSocialContactsUriBuilder(personId, withAddress, hasDateOfBirth, notBannedBeforeDate, it).build()
     }

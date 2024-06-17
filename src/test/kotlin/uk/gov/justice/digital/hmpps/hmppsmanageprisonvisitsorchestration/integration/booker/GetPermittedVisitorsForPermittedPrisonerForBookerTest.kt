@@ -150,7 +150,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
   fun `when booker's prisoners has valid visitors then all allowed visitors are returned`() {
     // Given
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerApprovedContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
     visitSchedulerMockServer.stubGetPrison(PRISON_CODE, prisonDto)
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(BOOKER_REFERENCE, listOf(bookerRegistryPrisonerDto))
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisonerVisitors(
@@ -184,7 +184,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
   fun `when booker's prisoners has no valid visitors then no visitors are returned`() {
     // Given
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerApprovedContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
     visitSchedulerMockServer.stubGetPrison(PRISON_CODE, prisonDto)
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(BOOKER_REFERENCE, listOf(bookerRegistryPrisonerDto))
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisonerVisitors(
@@ -218,7 +218,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       null,
     )
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerApprovedContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
 
     visitSchedulerMockServer.stubGetPrison(PRISON_CODE, prisonDto)
 
@@ -248,7 +248,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
         PermittedVisitorsForPermittedPrisonerBookerDto(expiredBanVisitor.personId, true),
       ),
     )
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerApprovedContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     visitSchedulerMockServer.stubGetPrison(PRISON_CODE, null)
 
@@ -277,7 +277,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
         PermittedVisitorsForPermittedPrisonerBookerDto(expiredBanVisitor.personId, true),
       ),
     )
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerApprovedContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     visitSchedulerMockServer.stubGetPrison(PRISON_CODE, createPrison(PRISON_CODE, active = false))
 
@@ -306,7 +306,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
         PermittedVisitorsForPermittedPrisonerBookerDto(expiredBanVisitor.personId, true),
       ),
     )
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerApprovedContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
 
     // prison only active for STAFF
@@ -344,7 +344,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
         PermittedVisitorsForPermittedPrisonerBookerDto(expiredBanVisitor.personId, true),
       ),
     )
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerApprovedContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
 
     // prison only active for STAFF
@@ -382,7 +382,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       HttpStatus.NOT_FOUND,
     )
 
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerApprovedContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     visitSchedulerMockServer.stubGetPrison(PRISON_CODE, prisonDto)
 
@@ -411,7 +411,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       HttpStatus.INTERNAL_SERVER_ERROR,
     )
 
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerApprovedContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     visitSchedulerMockServer.stubGetPrison(PRISON_CODE, prisonDto)
 
@@ -444,7 +444,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
     )
 
     // prisoner contact registry returns 404
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, true, BAN_END_DATE, null, HttpStatus.NOT_FOUND)
+    prisonerContactRegistryMockServer.stubGetPrisonerApprovedContacts(PRISONER_ID, false, null, true, BAN_END_DATE, null, HttpStatus.NOT_FOUND)
 
     visitSchedulerMockServer.stubGetPrison(PRISON_CODE, prisonDto)
 
@@ -480,7 +480,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
     )
 
     // prisoner contact registry returns INTERNAL_SERVER_ERROR
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, true, BAN_END_DATE, null, HttpStatus.INTERNAL_SERVER_ERROR)
+    prisonerContactRegistryMockServer.stubGetPrisonerApprovedContacts(PRISONER_ID, false, null, true, BAN_END_DATE, null, HttpStatus.INTERNAL_SERVER_ERROR)
 
     visitSchedulerMockServer.stubGetPrison(PRISON_CODE, prisonDto)
 
@@ -514,7 +514,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       ),
     )
 
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerApprovedContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
 
     visitSchedulerMockServer.stubGetPrison(PRISON_CODE, prisonDto)
 
@@ -549,7 +549,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       ),
     )
 
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerApprovedContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
 
     visitSchedulerMockServer.stubGetPrison(PRISON_CODE, prisonDto)
 
@@ -584,7 +584,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       ),
     )
 
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerApprovedContacts(PRISONER_ID, false, null, true, BAN_END_DATE, contactsList)
 
     visitSchedulerMockServer.stubGetPrison(PRISON_CODE, prisonDto)
 

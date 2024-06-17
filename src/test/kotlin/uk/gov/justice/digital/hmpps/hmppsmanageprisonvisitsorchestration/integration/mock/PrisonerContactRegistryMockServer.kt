@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import java.time.LocalDate
 
 class PrisonerContactRegistryMockServer : WireMockServer(8095) {
-  fun stubGetPrisonerContacts(
+  fun stubGetPrisonerApprovedContacts(
     prisonerId: String,
     withAddress: Boolean = false,
     personId: Long? = null,
@@ -24,6 +24,32 @@ class PrisonerContactRegistryMockServer : WireMockServer(8095) {
 
     stubFor(
       get("/prisoners/$prisonerId/approved/social/contacts?${getContactsQueryParams(personId, hasDateOfBirth, notBannedBeforeDate, withAddress)}")
+        .willReturn(
+          if (contactsList == null) {
+            responseBuilder
+              .withStatus(httpStatus.value())
+          } else {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(contactsList))
+          },
+        ),
+    )
+  }
+
+  fun stubGetPrisonerContacts(
+    prisonerId: String,
+    withAddress: Boolean = false,
+    personId: Long? = null,
+    hasDateOfBirth: Boolean? = null,
+    notBannedBeforeDate: LocalDate? = null,
+    contactsList: List<PrisonerContactDto>?,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      get("/prisoners/$prisonerId/contacts/social?${getContactsQueryParams(personId, hasDateOfBirth, notBannedBeforeDate, withAddress)}")
         .willReturn(
           if (contactsList == null) {
             responseBuilder

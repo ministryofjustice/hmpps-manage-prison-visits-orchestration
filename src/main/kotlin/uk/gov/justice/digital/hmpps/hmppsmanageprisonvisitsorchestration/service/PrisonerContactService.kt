@@ -17,6 +17,6 @@ class PrisonerContactService(
 
   fun getPrisonersSocialContactsWithDOBAndNotBannedBeforeDate(prisonerNumber: String, notBannedBeforeDate: LocalDate): List<PrisonerContactDto> {
     LOG.debug("Getting approved social contacts with a DOB for prisoner - {}, notBannedBeforeDate - {}", prisonerNumber, notBannedBeforeDate)
-    return prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerNumber, withAddress = false, hasDateOfBirth = true, notBannedBeforeDate = notBannedBeforeDate)
+    return prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerNumber, withAddress = false, hasDateOfBirth = true, notBannedBeforeDate = notBannedBeforeDate, approvedVisitorsOnly = true)
   }
 }

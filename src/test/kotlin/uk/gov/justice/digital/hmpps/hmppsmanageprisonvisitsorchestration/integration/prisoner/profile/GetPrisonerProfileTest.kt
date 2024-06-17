@@ -61,9 +61,10 @@ class GetPrisonerProfileTest(
     currentIncentive = currentIncentive,
   )
 
-  private val visitor1 = VisitorDetails(1, "First", "VisitorA")
-  private val visitor2 = VisitorDetails(2, "Second", "VisitorB")
-  private val visitor3 = VisitorDetails(3, "Third", "VisitorC")
+  private val visitor1 = VisitorDetails(1, "First", "VisitorA", approved = false)
+  private val visitor2 = VisitorDetails(2, "Second", "VisitorB", approved = true)
+  private val visitor3 = VisitorDetails(3, "Third", "VisitorC", approved = true)
+  private val visitor4 = VisitorDetails(3, "Third", "VisitorC", approved = false)
 
   private val prison1 = createPrisonNameDto("ABC", "ABC Prison")
   private val prison2 = createPrisonNameDto("DEF", "DEF Prison")
@@ -73,12 +74,13 @@ class GetPrisonerProfileTest(
   private final val alerts = listOf(alert)
   private final val inmateDetailDto = createInmateDetails(PRISONER_ID, PRISONER_CATEGORY, alerts)
   private final val visitBalancesDto = createVisitBalancesDto()
-  private val contactsDto = createContactsList(listOf(visitor1, visitor2, visitor3))
+  private val contactsDto = createContactsList(listOf(visitor1, visitor2, visitor3, visitor4))
   private final val prisonerBookingSummaryDto = createPrisonerBookingSummary(PRISONER_ID, "Convicted")
   private val visit1Visitors = listOf(
     VisitorDto(nomisPersonId = visitor1.personId, visitContact = true),
     VisitorDto(nomisPersonId = visitor2.personId, visitContact = false),
     VisitorDto(nomisPersonId = visitor3.personId, visitContact = false),
+    VisitorDto(nomisPersonId = visitor4.personId, visitContact = true),
   )
 
   private val visit2Visitors = listOf(
@@ -151,7 +153,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, null, null, contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerApprovedContacts(PRISONER_ID, false, null, null, null, contactsDto)
 
     stubGetVisits(listOf(visit1, visit2))
 
@@ -171,7 +173,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, null)
     prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, false, null, null, null, contactsDto, HttpStatus.NOT_FOUND)
+    prisonerContactRegistryMockServer.stubGetPrisonerApprovedContacts(PRISONER_ID, false, null, null, null, contactsDto, HttpStatus.NOT_FOUND)
     stubGetVisits(listOf(visit1, visit2))
 
     // When
@@ -370,10 +372,11 @@ class GetPrisonerProfileTest(
     Assertions.assertThat(prisonerProfile.visits).isNotEmpty
 
     val visit1Visitors = prisonerProfile.visits[0].visitors
-    Assertions.assertThat(visit1Visitors?.size).isEqualTo(3)
+    Assertions.assertThat(visit1Visitors?.size).isEqualTo(4)
     assertVisitorDetails(visit1Visitors?.get(0)!!, visitor1.personId, visitor1.firstName, visitor1.lastName)
     assertVisitorDetails(visit1Visitors[1], visitor2.personId, visitor2.firstName, visitor2.lastName)
     assertVisitorDetails(visit1Visitors[2], visitor3.personId, visitor3.firstName, visitor3.lastName)
+    assertVisitorDetails(visit1Visitors[3], visitor4.personId, visitor4.firstName, visitor4.lastName)
 
     val visit2Visitors = prisonerProfile.visits[1].visitors
     Assertions.assertThat(visit2Visitors).isNotNull
@@ -381,7 +384,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is only done once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), isNull(), isNull(), isNull())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), isNull(), isNull(), isNull(), eq(false))
   }
 
   @Test
@@ -423,7 +426,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is made once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), isNull(), isNull(), isNull())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), isNull(), isNull(), isNull(), eq(false))
   }
 
   @Test
@@ -459,7 +462,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is made once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), isNull(), isNull(), isNull())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), isNull(), isNull(), isNull(), eq(false))
   }
 
   @Test
@@ -495,7 +498,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is made once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), isNull(), isNull(), isNull())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), isNull(), isNull(), isNull(), eq(false))
   }
 
   @Test
