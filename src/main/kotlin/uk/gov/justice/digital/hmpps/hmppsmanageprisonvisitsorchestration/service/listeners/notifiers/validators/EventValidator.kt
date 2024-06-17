@@ -3,4 +3,4 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.servic
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
 @MustBeDocumented
-annotation class EventValidator(val name: String)
+annotation class EventValidator(val name: String, val description: String)

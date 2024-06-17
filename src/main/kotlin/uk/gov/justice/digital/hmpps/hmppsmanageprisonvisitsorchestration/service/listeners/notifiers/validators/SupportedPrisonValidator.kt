@@ -5,7 +5,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonService
 
 @Component
-@EventValidator(name = "Supported prison validator")
+@EventValidator(name = "Supported prison validator", description = "Validates if a prison is supported on VSIP.")
 class SupportedPrisonValidator(private val prisonService: PrisonService) {
   fun isSupportedPrison(prisonCode: String): Boolean {
     return prisonService.getSupportedPrisons(UserType.STAFF).contains(prisonCode.uppercase())
