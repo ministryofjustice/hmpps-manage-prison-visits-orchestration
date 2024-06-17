@@ -178,4 +178,3 @@ aws sqs send-message \
   --message-body \
         '{"Type":"Notification", "Message": "{\"eventType\": \"prison-offender-events.prisoner.restriction.changed\", \"additionalInformation\": {\"nomsNumber\": \"X8199EJ\",\"bookingId\": \"2872889\", \"offenderRestrictionId\": \"557172\", \"restrictionType\": \"CHILD\", \"effectiveDate\": \"2023-09-20\", \"comment\": \"NTC anyone under the age of 18 - pot PPRC\", \"authorisedById\": \"37266\", \"enteredById\": \"1138054\"}}", "MessageId": "123"}'
 ```
-
