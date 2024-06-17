@@ -13,4 +13,9 @@ class PrisonerRestrictionChangedNotifier : EventNotifier() {
     LOG.debug("Enter PrisonerRestrictionChangeInfo Info:$additionalInfo")
     getVisitSchedulerService().processPrisonerRestrictionChange(additionalInfo)
   }
+
+  override fun isProcessableEvent(domainEvent: DomainEvent): Boolean {
+    // TODO - implement
+    return true
+  }
 }

@@ -12,4 +12,9 @@ class PrisonerAlertsUpdatedNotifier : EventNotifier() {
     val info = getAdditionalInfo(domainEvent, PrisonerAlertsUpdatedNotificationInfo::class.java)
     getVisitSchedulerService().processPrisonerAlertsUpdated(info, domainEvent.description)
   }
+
+  override fun isProcessableEvent(domainEvent: DomainEvent): Boolean {
+    // TODO - implement
+    return true
+  }
 }

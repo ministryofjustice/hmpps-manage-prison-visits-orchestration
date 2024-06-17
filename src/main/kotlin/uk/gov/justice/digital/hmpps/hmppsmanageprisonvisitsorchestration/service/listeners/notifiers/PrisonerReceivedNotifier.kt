@@ -13,4 +13,9 @@ class PrisonerReceivedNotifier : EventNotifier() {
     LOG.debug("Enter PrisonerReceivedInfo Info:$additionalInfo")
     getVisitSchedulerService().processPrisonerReceived(additionalInfo)
   }
+
+  override fun isProcessableEvent(domainEvent: DomainEvent): Boolean {
+    // TODO - implement
+    return true
+  }
 }
