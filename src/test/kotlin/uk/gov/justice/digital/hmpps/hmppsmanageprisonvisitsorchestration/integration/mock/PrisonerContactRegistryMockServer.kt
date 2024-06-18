@@ -14,6 +14,7 @@ class PrisonerContactRegistryMockServer : WireMockServer(8095) {
   fun stubGetPrisonerContacts(
     prisonerId: String,
     withAddress: Boolean = false,
+    approvedVisitorsOnly: Boolean = true,
     personId: Long? = null,
     hasDateOfBirth: Boolean? = null,
     notBannedBeforeDate: LocalDate? = null,
@@ -23,7 +24,7 @@ class PrisonerContactRegistryMockServer : WireMockServer(8095) {
     val responseBuilder = createJsonResponseBuilder()
 
     stubFor(
-      get("/prisoners/$prisonerId/approved/social/contacts?${getContactsQueryParams(personId, hasDateOfBirth, notBannedBeforeDate, withAddress)}")
+      get("/prisoners/$prisonerId/contacts/social?${getContactsQueryParams(personId, hasDateOfBirth, notBannedBeforeDate, withAddress, approvedVisitorsOnly)}")
         .willReturn(
           if (contactsList == null) {
             responseBuilder
@@ -87,6 +88,7 @@ class PrisonerContactRegistryMockServer : WireMockServer(8095) {
     hasDateOfBirth: Boolean? = null,
     notBannedBeforeDate: LocalDate? = null,
     withAddress: Boolean? = null,
+    approvedVisitorsOnly: Boolean? = null,
   ): String {
     val queryParams = ArrayList<String>()
     personId?.let {
@@ -100,6 +102,9 @@ class PrisonerContactRegistryMockServer : WireMockServer(8095) {
     }
     withAddress?.let {
       queryParams.add("withAddress=$it")
+    }
+    approvedVisitorsOnly?.let {
+      queryParams.add("approvedVisitorsOnly=$it")
     }
 
     return queryParams.joinToString("&")

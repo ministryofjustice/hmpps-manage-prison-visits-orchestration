@@ -32,13 +32,14 @@ class PrisonerContactRegistryClient(
   fun getPrisonersSocialContacts(
     prisonerId: String,
     withAddress: Boolean,
+    approvedVisitorsOnly: Boolean,
     personId: Long? = null,
     hasDateOfBirth: Boolean? = null,
     notBannedBeforeDate: LocalDate? = null,
   ): List<PrisonerContactDto> {
-    val uri = "/prisoners/$prisonerId/approved/social/contacts"
+    val uri = "/prisoners/$prisonerId/contacts/social"
     return webClient.get().uri(uri) {
-      getApprovedSocialContactsUriBuilder(personId, withAddress, hasDateOfBirth, notBannedBeforeDate, it).build()
+      getSocialContactsUriBuilder(personId, withAddress, hasDateOfBirth, notBannedBeforeDate, approvedVisitorsOnly, it).build()
     }
       .retrieve()
       .bodyToMono<List<PrisonerContactDto>>()
@@ -55,17 +56,19 @@ class PrisonerContactRegistryClient(
       .blockOptional(apiTimeout).orElseThrow { NotFoundException("Social Contacts for prisonerId - $prisonerId not found on prisoner-contact-registry") }
   }
 
-  private fun getApprovedSocialContactsUriBuilder(
+  private fun getSocialContactsUriBuilder(
     personId: Long?,
     withAddress: Boolean,
     hasDateOfBirth: Boolean? = null,
     notBannedBeforeDate: LocalDate? = null,
+    approvedVisitorsOnly: Boolean,
     uriBuilder: UriBuilder,
   ): UriBuilder {
     uriBuilder.queryParamIfPresent("id", Optional.ofNullable(personId))
     uriBuilder.queryParamIfPresent("hasDateOfBirth", Optional.ofNullable(hasDateOfBirth))
     uriBuilder.queryParamIfPresent("notBannedBeforeDate", Optional.ofNullable(notBannedBeforeDate))
     uriBuilder.queryParam("withAddress", withAddress)
+    uriBuilder.queryParam("approvedVisitorsOnly", approvedVisitorsOnly)
     return uriBuilder
   }
 
