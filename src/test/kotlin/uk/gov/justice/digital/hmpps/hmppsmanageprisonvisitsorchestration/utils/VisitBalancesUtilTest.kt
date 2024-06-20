@@ -121,4 +121,53 @@ class VisitBalancesUtilTest {
     // Then
     Assertions.assertThat(renewalDate).isEqualTo(expectedRenewalDate)
   }
+
+  @Test
+  fun `test VO Renewal date is latestPrivIepAdjustDate when latestIepAdjustDate is in the past`() {
+    // Given
+    // although latestIepAdjustDate is less than latestPrivIepAdjustDate this date needs to be ignored as it is in the past
+    val latestIepAdjustDate = LocalDate.now().minusDays(1)
+    val latestPrivIepAdjustDate = LocalDate.now().plusDays(1)
+    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
+    val renewalDate = VisitBalancesUtil().calculateVoRenewalDate(visitBalance)
+    // Then
+    Assertions.assertThat(renewalDate).isEqualTo(latestPrivIepAdjustDate)
+  }
+
+  @Test
+  fun `test VO Renewal date is latestIepAdjustDate when latestPrivIepAdjustDate is in the past`() {
+    // Given
+    val latestIepAdjustDate = LocalDate.now().plusDays(1)
+    // although latestPrivIepAdjustDate is less than latestIepAdjustDate this date needs to be ignored as it is in the past
+    val latestPrivIepAdjustDate = LocalDate.now().minusDays(1)
+    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
+    val renewalDate = VisitBalancesUtil().calculateVoRenewalDate(visitBalance)
+    // Then
+    Assertions.assertThat(renewalDate).isEqualTo(latestIepAdjustDate)
+  }
+
+  @Test
+  fun `test VO Renewal date is latestPrivIepAdjustDate when latestIepAdjustDate is same as today`() {
+    // Given
+    // although latestIepAdjustDate is less than latestPrivIepAdjustDate this date needs to be ignored as it is same as today
+    val latestIepAdjustDate = LocalDate.now()
+    val latestPrivIepAdjustDate = LocalDate.now().plusDays(1)
+    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
+    val renewalDate = VisitBalancesUtil().calculateVoRenewalDate(visitBalance)
+    // Then
+    Assertions.assertThat(renewalDate).isEqualTo(latestPrivIepAdjustDate)
+  }
+
+  @Test
+  fun `test VO Renewal date is latestIepAdjustDate when latestPrivIepAdjustDate  is same as today`() {
+    // Given
+    val latestIepAdjustDate = LocalDate.now().plusDays(1)
+
+    // although latestPrivIepAdjustDate is less than latestIepAdjustDate this date needs to be ignored as it is same as today
+    val latestPrivIepAdjustDate = LocalDate.now()
+    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
+    val renewalDate = VisitBalancesUtil().calculateVoRenewalDate(visitBalance)
+    // Then
+    Assertions.assertThat(renewalDate).isEqualTo(latestIepAdjustDate)
+  }
 }
