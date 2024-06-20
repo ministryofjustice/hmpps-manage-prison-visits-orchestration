@@ -5,14 +5,15 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import java.time.LocalDate
 
 @Component
-class VisitBalancesUtil {
+class VisitBalancesUtil(private val dateUtil: DateUtil) {
   fun calculateAvailableVos(visitBalance: VisitBalancesDto?): Int {
     return (visitBalance?.remainingVo ?: 0) + (visitBalance?.remainingPvo ?: 0)
   }
 
-  fun calculateVoRenewalDate(visitBalance: VisitBalancesDto?, dateFrom: LocalDate = LocalDate.now()): LocalDate {
-    val latestIepAdjustDate = calculateIepAdjustDate(visitBalance, dateFrom)
-    val latestPrivilegedIepAdjustDate = calculatePrivilegedIepAdjustDate(visitBalance, dateFrom)
+  fun calculateVoRenewalDate(visitBalance: VisitBalancesDto?): LocalDate {
+    val currentDate = dateUtil.getCurrentDate()
+    val latestIepAdjustDate = calculateIepAdjustDate(visitBalance, currentDate)
+    val latestPrivilegedIepAdjustDate = calculatePrivilegedIepAdjustDate(visitBalance, currentDate)
 
     return minOf(latestIepAdjustDate, latestPrivilegedIepAdjustDate)
   }
