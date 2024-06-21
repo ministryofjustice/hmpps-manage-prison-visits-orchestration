@@ -5,22 +5,23 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus.CANCELLED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDateTime
 
-@DisplayName("Get public future booked visits by booker reference")
-class PublicFutureVisitsByBookerReferenceTest : IntegrationTestBase() {
+@DisplayName("Get public cancelled visits by booker reference")
+class PublicCancelledVisitsByBookerReferenceTest : IntegrationTestBase() {
   @Test
-  fun `when future visits for booker exists then get future visits returns content`() {
+  fun `when cancelled visits for booker exists then get cancelled visits returns content`() {
     // Given
-    val visitDto = createVisitDto(reference = "ss-bb", startTimestamp = LocalDateTime.now().plusDays(1), endTimestamp = LocalDateTime.now().plusDays(1))
-    val visitDto2 = createVisitDto(reference = "xx-bb", startTimestamp = LocalDateTime.now().plusDays(2), endTimestamp = LocalDateTime.now().plusDays(2))
+    val visitDto = createVisitDto(reference = "ss-bb", startTimestamp = LocalDateTime.now().plusDays(1), endTimestamp = LocalDateTime.now().plusDays(1), visitStatus = CANCELLED)
+    val visitDto2 = createVisitDto(reference = "xx-bb", startTimestamp = LocalDateTime.now().plusDays(2), endTimestamp = LocalDateTime.now().plusDays(2), visitStatus = CANCELLED)
     val prisonerId = "ABC"
     val visitsList = mutableListOf(visitDto, visitDto2)
-    visitSchedulerMockServer.stubPublicFutureVisitsByBookerReference(prisonerId, visitsList)
+    visitSchedulerMockServer.stubPublicCancelledVisitsByBookerReference(prisonerId, visitsList)
 
     // When
-    val responseSpec = callPublicFutureVisits(webTestClient, prisonerId, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callPublicCancelledVisits(webTestClient, prisonerId, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk
@@ -31,14 +32,14 @@ class PublicFutureVisitsByBookerReferenceTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when future visits for booker do not exists then get future visits returns empty content`() {
+  fun `when cancelled visits for booker do not exists then get cancelled visits returns empty content`() {
     // Given
     val prisonerId = "AABBCC"
     val emptyList = mutableListOf<VisitDto>()
-    visitSchedulerMockServer.stubPublicFutureVisitsByBookerReference(prisonerId, emptyList)
+    visitSchedulerMockServer.stubPublicCancelledVisitsByBookerReference(prisonerId, emptyList)
 
     // When
-    val responseSpec = callPublicFutureVisits(webTestClient, prisonerId, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callPublicCancelledVisits(webTestClient, prisonerId, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk

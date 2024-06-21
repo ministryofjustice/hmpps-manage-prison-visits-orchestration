@@ -8,19 +8,19 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDateTime
 
-@DisplayName("Get public future booked visits by booker reference")
-class PublicFutureVisitsByBookerReferenceTest : IntegrationTestBase() {
+@DisplayName("Get public past booked visits by booker reference")
+class PublicPastVisitsByBookerReferenceTest : IntegrationTestBase() {
   @Test
-  fun `when future visits for booker exists then get future visits returns content`() {
+  fun `when past visits for booker exists then get past visits returns content`() {
     // Given
-    val visitDto = createVisitDto(reference = "ss-bb", startTimestamp = LocalDateTime.now().plusDays(1), endTimestamp = LocalDateTime.now().plusDays(1))
-    val visitDto2 = createVisitDto(reference = "xx-bb", startTimestamp = LocalDateTime.now().plusDays(2), endTimestamp = LocalDateTime.now().plusDays(2))
+    val visitDto = createVisitDto(reference = "ss-bb", startTimestamp = LocalDateTime.now().minusDays(1), endTimestamp = LocalDateTime.now().plusDays(1))
+    val visitDto2 = createVisitDto(reference = "xx-bb", startTimestamp = LocalDateTime.now().minusDays(2), endTimestamp = LocalDateTime.now().plusDays(2))
     val prisonerId = "ABC"
     val visitsList = mutableListOf(visitDto, visitDto2)
-    visitSchedulerMockServer.stubPublicFutureVisitsByBookerReference(prisonerId, visitsList)
+    visitSchedulerMockServer.stubPublicPastVisitsByBookerReference(prisonerId, visitsList)
 
     // When
-    val responseSpec = callPublicFutureVisits(webTestClient, prisonerId, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callPublicPastVisits(webTestClient, prisonerId, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk
@@ -31,14 +31,14 @@ class PublicFutureVisitsByBookerReferenceTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when future visits for booker do not exists then get future visits returns empty content`() {
+  fun `when past visits for booker do not exists then get past visits returns empty content`() {
     // Given
     val prisonerId = "AABBCC"
     val emptyList = mutableListOf<VisitDto>()
-    visitSchedulerMockServer.stubPublicFutureVisitsByBookerReference(prisonerId, emptyList)
+    visitSchedulerMockServer.stubPublicPastVisitsByBookerReference(prisonerId, emptyList)
 
     // When
-    val responseSpec = callPublicFutureVisits(webTestClient, prisonerId, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callPublicPastVisits(webTestClient, prisonerId, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk
