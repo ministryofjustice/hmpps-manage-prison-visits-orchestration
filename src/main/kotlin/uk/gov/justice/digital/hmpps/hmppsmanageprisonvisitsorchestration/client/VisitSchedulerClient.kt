@@ -170,12 +170,12 @@ class VisitSchedulerClient(
       .bodyToMono<List<VisitSessionDto>>().block(apiTimeout)
   }
 
-  fun getAvailableVisitSessions(prisonId: String, prisonerId: String, sessionRestriction: SessionRestriction, dateRange: DateRange): List<AvailableVisitSessionDto> {
+  fun getAvailableVisitSessions(prisonId: String, prisonerId: String, sessionRestriction: SessionRestriction, dateRange: DateRange, excludedApplicationReference: String? = null): List<AvailableVisitSessionDto> {
     val uri = "/visit-sessions/available"
 
     return webClient.get()
       .uri(uri) {
-        visitAvailableSessionsUriBuilder(prisonId, prisonerId, sessionRestriction, dateRange, it).build()
+        visitAvailableSessionsUriBuilder(prisonId, prisonerId, sessionRestriction, dateRange, it, excludedApplicationReference).build()
       }
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
@@ -381,12 +381,15 @@ class VisitSchedulerClient(
     return uriBuilder
   }
 
-  private fun visitAvailableSessionsUriBuilder(prisonId: String, prisonerId: String, sessionRestriction: SessionRestriction, dateRange: DateRange, uriBuilder: UriBuilder): UriBuilder {
+  private fun visitAvailableSessionsUriBuilder(prisonId: String, prisonerId: String, sessionRestriction: SessionRestriction, dateRange: DateRange, uriBuilder: UriBuilder, excludedApplicationReference: String? = null): UriBuilder {
     uriBuilder.queryParam("prisonId", prisonId)
     uriBuilder.queryParam("prisonerId", prisonerId)
     uriBuilder.queryParam("sessionRestriction", sessionRestriction.name)
     uriBuilder.queryParam("fromDate", dateRange.fromDate)
     uriBuilder.queryParam("toDate", dateRange.toDate)
+    excludedApplicationReference?.let {
+      uriBuilder.queryParam("excludedApplicationReference", it)
+    }
     return uriBuilder
   }
 
