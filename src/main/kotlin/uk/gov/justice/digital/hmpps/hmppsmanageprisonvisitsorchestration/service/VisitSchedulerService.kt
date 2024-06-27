@@ -118,7 +118,7 @@ class VisitSchedulerService(
   fun bookVisit(applicationReference: String, requestDto: BookingOrchestrationRequestDto): VisitDto? {
     return visitSchedulerClient.bookVisitSlot(
       applicationReference,
-      BookingRequestDto(authenticationHelperService.currentUserName, requestDto.applicationMethodType, requestDto.allowOverBooking),
+      BookingRequestDto(requestDto.actionedBy, requestDto.applicationMethodType, requestDto.allowOverBooking),
     )
   }
 
