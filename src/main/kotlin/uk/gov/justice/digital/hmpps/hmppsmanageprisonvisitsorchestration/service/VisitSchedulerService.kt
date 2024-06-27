@@ -9,13 +9,13 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.BookingOrchestrationRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.EventAuditOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.IgnoreVisitNotificationsOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationNotificationGroupDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationPrisonerVisitsNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.IgnoreVisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
@@ -64,10 +64,11 @@ class VisitSchedulerService(
       if (!eventAuditList.isNullOrEmpty()) {
         val names = manageUsersService.getFullNamesFromVisitHistory(eventAuditList)
         val eventAuditListWithNames = eventAuditList.map {
-          EventAuditDto(
+          EventAuditOrchestrationDto(
             type = it.type,
             applicationMethodType = it.applicationMethodType,
-            actionedBy = names[it.actionedBy] ?: it.actionedBy,
+            actionedByFullName = names[it.actionedBy.userName] ?: it.actionedBy.userName,
+            userType = it.actionedBy.userType,
             sessionTemplateReference = it.sessionTemplateReference,
             createTimestamp = it.createTimestamp,
             text = it.text,
@@ -98,6 +99,18 @@ class VisitSchedulerService(
     return Page.empty()
   }
 
+  fun getFuturePublicBookedVisitsByBookerReference(bookerReference: String): List<VisitDto> {
+    return visitSchedulerClient.getFuturePublicBookedVisitsByBookerReference(bookerReference)
+  }
+
+  fun getPastPublicBookedVisitsByBookerReference(bookerReference: String): List<VisitDto> {
+    return visitSchedulerClient.getPastPublicBookedVisitsByBookerReference(bookerReference)
+  }
+
+  fun getCancelledPublicVisitsByBookerReference(bookerReference: String): List<VisitDto> {
+    return visitSchedulerClient.getCancelledPublicVisitsByBookerReference(bookerReference)
+  }
+
   fun findFutureVisitsForPrisoner(prisonerId: String): List<VisitDto> {
     return visitSchedulerClient.getFutureVisitsForPrisoner(prisonerId) ?: emptyList()
   }
@@ -105,7 +118,7 @@ class VisitSchedulerService(
   fun bookVisit(applicationReference: String, requestDto: BookingOrchestrationRequestDto): VisitDto? {
     return visitSchedulerClient.bookVisitSlot(
       applicationReference,
-      BookingRequestDto(authenticationHelperService.currentUserName, requestDto.applicationMethodType, requestDto.allowOverBooking),
+      BookingRequestDto(requestDto.actionedBy, requestDto.applicationMethodType, requestDto.allowOverBooking),
     )
   }
 
