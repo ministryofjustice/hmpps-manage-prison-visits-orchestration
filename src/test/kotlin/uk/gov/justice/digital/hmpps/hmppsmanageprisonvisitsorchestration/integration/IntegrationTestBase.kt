@@ -395,12 +395,13 @@ abstract class IntegrationTestBase {
     visitorIds: List<Long>? = null,
     withAppointmentsCheck: Boolean,
     authHttpHeaders: (HttpHeaders) -> Unit,
+    excludedApplicationReference: String? = null,
   ): WebTestClient.ResponseSpec {
     val uri = visitorIds?.let {
       val visitorIdsString = it.joinToString(",")
-      "/visit-sessions/available?prisonId=$prisonCode&prisonerId=$prisonerId&sessionRestriction=$sessionRestriction&visitors=$visitorIdsString&withAppointmentsCheck=$withAppointmentsCheck"
+      "/visit-sessions/available?prisonId=$prisonCode&prisonerId=$prisonerId&sessionRestriction=$sessionRestriction&visitors=$visitorIdsString&withAppointmentsCheck=$withAppointmentsCheck&excludedApplicationReference=$excludedApplicationReference"
     } ?: run {
-      "/visit-sessions/available?prisonId=$prisonCode&prisonerId=$prisonerId&sessionRestriction=$sessionRestriction&withAppointmentsCheck=$withAppointmentsCheck"
+      "/visit-sessions/available?prisonId=$prisonCode&prisonerId=$prisonerId&sessionRestriction=$sessionRestriction&withAppointmentsCheck=$withAppointmentsCheck&excludedApplicationReference=$excludedApplicationReference"
     }
 
     return webTestClient.get().uri(uri)
