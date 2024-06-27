@@ -55,7 +55,11 @@ const val VISIT_NOTIFICATION_PRISONER_RECEIVED_CHANGE_PATH: String = "$VISIT_NOT
 const val VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/released"
 const val VISIT_NOTIFICATION_PRISONER_RESTRICTION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/restriction/changed"
 const val VISIT_NOTIFICATION_VISITOR_RESTRICTION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/visitor/restriction/changed"
-const val GET_FUTURE_PUBLIC_BOOKED_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/booked/visits/future"
+
+const val GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/booked/future"
+const val GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/cancelled"
+const val GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/booked/past"
+
 const val VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alerts/updated"
 
 @Component
@@ -69,9 +73,27 @@ class VisitSchedulerClient(
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
+  fun getPastPublicBookedVisitsByBookerReference(bookerReference: String): List<VisitDto> {
+    return webClient.get()
+      .uri(GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<List<VisitDto>>()
+      .blockOptional(apiTimeout).orElseGet { listOf<VisitDto>() }
+  }
+
+  fun getCancelledPublicVisitsByBookerReference(bookerReference: String): List<VisitDto> {
+    return webClient.get()
+      .uri(GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<List<VisitDto>>()
+      .blockOptional(apiTimeout).orElseGet { listOf<VisitDto>() }
+  }
+
   fun getFuturePublicBookedVisitsByBookerReference(bookerReference: String): List<VisitDto> {
     return webClient.get()
-      .uri(GET_FUTURE_PUBLIC_BOOKED_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
+      .uri(GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono<List<VisitDto>>()
