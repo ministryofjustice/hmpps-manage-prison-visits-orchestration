@@ -323,6 +323,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     visitSessions: List<AvailableVisitSessionDto>,
     httpStatus: HttpStatus = HttpStatus.OK,
     dateRange: DateRange? = null,
+    excludedApplicationReference: String? = null,
   ): DateRange {
     val dateRangeToUse = dateRange ?: run {
       val today = LocalDate.now()
@@ -331,7 +332,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
       DateRange(fromDate, toDate)
     }
     stubFor(
-      get("/visit-sessions/available?prisonId=${visitSchedulerPrisonDto.code}&prisonerId=$prisonerId&sessionRestriction=${sessionRestriction.name}&fromDate=${dateRangeToUse.fromDate}&toDate=${dateRangeToUse.toDate}")
+      get("/visit-sessions/available?prisonId=${visitSchedulerPrisonDto.code}&prisonerId=$prisonerId&sessionRestriction=${sessionRestriction.name}&fromDate=${dateRangeToUse.fromDate}&toDate=${dateRangeToUse.toDate}&excludedApplicationReference=$excludedApplicationReference")
         .willReturn(
           createJsonResponseBuilder()
             .withStatus(httpStatus.value())

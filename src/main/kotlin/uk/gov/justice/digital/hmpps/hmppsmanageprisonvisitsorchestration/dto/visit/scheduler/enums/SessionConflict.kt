@@ -3,5 +3,5 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 @Suppress("unused")
 enum class SessionConflict {
   NON_ASSOCIATION,
-  DOUBLE_BOOKED,
+  DOUBLE_BOOKING_OR_RESERVATION,
 }
