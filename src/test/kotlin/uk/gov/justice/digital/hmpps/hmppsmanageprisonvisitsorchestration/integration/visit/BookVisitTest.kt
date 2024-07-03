@@ -5,23 +5,12 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.BookingOrchestrationRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType.EMAIL
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
 @DisplayName("Book Visit")
 class BookVisitTest : IntegrationTestBase() {
-  fun callBookVisit(
-    webTestClient: WebTestClient,
-    applicationReference: String,
-    requestDto: BookingRequestDto,
-    authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.put().uri("/visits/$applicationReference/book")
-      .body(BodyInserters.fromValue(requestDto))
-      .headers(authHttpHeaders)
-      .exchange()
-  }
 
   @Test
   fun `when book visit slot is successful then OK status is returned`() {
@@ -30,7 +19,7 @@ class BookVisitTest : IntegrationTestBase() {
     val reference = "aa-bb-cc-dd"
     val visitDto = createVisitDto(reference = reference, applicationReference = applicationReference)
     visitSchedulerMockServer.stubBookVisit(applicationReference, visitDto)
-    val requestDto = BookingRequestDto(actionedBy = "booker", EMAIL)
+    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL)
 
     // When
     val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
@@ -48,12 +37,24 @@ class BookVisitTest : IntegrationTestBase() {
     val visitDto = null
     visitSchedulerMockServer.stubBookVisit(applicationReference, visitDto)
 
-    val requestDto = BookingRequestDto(actionedBy = "booker", EMAIL)
+    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL)
 
     // When
     val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
+  }
+
+  private fun callBookVisit(
+    webTestClient: WebTestClient,
+    applicationReference: String,
+    requestDto: BookingOrchestrationRequestDto,
+    authHttpHeaders: (HttpHeaders) -> Unit,
+  ): WebTestClient.ResponseSpec {
+    return webTestClient.put().uri("/visits/$applicationReference/book")
+      .body(BodyInserters.fromValue(requestDto))
+      .headers(authHttpHeaders)
+      .exchange()
   }
 }
