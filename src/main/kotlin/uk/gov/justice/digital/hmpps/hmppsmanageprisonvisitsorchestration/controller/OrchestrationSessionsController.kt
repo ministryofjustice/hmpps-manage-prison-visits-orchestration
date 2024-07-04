@@ -133,7 +133,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     @Parameter(
       description = "Advances the available visits slots sought from date by n days. Defaults to 0 if not passed.",
     )
-    advanceFromDateByDays: Int?,
+    advanceFromDateByDays: Int? = 0,
   ): List<AvailableVisitSessionDto> =
     visitSchedulerSessionsService.getAvailableVisitSessions(
       prisonCode = prisonCode,
