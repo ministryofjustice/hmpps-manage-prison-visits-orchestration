@@ -6,8 +6,8 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ManageUsersApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.manage.users.UserDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
-import uk.gov.justice.digital.hmpps.visitscheduler.dto.audit.EventAuditDto
 import java.time.Duration
 
 @Service

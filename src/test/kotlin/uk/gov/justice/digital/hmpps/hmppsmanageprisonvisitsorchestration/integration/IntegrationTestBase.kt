@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -455,7 +456,14 @@ abstract class IntegrationTestBase {
     )
   }
 
-  private fun createContactDto(personId: Long, firstName: String, lastName: String, dateOfBirth: LocalDate?, approvedVisitor: Boolean, restrictions: List<RestrictionDto>): PrisonerContactDto {
+  fun createContactDto(
+    personId: Long = RandomUtils.nextLong(),
+    firstName: String,
+    lastName: String,
+    dateOfBirth: LocalDate? = null,
+    approvedVisitor: Boolean = true,
+    restrictions: List<RestrictionDto> = emptyList(),
+  ): PrisonerContactDto {
     return PrisonerContactDto(
       personId = personId,
       firstName = firstName,
@@ -485,6 +493,18 @@ abstract class IntegrationTestBase {
     restrictions: List<RestrictionDto> = emptyList(),
   ): VisitorDetails {
     return VisitorDetails(visitorId.toLong(), firstName, lastName, dateOfBirth, approved, restrictions = restrictions)
+  }
+
+  final fun createVisitorDto(
+    contact: PrisonerContactDto,
+    visitContact: Boolean = false,
+  ): VisitorDto {
+    return VisitorDto(
+      nomisPersonId = contact.personId!!,
+      firstName = contact.firstName,
+      lastName = contact.lastName,
+      visitContact = visitContact,
+    )
   }
 
   final fun createPrison(
@@ -522,4 +542,15 @@ abstract class IntegrationTestBase {
     val approved: Boolean = true,
     val restrictions: List<RestrictionDto> = emptyList(),
   )
+
+  protected fun assertVisitorDetails(visitors: List<VisitorDto>, contacts: List<PrisonerContactDto>) {
+    for (visitor in visitors) {
+      val contact = contacts.first { it.personId == visitor.nomisPersonId }
+      Assertions.assertThat(visitor.nomisPersonId).isEqualTo(contact.personId)
+      Assertions.assertThat(visitor.firstName).isNotNull()
+      Assertions.assertThat(visitor.firstName).isEqualTo(contact.firstName)
+      Assertions.assertThat(visitor.lastName).isNotNull()
+      Assertions.assertThat(visitor.lastName).isEqualTo(contact.lastName)
+    }
+  }
 }
