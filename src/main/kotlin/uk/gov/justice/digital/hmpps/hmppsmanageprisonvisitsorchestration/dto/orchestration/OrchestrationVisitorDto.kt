@@ -12,8 +12,8 @@ class OrchestrationVisitorDto(
   val nomisPersonId: Long,
 
   @Schema(description = "Visitor's first name", example = "James", required = false)
-  var firstName: String? = null,
+  val firstName: String? = null,
 
   @Schema(description = "Visitor's last name", example = "James", required = false)
-  var lastName: String? = null,
+  val lastName: String? = null,
 )
