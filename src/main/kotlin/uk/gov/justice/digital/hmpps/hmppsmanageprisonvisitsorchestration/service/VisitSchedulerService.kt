@@ -6,10 +6,8 @@ import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.builder.OrchestrationVisitDtoBuilder
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.BookingOrchestrationRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.EventAuditOrchestrationDto
@@ -17,7 +15,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationNotificationGroupDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationPrisonerVisitsNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
@@ -32,7 +29,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerRestrictionChangeNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionChangeNotificationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.NonAssociationChangedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PersonRestrictionChangeInfo
@@ -46,7 +42,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 @Service
 class VisitSchedulerService(
   private val visitSchedulerClient: VisitSchedulerClient,
-  private val prisonerContactRegistryClient: PrisonerContactRegistryClient,
+  private val prisonerContactService: PrisonerContactService,
   private val authenticationHelperService: AuthenticationHelperService,
   private val manageUsersService: ManageUsersService,
   private val orchestrationVisitDtoBuilder: OrchestrationVisitDtoBuilder,
@@ -209,44 +205,12 @@ class VisitSchedulerService(
     return visitSchedulerClient.getNotificationsTypesForBookingReference(reference)
   }
 
-  private fun populateVisitorNames(visits: List<OrchestrationVisitDto>) {
-    val prisonersContactMap = mutableMapOf<String, List<PrisonerContactDto>>()
-    visits.forEach { visit ->
-      if (prisonersContactMap[visit.prisonerId] == null) {
-        val contacts = try {
-          getPrisonerContacts(visit.prisonerId)
-        } catch (e: NotFoundException) {
-          LOG.info("No contacts found for prisoner id - ${visit.prisonerId}")
-          emptyList()
-        }
-        prisonersContactMap[visit.prisonerId] = contacts
-      }
-
-      visit.visitors.forEach { visitor ->
-        populateVisitorNames(visitor, prisonersContactMap[visit.prisonerId])
-      }
-    }
-  }
-
-  private fun getPrisonerContacts(prisonerId: String): List<PrisonerContactDto> {
-    return prisonerContactRegistryClient.getPrisonersSocialContacts(
-      prisonerId = prisonerId,
-      withAddress = false,
-      approvedVisitorsOnly = false,
-    )
-  }
-
-  private fun populateVisitorNames(visitor: OrchestrationVisitorDto, contacts: List<PrisonerContactDto>?) {
-    val contact = contacts?.firstOrNull { it.personId == visitor.nomisPersonId }
-    visitor.firstName = contact ?.firstName
-    visitor.lastName = contact ?.lastName
-  }
-
   private fun mapVisitDtoToOrchestrationVisitDto(visits: List<VisitDto>?): List<OrchestrationVisitDto> {
+    val prisonerIds = visits?.map { it.prisonerId }?.toSet() ?: emptySet()
+    val prisonerContactsMap = prisonerContactService.getPrisonersContacts(prisonerIds)
     return visits?.map {
-      orchestrationVisitDtoBuilder.build(it)
-    }?.also {
-      populateVisitorNames(it)
-    } ?: emptyList()
+      val contacts = prisonerContactsMap[it.prisonerId] ?: emptyList()
+      orchestrationVisitDtoBuilder.build(it, contacts)
+    }?.toList() ?: emptyList()
   }
 }

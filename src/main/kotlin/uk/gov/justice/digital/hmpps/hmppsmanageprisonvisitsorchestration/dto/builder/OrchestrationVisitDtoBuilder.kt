@@ -1,19 +1,15 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.builder
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 
 @Component
-class OrchestrationVisitDtoBuilder {
-
-  companion object {
-    val LOG: Logger = LoggerFactory.getLogger(this::class.java)
-  }
-  fun build(visitDto: VisitDto): OrchestrationVisitDto {
+class OrchestrationVisitDtoBuilder(
+  private val orchestrationVisitorDtoBuilder: OrchestrationVisitorDtoBuilder,
+) {
+  fun build(visitDto: VisitDto, prisonerContacts: List<PrisonerContactDto>): OrchestrationVisitDto {
     return OrchestrationVisitDto(
       reference = visitDto.reference,
       prisonerId = visitDto.prisonerId,
@@ -23,7 +19,9 @@ class OrchestrationVisitDtoBuilder {
       startTimestamp = visitDto.startTimestamp,
       endTimestamp = visitDto.endTimestamp,
       visitContact = visitDto.visitContact,
-      visitors = visitDto.visitors?.map { OrchestrationVisitorDto(it.nomisPersonId) }?.toList() ?: emptyList(),
+      visitors = visitDto.visitors?.map {
+        orchestrationVisitorDtoBuilder.build(it, prisonerContacts)
+      }?.toList() ?: emptyList(),
       visitorSupport = visitDto.visitorSupport,
     )
   }
