@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.control
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.ORCHESTRATION_GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.RestrictionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonNameDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.CurrentIncentive
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
@@ -501,8 +502,6 @@ abstract class IntegrationTestBase {
   ): VisitorDto {
     return VisitorDto(
       nomisPersonId = contact.personId!!,
-      firstName = contact.firstName,
-      lastName = contact.lastName,
       visitContact = visitContact,
     )
   }
@@ -543,7 +542,7 @@ abstract class IntegrationTestBase {
     val restrictions: List<RestrictionDto> = emptyList(),
   )
 
-  protected fun assertVisitorDetails(visitors: List<VisitorDto>, contacts: List<PrisonerContactDto>) {
+  protected fun assertVisitorDetails(visitors: List<OrchestrationVisitorDto>, contacts: List<PrisonerContactDto>) {
     for (visitor in visitors) {
       val contact = contacts.first { it.personId == visitor.nomisPersonId }
       Assertions.assertThat(visitor.nomisPersonId).isEqualTo(contact.personId)

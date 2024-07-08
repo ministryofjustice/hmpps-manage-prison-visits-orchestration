@@ -10,6 +10,7 @@ import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus.CANCELLED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
@@ -87,10 +88,10 @@ class PublicCancelledVisitsByBookerReferenceTest : IntegrationTestBase() {
 
     val visits = getResults(returnResult)
     Assertions.assertThat(visits.size).isEqualTo(2)
-    Assertions.assertThat(visits[0].visitors?.size).isEqualTo(2)
-    assertVisitorDetails(visits[0].visitors!!, contacts)
-    assertVisitorDetails(visits[1].visitors!!, contacts)
-    Mockito.verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisonerId, false, false, null, null, null)
+    Assertions.assertThat(visits[0].visitors.size).isEqualTo(2)
+    assertVisitorDetails(visits[0].visitors, contacts)
+    assertVisitorDetails(visits[1].visitors, contacts)
+    Mockito.verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false, false, null, null, null)
   }
 
   @Test
@@ -125,10 +126,10 @@ class PublicCancelledVisitsByBookerReferenceTest : IntegrationTestBase() {
 
     val visits = getResults(returnResult)
     Assertions.assertThat(visits.size).isEqualTo(2)
-    Assertions.assertThat(visits[0].visitors?.size).isEqualTo(2)
-    Assertions.assertThat(visits[1].visitors?.size).isEqualTo(2)
+    Assertions.assertThat(visits[0].visitors.size).isEqualTo(2)
+    Assertions.assertThat(visits[1].visitors.size).isEqualTo(2)
 
-    val allVisitors = visits.flatMap { it.visitors!! }
+    val allVisitors = visits.flatMap { it.visitors }
     for (visitor in allVisitors) {
       Assertions.assertThat(visitor.nomisPersonId).isNotNull()
       Assertions.assertThat(visitor.firstName).isNull()
@@ -138,7 +139,7 @@ class PublicCancelledVisitsByBookerReferenceTest : IntegrationTestBase() {
     Mockito.verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false, approvedVisitorsOnly = false, null, null, null)
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<VisitDto> {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<VisitDto>::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<OrchestrationVisitDto> {
+    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<OrchestrationVisitDto>::class.java)
   }
 }

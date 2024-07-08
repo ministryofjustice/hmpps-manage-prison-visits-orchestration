@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler
+package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.v3.oas.annotations.media.Schema
@@ -6,11 +6,14 @@ import jakarta.validation.constraints.NotNull
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "Visitor")
-class VisitorDto(
+class OrchestrationVisitorDto(
   @Schema(description = "Person ID (nomis) of the visitor", example = "1234", required = true)
   @field:NotNull
   val nomisPersonId: Long,
 
-  @Schema(description = "true if visitor is the contact for the visit otherwise false", example = "true", required = false)
-  val visitContact: Boolean?,
+  @Schema(description = "Visitor's first name", example = "James", required = false)
+  var firstName: String? = null,
+
+  @Schema(description = "Visitor's last name", example = "James", required = false)
+  var lastName: String? = null,
 )

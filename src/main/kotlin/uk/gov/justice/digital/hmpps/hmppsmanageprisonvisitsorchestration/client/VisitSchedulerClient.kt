@@ -97,7 +97,7 @@ class VisitSchedulerClient(
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono<List<VisitDto>>()
-      .blockOptional(apiTimeout).orElseGet { listOf<VisitDto>() }
+      .blockOptional(apiTimeout).orElseGet { listOf() }
   }
 
   fun getVisitByReference(reference: String): VisitDto? {

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.builder.OrchestrationVisitDtoBuilder
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.BookingOrchestrationRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
@@ -15,12 +16,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.IgnoreVisitNotificationsOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationNotificationGroupDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationPrisonerVisitsNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.IgnoreVisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
@@ -47,6 +49,7 @@ class VisitSchedulerService(
   private val prisonerContactRegistryClient: PrisonerContactRegistryClient,
   private val authenticationHelperService: AuthenticationHelperService,
   private val manageUsersService: ManageUsersService,
+  private val orchestrationVisitDtoBuilder: OrchestrationVisitDtoBuilder,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -104,24 +107,16 @@ class VisitSchedulerService(
     return Page.empty()
   }
 
-  fun getFuturePublicBookedVisitsByBookerReference(bookerReference: String): List<VisitDto> {
-    val visits = visitSchedulerClient.getFuturePublicBookedVisitsByBookerReference(bookerReference).also {
-      populateVisitorNames(it)
-    }
-
-    return visits
+  fun getFuturePublicBookedVisitsByBookerReference(bookerReference: String): List<OrchestrationVisitDto> {
+    return mapVisitDtoToOrchestrationVisitDto(visitSchedulerClient.getFuturePublicBookedVisitsByBookerReference(bookerReference))
   }
 
-  fun getPastPublicBookedVisitsByBookerReference(bookerReference: String): List<VisitDto> {
-    return visitSchedulerClient.getPastPublicBookedVisitsByBookerReference(bookerReference).also {
-      populateVisitorNames(it)
-    }
+  fun getPastPublicBookedVisitsByBookerReference(bookerReference: String): List<OrchestrationVisitDto> {
+    return mapVisitDtoToOrchestrationVisitDto(visitSchedulerClient.getPastPublicBookedVisitsByBookerReference(bookerReference))
   }
 
-  fun getCancelledPublicVisitsByBookerReference(bookerReference: String): List<VisitDto> {
-    return visitSchedulerClient.getCancelledPublicVisitsByBookerReference(bookerReference).also {
-      populateVisitorNames(it)
-    }
+  fun getCancelledPublicVisitsByBookerReference(bookerReference: String): List<OrchestrationVisitDto> {
+    return mapVisitDtoToOrchestrationVisitDto(visitSchedulerClient.getCancelledPublicVisitsByBookerReference(bookerReference))
   }
 
   fun findFutureVisitsForPrisoner(prisonerId: String): List<VisitDto> {
@@ -214,7 +209,7 @@ class VisitSchedulerService(
     return visitSchedulerClient.getNotificationsTypesForBookingReference(reference)
   }
 
-  private fun populateVisitorNames(visits: List<VisitDto>) {
+  private fun populateVisitorNames(visits: List<OrchestrationVisitDto>) {
     val prisonersContactMap = mutableMapOf<String, List<PrisonerContactDto>>()
     visits.forEach { visit ->
       if (prisonersContactMap[visit.prisonerId] == null) {
@@ -227,7 +222,7 @@ class VisitSchedulerService(
         prisonersContactMap[visit.prisonerId] = contacts
       }
 
-      visit.visitors?.forEach { visitor ->
+      visit.visitors.forEach { visitor ->
         populateVisitorNames(visitor, prisonersContactMap[visit.prisonerId])
       }
     }
@@ -241,9 +236,17 @@ class VisitSchedulerService(
     )
   }
 
-  private fun populateVisitorNames(visitor: VisitorDto, contacts: List<PrisonerContactDto>?) {
+  private fun populateVisitorNames(visitor: OrchestrationVisitorDto, contacts: List<PrisonerContactDto>?) {
     val contact = contacts?.firstOrNull { it.personId == visitor.nomisPersonId }
-    visitor.firstName = contact?.firstName
-    visitor.lastName = contact?.lastName
+    visitor.firstName = contact ?.firstName
+    visitor.lastName = contact ?.lastName
+  }
+
+  private fun mapVisitDtoToOrchestrationVisitDto(visits: List<VisitDto>?): List<OrchestrationVisitDto> {
+    return visits?.map {
+      orchestrationVisitDtoBuilder.build(it)
+    }?.also {
+      populateVisitorNames(it)
+    } ?: emptyList()
   }
 }

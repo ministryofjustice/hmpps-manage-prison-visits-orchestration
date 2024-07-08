@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.BookingOrchestrationRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
@@ -149,7 +150,7 @@ class OrchestrationVisitsController(
     @Schema(description = "bookerReference", example = "asd-aed-vhj", required = true)
     @PathVariable
     bookerReference: String,
-  ): List<VisitDto> {
+  ): List<OrchestrationVisitDto> {
     return visitSchedulerService.getFuturePublicBookedVisitsByBookerReference(bookerReference)
   }
 
@@ -184,7 +185,7 @@ class OrchestrationVisitsController(
     @Schema(description = "bookerReference", example = "asd-aed-vhj", required = true)
     @PathVariable
     bookerReference: String,
-  ): List<VisitDto> {
+  ): List<OrchestrationVisitDto> {
     return visitSchedulerService.getCancelledPublicVisitsByBookerReference(bookerReference)
   }
 
@@ -219,7 +220,7 @@ class OrchestrationVisitsController(
     @Schema(description = "bookerReference", example = "asd-aed-vhj", required = true)
     @PathVariable
     bookerReference: String,
-  ): List<VisitDto> {
+  ): List<OrchestrationVisitDto> {
     return visitSchedulerService.getPastPublicBookedVisitsByBookerReference(bookerReference)
   }
 
