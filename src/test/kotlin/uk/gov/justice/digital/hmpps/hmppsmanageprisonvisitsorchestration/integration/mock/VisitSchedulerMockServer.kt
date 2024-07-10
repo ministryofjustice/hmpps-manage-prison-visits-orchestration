@@ -380,12 +380,22 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
       DateRange(fromDate, toDate)
     }
     stubFor(
-      get("/visit-sessions/available?prisonId=${visitSchedulerPrisonDto.code}&prisonerId=$prisonerId&sessionRestriction=${sessionRestriction.name}&fromDate=${dateRangeToUse.fromDate}&toDate=${dateRangeToUse.toDate}&excludedApplicationReference=$excludedApplicationReference")
-        .willReturn(
-          createJsonResponseBuilder()
-            .withStatus(httpStatus.value())
-            .withBody(getJsonString(visitSessions)),
-        ),
+      get(
+        "/visit-sessions/available?${
+          getAvailableVisitSessionQueryParams(
+            prisonCode = visitSchedulerPrisonDto.code,
+            prisonerId = prisonerId,
+            sessionRestriction = sessionRestriction,
+            fromDate = dateRangeToUse.fromDate,
+            toDate = dateRangeToUse.toDate,
+            excludedApplicationReference = excludedApplicationReference,
+          ).joinToString("&")
+        }",
+      ).willReturn(
+        createJsonResponseBuilder()
+          .withStatus(httpStatus.value())
+          .withBody(getJsonString(visitSessions)),
+      ),
     )
 
     return dateRangeToUse
@@ -501,6 +511,26 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     queryParams.add("prisonCode=$prisonCode")
     queryParams.add("page=$page")
     queryParams.add("size=$size")
+    return queryParams
+  }
+
+  private fun getAvailableVisitSessionQueryParams(
+    prisonCode: String,
+    prisonerId: String,
+    sessionRestriction: SessionRestriction,
+    fromDate: LocalDate,
+    toDate: LocalDate,
+    excludedApplicationReference: String?,
+  ): List<String> {
+    val queryParams = ArrayList<String>()
+    queryParams.add("prisonId=$prisonCode")
+    queryParams.add("prisonerId=$prisonerId")
+    queryParams.add("sessionRestriction=${sessionRestriction.name}")
+    queryParams.add("fromDate=$fromDate")
+    queryParams.add("toDate=$toDate")
+    excludedApplicationReference?.let {
+      queryParams.add("excludedApplicationReference=$excludedApplicationReference")
+    }
     return queryParams
   }
 }
