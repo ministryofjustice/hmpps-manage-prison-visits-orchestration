@@ -9,12 +9,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
 import java.time.LocalDate
 
 @Service
 class PrisonService(
   val visitSchedulerClient: VisitSchedulerClient,
   private val prisonRegisterClient: PrisonRegisterClient,
+  private val dateUtils: DateUtils,
 ) {
   companion object {
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
@@ -54,21 +56,6 @@ class PrisonService(
     prisonCode: String,
   ): DateRange {
     val prison = visitSchedulerClient.getPrison(prisonCode)
-    return getToDaysDateRange(prison)
-  }
-
-  fun getToDaysDateRange(
-    prison: VisitSchedulerPrisonDto,
-    minOverride: Int? = null,
-    maxOverride: Int? = null,
-  ): DateRange {
-    val today = LocalDate.now()
-
-    val min = minOverride ?: prison.policyNoticeDaysMin
-    val max = maxOverride ?: prison.policyNoticeDaysMax
-
-    val bookableStartDate = today.plusDays(min.toLong())
-    val bookableEndDate = today.plusDays(max.toLong())
-    return DateRange(bookableStartDate, bookableEndDate)
+    return dateUtils.getToDaysDateRange(prison)
   }
 }

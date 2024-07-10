@@ -130,8 +130,20 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       example = "dfs-wjs-eqr",
     )
     excludedApplicationReference: String? = null,
+    @Parameter(
+      description = "Advances the available visits slots sought from date by n days. Defaults to 0 if not passed.",
+    )
+    advanceFromDateByDays: Int? = 0,
   ): List<AvailableVisitSessionDto> =
-    visitSchedulerSessionsService.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction, visitors, withAppointmentsCheck ?: true, excludedApplicationReference)
+    visitSchedulerSessionsService.getAvailableVisitSessions(
+      prisonCode = prisonCode,
+      prisonerId = prisonerId,
+      requestedSessionRestriction = sessionRestriction,
+      visitors = visitors,
+      withAppointmentsCheck = withAppointmentsCheck ?: true,
+      excludedApplicationReference = excludedApplicationReference,
+      advanceFromDateByDays = advanceFromDateByDays ?: 0,
+    )
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("/visit-sessions/capacity")

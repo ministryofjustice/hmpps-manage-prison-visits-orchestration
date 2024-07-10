@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.OPEN
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.ScheduledEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.DateRangeNotFoundException
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -23,6 +24,7 @@ class VisitSchedulerSessionsService(
   private val appointmentsService: AppointmentsService,
   private val prisonerProfileService: PrisonerProfileService,
   private val prisonService: PrisonService,
+  private val dateUtils: DateUtils,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -41,10 +43,14 @@ class VisitSchedulerSessionsService(
     visitors: List<Long>?,
     withAppointmentsCheck: Boolean,
     excludedApplicationReference: String? = null,
+    advanceFromDateByDays: Int,
   ): List<AvailableVisitSessionDto> {
     val sessionRestriction = updateRequestedRestriction(requestedSessionRestriction, prisonerId, visitors)
 
-    val dateRange = prisonService.getToDaysBookableDateRange(prisonCode)
+    // advance from date by n days
+    var dateRange = prisonService.getToDaysBookableDateRange(prisonCode)
+    dateRange = dateUtils.advanceFromDate(dateRange, advanceFromDateByDays)
+
     var availableVisitSessions = try {
       val updatedDateRange =
         visitors?.let { prisonerProfileService.getBannedRestrictionDateRage(prisonerId, visitors, dateRange) } ?: dateRange

@@ -204,7 +204,13 @@ class VisitSchedulerClient(
       .bodyToMono<List<VisitSessionDto>>().block(apiTimeout)
   }
 
-  fun getAvailableVisitSessions(prisonId: String, prisonerId: String, sessionRestriction: SessionRestriction, dateRange: DateRange, excludedApplicationReference: String? = null): List<AvailableVisitSessionDto> {
+  fun getAvailableVisitSessions(
+    prisonId: String,
+    prisonerId: String,
+    sessionRestriction: SessionRestriction,
+    dateRange: DateRange,
+    excludedApplicationReference: String? = null,
+  ): List<AvailableVisitSessionDto> {
     val uri = "/visit-sessions/available"
 
     return webClient.get()

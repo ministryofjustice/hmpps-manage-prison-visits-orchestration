@@ -127,20 +127,19 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     visits: List<VisitDto>,
   ) {
     val restPage = RestPage(content = visits, page = 0, size = size, total = visits.size.toLong())
+    val uri = "/visits/session-template"
+    val uriParams = getVisitsBySessionTemplateQueryParams(
+      sessionTemplateReference,
+      sessionDate,
+      visitStatus,
+      visitRestrictions,
+      prisonCode,
+      page,
+      size,
+    ).joinToString("&")
+
     stubFor(
-      get(
-        "/visits/session-template?${
-          getVisitsBySessionTemplateQueryParams(
-            sessionTemplateReference,
-            sessionDate,
-            visitStatus,
-            visitRestrictions,
-            prisonCode,
-            page,
-            size,
-          ).joinToString("&")
-        }",
-      )
+      get("$uri?$uriParams")
         .willReturn(
           createJsonResponseBuilder()
             .withStatus(HttpStatus.OK.value()).withBody(
@@ -380,12 +379,22 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
       DateRange(fromDate, toDate)
     }
     stubFor(
-      get("/visit-sessions/available?prisonId=${visitSchedulerPrisonDto.code}&prisonerId=$prisonerId&sessionRestriction=${sessionRestriction.name}&fromDate=${dateRangeToUse.fromDate}&toDate=${dateRangeToUse.toDate}&excludedApplicationReference=$excludedApplicationReference")
-        .willReturn(
-          createJsonResponseBuilder()
-            .withStatus(httpStatus.value())
-            .withBody(getJsonString(visitSessions)),
-        ),
+      get(
+        "/visit-sessions/available?${
+          getAvailableVisitSessionQueryParams(
+            prisonCode = visitSchedulerPrisonDto.code,
+            prisonerId = prisonerId,
+            sessionRestriction = sessionRestriction,
+            fromDate = dateRangeToUse.fromDate,
+            toDate = dateRangeToUse.toDate,
+            excludedApplicationReference = excludedApplicationReference,
+          ).joinToString("&")
+        }",
+      ).willReturn(
+        createJsonResponseBuilder()
+          .withStatus(httpStatus.value())
+          .withBody(getJsonString(visitSessions)),
+      ),
     )
 
     return dateRangeToUse
@@ -501,6 +510,26 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     queryParams.add("prisonCode=$prisonCode")
     queryParams.add("page=$page")
     queryParams.add("size=$size")
+    return queryParams
+  }
+
+  private fun getAvailableVisitSessionQueryParams(
+    prisonCode: String,
+    prisonerId: String,
+    sessionRestriction: SessionRestriction,
+    fromDate: LocalDate,
+    toDate: LocalDate,
+    excludedApplicationReference: String?,
+  ): List<String> {
+    val queryParams = ArrayList<String>()
+    queryParams.add("prisonId=$prisonCode")
+    queryParams.add("prisonerId=$prisonerId")
+    queryParams.add("sessionRestriction=${sessionRestriction.name}")
+    queryParams.add("fromDate=$fromDate")
+    queryParams.add("toDate=$toDate")
+    excludedApplicationReference?.let {
+      queryParams.add("excludedApplicationReference=$excludedApplicationReference")
+    }
     return queryParams
   }
 }
