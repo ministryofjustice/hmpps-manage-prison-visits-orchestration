@@ -422,13 +422,19 @@ abstract class IntegrationTestBase {
     withAppointmentsCheck: Boolean,
     authHttpHeaders: (HttpHeaders) -> Unit,
     excludedApplicationReference: String? = null,
+    advanceFromDateByDays: Int? = null,
   ): WebTestClient.ResponseSpec {
-    val uri = visitorIds?.let {
-      val visitorIdsString = it.joinToString(",")
-      "/visit-sessions/available?prisonId=$prisonCode&prisonerId=$prisonerId&sessionRestriction=$sessionRestriction&visitors=$visitorIdsString&withAppointmentsCheck=$withAppointmentsCheck&excludedApplicationReference=$excludedApplicationReference"
-    } ?: run {
-      "/visit-sessions/available?prisonId=$prisonCode&prisonerId=$prisonerId&sessionRestriction=$sessionRestriction&withAppointmentsCheck=$withAppointmentsCheck&excludedApplicationReference=$excludedApplicationReference"
-    }
+    val uri = "/visit-sessions/available?${
+      getAvailableVisitSessionQueryParams(
+        prisonCode = prisonCode,
+        prisonerId = prisonerId,
+        sessionRestriction = sessionRestriction,
+        visitorIds = visitorIds,
+        withAppointmentsCheck = withAppointmentsCheck,
+        excludedApplicationReference = excludedApplicationReference,
+        advanceFromDateByDays = advanceFromDateByDays,
+      ).joinToString("&")
+    }"
 
     return webTestClient.get().uri(uri)
       .headers(authHttpHeaders)
@@ -531,6 +537,34 @@ abstract class IntegrationTestBase {
       adultAgeYears,
       clients = clients,
     )
+  }
+
+  private fun getAvailableVisitSessionQueryParams(
+    prisonCode: String,
+    prisonerId: String,
+    sessionRestriction: SessionRestriction,
+    visitorIds: List<Long>? = null,
+    withAppointmentsCheck: Boolean,
+    excludedApplicationReference: String?,
+    advanceFromDateByDays: Int?,
+  ): List<String> {
+    val queryParams = java.util.ArrayList<String>()
+    queryParams.add("prisonId=$prisonCode")
+    queryParams.add("prisonerId=$prisonerId")
+    queryParams.add("sessionRestriction=${sessionRestriction.name}")
+    visitorIds?.let {
+      queryParams.add("visitors=${it.joinToString(",")}")
+    }
+    queryParams.add("withAppointmentsCheck=$withAppointmentsCheck")
+
+    excludedApplicationReference?.let {
+      queryParams.add("excludedApplicationReference=$excludedApplicationReference")
+    }
+    advanceFromDateByDays?.let {
+      queryParams.add("advanceFromDateByDays=$advanceFromDateByDays")
+    }
+
+    return queryParams
   }
 
   class VisitorDetails(

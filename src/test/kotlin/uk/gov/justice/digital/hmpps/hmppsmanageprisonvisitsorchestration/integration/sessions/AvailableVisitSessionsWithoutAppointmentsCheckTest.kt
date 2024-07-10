@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.boot.test.mock.mockito.SpyBean
@@ -369,7 +370,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
 
     // Then
     responseSpec.expectStatus().isNotFound
-    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(any(), any(), any(), any(), any())
+    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(any(), any(), any(), any(), anyOrNull())
     verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
