@@ -424,7 +424,9 @@ abstract class IntegrationTestBase {
     excludedApplicationReference: String? = null,
     advanceFromDateByDays: Int? = null,
   ): WebTestClient.ResponseSpec {
-    val uri = "/visit-sessions/available?${
+    val uri = "/visit-sessions/available"
+
+    val uriParams =
       getAvailableVisitSessionQueryParams(
         prisonCode = prisonCode,
         prisonerId = prisonerId,
@@ -434,9 +436,8 @@ abstract class IntegrationTestBase {
         excludedApplicationReference = excludedApplicationReference,
         advanceFromDateByDays = advanceFromDateByDays,
       ).joinToString("&")
-    }"
 
-    return webTestClient.get().uri(uri)
+    return webTestClient.get().uri("$uri?$uriParams")
       .headers(authHttpHeaders)
       .exchange()
   }

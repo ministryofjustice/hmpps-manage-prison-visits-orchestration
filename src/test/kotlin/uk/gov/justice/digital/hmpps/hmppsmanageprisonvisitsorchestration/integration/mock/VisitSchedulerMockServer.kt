@@ -127,20 +127,19 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     visits: List<VisitDto>,
   ) {
     val restPage = RestPage(content = visits, page = 0, size = size, total = visits.size.toLong())
+    val uri = "/visits/session-template"
+    val uriParams = getVisitsBySessionTemplateQueryParams(
+      sessionTemplateReference,
+      sessionDate,
+      visitStatus,
+      visitRestrictions,
+      prisonCode,
+      page,
+      size,
+    ).joinToString("&")
+
     stubFor(
-      get(
-        "/visits/session-template?${
-          getVisitsBySessionTemplateQueryParams(
-            sessionTemplateReference,
-            sessionDate,
-            visitStatus,
-            visitRestrictions,
-            prisonCode,
-            page,
-            size,
-          ).joinToString("&")
-        }",
-      )
+      get("$uri?$uriParams")
         .willReturn(
           createJsonResponseBuilder()
             .withStatus(HttpStatus.OK.value()).withBody(
