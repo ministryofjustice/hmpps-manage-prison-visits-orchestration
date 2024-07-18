@@ -44,6 +44,7 @@ class VisitSchedulerSessionsService(
     withAppointmentsCheck: Boolean,
     excludedApplicationReference: String? = null,
     advanceFromDateByDays: Int,
+    currentUser: String? = null,
   ): List<AvailableVisitSessionDto> {
     val sessionRestriction = updateRequestedRestriction(requestedSessionRestriction, prisonerId, visitors)
 

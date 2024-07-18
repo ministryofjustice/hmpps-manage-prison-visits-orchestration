@@ -371,6 +371,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     httpStatus: HttpStatus = HttpStatus.OK,
     dateRange: DateRange? = null,
     excludedApplicationReference: String? = null,
+    currentUser: String? = null,
   ): DateRange {
     val dateRangeToUse = dateRange ?: run {
       val today = LocalDate.now()
@@ -388,6 +389,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
             fromDate = dateRangeToUse.fromDate,
             toDate = dateRangeToUse.toDate,
             excludedApplicationReference = excludedApplicationReference,
+            currentUser = currentUser,
           ).joinToString("&")
         }",
       ).willReturn(
@@ -520,6 +522,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     fromDate: LocalDate,
     toDate: LocalDate,
     excludedApplicationReference: String?,
+    currentUser: String?,
   ): List<String> {
     val queryParams = ArrayList<String>()
     queryParams.add("prisonId=$prisonCode")
@@ -529,6 +532,9 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     queryParams.add("toDate=$toDate")
     excludedApplicationReference?.let {
       queryParams.add("excludedApplicationReference=$excludedApplicationReference")
+    }
+    currentUser?.let {
+      queryParams.add("currentUser=$currentUser")
     }
     return queryParams
   }

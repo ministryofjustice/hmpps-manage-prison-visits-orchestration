@@ -134,6 +134,12 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       description = "Advances the available visits slots sought from date by n days. Defaults to 0 if not passed.",
     )
     advanceFromDateByDays: Int? = 0,
+    @RequestParam(value = "currentUser", required = false)
+    @Parameter(
+      description = "Username for the user making the request. Optional, ignored if not passed in.",
+      example = "user-1",
+    )
+    currentUser: String? = null,
   ): List<AvailableVisitSessionDto> =
     visitSchedulerSessionsService.getAvailableVisitSessions(
       prisonCode = prisonCode,
@@ -143,6 +149,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       withAppointmentsCheck = withAppointmentsCheck ?: true,
       excludedApplicationReference = excludedApplicationReference,
       advanceFromDateByDays = advanceFromDateByDays ?: 0,
+
     )
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")

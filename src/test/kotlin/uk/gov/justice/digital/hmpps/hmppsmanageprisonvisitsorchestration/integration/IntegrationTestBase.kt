@@ -423,6 +423,7 @@ abstract class IntegrationTestBase {
     authHttpHeaders: (HttpHeaders) -> Unit,
     excludedApplicationReference: String? = null,
     advanceFromDateByDays: Int? = null,
+    currentUser: String? = null,
   ): WebTestClient.ResponseSpec {
     val uri = "/visit-sessions/available"
 
@@ -548,6 +549,7 @@ abstract class IntegrationTestBase {
     withAppointmentsCheck: Boolean,
     excludedApplicationReference: String?,
     advanceFromDateByDays: Int?,
+    currentUser: String? = null,
   ): List<String> {
     val queryParams = java.util.ArrayList<String>()
     queryParams.add("prisonId=$prisonCode")
@@ -563,6 +565,9 @@ abstract class IntegrationTestBase {
     }
     advanceFromDateByDays?.let {
       queryParams.add("advanceFromDateByDays=$advanceFromDateByDays")
+    }
+    currentUser?.let {
+      queryParams.add("currentUser=$currentUser")
     }
 
     return queryParams
