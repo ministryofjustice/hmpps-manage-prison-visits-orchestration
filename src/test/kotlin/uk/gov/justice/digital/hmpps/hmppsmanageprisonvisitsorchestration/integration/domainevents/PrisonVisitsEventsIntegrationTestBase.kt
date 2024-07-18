@@ -243,6 +243,33 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     return createAdditionalInformationJson(jsonValues)
   }
 
+  fun createPersonRestrictionChangeAdditionalInformationJson(
+    nomsNumber: String? = null,
+    visitorId: String? = null,
+    effectiveDate: String? = null,
+    expiryDate: String? = null,
+    restrictionType: String? = null,
+  ): String {
+    val jsonValues = HashMap<String, Any>()
+    nomsNumber?.let {
+      jsonValues["nomsNumber"] = nomsNumber
+    }
+    visitorId?.let {
+      jsonValues["contactPersonId"] = visitorId
+    }
+    effectiveDate?.let {
+      jsonValues["effectiveDate"] = effectiveDate
+    }
+    expiryDate?.let {
+      jsonValues["expiryDate"] = expiryDate
+    }
+    restrictionType?.let {
+      jsonValues["restrictionType"] = restrictionType
+    }
+
+    return createAdditionalInformationJson(jsonValues)
+  }
+
   private fun createAdditionalInformationJson(jsonValues: Map<String, Any>): String {
     val builder = StringBuilder()
     builder.append("{")
