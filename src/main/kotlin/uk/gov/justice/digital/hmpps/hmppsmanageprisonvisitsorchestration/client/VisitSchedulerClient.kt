@@ -210,13 +210,13 @@ class VisitSchedulerClient(
     sessionRestriction: SessionRestriction,
     dateRange: DateRange,
     excludedApplicationReference: String? = null,
-    currentUser: String? = null,
+    username: String? = null,
   ): List<AvailableVisitSessionDto> {
     val uri = "/visit-sessions/available"
 
     return webClient.get()
       .uri(uri) {
-        visitAvailableSessionsUriBuilder(it, prisonId, prisonerId, sessionRestriction, dateRange, excludedApplicationReference, currentUser).build()
+        visitAvailableSessionsUriBuilder(it, prisonId, prisonerId, sessionRestriction, dateRange, excludedApplicationReference, username).build()
       }
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
@@ -447,7 +447,7 @@ class VisitSchedulerClient(
     sessionRestriction: SessionRestriction,
     dateRange: DateRange,
     excludedApplicationReference: String? = null,
-    currentUser: String? = null,
+    username: String? = null,
   ): UriBuilder {
     uriBuilder.queryParam("prisonId", prisonId)
     uriBuilder.queryParam("prisonerId", prisonerId)
@@ -457,8 +457,8 @@ class VisitSchedulerClient(
     excludedApplicationReference?.let {
       uriBuilder.queryParam("excludedApplicationReference", it)
     }
-    currentUser?.let {
-      uriBuilder.queryParam("currentUser", it)
+    username?.let {
+      uriBuilder.queryParam("username", it)
     }
     return uriBuilder
   }

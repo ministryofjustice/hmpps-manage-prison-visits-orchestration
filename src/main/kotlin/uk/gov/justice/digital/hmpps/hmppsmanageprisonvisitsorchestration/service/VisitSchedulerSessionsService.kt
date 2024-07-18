@@ -44,7 +44,7 @@ class VisitSchedulerSessionsService(
     withAppointmentsCheck: Boolean,
     excludedApplicationReference: String? = null,
     advanceFromDateByDays: Int,
-    currentUser: String? = null,
+    username: String? = null,
   ): List<AvailableVisitSessionDto> {
     val sessionRestriction = updateRequestedRestriction(requestedSessionRestriction, prisonerId, visitors)
 
@@ -55,7 +55,7 @@ class VisitSchedulerSessionsService(
     var availableVisitSessions = try {
       val updatedDateRange =
         visitors?.let { prisonerProfileService.getBannedRestrictionDateRage(prisonerId, visitors, dateRange) } ?: dateRange
-      visitSchedulerClient.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction, updatedDateRange, excludedApplicationReference, currentUser)
+      visitSchedulerClient.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction, updatedDateRange, excludedApplicationReference, username)
     } catch (e: DateRangeNotFoundException) {
       LOG.error("getAvailableVisitSessions range is not returned therefore we do not have a valid date range and should return an empty list")
       emptyList()
