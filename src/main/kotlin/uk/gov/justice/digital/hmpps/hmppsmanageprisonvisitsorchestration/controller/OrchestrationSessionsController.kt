@@ -149,7 +149,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       withAppointmentsCheck = withAppointmentsCheck ?: true,
       excludedApplicationReference = excludedApplicationReference,
       advanceFromDateByDays = advanceFromDateByDays ?: 0,
-
+      currentUser = currentUser,
     )
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
