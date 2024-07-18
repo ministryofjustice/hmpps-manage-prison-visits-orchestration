@@ -90,15 +90,20 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
       prisonerNumber = "TEST",
       visitorId = "12345",
       validFromDate = LocalDate.parse("2023-09-20"),
-      restrictionType = "BAN"
+      restrictionType = "BAN",
     )
 
-    val domainEvent = createDomainEventJson(PERSON_RESTRICTION_CHANGED_TYPE, createPersonRestrictionChangeAdditionalInformationJson(
-      nomsNumber = "TEST",
-      visitorId = "12345",
-      effectiveDate = "2023-09-20",
-      restrictionType = "BAN")
-    )
+    val domainEvent =
+      createDomainEventJson(
+        PERSON_RESTRICTION_CHANGED_TYPE,
+        createPersonRestrictionChangeAdditionalInformationJson(
+          nomsNumber = "TEST",
+          visitorId = "12345",
+          effectiveDate = "2023-09-20",
+          restrictionType = "BAN",
+        ),
+      )
+
     val publishRequest = createDomainEventPublishRequest(PERSON_RESTRICTION_CHANGED_TYPE, domainEvent)
 
     visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PERSON_RESTRICTION_CHANGE_PATH)
