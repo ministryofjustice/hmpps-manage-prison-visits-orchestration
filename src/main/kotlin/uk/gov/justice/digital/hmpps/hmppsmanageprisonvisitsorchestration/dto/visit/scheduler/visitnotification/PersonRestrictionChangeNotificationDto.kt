@@ -15,9 +15,10 @@ data class PersonRestrictionChangeNotificationDto(
   val visitorId: String,
   @NotNull
   val validFromDate: LocalDate,
-
   @JsonInclude(Include.NON_NULL)
   val validToDate: LocalDate? = null,
+  @NotBlank
+  val restrictionType: String,
 ) {
 
   constructor(info: PersonRestrictionChangeInfo) : this(
@@ -25,5 +26,6 @@ data class PersonRestrictionChangeNotificationDto(
     info.visitorId,
     LocalDate.parse(info.validFromDate, DateTimeFormatter.ISO_DATE),
     info.validToDate?.let { LocalDate.parse(info.validToDate, DateTimeFormatter.ISO_DATE) },
+    info.restrictionType,
   )
 }
