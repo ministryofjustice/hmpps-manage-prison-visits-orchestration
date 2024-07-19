@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ApplicationValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
@@ -239,6 +240,37 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
             responseBuilder.withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(visitDto))
           },
+        ),
+    )
+  }
+
+  fun stubBookVisitApplicationValidationFailure(applicationReference: String, errorResponse: ApplicationValidationErrorResponse) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      put("/visits/$applicationReference/book")
+        .willReturn(
+          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+            .withBody(getJsonString(errorResponse)),
+        ),
+    )
+  }
+
+  fun stubBookVisitApplicationValidationFailureInvalid(applicationReference: String) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      put("/visits/$applicationReference/book")
+        .willReturn(
+          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+            .withBody(
+              """{
+                "status": 422,
+                "validationErrors": [
+                  "INVALID_APPLICATION_VALIDATION_RESPONSE"
+                  ]
+                }""",
+            ),
         ),
     )
   }
