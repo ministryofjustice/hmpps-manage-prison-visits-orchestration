@@ -7,5 +7,8 @@ class ClientUtils {
   companion object {
     fun isNotFoundError(e: Throwable?) =
       e is WebClientResponseException && e.statusCode == HttpStatus.NOT_FOUND
+
+    fun isUnprocessableEntityError(e: Throwable?) =
+      e is WebClientResponseException && e.statusCode == HttpStatus.UNPROCESSABLE_ENTITY
   }
 }
