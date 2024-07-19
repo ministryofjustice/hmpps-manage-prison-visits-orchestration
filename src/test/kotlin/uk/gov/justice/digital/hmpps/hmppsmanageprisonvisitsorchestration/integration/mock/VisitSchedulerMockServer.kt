@@ -256,6 +256,25 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     )
   }
 
+  fun stubBookVisitApplicationValidationFailureInvalid(applicationReference: String) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      put("/visits/$applicationReference/book")
+        .willReturn(
+          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+            .withBody(
+              """{
+                "status": 422,
+                "validationErrors": [
+                  "INVALID_APPLICATION_VALIDATION_RESPONSE"
+                  ]
+                }""",
+            ),
+        ),
+    )
+  }
+
   fun stubCancelVisit(reference: String, visitDto: VisitDto?) {
     val responseBuilder = createJsonResponseBuilder()
 

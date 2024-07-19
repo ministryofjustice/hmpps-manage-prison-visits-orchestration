@@ -195,6 +195,7 @@ class VisitSchedulerClient(
         return ApplicationValidationException(errorResponse.validationErrors)
       } catch (jsonProcessingException: Exception) {
         LOG.error("An error occurred processing the application validation error response - ${e.stackTraceToString()}")
+        throw jsonProcessingException
       }
     }
 
