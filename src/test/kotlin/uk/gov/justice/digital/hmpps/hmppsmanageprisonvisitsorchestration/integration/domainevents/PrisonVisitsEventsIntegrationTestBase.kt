@@ -28,7 +28,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.DomainEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.EventFeatureSwitch
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerReceivedInfo
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PersonRestrictionChangedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PersonRestrictionDeletedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PersonRestrictionUpsertedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertsUpdatedNotifier
@@ -82,9 +81,6 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
 
   @SpyBean
   lateinit var prisonerIncentivesDeletedNotifierSpy: PrisonerIncentivesDeletedNotifier
-
-  @SpyBean
-  lateinit var personRestrictionChangedNotifierSpy: PersonRestrictionChangedNotifier
 
   @SpyBean
   lateinit var personRestrictionUpsertedNotifierSpy: PersonRestrictionUpsertedNotifier
