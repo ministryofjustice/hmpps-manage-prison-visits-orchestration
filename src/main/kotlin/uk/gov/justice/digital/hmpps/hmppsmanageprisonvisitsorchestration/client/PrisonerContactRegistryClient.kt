@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.excepti
 import java.net.URI
 import java.time.Duration
 import java.time.LocalDate
-import java.util.*
+import java.util.Optional
 
 @Component
 class PrisonerContactRegistryClient(
