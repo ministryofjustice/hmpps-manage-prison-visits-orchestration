@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ApplicationValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
@@ -243,6 +244,37 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     )
   }
 
+  fun stubBookVisitApplicationValidationFailure(applicationReference: String, errorResponse: ApplicationValidationErrorResponse) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      put("/visits/$applicationReference/book")
+        .willReturn(
+          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+            .withBody(getJsonString(errorResponse)),
+        ),
+    )
+  }
+
+  fun stubBookVisitApplicationValidationFailureInvalid(applicationReference: String) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      put("/visits/$applicationReference/book")
+        .willReturn(
+          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+            .withBody(
+              """{
+                "status": 422,
+                "validationErrors": [
+                  "INVALID_APPLICATION_VALIDATION_RESPONSE"
+                  ]
+                }""",
+            ),
+        ),
+    )
+  }
+
   fun stubCancelVisit(reference: String, visitDto: VisitDto?) {
     val responseBuilder = createJsonResponseBuilder()
 
@@ -371,6 +403,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     httpStatus: HttpStatus = HttpStatus.OK,
     dateRange: DateRange? = null,
     excludedApplicationReference: String? = null,
+    username: String? = null,
   ): DateRange {
     val dateRangeToUse = dateRange ?: run {
       val today = LocalDate.now()
@@ -388,6 +421,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
             fromDate = dateRangeToUse.fromDate,
             toDate = dateRangeToUse.toDate,
             excludedApplicationReference = excludedApplicationReference,
+            username = username,
           ).joinToString("&")
         }",
       ).willReturn(
@@ -520,6 +554,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     fromDate: LocalDate,
     toDate: LocalDate,
     excludedApplicationReference: String?,
+    username: String?,
   ): List<String> {
     val queryParams = ArrayList<String>()
     queryParams.add("prisonId=$prisonCode")
@@ -529,6 +564,9 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     queryParams.add("toDate=$toDate")
     excludedApplicationReference?.let {
       queryParams.add("excludedApplicationReference=$excludedApplicationReference")
+    }
+    username?.let {
+      queryParams.add("username=$username")
     }
     return queryParams
   }

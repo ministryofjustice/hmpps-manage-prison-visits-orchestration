@@ -137,7 +137,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
       .jsonPath("$.size()").isEqualTo(0)
 
     verify(prisonerProfileService, times(1)).getBannedRestrictionDateRage(any(), any(), any())
-    verify(visitSchedulerClient, times(0)).getAvailableVisitSessions(any(), any(), any(), any(), any())
+    verify(visitSchedulerClient, times(0)).getAvailableVisitSessions(any(), any(), any(), any(), any(), anyOrNull())
     verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
@@ -370,7 +370,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
 
     // Then
     responseSpec.expectStatus().isNotFound
-    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(any(), any(), any(), any(), anyOrNull())
+    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(any(), any(), any(), any(), anyOrNull(), anyOrNull())
     verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
