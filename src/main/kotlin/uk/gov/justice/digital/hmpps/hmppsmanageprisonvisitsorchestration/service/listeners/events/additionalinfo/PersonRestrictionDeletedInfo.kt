@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include
 import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.NotBlank
 
-data class PersonRestrictionChangeInfo(
+data class PersonRestrictionDeletedInfo(
   @NotBlank
   @JsonProperty("nomsNumber")
   val prisonerNumber: String,

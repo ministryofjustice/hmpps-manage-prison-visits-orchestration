@@ -29,6 +29,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.EventFeatureSwitch
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerReceivedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PersonRestrictionChangedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PersonRestrictionDeletedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PersonRestrictionUpsertedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertsUpdatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerIncentivesDeletedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerIncentivesInsertedNotifier
@@ -36,7 +38,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerNonAssociationNotifierCreatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerReceivedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerReleasedNotifier
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerRestrictionChangedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.VisitorRestrictionChangedNotifier
 import uk.gov.justice.hmpps.sqs.HmppsQueue
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
@@ -86,13 +87,16 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
   lateinit var personRestrictionChangedNotifierSpy: PersonRestrictionChangedNotifier
 
   @SpyBean
+  lateinit var personRestrictionUpsertedNotifierSpy: PersonRestrictionUpsertedNotifier
+
+  @SpyBean
+  lateinit var personRestrictionDeletedNotifierSpy: PersonRestrictionDeletedNotifier
+
+  @SpyBean
   lateinit var prisonerReceivedNotifierSpy: PrisonerReceivedNotifier
 
   @SpyBean
   lateinit var prisonerReleasedNotifierSpy: PrisonerReleasedNotifier
-
-  @SpyBean
-  lateinit var prisonerRestrictionChangedNotifierSpy: PrisonerRestrictionChangedNotifier
 
   @SpyBean
   lateinit var visitorRestrictionChangedNotifierSpy: VisitorRestrictionChangedNotifier
@@ -243,7 +247,7 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     return createAdditionalInformationJson(jsonValues)
   }
 
-  fun createPersonRestrictionChangeAdditionalInformationJson(
+  fun createPersonRestrictionAdditionalInformationJson(
     nomsNumber: String? = null,
     visitorId: String? = null,
     effectiveDate: String? = null,
