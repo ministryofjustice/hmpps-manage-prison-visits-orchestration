@@ -12,7 +12,7 @@ data class PersonRestrictionUpsertedNotificationDto(
   @NotBlank
   val prisonerNumber: String,
   @NotBlank
-  val visitorId: Long,
+  val visitorId: String,
   @NotNull
   val validFromDate: LocalDate,
   @JsonInclude(Include.NON_NULL)
@@ -23,7 +23,7 @@ data class PersonRestrictionUpsertedNotificationDto(
 
   constructor(info: PersonRestrictionUpsertedInfo) : this(
     info.prisonerNumber,
-    info.visitorId.toLong(),
+    info.visitorId,
     LocalDate.parse(info.validFromDate, DateTimeFormatter.ISO_DATE),
     info.validToDate?.let { LocalDate.parse(info.validToDate, DateTimeFormatter.ISO_DATE) },
     info.restrictionType,
