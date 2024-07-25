@@ -122,7 +122,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     // Given
     val sentRequestToVsip = PersonRestrictionDeletedNotificationDto(
       prisonerNumber = "TEST",
-      visitorId = "12345",
+      visitorId = 12345,
       validFromDate = LocalDate.parse("2023-09-20"),
       restrictionType = "BAN",
     )
