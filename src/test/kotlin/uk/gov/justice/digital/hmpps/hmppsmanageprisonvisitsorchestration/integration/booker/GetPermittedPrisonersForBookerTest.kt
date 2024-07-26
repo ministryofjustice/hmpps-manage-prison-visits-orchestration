@@ -98,8 +98,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     prisonId = inactiveForPublicPrison.code,
   )
 
-  private val visitBalance1 = VisitBalancesDto(4, 3, null, LocalDate.now().plusDays(2))
-  private val visitBalance2 = VisitBalancesDto(2, 3, LocalDate.now().plusDays(7), null)
+  private val visitBalance1 = VisitBalancesDto(4, 3, LocalDate.now().plusDays(7), LocalDate.now().plusDays(2))
+  private val visitBalance2 = VisitBalancesDto(2, 3, LocalDate.now().plusDays(14), LocalDate.now().plusDays(7))
 
   @Test
   fun `when booker has valid prisoners then all allowed prisoners are returned`() {
