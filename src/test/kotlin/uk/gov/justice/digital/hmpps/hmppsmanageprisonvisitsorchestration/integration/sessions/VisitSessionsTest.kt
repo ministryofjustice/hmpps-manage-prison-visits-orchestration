@@ -80,7 +80,7 @@ class VisitSessionsTest : IntegrationTestBase() {
     val username = null
 
     // When
-    callGetVisitSessions(webTestClient, prisonCode, prisonerId, username =  username, roleVSIPOrchestrationServiceHttpHeaders)
+    callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = username, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     verify(visitSchedulerClient, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, username)
@@ -94,7 +94,7 @@ class VisitSessionsTest : IntegrationTestBase() {
     val username = "test-user"
 
     // When
-    callGetVisitSessions(webTestClient, prisonCode, prisonerId, username =  username, roleVSIPOrchestrationServiceHttpHeaders)
+    callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = username, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     verify(visitSchedulerClient, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, username)
