@@ -223,10 +223,10 @@ class VisitSchedulerClient(
       .bodyToMono<VisitDto>().block(apiTimeout)
   }
 
-  fun getVisitSessions(prisonId: String, prisonerId: String?, min: Int?, max: Int?): List<VisitSessionDto>? {
+  fun getVisitSessions(prisonId: String, prisonerId: String?, min: Int?, max: Int?, username: String?): List<VisitSessionDto>? {
     return webClient.get()
       .uri("/visit-sessions") {
-        visitSessionsUriBuilder(prisonId, prisonerId, min, max, it).build()
+        visitSessionsUriBuilder(prisonId, prisonerId, min, max, username, it).build()
       }
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
@@ -471,11 +471,12 @@ class VisitSchedulerClient(
     return uriBuilder
   }
 
-  private fun visitSessionsUriBuilder(prisonId: String, prisonerId: String?, min: Int?, max: Int?, uriBuilder: UriBuilder): UriBuilder {
+  private fun visitSessionsUriBuilder(prisonId: String, prisonerId: String?, min: Int?, max: Int?, username: String?, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParam("prisonId", prisonId)
     uriBuilder.queryParamIfPresent("prisonerId", Optional.ofNullable(prisonerId))
     uriBuilder.queryParamIfPresent("min", Optional.ofNullable(min))
     uriBuilder.queryParamIfPresent("max", Optional.ofNullable(max))
+    uriBuilder.queryParamIfPresent("username", Optional.ofNullable(username))
     return uriBuilder
   }
 

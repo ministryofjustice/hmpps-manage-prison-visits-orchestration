@@ -32,8 +32,8 @@ class VisitSchedulerSessionsService(
       "Visit session for prisonerId - {}, date - {}, start time - {}, end time - {} is unavailable as it clashes with {} medical / legal appointment(s), appointment details - {}"
   }
 
-  fun getVisitSessions(prisonCode: String, prisonerId: String?, min: Int?, max: Int?): List<VisitSessionDto>? {
-    return visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max)
+  fun getVisitSessions(prisonCode: String, prisonerId: String?, min: Int?, max: Int?, username: String?): List<VisitSessionDto>? {
+    return visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max, username)
   }
 
   fun getAvailableVisitSessions(
