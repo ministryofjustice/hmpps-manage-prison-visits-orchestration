@@ -37,7 +37,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationGroupDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionDeletedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertsAddedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
@@ -50,16 +49,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.Optional
+import java.util.*
 
 const val VISIT_CONTROLLER_PATH: String = "/visits"
 const val GET_VISIT_HISTORY_CONTROLLER_PATH: String = "$VISIT_CONTROLLER_PATH/{reference}/history"
 
 const val VISIT_NOTIFICATION_CONTROLLER_PATH: String = "$VISIT_CONTROLLER_PATH/notification"
 const val VISIT_NOTIFICATION_NON_ASSOCIATION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/non-association/changed"
-const val VISIT_NOTIFICATION_PERSON_RESTRICTION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/person/restriction/changed"
 const val VISIT_NOTIFICATION_PERSON_RESTRICTION_UPSERTED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/person/restriction/upserted"
-const val VISIT_NOTIFICATION_PERSON_RESTRICTION_DELETED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/person/restriction/deleted"
 const val VISIT_NOTIFICATION_PRISONER_RECEIVED_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/received"
 const val VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/released"
 const val VISIT_NOTIFICATION_PRISONER_RESTRICTION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/restriction/changed"
@@ -350,16 +347,6 @@ class VisitSchedulerClient(
       .retrieve()
       .toBodilessEntity()
       .doOnError { e -> LOG.error("Could not processPersonRestrictionUpserted :", e) }
-      .block(apiTimeout)
-  }
-
-  fun processPersonRestrictionDeleted(sendDto: PersonRestrictionDeletedNotificationDto) {
-    webClient.post()
-      .uri(VISIT_NOTIFICATION_PERSON_RESTRICTION_DELETED_PATH)
-      .body(BodyInserters.fromValue(sendDto))
-      .retrieve()
-      .toBodilessEntity()
-      .doOnError { e -> LOG.error("Could not processPersonRestrictionDeleted :", e) }
       .block(apiTimeout)
   }
 
