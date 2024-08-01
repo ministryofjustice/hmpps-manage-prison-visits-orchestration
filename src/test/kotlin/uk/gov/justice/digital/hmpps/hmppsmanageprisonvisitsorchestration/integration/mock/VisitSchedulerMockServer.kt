@@ -10,6 +10,10 @@ import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.http.RequestMethod
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import org.springframework.http.HttpStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ApplicationValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
@@ -124,20 +128,19 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     visits: List<VisitDto>,
   ) {
     val restPage = RestPage(content = visits, page = 0, size = size, total = visits.size.toLong())
+    val uri = "/visits/session-template"
+    val uriParams = getVisitsBySessionTemplateQueryParams(
+      sessionTemplateReference,
+      sessionDate,
+      visitStatus,
+      visitRestrictions,
+      prisonCode,
+      page,
+      size,
+    ).joinToString("&")
+
     stubFor(
-      get(
-        "/visits/session-template?${
-          getVisitsBySessionTemplateQueryParams(
-            sessionTemplateReference,
-            sessionDate,
-            visitStatus,
-            visitRestrictions,
-            prisonCode,
-            page,
-            size,
-          ).joinToString("&")
-        }",
-      )
+      get("$uri?$uriParams")
         .willReturn(
           createJsonResponseBuilder()
             .withStatus(HttpStatus.OK.value()).withBody(
@@ -153,6 +156,51 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
   ) {
     stubFor(
       get("/visits/search/future/$prisonerId")
+        .willReturn(
+          createJsonResponseBuilder()
+            .withStatus(HttpStatus.OK.value()).withBody(
+              getJsonString(visits),
+            ),
+        ),
+    )
+  }
+
+  fun stubPublicFutureVisitsByBookerReference(
+    bookerReference: String,
+    visits: List<VisitDto>,
+  ) {
+    stubFor(
+      get(GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
+        .willReturn(
+          createJsonResponseBuilder()
+            .withStatus(HttpStatus.OK.value()).withBody(
+              getJsonString(visits),
+            ),
+        ),
+    )
+  }
+
+  fun stubPublicPastVisitsByBookerReference(
+    bookerReference: String,
+    visits: List<VisitDto>,
+  ) {
+    stubFor(
+      get(GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
+        .willReturn(
+          createJsonResponseBuilder()
+            .withStatus(HttpStatus.OK.value()).withBody(
+              getJsonString(visits),
+            ),
+        ),
+    )
+  }
+
+  fun stubPublicCancelledVisitsByBookerReference(
+    bookerReference: String,
+    visits: List<VisitDto>,
+  ) {
+    stubFor(
+      get(GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
         .willReturn(
           createJsonResponseBuilder()
             .withStatus(HttpStatus.OK.value()).withBody(
@@ -192,6 +240,37 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
             responseBuilder.withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(visitDto))
           },
+        ),
+    )
+  }
+
+  fun stubBookVisitApplicationValidationFailure(applicationReference: String, errorResponse: ApplicationValidationErrorResponse) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      put("/visits/$applicationReference/book")
+        .willReturn(
+          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+            .withBody(getJsonString(errorResponse)),
+        ),
+    )
+  }
+
+  fun stubBookVisitApplicationValidationFailureInvalid(applicationReference: String) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      put("/visits/$applicationReference/book")
+        .willReturn(
+          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+            .withBody(
+              """{
+                "status": 422,
+                "validationErrors": [
+                  "INVALID_APPLICATION_VALIDATION_RESPONSE"
+                  ]
+                }""",
+            ),
         ),
     )
   }
@@ -323,6 +402,8 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     visitSessions: List<AvailableVisitSessionDto>,
     httpStatus: HttpStatus = HttpStatus.OK,
     dateRange: DateRange? = null,
+    excludedApplicationReference: String? = null,
+    username: String? = null,
   ): DateRange {
     val dateRangeToUse = dateRange ?: run {
       val today = LocalDate.now()
@@ -331,12 +412,23 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
       DateRange(fromDate, toDate)
     }
     stubFor(
-      get("/visit-sessions/available?prisonId=${visitSchedulerPrisonDto.code}&prisonerId=$prisonerId&sessionRestriction=${sessionRestriction.name}&fromDate=${dateRangeToUse.fromDate}&toDate=${dateRangeToUse.toDate}")
-        .willReturn(
-          createJsonResponseBuilder()
-            .withStatus(httpStatus.value())
-            .withBody(getJsonString(visitSessions)),
-        ),
+      get(
+        "/visit-sessions/available?${
+          getAvailableVisitSessionQueryParams(
+            prisonCode = visitSchedulerPrisonDto.code,
+            prisonerId = prisonerId,
+            sessionRestriction = sessionRestriction,
+            fromDate = dateRangeToUse.fromDate,
+            toDate = dateRangeToUse.toDate,
+            excludedApplicationReference = excludedApplicationReference,
+            username = username,
+          ).joinToString("&")
+        }",
+      ).willReturn(
+        createJsonResponseBuilder()
+          .withStatus(httpStatus.value())
+          .withBody(getJsonString(visitSessions)),
+      ),
     )
 
     return dateRangeToUse
@@ -457,6 +549,30 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     queryParams.add("prisonCode=$prisonCode")
     queryParams.add("page=$page")
     queryParams.add("size=$size")
+    return queryParams
+  }
+
+  private fun getAvailableVisitSessionQueryParams(
+    prisonCode: String,
+    prisonerId: String,
+    sessionRestriction: SessionRestriction,
+    fromDate: LocalDate,
+    toDate: LocalDate,
+    excludedApplicationReference: String?,
+    username: String?,
+  ): List<String> {
+    val queryParams = ArrayList<String>()
+    queryParams.add("prisonId=$prisonCode")
+    queryParams.add("prisonerId=$prisonerId")
+    queryParams.add("sessionRestriction=${sessionRestriction.name}")
+    queryParams.add("fromDate=$fromDate")
+    queryParams.add("toDate=$toDate")
+    excludedApplicationReference?.let {
+      queryParams.add("excludedApplicationReference=$excludedApplicationReference")
+    }
+    username?.let {
+      queryParams.add("username=$username")
+    }
     return queryParams
   }
 }

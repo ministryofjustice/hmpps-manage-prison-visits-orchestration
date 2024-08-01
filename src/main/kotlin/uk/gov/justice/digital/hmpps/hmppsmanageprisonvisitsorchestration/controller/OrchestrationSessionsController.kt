@@ -77,8 +77,14 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       example = "28",
     )
     max: Int?,
+    @RequestParam(value = "username", required = false)
+    @Parameter(
+      description = "Username for the user making the request. Used to exclude user's pending applications from session capacity count. Optional, ignored if not passed in.",
+      example = "user-1",
+    )
+    username: String? = null,
   ): List<VisitSessionDto>? =
-    visitSchedulerSessionsService.getVisitSessions(prisonCode, prisonerId, min, max)
+    visitSchedulerSessionsService.getVisitSessions(prisonCode, prisonerId, min, max, username)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("/visit-sessions/available")
@@ -124,8 +130,33 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       description = "Defaults to true if not passed. If true, will not return visit times that clash with higher priority legal or medical appointments.",
     )
     withAppointmentsCheck: Boolean? = true,
+    @RequestParam(value = "excludedApplicationReference", required = false)
+    @Parameter(
+      description = "The current application reference to be excluded from capacity count and double booking",
+      example = "dfs-wjs-eqr",
+    )
+    excludedApplicationReference: String? = null,
+    @Parameter(
+      description = "Advances the available visits slots sought from date by n days. Defaults to 0 if not passed.",
+    )
+    advanceFromDateByDays: Int? = 0,
+    @RequestParam(value = "username", required = false)
+    @Parameter(
+      description = "Username for the user making the request. Used to exclude user's pending applications from session capacity count. Optional, ignored if not passed in.",
+      example = "user-1",
+    )
+    username: String? = null,
   ): List<AvailableVisitSessionDto> =
-    visitSchedulerSessionsService.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction, visitors, withAppointmentsCheck ?: true)
+    visitSchedulerSessionsService.getAvailableVisitSessions(
+      prisonCode = prisonCode,
+      prisonerId = prisonerId,
+      requestedSessionRestriction = sessionRestriction,
+      visitors = visitors,
+      withAppointmentsCheck = withAppointmentsCheck ?: true,
+      excludedApplicationReference = excludedApplicationReference,
+      advanceFromDateByDays = advanceFromDateByDays ?: 0,
+      username = username,
+    )
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("/visit-sessions/capacity")

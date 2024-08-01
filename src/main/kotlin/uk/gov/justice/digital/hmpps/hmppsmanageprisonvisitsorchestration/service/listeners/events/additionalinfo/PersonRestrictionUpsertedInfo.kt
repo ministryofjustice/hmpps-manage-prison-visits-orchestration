@@ -5,13 +5,15 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include
 import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.NotBlank
 
-data class PersonRestrictionChangeInfo(
+data class PersonRestrictionUpsertedInfo(
   @NotBlank
   @JsonProperty("nomsNumber")
   val prisonerNumber: String,
+
   @NotBlank
   @JsonProperty("contactPersonId")
   val visitorId: String,
+
   @NotBlank
   @JsonProperty("effectiveDate")
   val validFromDate: String,
@@ -19,4 +21,7 @@ data class PersonRestrictionChangeInfo(
   @JsonInclude(Include.NON_NULL)
   @JsonProperty("expiryDate")
   val validToDate: String? = null,
+
+  @NotBlank
+  val restrictionType: String,
 )

@@ -10,7 +10,7 @@ const val VISITOR_RESTRICTION_CHANGED_TYPE = "prison-offender-events.visitor.res
 class VisitorRestrictionChangedNotifier : EventNotifier() {
   override fun processEvent(domainEvent: DomainEvent) {
     val info: VisitorRestrictionChangeInfo = getAdditionalInfo(domainEvent, VisitorRestrictionChangeInfo::class.java)
-    LOG.debug("Enter VisitorRestrictionChangeInfo Info:$info")
+    LOG.debug("Enter VisitorRestrictionChangeInfo Info: {}", info)
     getVisitSchedulerService().processVisitorRestrictionChange(info)
   }
 

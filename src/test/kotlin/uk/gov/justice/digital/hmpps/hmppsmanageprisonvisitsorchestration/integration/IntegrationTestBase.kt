@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -12,8 +13,12 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.testcontainers.shaded.org.apache.commons.lang3.RandomUtils
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.ORCHESTRATION_GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.ORCHESTRATION_GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.ORCHESTRATION_GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.RestrictionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonNameDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.CurrentIncentive
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
@@ -375,6 +380,39 @@ abstract class IntegrationTestBase {
       .exchange()
   }
 
+  fun callPublicFutureVisits(
+    webTestClient: WebTestClient,
+    bookerReference: String,
+    authHttpHeaders: (HttpHeaders) -> Unit,
+  ): WebTestClient.ResponseSpec {
+    return webTestClient.get()
+      .uri(ORCHESTRATION_GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
+      .headers(authHttpHeaders)
+      .exchange()
+  }
+
+  fun callPublicPastVisits(
+    webTestClient: WebTestClient,
+    bookerReference: String,
+    authHttpHeaders: (HttpHeaders) -> Unit,
+  ): WebTestClient.ResponseSpec {
+    return webTestClient.get()
+      .uri(ORCHESTRATION_GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
+      .headers(authHttpHeaders)
+      .exchange()
+  }
+
+  fun callPublicCancelledVisits(
+    webTestClient: WebTestClient,
+    bookerReference: String,
+    authHttpHeaders: (HttpHeaders) -> Unit,
+  ): WebTestClient.ResponseSpec {
+    return webTestClient.get()
+      .uri(ORCHESTRATION_GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
+      .headers(authHttpHeaders)
+      .exchange()
+  }
+
   fun callGetAvailableVisitSessions(
     webTestClient: WebTestClient,
     prisonCode: String,
@@ -383,15 +421,24 @@ abstract class IntegrationTestBase {
     visitorIds: List<Long>? = null,
     withAppointmentsCheck: Boolean,
     authHttpHeaders: (HttpHeaders) -> Unit,
+    excludedApplicationReference: String? = null,
+    advanceFromDateByDays: Int? = null,
+    currentUser: String? = null,
   ): WebTestClient.ResponseSpec {
-    val uri = visitorIds?.let {
-      val visitorIdsString = it.joinToString(",")
-      "/visit-sessions/available?prisonId=$prisonCode&prisonerId=$prisonerId&sessionRestriction=$sessionRestriction&visitors=$visitorIdsString&withAppointmentsCheck=$withAppointmentsCheck"
-    } ?: run {
-      "/visit-sessions/available?prisonId=$prisonCode&prisonerId=$prisonerId&sessionRestriction=$sessionRestriction&withAppointmentsCheck=$withAppointmentsCheck"
-    }
+    val uri = "/visit-sessions/available"
 
-    return webTestClient.get().uri(uri)
+    val uriParams =
+      getAvailableVisitSessionQueryParams(
+        prisonCode = prisonCode,
+        prisonerId = prisonerId,
+        sessionRestriction = sessionRestriction,
+        visitorIds = visitorIds,
+        withAppointmentsCheck = withAppointmentsCheck,
+        excludedApplicationReference = excludedApplicationReference,
+        advanceFromDateByDays = advanceFromDateByDays,
+      ).joinToString("&")
+
+    return webTestClient.get().uri("$uri?$uriParams")
       .headers(authHttpHeaders)
       .exchange()
   }
@@ -418,7 +465,14 @@ abstract class IntegrationTestBase {
     )
   }
 
-  private fun createContactDto(personId: Long, firstName: String, lastName: String, dateOfBirth: LocalDate?, approvedVisitor: Boolean, restrictions: List<RestrictionDto>): PrisonerContactDto {
+  fun createContactDto(
+    personId: Long = RandomUtils.nextLong(),
+    firstName: String,
+    lastName: String,
+    dateOfBirth: LocalDate? = null,
+    approvedVisitor: Boolean = true,
+    restrictions: List<RestrictionDto> = emptyList(),
+  ): PrisonerContactDto {
     return PrisonerContactDto(
       personId = personId,
       firstName = firstName,
@@ -450,6 +504,16 @@ abstract class IntegrationTestBase {
     return VisitorDetails(visitorId.toLong(), firstName, lastName, dateOfBirth, approved, restrictions = restrictions)
   }
 
+  final fun createVisitorDto(
+    contact: PrisonerContactDto,
+    visitContact: Boolean = false,
+  ): VisitorDto {
+    return VisitorDto(
+      nomisPersonId = contact.personId!!,
+      visitContact = visitContact,
+    )
+  }
+
   final fun createPrison(
     prisonCode: String = "HEI",
     active: Boolean = true,
@@ -477,6 +541,38 @@ abstract class IntegrationTestBase {
     )
   }
 
+  private fun getAvailableVisitSessionQueryParams(
+    prisonCode: String,
+    prisonerId: String,
+    sessionRestriction: SessionRestriction,
+    visitorIds: List<Long>? = null,
+    withAppointmentsCheck: Boolean,
+    excludedApplicationReference: String?,
+    advanceFromDateByDays: Int?,
+    currentUser: String? = null,
+  ): List<String> {
+    val queryParams = java.util.ArrayList<String>()
+    queryParams.add("prisonId=$prisonCode")
+    queryParams.add("prisonerId=$prisonerId")
+    queryParams.add("sessionRestriction=${sessionRestriction.name}")
+    visitorIds?.let {
+      queryParams.add("visitors=${it.joinToString(",")}")
+    }
+    queryParams.add("withAppointmentsCheck=$withAppointmentsCheck")
+
+    excludedApplicationReference?.let {
+      queryParams.add("excludedApplicationReference=$excludedApplicationReference")
+    }
+    advanceFromDateByDays?.let {
+      queryParams.add("advanceFromDateByDays=$advanceFromDateByDays")
+    }
+    currentUser?.let {
+      queryParams.add("currentUser=$currentUser")
+    }
+
+    return queryParams
+  }
+
   class VisitorDetails(
     val personId: Long,
     val firstName: String,
@@ -485,4 +581,15 @@ abstract class IntegrationTestBase {
     val approved: Boolean = true,
     val restrictions: List<RestrictionDto> = emptyList(),
   )
+
+  protected fun assertVisitorDetails(visitors: List<OrchestrationVisitorDto>, contacts: List<PrisonerContactDto>) {
+    for (visitor in visitors) {
+      val contact = contacts.first { it.personId == visitor.nomisPersonId }
+      Assertions.assertThat(visitor.nomisPersonId).isEqualTo(contact.personId)
+      Assertions.assertThat(visitor.firstName).isNotNull()
+      Assertions.assertThat(visitor.firstName).isEqualTo(contact.firstName)
+      Assertions.assertThat(visitor.lastName).isNotNull()
+      Assertions.assertThat(visitor.lastName).isEqualTo(contact.lastName)
+    }
+  }
 }

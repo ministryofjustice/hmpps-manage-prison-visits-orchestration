@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.boot.test.mock.mockito.SpyBean
@@ -66,6 +67,31 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
   }
 
   @Test
+  fun `when excluded application reference is requested the request is forwarded to the client`() {
+    // Given
+    val prisonCode = "MDI"
+    val prisonerId = "AA123456B"
+    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+
+    val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18, setOf(LocalDate.now()))
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1), excludedApplicationReference = "aledTheGreat")
+    visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
+    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
+
+    val visitorIds = listOf(1L)
+    prisonerContactRegistryMockServer.stubDoVisitorsHaveClosedRestrictions(prisonerId, visitorIds = visitorIds, result = false)
+    prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
+
+    // When
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, false, roleVSIPOrchestrationServiceHttpHeaders, excludedApplicationReference = "aledTheGreat")
+
+    // Then
+    responseSpec.expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.size()").isEqualTo(1)
+  }
+
+  @Test
   fun `when visit sessions for parameters are available and no visitors are supplied`() {
     // Given
     val prisonCode = "MDI"
@@ -111,7 +137,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
       .jsonPath("$.size()").isEqualTo(0)
 
     verify(prisonerProfileService, times(1)).getBannedRestrictionDateRage(any(), any(), any())
-    verify(visitSchedulerClient, times(0)).getAvailableVisitSessions(any(), any(), any(), any())
+    verify(visitSchedulerClient, times(0)).getAvailableVisitSessions(any(), any(), any(), any(), any(), anyOrNull())
     verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
@@ -344,7 +370,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
 
     // Then
     responseSpec.expectStatus().isNotFound
-    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange)
+    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(any(), any(), any(), any(), anyOrNull(), anyOrNull())
     verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 

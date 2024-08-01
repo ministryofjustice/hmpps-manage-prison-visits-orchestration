@@ -20,7 +20,7 @@ generic-service:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
 
 generic-prometheus-alerts:
-  alertSeverity: prison-visit-booking-alerts
+  alertSeverity: visits-alerts
   sqsAlertsQueueNames:
     - "book-a-prison-visit-prod-hmpps_prison_visits_event_queue"
     - "book-a-prison-visit-prod-hmpps_prison_visits_event_dlq"

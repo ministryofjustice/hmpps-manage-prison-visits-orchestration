@@ -7,6 +7,7 @@ import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ManageUsersApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.manage.users.UserDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
 import java.time.Duration
 
 @Service
@@ -19,7 +20,9 @@ class ManageUsersService(
   }
 
   fun getFullNamesFromVisitHistory(eventAuditList: List<EventAuditDto>): Map<String, String> {
-    val userNames = eventAuditList.filter { it.actionedBy != null }.map { it.actionedBy!! }.toSet()
+    val userNames = eventAuditList.filter { STAFF == it.actionedBy.userType && !it.actionedBy.userName.isNullOrBlank() }
+      .map { it.actionedBy.userName!! }.toSet()
+
     val monoCallsList = createUserMonoCalls(userNames)
     return executeMonoCalls(monoCallsList)
   }

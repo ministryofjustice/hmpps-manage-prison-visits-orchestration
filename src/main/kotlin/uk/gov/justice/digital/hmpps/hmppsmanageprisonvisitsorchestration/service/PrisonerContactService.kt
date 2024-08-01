@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import java.time.LocalDate
 
 @Service
@@ -17,6 +18,29 @@ class PrisonerContactService(
 
   fun getPrisonersSocialContactsWithDOBAndNotBannedBeforeDate(prisonerNumber: String, notBannedBeforeDate: LocalDate): List<PrisonerContactDto> {
     LOG.debug("Getting approved social contacts with a DOB for prisoner - {}, notBannedBeforeDate - {}", prisonerNumber, notBannedBeforeDate)
-    return prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerNumber, withAddress = false, hasDateOfBirth = true, notBannedBeforeDate = notBannedBeforeDate)
+    return prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerNumber, withAddress = false, approvedVisitorsOnly = true, hasDateOfBirth = true, notBannedBeforeDate = notBannedBeforeDate)
+  }
+
+  fun getPrisonersContacts(prisonerIds: Set<String>): Map<String, List<PrisonerContactDto>> {
+    val prisonersContactMap = mutableMapOf<String, List<PrisonerContactDto>>()
+    prisonerIds.forEach { prisonerId ->
+      val contacts = try {
+        getPrisonerContacts(prisonerId)
+      } catch (e: NotFoundException) {
+        LOG.info("No contacts found for prisoner id - $prisonerId")
+        emptyList()
+      }
+      prisonersContactMap[prisonerId] = contacts
+    }
+
+    return prisonersContactMap.toMap()
+  }
+
+  private fun getPrisonerContacts(prisonerId: String): List<PrisonerContactDto> {
+    return prisonerContactRegistryClient.getPrisonersSocialContacts(
+      prisonerId = prisonerId,
+      withAddress = false,
+      approvedVisitorsOnly = false,
+    )
   }
 }

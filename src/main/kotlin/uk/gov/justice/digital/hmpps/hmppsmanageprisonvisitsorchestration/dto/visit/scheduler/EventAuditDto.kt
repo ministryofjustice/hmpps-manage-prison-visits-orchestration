@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler
 
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType
@@ -19,10 +20,12 @@ class EventAuditDto(
   @field:NotNull
   val applicationMethodType: ApplicationMethodType,
 
-  @Schema(description = "Event actioned by - user id", example = "AB12345A", required = false)
-  val actionedBy: String? = null,
+  @Schema(description = "Event actioned by information", required = true)
+  @field:NotNull
+  @field:Valid
+  val actionedBy: ActionedByDto,
 
-  @Schema(description = "Session template used for this event ", required = false)
+  @Schema(description = "Session template used for this event", required = false)
   var sessionTemplateReference: String? = null,
 
   @Schema(description = "Notes added against the event", required = false)

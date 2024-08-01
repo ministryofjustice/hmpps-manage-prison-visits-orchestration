@@ -1,17 +1,22 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isNotFoundError
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isUnprocessableEntityError
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ApplicationValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
@@ -32,12 +37,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationGroupDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionChangeNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertsAddedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerRestrictionChangeNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionChangeNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.ApplicationValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import java.time.Duration
@@ -50,22 +56,54 @@ const val GET_VISIT_HISTORY_CONTROLLER_PATH: String = "$VISIT_CONTROLLER_PATH/{r
 
 const val VISIT_NOTIFICATION_CONTROLLER_PATH: String = "$VISIT_CONTROLLER_PATH/notification"
 const val VISIT_NOTIFICATION_NON_ASSOCIATION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/non-association/changed"
-const val VISIT_NOTIFICATION_PERSON_RESTRICTION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/person/restriction/changed"
+const val VISIT_NOTIFICATION_PERSON_RESTRICTION_UPSERTED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/person/restriction/upserted"
 const val VISIT_NOTIFICATION_PRISONER_RECEIVED_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/received"
 const val VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/released"
 const val VISIT_NOTIFICATION_PRISONER_RESTRICTION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/restriction/changed"
 const val VISIT_NOTIFICATION_VISITOR_RESTRICTION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/visitor/restriction/changed"
+
+const val GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/booked/future"
+const val GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/cancelled"
+const val GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/booked/past"
+
 const val VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alerts/updated"
 
 @Component
 class VisitSchedulerClient(
-
+  val objectMapper: ObjectMapper,
   @Qualifier("visitSchedulerWebClient") private val webClient: WebClient,
   @Value("\${visit-scheduler.api.timeout:10s}") val apiTimeout: Duration,
 ) {
 
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
+  }
+
+  fun getPastPublicBookedVisitsByBookerReference(bookerReference: String): List<VisitDto> {
+    return webClient.get()
+      .uri(GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<List<VisitDto>>()
+      .blockOptional(apiTimeout).orElseGet { listOf<VisitDto>() }
+  }
+
+  fun getCancelledPublicVisitsByBookerReference(bookerReference: String): List<VisitDto> {
+    return webClient.get()
+      .uri(GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<List<VisitDto>>()
+      .blockOptional(apiTimeout).orElseGet { listOf<VisitDto>() }
+  }
+
+  fun getFuturePublicBookedVisitsByBookerReference(bookerReference: String): List<VisitDto> {
+    return webClient.get()
+      .uri(GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<List<VisitDto>>()
+      .blockOptional(apiTimeout).orElseGet { listOf() }
   }
 
   fun getVisitByReference(reference: String): VisitDto? {
@@ -139,7 +177,29 @@ class VisitSchedulerClient(
       .body(BodyInserters.fromValue(requestDto))
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono<VisitDto>().block(apiTimeout)
+      .bodyToMono<VisitDto>().onErrorResume {
+          e ->
+        if (isUnprocessableEntityError(e)) {
+          val exception = getBookVisitApplicationValidationErrorResponse(e)
+          Mono.error(exception)
+        } else {
+          Mono.error(e)
+        }
+      }.block(apiTimeout)
+  }
+
+  private fun getBookVisitApplicationValidationErrorResponse(e: Throwable): Throwable {
+    if (e is WebClientResponseException && isUnprocessableEntityError(e)) {
+      try {
+        val errorResponse = objectMapper.readValue(e.responseBodyAsString, ApplicationValidationErrorResponse::class.java)
+        return ApplicationValidationException(errorResponse.validationErrors)
+      } catch (jsonProcessingException: Exception) {
+        LOG.error("An error occurred processing the application validation error response - ${e.stackTraceToString()}")
+        throw jsonProcessingException
+      }
+    }
+
+    return e
   }
 
   fun cancelVisit(reference: String, cancelVisitDto: CancelVisitDto): VisitDto? {
@@ -160,22 +220,29 @@ class VisitSchedulerClient(
       .bodyToMono<VisitDto>().block(apiTimeout)
   }
 
-  fun getVisitSessions(prisonId: String, prisonerId: String?, min: Int?, max: Int?): List<VisitSessionDto>? {
+  fun getVisitSessions(prisonId: String, prisonerId: String?, min: Int?, max: Int?, username: String?): List<VisitSessionDto>? {
     return webClient.get()
       .uri("/visit-sessions") {
-        visitSessionsUriBuilder(prisonId, prisonerId, min, max, it).build()
+        visitSessionsUriBuilder(prisonId, prisonerId, min, max, username, it).build()
       }
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono<List<VisitSessionDto>>().block(apiTimeout)
   }
 
-  fun getAvailableVisitSessions(prisonId: String, prisonerId: String, sessionRestriction: SessionRestriction, dateRange: DateRange): List<AvailableVisitSessionDto> {
+  fun getAvailableVisitSessions(
+    prisonId: String,
+    prisonerId: String,
+    sessionRestriction: SessionRestriction,
+    dateRange: DateRange,
+    excludedApplicationReference: String? = null,
+    username: String? = null,
+  ): List<AvailableVisitSessionDto> {
     val uri = "/visit-sessions/available"
 
     return webClient.get()
       .uri(uri) {
-        visitAvailableSessionsUriBuilder(prisonId, prisonerId, sessionRestriction, dateRange, it).build()
+        visitAvailableSessionsUriBuilder(it, prisonId, prisonerId, sessionRestriction, dateRange, excludedApplicationReference, username).build()
       }
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
@@ -273,13 +340,13 @@ class VisitSchedulerClient(
       .block(apiTimeout)
   }
 
-  fun processPersonRestrictionChange(sendDto: PersonRestrictionChangeNotificationDto) {
+  fun processPersonRestrictionUpserted(sendDto: PersonRestrictionUpsertedNotificationDto) {
     webClient.post()
-      .uri(VISIT_NOTIFICATION_PERSON_RESTRICTION_CHANGE_PATH)
+      .uri(VISIT_NOTIFICATION_PERSON_RESTRICTION_UPSERTED_PATH)
       .body(BodyInserters.fromValue(sendDto))
       .retrieve()
       .toBodilessEntity()
-      .doOnError { e -> LOG.error("Could not processPersonRestrictionChange :", e) }
+      .doOnError { e -> LOG.error("Could not processPersonRestrictionUpserted :", e) }
       .block(apiTimeout)
   }
 
@@ -322,7 +389,7 @@ class VisitSchedulerClient(
 
   fun getFutureNotificationVisitGroups(prisonCode: String): List<NotificationGroupDto>? {
     return webClient.get()
-      .uri("/visits/notification//$prisonCode/groups")
+      .uri("/visits/notification/$prisonCode/groups")
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono<List<NotificationGroupDto>>().block(apiTimeout)
@@ -355,6 +422,24 @@ class VisitSchedulerClient(
       .blockOptional(apiTimeout).orElseThrow { NotFoundException("Prison with prison code - $prisonCode not found on visit-scheduler") }
   }
 
+  fun getPrisonAsMono(prisonCode: String): Mono<Optional<VisitSchedulerPrisonDto>> {
+    val uri = "/admin/prisons/prison/$prisonCode"
+
+    return webClient.get()
+      .uri(uri)
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<Optional<VisitSchedulerPrisonDto>>()
+      .onErrorResume { e ->
+        if (e is WebClientResponseException && e.statusCode == HttpStatus.NOT_FOUND) {
+          // return an Optional.empty element if 404 is thrown
+          return@onErrorResume Mono.just(Optional.empty())
+        } else {
+          Mono.error(e)
+        }
+      }
+  }
+
   fun getNotificationsTypesForBookingReference(reference: String): List<NotificationEventType>? {
     return webClient.get()
       .uri("/visits/notification/visit/$reference/types")
@@ -373,20 +458,35 @@ class VisitSchedulerClient(
     return uriBuilder
   }
 
-  private fun visitSessionsUriBuilder(prisonId: String, prisonerId: String?, min: Int?, max: Int?, uriBuilder: UriBuilder): UriBuilder {
+  private fun visitSessionsUriBuilder(prisonId: String, prisonerId: String?, min: Int?, max: Int?, username: String?, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParam("prisonId", prisonId)
     uriBuilder.queryParamIfPresent("prisonerId", Optional.ofNullable(prisonerId))
     uriBuilder.queryParamIfPresent("min", Optional.ofNullable(min))
     uriBuilder.queryParamIfPresent("max", Optional.ofNullable(max))
+    uriBuilder.queryParamIfPresent("username", Optional.ofNullable(username))
     return uriBuilder
   }
 
-  private fun visitAvailableSessionsUriBuilder(prisonId: String, prisonerId: String, sessionRestriction: SessionRestriction, dateRange: DateRange, uriBuilder: UriBuilder): UriBuilder {
+  private fun visitAvailableSessionsUriBuilder(
+    uriBuilder: UriBuilder,
+    prisonId: String,
+    prisonerId: String,
+    sessionRestriction: SessionRestriction,
+    dateRange: DateRange,
+    excludedApplicationReference: String? = null,
+    username: String? = null,
+  ): UriBuilder {
     uriBuilder.queryParam("prisonId", prisonId)
     uriBuilder.queryParam("prisonerId", prisonerId)
     uriBuilder.queryParam("sessionRestriction", sessionRestriction.name)
     uriBuilder.queryParam("fromDate", dateRange.fromDate)
     uriBuilder.queryParam("toDate", dateRange.toDate)
+    excludedApplicationReference?.let {
+      uriBuilder.queryParam("excludedApplicationReference", it)
+    }
+    username?.let {
+      uriBuilder.queryParam("username", it)
+    }
     return uriBuilder
   }
 
