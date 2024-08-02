@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.PrisonerAlertsDto
 import java.time.Duration
 
@@ -21,12 +22,12 @@ class AlertsApiClient(
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun getPrisonerAlerts(prisonerId: String): PrisonerAlertsDto? {
+  fun getPrisonerAlerts(prisonerId: String): RestPage<PrisonerAlertsDto>? {
     return getPrisonerAlertsAsMono(prisonerId)
       .block(apiTimeout)
   }
 
-  fun getPrisonerAlertsAsMono(prisonerId: String): Mono<PrisonerAlertsDto> {
+  fun getPrisonerAlertsAsMono(prisonerId: String): Mono<RestPage<PrisonerAlertsDto>> {
     return webClient.get()
       .uri("/prisoners/$prisonerId/alerts")
       .retrieve()
