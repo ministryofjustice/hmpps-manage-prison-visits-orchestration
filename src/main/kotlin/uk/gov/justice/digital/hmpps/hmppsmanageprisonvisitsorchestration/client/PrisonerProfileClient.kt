@@ -41,8 +41,7 @@ class PrisonerProfileClient(
     val alertsMono = alertsApiClient.getPrisonerAlertsAsMono(prisonerId)
 
     return Mono.zip(prisonerMono, inmateDetailMono, visitBalancesMono, prisonerBookingSummaryMono, visitSchedulerMono, alertsMono)
-      .map {
-        prisonerProfileMonos ->
+      .map { prisonerProfileMonos ->
         val prisoner = prisonerProfileMonos.t1 ?: throw InvalidPrisonerProfileException("Unable to retrieve offender details from Prisoner Search API")
         val inmateDetails = prisonerProfileMonos.t2 ?: throw InvalidPrisonerProfileException("Unable to retrieve inmate details from Prison API")
         val visitBalances = if (prisonerProfileMonos.t3.isEmpty) null else prisonerProfileMonos.t3.get()

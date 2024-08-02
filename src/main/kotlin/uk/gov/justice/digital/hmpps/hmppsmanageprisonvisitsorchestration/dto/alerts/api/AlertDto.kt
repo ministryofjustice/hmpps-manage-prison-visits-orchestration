@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
@@ -43,6 +42,6 @@ data class AlertDto(
     comment = alertResponseDto.description,
     dateCreated = alertResponseDto.createdAt,
     dateExpires = alertResponseDto.activeTo,
-    active = alertResponseDto.isActive
+    active = alertResponseDto.isActive,
   )
 }
