@@ -16,6 +16,11 @@ prison:
     url: http://localhost:8093
     timeout: 10s
 
+alerts:
+  api:
+    url: http://localhost:9000
+    timeout: 10s
+
 prisoner-contact:
   registry:
     url: http://localhost:8095

@@ -14,7 +14,4 @@ data class InmateDetailDto(
 
   @Schema(description = "Category code (from list of assessments)")
   val categoryCode: String? = null,
-
-  @Schema(description = "List of alert details")
-  val alerts: List<AlertDto>? = null,
 )

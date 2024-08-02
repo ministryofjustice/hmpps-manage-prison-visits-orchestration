@@ -15,6 +15,7 @@ import java.time.Duration
 @Component
 class PrisonerProfileClient(
   private val prisonApiClient: PrisonApiClient,
+  private val alertsApiClient: AlertsApiClient,
   private val prisonerSearchClient: PrisonerSearchClient,
   private val visitSchedulerClient: VisitSchedulerClient,
   private val prisonerContactRegistryClient: PrisonerContactRegistryClient,
@@ -30,19 +31,23 @@ class PrisonerProfileClient(
     prisonerId: String,
     visitSearchRequestFilter: VisitSearchRequestFilter,
   ): PrisonerProfileDto? {
+    LOG.info("getPrisonerProfile - Beginning calls to collect prisoner profile data")
     val prisonerMono = prisonerSearchClient.getPrisonerByIdAsMono(prisonerId)
     val inmateDetailMono = prisonApiClient.getInmateDetailsAsMono(prisonerId)
     val visitBalancesMono = prisonApiClient.getVisitBalancesAsMono(prisonerId)
     val prisonerBookingSummaryMono = prisonApiClient.getBookingsAsMono(prisonId, prisonerId)
     val visitSchedulerMono = visitSchedulerClient.getVisitsAsMono(visitSearchRequestFilter)
+    val alertsMono = alertsApiClient.getPrisonerAlertsAsMono(prisonerId)
 
-    return Mono.zip(prisonerMono, inmateDetailMono, visitBalancesMono, prisonerBookingSummaryMono, visitSchedulerMono)
+    return Mono.zip(prisonerMono, inmateDetailMono, visitBalancesMono, prisonerBookingSummaryMono, visitSchedulerMono, alertsMono)
       .map {
-        val prisoner = it.t1 ?: throw InvalidPrisonerProfileException("Unable to retrieve offender details from Prisoner Search API")
-        val inmateDetails = it.t2 ?: throw InvalidPrisonerProfileException("Unable to retrieve inmate details from Prison API")
-        val visitBalances = if (it.t3.isEmpty) null else it.t3.get()
-        val prisonerBookingSummary = it.t4.content.firstOrNull()
-        val visits = it.t5.content.map { visitDto -> VisitSummaryDto(visitDto = visitDto) }
+        prisonerProfileMonos ->
+        val prisoner = prisonerProfileMonos.t1 ?: throw InvalidPrisonerProfileException("Unable to retrieve offender details from Prisoner Search API")
+        val inmateDetails = prisonerProfileMonos.t2 ?: throw InvalidPrisonerProfileException("Unable to retrieve inmate details from Prison API")
+        val visitBalances = if (prisonerProfileMonos.t3.isEmpty) null else prisonerProfileMonos.t3.get()
+        val prisonerBookingSummary = prisonerProfileMonos.t4.content.firstOrNull()
+        val visits = prisonerProfileMonos.t5.content.map { visitDto -> VisitSummaryDto(visitDto = visitDto) }
+        val prisonerAlerts = prisonerProfileMonos.t6 ?: throw InvalidPrisonerProfileException("Unable to retrieve prisoner alerts from Alerts API")
 
         PrisonerProfileDto(
           prisoner,
@@ -50,9 +55,11 @@ class PrisonerProfileClient(
           visitBalances,
           prisonerBookingSummary,
           visits,
+          prisonerAlerts,
         )
       }
       .block(apiTimeout)?.also { prisonerProfile ->
+        LOG.info("getPrisonerProfile - Finishing calls to collect prisoner profile data - Returning prisoner profile")
         setVisitDetails(prisonerProfile)
       }
   }
