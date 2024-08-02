@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api
 
 import io.swagger.v3.oas.annotations.media.Schema
-import java.time.LocalDate
 
 @Schema(description = "Alert")
 data class AlertCodeSummaryDto(

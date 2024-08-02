@@ -47,7 +47,7 @@ class PrisonerProfileClient(
         val visitBalances = if (prisonerProfileMonos.t3.isEmpty) null else prisonerProfileMonos.t3.get()
         val prisonerBookingSummary = prisonerProfileMonos.t4.content.firstOrNull()
         val visits = prisonerProfileMonos.t5.content.map { visitDto -> VisitSummaryDto(visitDto = visitDto) }
-        val prisonerAlerts = prisonerProfileMonos.t6 ?: throw InvalidPrisonerProfileException("Unable to retrieve prisoner alerts from Alerts API")
+        val prisonerAlerts = prisonerProfileMonos.t6.content.toList() ?: throw InvalidPrisonerProfileException("Unable to retrieve prisoner alerts from Alerts API")
 
         PrisonerProfileDto(
           prisoner,

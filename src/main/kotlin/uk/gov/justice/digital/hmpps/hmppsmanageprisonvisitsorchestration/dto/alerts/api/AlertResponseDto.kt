@@ -5,21 +5,9 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
 @Schema(description = "Alert")
-data class AlertDto(
-  @Schema(required = true, description = "Alert Type", example = "X")
-  val alertType: String,
-
-  @Schema(required = true, description = "Alert Type Description", example = "Security")
-  val alertTypeDescription: String,
-
-  @Schema(required = true, description = "Alert Code", example = "XER")
-  val alertCode: String,
-
-  @Schema(required = true, description = "Alert Code Description", example = "Escape Risk")
-  val alertCodeDescription: String,
-
-  @Schema(required = false, description = "Alert comments", example = "Profession lock pick.")
-  val comment: String? = null,
+data class AlertResponseDto(
+  @Schema(description = "Date the alert expires", example = "2020-08-20", required = true)
+  val alertCode: AlertCodeSummaryDto,
 
   @Schema(
     required = true,
