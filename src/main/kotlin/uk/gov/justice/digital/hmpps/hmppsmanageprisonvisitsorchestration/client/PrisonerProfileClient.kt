@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.PrisonerProfileDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
@@ -47,7 +48,7 @@ class PrisonerProfileClient(
         val visitBalances = if (prisonerProfileMonos.t3.isEmpty) null else prisonerProfileMonos.t3.get()
         val prisonerBookingSummary = prisonerProfileMonos.t4.content.firstOrNull()
         val visits = prisonerProfileMonos.t5.content.map { visitDto -> VisitSummaryDto(visitDto = visitDto) }
-        val prisonerAlerts = prisonerProfileMonos.t6.content.toList() ?: throw InvalidPrisonerProfileException("Unable to retrieve prisoner alerts from Alerts API")
+        val prisonerAlerts = prisonerProfileMonos.t6.content.map { alertResponse -> AlertDto(alertResponse) }
 
         PrisonerProfileDto(
           prisoner,

@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.al
 
 import io.swagger.v3.oas.annotations.media.Schema
 
-@Schema(description = "Alert")
+@Schema(description = "A summary of the alert")
 data class AlertCodeSummaryDto(
   @Schema(required = true, description = "Alert Type", example = "X")
   val alertTypeCode: String,

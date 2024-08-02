@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
-@Schema(description = "Alert")
+@Schema(description = "AlertDto returned from orchestration, made of fields from AlertResponseDto from Alerts API call")
 data class AlertDto(
   @Schema(required = true, description = "Alert Type", example = "X")
   val alertType: String,
@@ -26,14 +26,23 @@ data class AlertDto(
     description = "Date of the alert, which might differ to the date it was created",
     example = "2019-08-20",
   )
-  @JsonProperty("createdAt")
   val dateCreated: LocalDate,
 
   @Schema(description = "Date the alert expires", example = "2020-08-20")
-  @JsonProperty("activeTo")
   val dateExpires: LocalDate? = null,
 
   @Schema(required = true, description = "True / False based on alert status", example = "false")
-  @JsonProperty("isActive")
   val active: Boolean = false,
-)
+) {
+  // Secondary constructor that initializes AlertDto from AlertResponseDto
+  constructor(alertResponseDto: AlertResponseDto) : this(
+    alertType = alertResponseDto.alertCode.alertTypeCode,
+    alertTypeDescription = alertResponseDto.alertCode.alertTypeDescription,
+    alertCode = alertResponseDto.alertCode.code,
+    alertCodeDescription = alertResponseDto.alertCode.description,
+    comment = alertResponseDto.description,
+    dateCreated = alertResponseDto.createdAt,
+    dateExpires = alertResponseDto.activeTo,
+    active = alertResponseDto.isActive
+  )
+}

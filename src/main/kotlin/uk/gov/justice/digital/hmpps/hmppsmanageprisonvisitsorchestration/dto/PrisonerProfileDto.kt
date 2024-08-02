@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.InmateDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.PrisonerBookingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.VisitBalancesDto
@@ -47,7 +46,7 @@ data class PrisonerProfileDto(
   val incentiveLevel: String?,
 
   @Schema(description = "Alert")
-  val alerts: List<AlertResponseDto>?,
+  val alerts: List<AlertDto>?,
 
   @Schema(description = "Balances of visit orders and privilege visit orders")
   val visitBalances: VisitBalancesDto? = null,
@@ -61,7 +60,7 @@ data class PrisonerProfileDto(
     visitBalances: VisitBalancesDto?,
     prisonerBookingSummary: PrisonerBookingSummaryDto?,
     visits: List<VisitSummaryDto>,
-    prisonerAlerts: List<AlertResponseDto>,
+    prisonerAlerts: List<AlertDto>,
   ) : this(
     prisonerId = prisoner.prisonerNumber,
     prisonId = prisoner.prisonId,
