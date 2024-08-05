@@ -42,6 +42,6 @@ data class AlertDto(
     comment = alertResponseDto.description,
     dateCreated = alertResponseDto.createdAt,
     dateExpires = alertResponseDto.activeTo,
-    active = alertResponseDto.isActive,
+    active = alertResponseDto.active,
   )
 }

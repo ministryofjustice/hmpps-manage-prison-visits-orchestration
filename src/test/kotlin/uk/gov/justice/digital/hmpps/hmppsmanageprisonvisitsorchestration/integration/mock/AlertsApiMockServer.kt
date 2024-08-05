@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.ale
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.getJsonString
 
 class AlertsApiMockServer : WireMockServer(9000) {
-  fun stubGetPrisonerAlerts(prisonerId: String, alertResponseDto: List<AlertResponseDto>) {
+  fun stubGetPrisonerAlertsMono(prisonerId: String, alertResponseDto: List<AlertResponseDto>) {
     val totalElements = alertResponseDto.size
     val restPage = RestPage(alertResponseDto, 1, 100, totalElements.toLong())
     stubFor(

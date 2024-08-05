@@ -80,7 +80,6 @@ abstract class IntegrationTestBase {
       prisonRegisterMockServer.start()
       manageUsersApiMockServer.start()
       prisonVisitBookerRegistryMockServer.start()
-      prisonVisitBookerRegistryMockServer.start()
       whereaboutsApiMockServer.start()
     }
 
@@ -95,7 +94,6 @@ abstract class IntegrationTestBase {
       prisonRegisterMockServer.stop()
       manageUsersApiMockServer.stop()
       prisonVisitBookerRegistryMockServer.stop()
-      prisonVisitBookerRegistryMockServer.start()
       whereaboutsApiMockServer.stop()
     }
 

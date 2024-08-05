@@ -15,7 +15,7 @@ data class AlertResponseDto(
   val activeTo: LocalDate? = null,
 
   @Schema(description = "True / False based on alert status", example = "false", required = true)
-  val isActive: Boolean = false,
+  val active: Boolean,
 
   @Schema(description = "A comment / description of the alert", required = false)
   val description: String,
