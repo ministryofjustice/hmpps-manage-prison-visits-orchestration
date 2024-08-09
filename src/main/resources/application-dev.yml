@@ -22,6 +22,8 @@ manage-users.api.url: https://manage-users-api-dev.hmpps.service.justice.gov.uk
 
 prison.api.url: https://prison-api-dev.prison.service.justice.gov.uk
 
+alerts.api.url: https://alerts-api-dev.hmpps.service.justice.gov.uk
+
 prisoner.search.url: https://prisoner-search-dev.prison.service.justice.gov.uk
 
 prisoner-contact.registry.url: https://prisoner-contact-registry-dev.prison.service.justice.gov.uk

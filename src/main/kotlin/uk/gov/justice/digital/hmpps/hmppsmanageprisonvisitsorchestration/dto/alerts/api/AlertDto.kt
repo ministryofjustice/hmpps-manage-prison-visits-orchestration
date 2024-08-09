@@ -1,9 +1,9 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api
+package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api
 
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
-@Schema(description = "Alert")
+@Schema(description = "AlertDto returned from orchestration, made of fields from AlertResponseDto from Alerts API call")
 data class AlertDto(
   @Schema(required = true, description = "Alert Type", example = "X")
   val alertType: String,
@@ -30,9 +30,18 @@ data class AlertDto(
   @Schema(description = "Date the alert expires", example = "2020-08-20")
   val dateExpires: LocalDate? = null,
 
-  @Schema(required = true, description = "True / False based on presence of expiry date", example = "true")
-  val expired: Boolean = false,
-
   @Schema(required = true, description = "True / False based on alert status", example = "false")
   val active: Boolean = false,
-)
+) {
+  // Secondary constructor that initializes AlertDto from AlertResponseDto
+  constructor(alertResponseDto: AlertResponseDto) : this(
+    alertType = alertResponseDto.alertCode.alertTypeCode,
+    alertTypeDescription = alertResponseDto.alertCode.alertTypeDescription,
+    alertCode = alertResponseDto.alertCode.code,
+    alertCodeDescription = alertResponseDto.alertCode.description,
+    comment = alertResponseDto.description,
+    dateCreated = alertResponseDto.createdAt,
+    dateExpires = alertResponseDto.activeTo,
+    active = alertResponseDto.active,
+  )
+}

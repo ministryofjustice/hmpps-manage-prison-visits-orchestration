@@ -14,14 +14,18 @@ data class PrisonerAlertsAddedNotificationDto(
   @JsonInclude(JsonInclude.Include.NON_NULL)
   val alertsRemoved: List<String>,
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  val activeAlerts: List<String>,
+
   @NotBlank
   val description: String,
 ) {
 
-  constructor(info: PrisonerAlertsUpdatedNotificationInfo, description: String) : this(
+  constructor(info: PrisonerAlertsUpdatedNotificationInfo, activeAlerts: List<String>, description: String) : this(
     prisonerNumber = info.nomsNumber,
     alertsAdded = info.alertsAdded,
     alertsRemoved = info.alertsRemoved,
+    activeAlerts = activeAlerts,
     description = description,
   )
 }
