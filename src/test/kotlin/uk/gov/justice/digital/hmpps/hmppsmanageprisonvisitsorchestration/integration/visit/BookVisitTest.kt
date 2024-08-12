@@ -23,6 +23,7 @@ class BookVisitTest : IntegrationTestBase() {
     val applicationReference = "aaa-bbb-ccc-ddd"
     val reference = "aa-bb-cc-dd"
     val visitDto = createVisitDto(reference = reference, applicationReference = applicationReference)
+    visitSchedulerMockServer.stubGetBookedVisitByApplicationReference(applicationReference, null)
     visitSchedulerMockServer.stubBookVisit(applicationReference, visitDto)
     val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL)
 
@@ -40,6 +41,7 @@ class BookVisitTest : IntegrationTestBase() {
     // Given
     val applicationReference = "aaa-bbb-ccc-ddd"
     val visitDto = null
+    visitSchedulerMockServer.stubGetBookedVisitByApplicationReference(applicationReference, null)
     visitSchedulerMockServer.stubBookVisit(applicationReference, visitDto)
 
     val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL)
@@ -55,6 +57,7 @@ class BookVisitTest : IntegrationTestBase() {
   fun `when book visit slot fails application validation then UNPROCESSABLE_ENTITY status is returned`() {
     // Given
     val applicationReference = "aaa-bbb-ccc-ddd"
+    visitSchedulerMockServer.stubGetBookedVisitByApplicationReference(applicationReference, null)
     visitSchedulerMockServer.stubBookVisitApplicationValidationFailure(
       applicationReference,
       ApplicationValidationErrorResponse(
@@ -80,9 +83,94 @@ class BookVisitTest : IntegrationTestBase() {
   fun `when book visit slot fails application validation parsing then INTERNAL_SERVER_ERROR status is returned`() {
     // Given
     val applicationReference = "aaa-bbb-ccc-ddd"
+    visitSchedulerMockServer.stubGetBookedVisitByApplicationReference(applicationReference, null)
     visitSchedulerMockServer.stubBookVisitApplicationValidationFailureInvalid(
       applicationReference,
     )
+
+    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL)
+
+    // When
+    val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
+  }
+
+  @Test
+  fun `when update visit slot is successful then OK status is returned`() {
+    // Given
+    val applicationReference = "aaa-bbb-ccc-ddd"
+    val reference = "aa-bb-cc-dd"
+    val visitDto = createVisitDto(reference = reference, applicationReference = applicationReference)
+    visitSchedulerMockServer.stubGetBookedVisitByApplicationReference(applicationReference, visitDto)
+    visitSchedulerMockServer.stubUpdateVisit(applicationReference, visitDto)
+    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL)
+
+    // When
+    val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reference").isEqualTo(reference)
+  }
+
+  @Test
+  fun `when update visit slot is unsuccessful then NOT_FOUND status is returned`() {
+    // Given
+    val applicationReference = "aaa-bbb-ccc-ddd"
+    val reference = "aa-bb-cc-dd"
+    val visitDto = createVisitDto(reference = reference, applicationReference = applicationReference)
+    visitSchedulerMockServer.stubGetBookedVisitByApplicationReference(applicationReference, visitDto)
+    visitSchedulerMockServer.stubUpdateVisit(applicationReference, null)
+
+    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL)
+
+    // When
+    val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isNotFound
+  }
+
+  @Test
+  fun `when update visit slot fails application validation then UNPROCESSABLE_ENTITY status is returned`() {
+    // Given
+    val applicationReference = "aaa-bbb-ccc-ddd"
+    val reference = "aa-bb-cc-dd"
+    val visitDto = createVisitDto(reference = reference, applicationReference = applicationReference)
+    visitSchedulerMockServer.stubGetBookedVisitByApplicationReference(applicationReference, visitDto)
+
+    visitSchedulerMockServer.stubUpdateVisitApplicationValidationFailure(
+      applicationReference,
+      ApplicationValidationErrorResponse(
+        status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+        validationErrors = listOf(APPLICATION_INVALID_NON_ASSOCIATION_VISITS, APPLICATION_INVALID_NO_VO_BALANCE),
+      ),
+    )
+
+    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL)
+
+    // When
+    val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+    val errorResponse = getValidationErrorResponse(responseSpec)
+    assertThat(errorResponse.validationErrors.size).isEqualTo(2)
+    assertThat(errorResponse.validationErrors).contains(APPLICATION_INVALID_NON_ASSOCIATION_VISITS)
+    assertThat(errorResponse.validationErrors).contains(APPLICATION_INVALID_NO_VO_BALANCE)
+  }
+
+  @Test
+  fun `when update visit slot fails application validation parsing then INTERNAL_SERVER_ERROR status is returned`() {
+    // Given
+    val applicationReference = "aaa-bbb-ccc-ddd"
+    val reference = "aa-bb-cc-dd"
+    val visitDto = createVisitDto(reference = reference, applicationReference = applicationReference)
+    visitSchedulerMockServer.stubGetBookedVisitByApplicationReference(applicationReference, visitDto)
+    visitSchedulerMockServer.stubUpdateVisitApplicationValidationFailureInvalid(applicationReference)
 
     val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL)
 

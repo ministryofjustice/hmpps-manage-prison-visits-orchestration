@@ -120,7 +120,13 @@ class VisitSchedulerService(
   }
 
   fun bookVisit(applicationReference: String, requestDto: BookingOrchestrationRequestDto): VisitDto? {
-    return visitSchedulerClient.bookVisitSlot(
+    val existingBooking = visitSchedulerClient.getBookedVisitByApplicationReference(applicationReference)
+    return existingBooking?.let {
+      visitSchedulerClient.updateBookedVisit(
+        applicationReference,
+        BookingRequestDto(requestDto.actionedBy, requestDto.applicationMethodType, requestDto.allowOverBooking),
+      )
+    } ?: visitSchedulerClient.bookVisitSlot(
       applicationReference,
       BookingRequestDto(requestDto.actionedBy, requestDto.applicationMethodType, requestDto.allowOverBooking),
     )
