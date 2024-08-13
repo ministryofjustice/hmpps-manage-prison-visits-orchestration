@@ -244,6 +244,38 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     )
   }
 
+  fun stubUpdateVisit(applicationReference: String, visitDto: VisitDto?) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      put("/visits/$applicationReference/visit/update")
+        .willReturn(
+          if (visitDto == null) {
+            responseBuilder.withStatus(HttpStatus.NOT_FOUND.value())
+          } else {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(visitDto))
+          },
+        ),
+    )
+  }
+
+  fun stubGetBookedVisitByApplicationReference(applicationReference: String, existingVisitDto: VisitDto?) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      get("/visits/$applicationReference/visit")
+        .willReturn(
+          if (existingVisitDto == null) {
+            responseBuilder.withStatus(HttpStatus.NOT_FOUND.value())
+          } else {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(existingVisitDto))
+          },
+        ),
+    )
+  }
+
   fun stubBookVisitApplicationValidationFailure(applicationReference: String, errorResponse: ApplicationValidationErrorResponse) {
     val responseBuilder = createJsonResponseBuilder()
 
@@ -261,6 +293,37 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
 
     stubFor(
       put("/visits/$applicationReference/book")
+        .willReturn(
+          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+            .withBody(
+              """{
+                "status": 422,
+                "validationErrors": [
+                  "INVALID_APPLICATION_VALIDATION_RESPONSE"
+                  ]
+                }""",
+            ),
+        ),
+    )
+  }
+
+  fun stubUpdateVisitApplicationValidationFailure(applicationReference: String, errorResponse: ApplicationValidationErrorResponse) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      put("/visits/$applicationReference/visit/update")
+        .willReturn(
+          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+            .withBody(getJsonString(errorResponse)),
+        ),
+    )
+  }
+
+  fun stubUpdateVisitApplicationValidationFailureInvalid(applicationReference: String) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      put("/visits/$applicationReference/visit/update")
         .willReturn(
           responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
             .withBody(

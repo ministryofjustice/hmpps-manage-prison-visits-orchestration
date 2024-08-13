@@ -20,6 +20,7 @@ import software.amazon.awssdk.services.sqs.model.PurgeQueueRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.domainevents.LocalStackContainer.setLocalStackProperties
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.AlertsApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.HmppsAuthExtension
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.VisitSchedulerMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.DomainEventListenerService
@@ -49,6 +50,7 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
   companion object {
     private val localStackContainer = LocalStackContainer.instance
     val visitSchedulerMockServer = VisitSchedulerMockServer()
+    val alertsApiMockServer = AlertsApiMockServer()
 
     @JvmStatic
     @DynamicPropertySource
@@ -60,12 +62,14 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     @JvmStatic
     fun startMocks() {
       visitSchedulerMockServer.start()
+      alertsApiMockServer.start()
     }
 
     @AfterAll
     @JvmStatic
     fun stopMocks() {
       visitSchedulerMockServer.stop()
+      alertsApiMockServer.stop()
     }
   }
 

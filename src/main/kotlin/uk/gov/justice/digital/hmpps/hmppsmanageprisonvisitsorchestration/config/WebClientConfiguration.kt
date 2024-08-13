@@ -26,6 +26,9 @@ class WebClientConfiguration(
   @Value("\${prison.api.url}")
   private val prisonApiBaseUrl: String,
 
+  @Value("\${alerts.api.url}")
+  private val alertsApiBaseUrl: String,
+
   @Value("\${prisoner.search.url}")
   private val prisonSearchBaseUrl: String,
 
@@ -53,6 +56,7 @@ class WebClientConfiguration(
     MANAGE_USERS_API_CLIENT("other-hmpps-apis"),
     WHEREABOUTS_API_CLIENT("other-hmpps-apis"),
     PRISON_VISIT_BOOKER_REGISTRY_API_CLIENT("other-hmpps-apis"),
+    ALERTS_API("other-hmpps-apis"),
   }
 
   @Bean
@@ -65,6 +69,12 @@ class WebClientConfiguration(
   fun prisonApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
     val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.PRISON_API.clientRegistrationId)
     return getWebClient(prisonApiBaseUrl, oauth2Client)
+  }
+
+  @Bean
+  fun alertsApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+    val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.ALERTS_API.clientRegistrationId)
+    return getWebClient(alertsApiBaseUrl, oauth2Client)
   }
 
   @Bean
