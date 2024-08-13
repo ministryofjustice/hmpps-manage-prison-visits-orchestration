@@ -45,6 +45,7 @@ class VisitSchedulerService(
   private val prisonerContactService: PrisonerContactService,
   private val authenticationHelperService: AuthenticationHelperService,
   private val manageUsersService: ManageUsersService,
+  private val alertService: AlertsService,
   private val orchestrationVisitDtoBuilder: OrchestrationVisitDtoBuilder,
 ) {
   companion object {
@@ -179,7 +180,10 @@ class VisitSchedulerService(
 
   fun processPrisonerAlertsUpdated(info: PrisonerAlertsUpdatedNotificationInfo, description: String?) {
     val alertDescription = description ?: "${info.alertsAdded.size} alert(s) added, ${info.alertsRemoved.size} alert(s) removed."
-    visitSchedulerClient.processPrisonerAlertsUpdated(PrisonerAlertsAddedNotificationDto(info, alertDescription))
+    val activeAlerts = alertService.getPrisonerActiveAlertCodes(info.nomsNumber)
+    val prisonerAlertsAddedNotificationDto = PrisonerAlertsAddedNotificationDto(info, activeAlerts, alertDescription)
+
+    visitSchedulerClient.processPrisonerAlertsUpdated(sendDto = prisonerAlertsAddedNotificationDto)
   }
 
   fun getNotificationCountForPrison(prisonCode: String): NotificationCountDto? {
