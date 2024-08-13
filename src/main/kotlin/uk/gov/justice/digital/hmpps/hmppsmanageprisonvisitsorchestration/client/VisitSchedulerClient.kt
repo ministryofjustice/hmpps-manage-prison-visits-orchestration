@@ -49,7 +49,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.Optional
+import java.util.*
 
 const val VISIT_CONTROLLER_PATH: String = "/visits"
 const val GET_VISIT_HISTORY_CONTROLLER_PATH: String = "$VISIT_CONTROLLER_PATH/{reference}/history"
@@ -186,6 +186,42 @@ class VisitSchedulerClient(
           Mono.error(e)
         }
       }.block(apiTimeout)
+  }
+
+  fun updateBookedVisit(applicationReference: String, requestDto: BookingRequestDto): VisitDto? {
+    return webClient.put()
+      .uri("/visits/$applicationReference/visit/update")
+      .body(BodyInserters.fromValue(requestDto))
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<VisitDto>().onErrorResume {
+          e ->
+        if (isUnprocessableEntityError(e)) {
+          val exception = getBookVisitApplicationValidationErrorResponse(e)
+          Mono.error(exception)
+        } else {
+          Mono.error(e)
+        }
+      }.block(apiTimeout)
+  }
+
+  fun getBookedVisitByApplicationReference(applicationReference: String): VisitDto? {
+    return webClient.get()
+      .uri("/visits/$applicationReference/visit")
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<VisitDto>()
+      .onErrorResume {
+          e ->
+        if (!isNotFoundError(e)) {
+          LOG.error("getBookedVisitByApplicationReference Failed to search for existing booking")
+          Mono.error(e)
+        } else {
+          LOG.info("getBookedVisitByApplicationReference NOT FOUND response - no existing booking")
+          Mono.empty()
+        }
+      }
+      .block(apiTimeout)
   }
 
   private fun getBookVisitApplicationValidationErrorResponse(e: Throwable): Throwable {
