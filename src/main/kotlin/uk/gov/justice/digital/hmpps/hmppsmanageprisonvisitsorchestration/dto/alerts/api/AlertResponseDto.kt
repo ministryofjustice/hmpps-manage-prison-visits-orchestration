@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
@@ -15,8 +16,9 @@ data class AlertResponseDto(
   val activeTo: LocalDate? = null,
 
   @Schema(description = "True / False based on alert status", example = "false", required = true)
+  @JsonProperty("isActive")
   val active: Boolean,
 
   @Schema(description = "A comment / description of the alert", required = false)
-  val description: String,
+  val description: String?,
 )
