@@ -18,5 +18,5 @@ data class AlertResponseDto(
   val active: Boolean,
 
   @Schema(description = "A comment / description of the alert", required = false)
-  val description: String,
+  val description: String?,
 )
