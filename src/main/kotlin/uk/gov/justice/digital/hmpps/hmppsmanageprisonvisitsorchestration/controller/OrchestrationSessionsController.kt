@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
@@ -23,6 +24,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.validat
 import java.time.LocalDate
 import java.time.LocalTime
 
+const val GET_VISIT_SESSIONS = "/visit-sessions"
+const val GET_VISIT_SESSIONS_AVAILABLE = "$GET_VISIT_SESSIONS/available"
+const val GET_VISIT_SESSIONS_AVAILABLE_RESTRICTION = "$GET_VISIT_SESSIONS_AVAILABLE/restriction"
+const val GET_VISIT_SESSIONS_CAPACITY = "$GET_VISIT_SESSIONS/capacity"
+const val GET_VISIT_SESSIONS_SCHEDULE = "$GET_VISIT_SESSIONS/schedule"
+
 @RestController
 class OrchestrationSessionsController(private val visitSchedulerSessionsService: VisitSchedulerSessionsService) {
 
@@ -31,7 +38,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
   }
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
-  @GetMapping("/visit-sessions")
+  @GetMapping(GET_VISIT_SESSIONS)
   @Operation(
     summary = "Returns all visit sessions which are within the reservable time period - whether or not they are full",
     description = "Retrieve all visits for a specified prisoner",
@@ -87,7 +94,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     visitSchedulerSessionsService.getVisitSessions(prisonCode, prisonerId, min, max, username)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
-  @GetMapping("/visit-sessions/available")
+  @GetMapping(GET_VISIT_SESSIONS_AVAILABLE)
   @Operation(
     summary = "Returns only available visit sessions for a specified prisoner by restriction and within the reservable time period",
     description = "Returns only available visit sessions for a specified prisoner by restriction and within the reservable time period",
@@ -159,7 +166,46 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     )
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
-  @GetMapping("/visit-sessions/capacity")
+  @GetMapping(GET_VISIT_SESSIONS_AVAILABLE_RESTRICTION)
+  @Operation(
+    summary = "Returns the restriction type of available sessions",
+    description = "Returns the restriction of available sessions given a prisoner and optionally a list of visitors [OPEN / CLOSED]",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Available visit session restriction returned",
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to Get available visit session restriction",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getSessionRestrictionType(
+    @RequestParam(value = "prisonerId", required = true)
+    @Parameter(description = "Filter results by prisoner id", example = "A12345DC", required = true)
+    prisonerId: String,
+    @RequestParam(value = "visitors", required = false)
+    @Parameter(
+      description = "List of visitors who require visit sessions",
+      example = "4729510,4729220",
+    )
+    @NullableNotEmpty(message = "An empty visitors list is not allowed")
+    visitors: List<Long>? = null,
+  ): AvailableVisitSessionRestrictionDto =
+    visitSchedulerSessionsService.getAvailableVisitSessionRestriction(
+      prisonerId = prisonerId,
+      visitors = visitors,
+    )
+
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @GetMapping(GET_VISIT_SESSIONS_CAPACITY)
   @Operation(
     summary = "Returns the VSIP session capacity for the given sessions",
     description = "Returns the VSIP session capacity for the given sessions",
@@ -216,7 +262,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
   ): SessionCapacityDto? = visitSchedulerSessionsService.getSessionCapacity(prisonCode, sessionDate, sessionStartTime, sessionEndTime)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
-  @GetMapping("/visit-sessions/schedule")
+  @GetMapping(GET_VISIT_SESSIONS_SCHEDULE)
   @Operation(
     summary = "Returns session scheduled for given prison and date",
     description = "Returns session scheduled for given prison and date",
