@@ -12,7 +12,7 @@ generic-service:
     MANAGE_USERS_API_URL: https://manage-users-api.hmpps.service.justice.gov.uk
     VISIT-SCHEDULER_API_URL: https://visit-scheduler.prison.service.justice.gov.uk
     PRISON_API_URL: https://prison-api.prison.service.justice.gov.uk
-    ALERTS_API_URL: https://alerts-api.prison.service.justice.gov.uk
+    ALERTS_API_URL: https://alerts-api.hmpps.service.justice.gov.uk
     PRISONER_SEARCH_URL: https://prisoner-search.prison.service.justice.gov.uk
     PRISONER-CONTACT_REGISTRY_URL: https://prisoner-contact-registry.prison.service.justice.gov.uk
     PRISON-REGISTER_API_URL: https://prison-register.hmpps.service.justice.gov.uk
