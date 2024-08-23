@@ -199,7 +199,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     @NullableNotEmpty(message = "An empty visitors list is not allowed")
     visitors: List<Long>? = null,
   ): AvailableVisitSessionRestrictionDto =
-    visitSchedulerSessionsService.getAvailableVisitSessionRestriction(
+    visitSchedulerSessionsService.getAvailableVisitSessionsRestriction(
       prisonerId = prisonerId,
       visitors = visitors,
     )

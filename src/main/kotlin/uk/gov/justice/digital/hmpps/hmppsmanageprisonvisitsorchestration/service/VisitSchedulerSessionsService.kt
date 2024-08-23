@@ -96,7 +96,7 @@ class VisitSchedulerSessionsService(
     }
   }
 
-  fun getAvailableVisitSessionRestriction(
+  fun getAvailableVisitSessionsRestriction(
     prisonerId: String,
     visitors: List<Long>?,
   ): AvailableVisitSessionRestrictionDto {
