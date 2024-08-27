@@ -445,6 +445,25 @@ abstract class IntegrationTestBase {
       .exchange()
   }
 
+  fun callGetAvailableVisitSessionsRestriction(
+    webTestClient: WebTestClient,
+    prisonerId: String,
+    visitorIds: List<Long>? = null,
+    authHttpHeaders: (HttpHeaders) -> Unit,
+  ): WebTestClient.ResponseSpec {
+    val uri = "/visit-sessions/available/restriction"
+
+    val uriParams =
+      getAvailableVisitSessionRestrictionQueryParams(
+        prisonerId = prisonerId,
+        visitorIds = visitorIds,
+      ).joinToString("&")
+
+    return webTestClient.get().uri("$uri?$uriParams")
+      .headers(authHttpHeaders)
+      .exchange()
+  }
+
   final fun createPrisoner(
     prisonerId: String,
     firstName: String,
@@ -570,6 +589,20 @@ abstract class IntegrationTestBase {
     }
     currentUser?.let {
       queryParams.add("currentUser=$currentUser")
+    }
+
+    return queryParams
+  }
+
+  private fun getAvailableVisitSessionRestrictionQueryParams(
+    prisonerId: String,
+    visitorIds: List<Long>? = null,
+  ): List<String> {
+    val queryParams = java.util.ArrayList<String>()
+
+    queryParams.add("prisonerId=$prisonerId")
+    visitorIds?.let {
+      queryParams.add("visitors=${it.joinToString(",")}")
     }
 
     return queryParams
