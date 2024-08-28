@@ -17,6 +17,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_RECEIVED_CHANGE_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_VISITOR_RESTRICTION_CHANGE_PATH
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertCodeSummaryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonerReceivedReasonType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonerReleaseReasonType.RELEASED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
@@ -244,18 +246,29 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     val bookingId = 100L
     val alertsAdded = listOf("AL1", "AL2")
     val alertsRemoved = emptyList<String>()
-    val description = "${alertsAdded.size} alerts added"
+    val activeAlert = listOf(
+      AlertResponseDto(
+        AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "AL3", description = "Alert Code Desc"),
+        createdAt = LocalDate.of(1995, 12, 3),
+        activeTo = null,
+        active = false,
+        description = "Alert code comment",
+      ),
+    )
+
+    val eventDescription = "${alertsAdded.size} alerts added"
 
     val sentRequestToVsip = PrisonerAlertsAddedNotificationDto(
       prisonerNumber,
       alertsAdded,
       alertsRemoved,
-      description,
+      emptyList(),
+      eventDescription,
     )
 
     val domainEvent = createDomainEventJson(
       PRISONER_ALERTS_UPDATED,
-      description,
+      eventDescription,
       createAlertsUpdatedAdditionalInformationJson(
         prisonerNumber,
         bookingId,
@@ -266,6 +279,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     val publishRequest = createDomainEventPublishRequest(PRISONER_ALERTS_UPDATED, domainEvent)
 
     visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH)
+    alertsApiMockServer.stubGetPrisonerAlertsMono(prisonerNumber, activeAlert)
 
     // When
     sendSqSMessage(publishRequest)
@@ -282,18 +296,29 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     val bookingId = 100L
     val alertsAdded = listOf("AL1", "AL2")
     val alertsRemoved = emptyList<String>()
-    val description = "2 alerts added"
+    val activeAlert = listOf(
+      AlertResponseDto(
+        AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "AL3", description = "Alert Code Desc"),
+        createdAt = LocalDate.of(1995, 12, 3),
+        activeTo = null,
+        active = false,
+        description = "Alert code comment",
+      ),
+    )
+
+    val eventDescription = "2 alerts added"
 
     val sentRequestToVsip = PrisonerAlertsAddedNotificationDto(
       prisonerNumber,
       alertsAdded,
       alertsRemoved,
-      description,
+      emptyList(),
+      eventDescription,
     )
 
     val domainEvent = createDomainEventJson(
       PRISONER_ALERTS_UPDATED,
-      description,
+      eventDescription,
       createAlertsUpdatedAdditionalInformationJson(
         prisonerNumber,
         bookingId,
@@ -304,6 +329,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     val publishRequest = createDomainEventPublishRequest(PRISONER_ALERTS_UPDATED, domainEvent)
 
     visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH)
+    alertsApiMockServer.stubGetPrisonerAlertsMono(prisonerNumber, activeAlert)
 
     // When
     sendSqSMessage(publishRequest)
@@ -320,23 +346,35 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     val bookingId = 100L
     val alertsAdded = emptyList<String>()
     val alertsRemoved = listOf("AL1", "AL2")
-    val description = "2 alerts removed"
+    val activeAlert = listOf(
+      AlertResponseDto(
+        AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "AL3", description = "Alert Code Desc"),
+        createdAt = LocalDate.of(1995, 12, 3),
+        activeTo = null,
+        active = true,
+        description = "Alert code comment",
+      ),
+    )
+
+    val eventDescription = "2 alerts removed"
 
     val sentRequestToVsip = PrisonerAlertsAddedNotificationDto(
       prisonerNumber,
       alertsAdded,
       alertsRemoved,
-      description,
+      activeAlert.map { it.alertCode.code },
+      eventDescription,
     )
 
     val domainEvent = createDomainEventJson(
       PRISONER_ALERTS_UPDATED,
-      description,
+      eventDescription,
       createAlertsUpdatedAdditionalInformationJson(prisonerNumber, bookingId, alertsAdded, alertsRemoved),
     )
     val publishRequest = createDomainEventPublishRequest(PRISONER_ALERTS_UPDATED, domainEvent)
 
     visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH)
+    alertsApiMockServer.stubGetPrisonerAlertsMono(prisonerNumber, activeAlert)
 
     // When
     sendSqSMessage(publishRequest)

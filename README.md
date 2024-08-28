@@ -176,5 +176,5 @@ aws sqs send-message \
   --endpoint-url=http://localhost:4566 \
   --queue-url=http://localhost:4566/000000000000/sqs_hmpps_prison_visits_event_queue \
   --message-body \
-        '{"Type":"Notification", "Message": "{\"eventType\": \"prison-offender-events.prisoner.restriction.changed\", \"additionalInformation\": {\"nomsNumber\": \"X8199EJ\",\"bookingId\": \"2872889\", \"offenderRestrictionId\": \"557172\", \"restrictionType\": \"CHILD\", \"effectiveDate\": \"2023-09-20\", \"comment\": \"NTC anyone under the age of 18 - pot PPRC\", \"authorisedById\": \"37266\", \"enteredById\": \"1138054\"}}", "MessageId": "123"}'
+        '{"Type":"Notification", "Message": "{\"eventType\": \"prison-offender-events.prisoner.restriction.changed\", \"additionalInformation\": {\"nomsNumber\": \"X8199EJ\",\"bookingId\": \"2872889\", \"offenderRestrictionId\": \"557172\", \"restrictionType\": \"CHILD\", \"effectiveDate\": \"2023-09-20\", \"authorisedById\": \"37266\", \"enteredById\": \"1138054\"}}", "MessageId": "123"}'
 ```

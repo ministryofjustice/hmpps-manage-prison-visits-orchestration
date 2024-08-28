@@ -40,6 +40,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.ScheduledEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.helper.JwtAuthHelper
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.AlertsApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.HmppsAuthExtension
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.ManageUsersApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonApiMockServer
@@ -60,6 +61,7 @@ abstract class IntegrationTestBase {
   companion object {
     val visitSchedulerMockServer = VisitSchedulerMockServer()
     val prisonApiMockServer = PrisonApiMockServer()
+    val alertApiMockServer = AlertsApiMockServer()
     val prisonOffenderSearchMockServer = PrisonOffenderSearchMockServer()
     val prisonerContactRegistryMockServer = PrisonerContactRegistryMockServer()
     val prisonRegisterMockServer = PrisonRegisterMockServer()
@@ -72,11 +74,11 @@ abstract class IntegrationTestBase {
     fun startMocks() {
       visitSchedulerMockServer.start()
       prisonApiMockServer.start()
+      alertApiMockServer.start()
       prisonOffenderSearchMockServer.start()
       prisonerContactRegistryMockServer.start()
       prisonRegisterMockServer.start()
       manageUsersApiMockServer.start()
-      prisonVisitBookerRegistryMockServer.start()
       prisonVisitBookerRegistryMockServer.start()
       whereaboutsApiMockServer.start()
     }
@@ -86,12 +88,12 @@ abstract class IntegrationTestBase {
     fun stopMocks() {
       visitSchedulerMockServer.stop()
       prisonApiMockServer.stop()
+      alertApiMockServer.stop()
       prisonOffenderSearchMockServer.stop()
       prisonerContactRegistryMockServer.stop()
       prisonRegisterMockServer.stop()
       manageUsersApiMockServer.stop()
       prisonVisitBookerRegistryMockServer.stop()
-      prisonVisitBookerRegistryMockServer.start()
       whereaboutsApiMockServer.stop()
     }
 
@@ -443,6 +445,25 @@ abstract class IntegrationTestBase {
       .exchange()
   }
 
+  fun callGetAvailableVisitSessionsRestriction(
+    webTestClient: WebTestClient,
+    prisonerId: String,
+    visitorIds: List<Long>? = null,
+    authHttpHeaders: (HttpHeaders) -> Unit,
+  ): WebTestClient.ResponseSpec {
+    val uri = "/visit-sessions/available/restriction"
+
+    val uriParams =
+      getAvailableVisitSessionRestrictionQueryParams(
+        prisonerId = prisonerId,
+        visitorIds = visitorIds,
+      ).joinToString("&")
+
+    return webTestClient.get().uri("$uri?$uriParams")
+      .headers(authHttpHeaders)
+      .exchange()
+  }
+
   final fun createPrisoner(
     prisonerId: String,
     firstName: String,
@@ -568,6 +589,20 @@ abstract class IntegrationTestBase {
     }
     currentUser?.let {
       queryParams.add("currentUser=$currentUser")
+    }
+
+    return queryParams
+  }
+
+  private fun getAvailableVisitSessionRestrictionQueryParams(
+    prisonerId: String,
+    visitorIds: List<Long>? = null,
+  ): List<String> {
+    val queryParams = java.util.ArrayList<String>()
+
+    queryParams.add("prisonerId=$prisonerId")
+    visitorIds?.let {
+      queryParams.add("visitors=${it.joinToString(",")}")
     }
 
     return queryParams
