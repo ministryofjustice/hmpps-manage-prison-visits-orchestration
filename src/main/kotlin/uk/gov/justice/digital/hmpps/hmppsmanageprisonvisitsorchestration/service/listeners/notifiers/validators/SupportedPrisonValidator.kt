@@ -5,9 +5,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonService
 
 @Component
-@EventValidator(name = "Supported prison validator", description = "Validates if a prison is supported on VSIP.")
-class SupportedPrisonValidator(private val prisonService: PrisonService) {
-  fun isSupportedPrison(prisonCode: String): Boolean {
+class SupportedPrisonValidator(private val prisonService: PrisonService) : EventValidator<String> {
+  private fun isSupportedPrison(prisonCode: String): Boolean {
     return prisonService.getSupportedPrisons(UserType.STAFF).contains(prisonCode.uppercase())
+  }
+
+  override fun isValid(t: String): Boolean {
+    return isSupportedPrison(t)
   }
 }

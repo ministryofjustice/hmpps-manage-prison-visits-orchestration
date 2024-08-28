@@ -11,12 +11,12 @@ const val PRISONER_RELEASED_TYPE = "prison-offender-events.prisoner.released"
 class PrisonerReleasedNotifier(private val supportedPrisonValidator: SupportedPrisonValidator) : EventNotifier() {
   override fun processEvent(domainEvent: DomainEvent) {
     val additionalInfo = getAdditionalInfo(domainEvent, PrisonerReleasedInfo::class.java)
-    LOG.debug("Enter PrisonerReleasedInfo Info:$additionalInfo")
+    LOG.debug("Enter PrisonerReleasedInfo Info: {}", additionalInfo)
     getVisitSchedulerService().processPrisonerReleased(additionalInfo)
   }
 
   override fun isProcessableEvent(domainEvent: DomainEvent): Boolean {
     val additionalInfo = getAdditionalInfo(domainEvent, PrisonerReleasedInfo::class.java)
-    return supportedPrisonValidator.isSupportedPrison(additionalInfo.prisonCode)
+    return supportedPrisonValidator.isValid(additionalInfo.prisonCode)
   }
 }
