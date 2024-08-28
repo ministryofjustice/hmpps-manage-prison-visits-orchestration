@@ -255,7 +255,7 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
       jsonValues["nomsNumber"] = nomsNumber
     }
     visitorId?.let {
-      jsonValues["contactPersonId"] = visitorId
+      jsonValues["personId"] = visitorId
     }
     effectiveDate?.let {
       jsonValues["effectiveDate"] = effectiveDate
