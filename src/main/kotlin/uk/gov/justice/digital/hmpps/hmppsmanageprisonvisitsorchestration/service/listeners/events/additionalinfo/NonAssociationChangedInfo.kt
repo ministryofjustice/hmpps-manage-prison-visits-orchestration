@@ -10,4 +10,4 @@ data class NonAssociationChangedInfo(
   @NotBlank
   @JsonProperty("nsPrisonerNumber2")
   val nonAssociationPrisonerNumber: String,
-)
+) : EventInfo

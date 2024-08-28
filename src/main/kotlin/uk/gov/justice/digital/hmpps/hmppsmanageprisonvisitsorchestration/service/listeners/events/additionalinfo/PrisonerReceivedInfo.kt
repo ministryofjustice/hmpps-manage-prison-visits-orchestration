@@ -17,4 +17,4 @@ data class PrisonerReceivedInfo(
   @NotNull
   @JsonProperty("reason")
   val reason: PrisonerReceivedReasonType,
-)
+) : EventInfo

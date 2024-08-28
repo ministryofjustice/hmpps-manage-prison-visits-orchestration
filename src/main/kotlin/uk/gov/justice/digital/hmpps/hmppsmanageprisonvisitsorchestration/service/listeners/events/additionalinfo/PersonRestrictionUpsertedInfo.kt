@@ -24,4 +24,4 @@ data class PersonRestrictionUpsertedInfo(
 
   @NotBlank
   val restrictionType: String,
-)
+) : EventInfo
