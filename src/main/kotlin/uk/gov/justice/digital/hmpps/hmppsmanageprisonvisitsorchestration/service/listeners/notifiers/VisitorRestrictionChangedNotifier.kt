@@ -13,4 +13,9 @@ class VisitorRestrictionChangedNotifier : EventNotifier() {
     LOG.debug("Enter VisitorRestrictionChangeInfo Info: {}", info)
     getVisitSchedulerService().processVisitorRestrictionChange(info)
   }
+
+  override fun isProcessableEvent(domainEvent: DomainEvent): Boolean {
+    // TODO - implement
+    return true
+  }
 }

@@ -13,4 +13,4 @@ data class PrisonerAlertsUpdatedNotificationInfo(
 
   @JsonProperty("alertsRemoved")
   val alertsRemoved: List<String>,
-)
+) : EventInfo

@@ -15,4 +15,4 @@ data class PrisonerRestrictionChangeInfo(
   @JsonInclude(Include.NON_NULL)
   @JsonProperty("expiryDate")
   val validToDate: String? = null,
-)
+) : EventInfo
