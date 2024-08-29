@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_RECEIVED_CHANGE_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_VISITOR_RESTRICTION_CHANGE_PATH
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_VISITOR_RESTRICTION_UPSERTED_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertCodeSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonerReceivedReasonType
@@ -26,7 +26,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertsAddedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionChangeNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerReceivedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.DELETE_INCENTIVES_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.EventNotifier
@@ -38,7 +38,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_RECEIVED_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_RELEASED_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.UPDATED_INCENTIVES_EVENT_TYPE
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.VISITOR_RESTRICTION_CHANGED_TYPE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.VISITOR_RESTRICTION_UPSERTED_TYPE
 import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 import java.time.LocalDate
 
@@ -170,25 +170,34 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
   }
 
   @Test
-  fun `test visitor-restriction-changed is processed`() {
+  fun `test visitor-restriction-upserted is processed`() {
     // Given
-    val sentRequestToVsip = VisitorRestrictionChangeNotificationDto(
-      personVisitorId = "12345",
-      LocalDate.parse("2023-09-20"),
+    val sentRequestToVsip = VisitorRestrictionUpsertedNotificationDto(
+      visitorId = "12345",
+      validFromDate = LocalDate.parse("2023-09-20"),
+      restrictionType = "BAN",
     )
 
-    val domainEvent = createDomainEventJson(VISITOR_RESTRICTION_CHANGED_TYPE, createAdditionalInformationJson(personId = "12345", effectiveDate = "2023-09-20"))
-    val publishRequest = createDomainEventPublishRequest(VISITOR_RESTRICTION_CHANGED_TYPE, domainEvent)
+    val domainEvent =
+      createDomainEventJson(
+        VISITOR_RESTRICTION_UPSERTED_TYPE,
+        createPersonRestrictionAdditionalInformationJson(
+          visitorId = "12345",
+          effectiveDate = "2023-09-20",
+          restrictionType = "BAN",
+        ),
+      )
+    val publishRequest = createDomainEventPublishRequest(VISITOR_RESTRICTION_UPSERTED_TYPE, domainEvent)
 
-    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_VISITOR_RESTRICTION_CHANGE_PATH)
+    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_VISITOR_RESTRICTION_UPSERTED_PATH)
 
     // When
     sendSqSMessage(publishRequest)
 
     // Then
-    assertStandardCalls(visitorRestrictionChangedNotifierSpy, VISIT_NOTIFICATION_VISITOR_RESTRICTION_CHANGE_PATH, sentRequestToVsip)
-    await untilAsserted { verify(visitSchedulerService, times(1)).processVisitorRestrictionChange(any()) }
-    await untilAsserted { verify(visitSchedulerClient, times(1)).processVisitorRestrictionChange(any()) }
+    assertStandardCalls(visitorRestrictionChangedNotifierSpy, VISIT_NOTIFICATION_VISITOR_RESTRICTION_UPSERTED_PATH, sentRequestToVsip)
+    await untilAsserted { verify(visitSchedulerService, times(1)).processVisitorRestrictionUpserted(any()) }
+    await untilAsserted { verify(visitSchedulerClient, times(1)).processVisitorRestrictionUpserted(any()) }
   }
 
   @Test
