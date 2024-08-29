@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType.PRISONER_RELEASED_EVENT
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType.PRISONER_RESTRICTION_CHANGE_EVENT
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType.PRISON_VISITS_BLOCKED_FOR_DATE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType.VISITOR_RESTRICTION_UPSERTED_EVENT
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
 @DisplayName("GET visits/notification/CFI/count and /visits/notification/count")
@@ -35,6 +36,7 @@ class GetVisitNotificationsTest : IntegrationTestBase() {
       PRISON_VISITS_BLOCKED_FOR_DATE,
       PRISONER_RECEIVED_EVENT,
       PERSON_RESTRICTION_UPSERTED_EVENT,
+      VISITOR_RESTRICTION_UPSERTED_EVENT,
     )
 
     // When
@@ -43,7 +45,7 @@ class GetVisitNotificationsTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isOk
     val notifications = this.getNotificationTypes(responseSpec)
-    Assertions.assertThat(notifications.size).isEqualTo(7)
+    Assertions.assertThat(notifications.size).isEqualTo(8)
     Assertions.assertThat(notifications.contains(NON_ASSOCIATION_EVENT)).isTrue()
     Assertions.assertThat(notifications.contains(PRISONER_RELEASED_EVENT)).isTrue()
     Assertions.assertThat(notifications.contains(PRISONER_RESTRICTION_CHANGE_EVENT)).isTrue()
@@ -51,6 +53,7 @@ class GetVisitNotificationsTest : IntegrationTestBase() {
     Assertions.assertThat(notifications.contains(PRISON_VISITS_BLOCKED_FOR_DATE)).isTrue()
     Assertions.assertThat(notifications.contains(PRISONER_RECEIVED_EVENT)).isTrue()
     Assertions.assertThat(notifications.contains(PERSON_RESTRICTION_UPSERTED_EVENT)).isTrue()
+    Assertions.assertThat(notifications.contains(VISITOR_RESTRICTION_UPSERTED_EVENT)).isTrue()
   }
 
   fun getNotificationTypes(responseSpec: ResponseSpec): Array<NotificationEventType> =
