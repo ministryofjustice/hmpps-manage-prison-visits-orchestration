@@ -32,7 +32,7 @@ class PrisonerProfileClient(
     prisonerId: String,
     visitSearchRequestFilter: VisitSearchRequestFilter,
   ): PrisonerProfileDto? {
-    LOG.info("getPrisonerProfile - Beginning calls to collect prisoner profile data")
+    LOG.info("getPrisonerProfile - Beginning calls to collect prisoner profile data for prisoner {} in {}", prisonerId, prisonId)
     val prisonerMono = prisonerSearchClient.getPrisonerByIdAsMono(prisonerId)
     val inmateDetailMono = prisonApiClient.getInmateDetailsAsMono(prisonerId)
     val visitBalancesMono = prisonApiClient.getVisitBalancesAsMono(prisonerId)
@@ -59,7 +59,7 @@ class PrisonerProfileClient(
         )
       }
       .block(apiTimeout)?.also { prisonerProfile ->
-        LOG.info("getPrisonerProfile - Finishing calls to collect prisoner profile data - Returning prisoner profile")
+        LOG.info("getPrisonerProfile - Finishing calls to collect prisoner profile data - Returning prisoner profile - {}, for prisoner {} in {}", prisonerProfile, prisonerId, prisonId)
         setVisitDetails(prisonerProfile)
       }
   }
