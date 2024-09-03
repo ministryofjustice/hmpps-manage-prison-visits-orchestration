@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.PrisonExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
@@ -481,6 +482,13 @@ class VisitSchedulerClient(
       .uri("/visits/notification/visit/$reference/types")
       .retrieve()
       .bodyToMono<List<NotificationEventType>>().block(apiTimeout)
+  }
+
+  fun getPrisonExcludeDates(prisonCode: String): List<PrisonExcludeDateDto>? {
+    return webClient.get()
+      .uri("/prisons/prison/$prisonCode/exclude-date")
+      .retrieve()
+      .bodyToMono<List<PrisonExcludeDateDto>>().block(apiTimeout)
   }
 
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {
