@@ -75,6 +75,10 @@ class PrisonService(
     return visitSchedulerClient.addPrisonExcludeDate(prisonCode, prisonExcludeDate)?.sortedByDescending { it } ?: emptyList()
   }
 
+  fun removeExcludeDateForPrison(prisonCode: String, prisonExcludeDate: PrisonExcludeDateDto): List<LocalDate> {
+    return visitSchedulerClient.removePrisonExcludeDate(prisonCode, prisonExcludeDate)?.sortedByDescending { it } ?: emptyList()
+  }
+
   fun getToDaysBookableDateRange(
     prisonCode: String,
   ): DateRange {

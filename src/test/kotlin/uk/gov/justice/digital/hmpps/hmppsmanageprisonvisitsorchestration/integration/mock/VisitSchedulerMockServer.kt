@@ -620,6 +620,25 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     )
   }
 
+  fun stubRemoveExcludeDate(
+    prisonCode: String,
+    excludeDates: List<LocalDate>?,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      put("/prisons/prison/$prisonCode/exclude-date/remove")
+        .willReturn(
+          if (excludeDates != null) {
+            responseBuilder.withStatus(HttpStatus.CREATED.value())
+              .withBody(getJsonString(excludeDates))
+          } else {
+            responseBuilder.withStatus(httpStatus.value())
+          },
+        ),
+    )
+  }
+
   private fun getVisitsBySessionTemplateQueryParams(
     sessionTemplateReference: String?,
     sessionDate: LocalDate,
