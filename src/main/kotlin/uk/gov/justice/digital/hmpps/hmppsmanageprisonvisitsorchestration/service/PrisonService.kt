@@ -65,18 +65,18 @@ class PrisonService(
     return getExcludeDatesForPrison(prisonCode, pastDatesPredicate)
   }
 
+  private fun getExcludeDatesForPrison(prisonCode: String, excludeDatesFilter: Predicate<PrisonExcludeDateDto>): List<PrisonExcludeDateDto> {
+    return getExcludeDatesForPrison(prisonCode).filter { excludeDatesFilter.test(it) }.also {
+      setActionedByFullName(it)
+    }
+  }
+
   fun addExcludeDateForPrison(prisonCode: String, prisonExcludeDate: PrisonExcludeDateDto): List<LocalDate> {
     return visitSchedulerClient.addPrisonExcludeDate(prisonCode, prisonExcludeDate)?.sortedByDescending { it } ?: emptyList()
   }
 
   fun removeExcludeDateForPrison(prisonCode: String, prisonExcludeDate: PrisonExcludeDateDto): List<LocalDate> {
     return visitSchedulerClient.removePrisonExcludeDate(prisonCode, prisonExcludeDate)?.sortedByDescending { it } ?: emptyList()
-  }
-
-  private fun getExcludeDatesForPrison(prisonCode: String, excludeDatesFilter: Predicate<PrisonExcludeDateDto>): List<PrisonExcludeDateDto> {
-    return getExcludeDatesForPrison(prisonCode).filter { excludeDatesFilter.test(it) }.also {
-      setActionedByFullName(it)
-    }
   }
 
   fun getToDaysBookableDateRange(
