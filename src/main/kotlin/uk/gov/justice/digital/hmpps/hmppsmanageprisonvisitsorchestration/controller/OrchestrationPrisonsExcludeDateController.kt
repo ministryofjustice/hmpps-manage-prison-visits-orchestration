@@ -23,7 +23,7 @@ const val ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_PAST_CONTROLLER_PATH: String = 
 class OrchestrationPrisonsExcludeDateController(
   private val prisonService: PrisonService,
 ) {
-  @PreAuthorize("hasAnyRole('VSIP_ORCHESTRATION_SERVICE')")
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_FUTURE_CONTROLLER_PATH)
   @Operation(
     summary = "Get all current or future exclude dates for a given prison",
@@ -64,7 +64,7 @@ class OrchestrationPrisonsExcludeDateController(
     return prisonService.getFutureExcludeDatesForPrison(prisonCode)
   }
 
-  @PreAuthorize("hasAnyRole('VSIP_ORCHESTRATION_SERVICE')")
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_PAST_CONTROLLER_PATH)
   @Operation(
     summary = "Get all past exclude dates for a given prison",
