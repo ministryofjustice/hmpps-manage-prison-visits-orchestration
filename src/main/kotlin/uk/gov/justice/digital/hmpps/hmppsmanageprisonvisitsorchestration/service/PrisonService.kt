@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.PrisonExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
 import java.time.LocalDate
+import java.util.function.Predicate
 
 @Service
 class PrisonService(
@@ -55,9 +56,17 @@ class PrisonService(
   }
 
   fun getFutureExcludeDatesForPrison(prisonCode: String): List<PrisonExcludeDateDto> {
-    return getExcludeDatesForPrison(prisonCode).filter {
-      it.excludeDate >= dateUtils.getCurrentDate()
-    }.also {
+    val futureDatesPredicate: Predicate<PrisonExcludeDateDto> = Predicate { it.excludeDate >= dateUtils.getCurrentDate() }
+    return getExcludeDatesForPrison(prisonCode, futureDatesPredicate)
+  }
+
+  fun getPastExcludeDatesForPrison(prisonCode: String): List<PrisonExcludeDateDto> {
+    val pastDatesPredicate: Predicate<PrisonExcludeDateDto> = Predicate { it.excludeDate < dateUtils.getCurrentDate() }
+    return getExcludeDatesForPrison(prisonCode, pastDatesPredicate)
+  }
+
+  private fun getExcludeDatesForPrison(prisonCode: String, excludeDatesFilter: Predicate<PrisonExcludeDateDto>): List<PrisonExcludeDateDto> {
+    return getExcludeDatesForPrison(prisonCode).filter { excludeDatesFilter.test(it) }.also {
       setActionedByFullName(it)
     }
   }

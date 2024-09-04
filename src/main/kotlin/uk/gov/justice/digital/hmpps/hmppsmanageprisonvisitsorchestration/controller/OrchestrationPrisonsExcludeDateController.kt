@@ -49,6 +49,11 @@ class OrchestrationPrisonsExcludeDateController(
         description = "Incorrect permissions to view exclude dates",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Prison not found on visit-scheduler",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
     ],
   )
   fun getFutureExcludeDatesForPrison(
@@ -57,5 +62,46 @@ class OrchestrationPrisonsExcludeDateController(
     prisonCode: String,
   ): List<PrisonExcludeDateDto>? {
     return prisonService.getFutureExcludeDatesForPrison(prisonCode)
+  }
+
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @GetMapping(ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_PAST_CONTROLLER_PATH)
+  @Operation(
+    summary = "Get all past exclude dates for a given prison",
+    description = "Get all past exclude dates for a given prison",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Exclude dates successfully returned",
+        content = [
+          Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = PrisonExcludeDateDto::class)),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to view exclude dates",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Prison not found on visit-scheduler",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getPastExcludeDatesForPrison(
+    @Schema(description = "prison code", example = "HEI", required = true)
+    @PathVariable
+    prisonCode: String,
+  ): List<PrisonExcludeDateDto>? {
+    return prisonService.getPastExcludeDatesForPrison(prisonCode)
   }
 }

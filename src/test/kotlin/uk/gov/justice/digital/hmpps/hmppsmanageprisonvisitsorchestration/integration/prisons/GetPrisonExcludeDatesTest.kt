@@ -15,7 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 
-@DisplayName("Get prison tests")
+@DisplayName("Get prison exclude dates tests")
 class GetPrisonExcludeDatesTest : IntegrationTestBase() {
   @SpyBean
   lateinit var manageUsersApiClientSpy: ManageUsersApiClient
@@ -32,8 +32,18 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
       .exchange()
   }
 
+  fun callGetPastExcludeDates(
+    webTestClient: WebTestClient,
+    prisonCode: String,
+    authHttpHeaders: (HttpHeaders) -> Unit,
+  ): WebTestClient.ResponseSpec {
+    return webTestClient.get().uri("/config/prisons/prison/$prisonCode/exclude-date/past")
+      .headers(authHttpHeaders)
+      .exchange()
+  }
+
   @Test
-  fun `when prison has past and future exclude dates only future ones are returned`() {
+  fun `when prison has past and future exclude dates only future ones are returned on call to get future exclude dates`() {
     // Given
     val excludeDatePast1 = LocalDate.now().minusDays(1)
     val excludeDatePast2 = LocalDate.now().minusDays(2)
@@ -76,7 +86,7 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when prison has only today as exclude date it is returned`() {
+  fun `when prison has only today as exclude date it is returned on call to get future exclude dates`() {
     // Given
     val excludeDateCurrent = LocalDate.now()
 
@@ -99,7 +109,7 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when prison has only past exclude dates empty list is returned`() {
+  fun `when prison has only past exclude dates empty list is returned on call to get future exclude dates`() {
     // Given
     val excludeDatePast1 = LocalDate.now().minusDays(1)
     val excludeDatePast2 = LocalDate.now().minusDays(2)
@@ -124,12 +134,96 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when prison has no exclude dates empty list is returned`() {
+  fun `when prison has no exclude dates empty list is returned on call to get future exclude dates`() {
     // Given
     visitSchedulerMockServer.stubGetExcludeDates("HEI", emptyList())
 
     // When
     val responseSpec = callGetFutureExcludeDates(webTestClient, "HEI", roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val dates = getResults(returnResult)
+    Assertions.assertThat(dates).isEmpty()
+    verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
+  }
+
+  @Test
+  fun `when prison has past and future exclude dates only past ones are returned on call to get past exclude dates`() {
+    // Given
+    val excludeDatePast1 = LocalDate.now().minusDays(1)
+    val excludeDatePast2 = LocalDate.now().minusDays(2)
+    val excludeDatePast3 = LocalDate.now().minusDays(3)
+
+    val excludeDateCurrent = LocalDate.now()
+    val excludeDateFuture1 = LocalDate.now().plusDays(1)
+    val excludeDateFuture2 = LocalDate.now().plusDays(2)
+    val excludeDateFuture3 = LocalDate.now().plusDays(3)
+    val excludeDates = listOf(
+      PrisonExcludeDateDto(excludeDatePast1, "user-11"),
+      PrisonExcludeDateDto(excludeDatePast2, "user-12"),
+      PrisonExcludeDateDto(excludeDatePast3, "user-13"),
+      PrisonExcludeDateDto(excludeDateCurrent, "user-4"),
+      PrisonExcludeDateDto(excludeDateFuture1, "user-5"),
+      PrisonExcludeDateDto(excludeDateFuture2, "user-6"),
+      PrisonExcludeDateDto(excludeDateFuture3, "user-6"),
+    )
+
+    visitSchedulerMockServer.stubGetExcludeDates("HEI", excludeDates.sortedByDescending { it.excludeDate })
+    // user-11 and user-13 exist on hmpps-auth but not user-12
+    manageUsersApiMockServer.stubGetUserDetails("user-11", "User Eleven")
+    manageUsersApiMockServer.stubGetUserDetails("user-13", "User Thirteen")
+
+    // When
+    val responseSpec = callGetPastExcludeDates(webTestClient, "HEI", roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val dates = getResults(returnResult)
+    Assertions.assertThat(dates).hasSize(3)
+    Assertions.assertThat(dates[2]).isEqualTo(PrisonExcludeDateDto(excludeDatePast3, "User Thirteen"))
+    Assertions.assertThat(dates[1]).isEqualTo(PrisonExcludeDateDto(excludeDatePast2, "user-12"))
+    Assertions.assertThat(dates[0]).isEqualTo(PrisonExcludeDateDto(excludeDatePast1, "User Eleven"))
+    verify(manageUsersApiClientSpy, times(3)).getUserDetails(any())
+    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-11")
+    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-12")
+    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-13")
+  }
+
+  @Test
+  fun `when prison has only current and future exclude dates empty list is returned on call to get past exclude dates`() {
+    // Given
+    val excludeDateCurrent = LocalDate.now()
+    val excludeDateFuture1 = LocalDate.now().plusDays(1)
+    val excludeDateFuture2 = LocalDate.now().plusDays(2)
+    val excludeDateFuture3 = LocalDate.now().plusDays(3)
+
+    val excludeDates = listOf(
+      PrisonExcludeDateDto(excludeDateCurrent, "user-4"),
+      PrisonExcludeDateDto(excludeDateFuture1, "user-5"),
+      PrisonExcludeDateDto(excludeDateFuture2, "user-6"),
+      PrisonExcludeDateDto(excludeDateFuture3, "user-6"),
+    )
+
+    visitSchedulerMockServer.stubGetExcludeDates("HEI", excludeDates.sortedByDescending { it.excludeDate })
+
+    // When
+    val responseSpec = callGetPastExcludeDates(webTestClient, "HEI", roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val dates = getResults(returnResult)
+    Assertions.assertThat(dates).isEmpty()
+    verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
+  }
+
+  @Test
+  fun `when prison has no exclude dates empty list is returned on call to get past exclude dates`() {
+    // Given
+    visitSchedulerMockServer.stubGetExcludeDates("HEI", emptyList())
+
+    // When
+    val responseSpec = callGetPastExcludeDates(webTestClient, "HEI", roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
