@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.PrisonExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
 import java.time.LocalDate
 
@@ -16,6 +17,7 @@ import java.time.LocalDate
 class PrisonService(
   val visitSchedulerClient: VisitSchedulerClient,
   private val prisonRegisterClient: PrisonRegisterClient,
+  private val manageUsersService: ManageUsersService,
   private val dateUtils: DateUtils,
 ) {
   companion object {
@@ -52,10 +54,46 @@ class PrisonService(
     return visitSchedulerClient.getSupportedPrisons(type)
   }
 
+  fun getFutureExcludeDatesForPrison(prisonCode: String): List<PrisonExcludeDateDto> {
+    return getExcludeDatesForPrison(prisonCode).filter {
+      it.excludeDate >= dateUtils.getCurrentDate()
+    }.also {
+      setActionedByFullName(it)
+    }
+  }
+
   fun getToDaysBookableDateRange(
     prisonCode: String,
   ): DateRange {
     val prison = visitSchedulerClient.getPrison(prisonCode)
     return dateUtils.getToDaysDateRange(prison)
+  }
+
+  private fun getExcludeDatesForPrison(prisonCode: String): List<PrisonExcludeDateDto> {
+    return visitSchedulerClient.getPrisonExcludeDates(prisonCode) ?: emptyList()
+  }
+
+  private fun setActionedByFullName(excludeDates: List<PrisonExcludeDateDto>): List<PrisonExcludeDateDto> {
+    if (excludeDates.isNotEmpty()) {
+      val userNameMap = getUserNamesMap(excludeDates.map { it.actionedBy }.toSet())
+
+      for (excludeDate in excludeDates) {
+        excludeDate.actionedBy = userNameMap[excludeDate.actionedBy] ?: excludeDate.actionedBy
+      }
+    }
+
+    return excludeDates
+  }
+
+  /**
+   * returns Map<String, String> where key = username, value = full name.
+   */
+  private fun getUserNamesMap(usernames: Set<String>): Map<String, String> {
+    val userNameMap = HashMap<String, String>()
+    for (username in usernames) {
+      userNameMap[username] = manageUsersService.getUserFullName(username, userNameIfNotAvailable = username)
+    }
+
+    return userNameMap
   }
 }

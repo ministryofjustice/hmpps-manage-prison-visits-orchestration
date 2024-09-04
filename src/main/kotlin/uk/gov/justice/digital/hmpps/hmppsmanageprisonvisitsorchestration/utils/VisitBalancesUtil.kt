@@ -5,7 +5,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import java.time.LocalDate
 
 @Component
-class VisitBalancesUtil(private val dateUtil: DateUtil) {
+class VisitBalancesUtil(private val dateUtil: DateUtils) {
   fun calculateAvailableVos(visitBalance: VisitBalancesDto?): Int {
     return (visitBalance?.remainingVo ?: 0) + (visitBalance?.remainingPvo ?: 0)
   }
