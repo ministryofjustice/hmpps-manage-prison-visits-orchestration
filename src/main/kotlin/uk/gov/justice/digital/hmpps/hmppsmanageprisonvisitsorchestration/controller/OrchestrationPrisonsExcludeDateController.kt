@@ -116,7 +116,7 @@ class OrchestrationPrisonsExcludeDateController(
     description = "Add exclude date for a given prison",
     responses = [
       ApiResponse(
-        responseCode = "201",
+        responseCode = "200",
         description = "Exclude dates successfully added",
         content = [
           Content(

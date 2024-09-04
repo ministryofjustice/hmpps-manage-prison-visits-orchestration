@@ -6,12 +6,11 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.PrisonExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 
-@DisplayName("Get prison exclude dates tests")
+@DisplayName("Add prison exclude dates tests")
 class PrisonExcludeDateAddTest : IntegrationTestBase() {
   final val prisonCode = "HEI"
 
@@ -33,20 +32,8 @@ class PrisonExcludeDateAddTest : IntegrationTestBase() {
     // Given
     val excludeDateFuture = LocalDate.now().plusDays(3)
     val excludeDateDto = PrisonExcludeDateDto(excludeDateFuture, "user-6")
-    val prisonDto = VisitSchedulerPrisonDto(
-      code = prisonCode,
 
-      active = true,
-      policyNoticeDaysMin = 2,
-      policyNoticeDaysMax = 28,
-      maxTotalVisitors = 6,
-      maxAdultVisitors = 3,
-      maxChildVisitors = 3,
-      adultAgeYears = 18,
-      excludeDates = setOf(excludeDateFuture),
-    )
-
-    visitSchedulerMockServer.stubAddExcludeDate(prisonCode, prisonDto)
+    visitSchedulerMockServer.stubAddExcludeDate(prisonCode, listOf(excludeDateFuture))
 
     // When
     val responseSpec = callAddExcludeDate(webTestClient, "HEI", excludeDateDto, roleVSIPOrchestrationServiceHttpHeaders)

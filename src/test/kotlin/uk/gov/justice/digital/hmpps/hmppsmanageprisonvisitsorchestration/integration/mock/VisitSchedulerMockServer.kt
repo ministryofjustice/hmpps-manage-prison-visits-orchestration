@@ -603,16 +603,16 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
 
   fun stubAddExcludeDate(
     prisonCode: String,
-    prisonDto: VisitSchedulerPrisonDto?,
+    excludeDates: List<LocalDate>?,
     httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
   ) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
       put("/prisons/prison/$prisonCode/exclude-date/add")
         .willReturn(
-          if (prisonDto != null) {
+          if (excludeDates != null) {
             responseBuilder.withStatus(HttpStatus.CREATED.value())
-              .withBody(getJsonString(prisonDto))
+              .withBody(getJsonString(excludeDates))
           } else {
             responseBuilder.withStatus(httpStatus.value())
           },

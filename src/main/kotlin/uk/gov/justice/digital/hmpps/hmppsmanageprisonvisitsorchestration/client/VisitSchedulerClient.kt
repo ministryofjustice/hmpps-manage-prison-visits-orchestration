@@ -491,13 +491,13 @@ class VisitSchedulerClient(
       .bodyToMono<List<PrisonExcludeDateDto>>().block(apiTimeout)
   }
 
-  fun addPrisonExcludeDate(prisonCode: String, prisonExcludeDate: PrisonExcludeDateDto): VisitSchedulerPrisonDto? {
+  fun addPrisonExcludeDate(prisonCode: String, prisonExcludeDate: PrisonExcludeDateDto): List<LocalDate>? {
     return webClient.put()
       .uri("/prisons/prison/$prisonCode/exclude-date/add")
       .body(BodyInserters.fromValue(prisonExcludeDate))
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono<VisitSchedulerPrisonDto>().block(apiTimeout)
+      .bodyToMono<List<LocalDate>>().block(apiTimeout)
   }
 
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {
