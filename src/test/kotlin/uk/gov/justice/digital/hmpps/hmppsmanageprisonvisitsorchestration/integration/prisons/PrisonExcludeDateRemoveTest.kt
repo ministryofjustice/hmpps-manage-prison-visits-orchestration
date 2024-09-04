@@ -10,33 +10,33 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 
-@DisplayName("Add prison exclude dates tests")
-class PrisonExcludeDateAddTest : IntegrationTestBase() {
+@DisplayName("Remove prison exclude dates tests")
+class PrisonExcludeDateRemoveTest : IntegrationTestBase() {
   final val prisonCode = "HEI"
 
-  fun callAddExcludeDate(
+  fun callRemoveExcludeDate(
     webTestClient: WebTestClient,
     prisonCode: String,
     excludeDateDto: PrisonExcludeDateDto,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     return webTestClient.put()
-      .uri("/config/prisons/prison/$prisonCode/exclude-date/add")
+      .uri("/config/prisons/prison/$prisonCode/exclude-date/remove")
       .body(BodyInserters.fromValue(excludeDateDto))
       .headers(authHttpHeaders)
       .exchange()
   }
 
   @Test
-  fun `when add exclude date added and is successful a 201 is returned`() {
+  fun `when remove exclude date added and is successful a successful response is returned`() {
     // Given
     val excludeDateFuture = LocalDate.now().plusDays(3)
     val excludeDateDto = PrisonExcludeDateDto(excludeDateFuture, "user-6")
 
-    visitSchedulerMockServer.stubAddExcludeDate(prisonCode, listOf(excludeDateFuture))
+    visitSchedulerMockServer.stubRemoveExcludeDate(prisonCode, listOf(LocalDate.now()))
 
     // When
-    val responseSpec = callAddExcludeDate(webTestClient, "HEI", excludeDateDto, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callRemoveExcludeDate(webTestClient, "HEI", excludeDateDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().is2xxSuccessful
@@ -47,10 +47,10 @@ class PrisonExcludeDateAddTest : IntegrationTestBase() {
     // Given
     val prisonCode = "HEI"
     val excludeDateDto = PrisonExcludeDateDto(LocalDate.now(), "user-6")
-    visitSchedulerMockServer.stubAddExcludeDate(prisonCode, null, HttpStatus.NOT_FOUND)
+    visitSchedulerMockServer.stubRemoveExcludeDate(prisonCode, null, HttpStatus.NOT_FOUND)
 
     // When
-    val responseSpec = callAddExcludeDate(webTestClient, "HEI", excludeDateDto, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callRemoveExcludeDate(webTestClient, "HEI", excludeDateDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -61,10 +61,10 @@ class PrisonExcludeDateAddTest : IntegrationTestBase() {
     // Given
     val prisonCode = "HEI"
     val excludeDateDto = PrisonExcludeDateDto(LocalDate.now(), "user-6")
-    visitSchedulerMockServer.stubAddExcludeDate(prisonCode, null, HttpStatus.BAD_REQUEST)
+    visitSchedulerMockServer.stubRemoveExcludeDate(prisonCode, null, HttpStatus.BAD_REQUEST)
 
     // When
-    val responseSpec = callAddExcludeDate(webTestClient, "HEI", excludeDateDto, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callRemoveExcludeDate(webTestClient, "HEI", excludeDateDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isBadRequest
