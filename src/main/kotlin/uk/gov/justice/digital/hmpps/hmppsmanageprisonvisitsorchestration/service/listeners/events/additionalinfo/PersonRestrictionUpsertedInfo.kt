@@ -11,7 +11,7 @@ data class PersonRestrictionUpsertedInfo(
   val prisonerNumber: String,
 
   @NotBlank
-  @JsonProperty("contactPersonId")
+  @JsonProperty("personId")
   val visitorId: String,
 
   @NotBlank
