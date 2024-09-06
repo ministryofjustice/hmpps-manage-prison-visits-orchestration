@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
-import java.time.LocalDate
 
 @Service
 class PrisonerContactService(
@@ -16,9 +15,9 @@ class PrisonerContactService(
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun getPrisonersSocialContactsWithDOBAndNotBannedBeforeDate(prisonerNumber: String, notBannedBeforeDate: LocalDate): List<PrisonerContactDto> {
-    LOG.debug("Getting approved social contacts with a DOB for prisoner - {}, notBannedBeforeDate - {}", prisonerNumber, notBannedBeforeDate)
-    return prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerNumber, withAddress = false, approvedVisitorsOnly = true, hasDateOfBirth = true, notBannedBeforeDate = notBannedBeforeDate)
+  fun getPrisonersApprovedSocialContactsWithDOB(prisonerNumber: String): List<PrisonerContactDto> {
+    LOG.debug("Getting approved social contacts with a DOB for prisoner - {}", prisonerNumber)
+    return prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerNumber, withAddress = false, approvedVisitorsOnly = true, hasDateOfBirth = true)
   }
 
   fun getPrisonersContacts(prisonerIds: Set<String>): Map<String, List<PrisonerContactDto>> {

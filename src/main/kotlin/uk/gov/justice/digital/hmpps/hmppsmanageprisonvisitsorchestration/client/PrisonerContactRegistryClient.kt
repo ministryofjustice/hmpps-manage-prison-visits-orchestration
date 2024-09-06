@@ -17,7 +17,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.excepti
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import java.net.URI
 import java.time.Duration
-import java.time.LocalDate
 import java.util.Optional
 
 @Component
@@ -35,11 +34,10 @@ class PrisonerContactRegistryClient(
     approvedVisitorsOnly: Boolean,
     personId: Long? = null,
     hasDateOfBirth: Boolean? = null,
-    notBannedBeforeDate: LocalDate? = null,
   ): List<PrisonerContactDto> {
     val uri = "/prisoners/$prisonerId/contacts/social"
     return webClient.get().uri(uri) {
-      getSocialContactsUriBuilder(personId, withAddress, hasDateOfBirth, notBannedBeforeDate, approvedVisitorsOnly, it).build()
+      getSocialContactsUriBuilder(personId, withAddress, hasDateOfBirth, approvedVisitorsOnly, it).build()
     }
       .retrieve()
       .bodyToMono<List<PrisonerContactDto>>()
@@ -60,13 +58,11 @@ class PrisonerContactRegistryClient(
     personId: Long?,
     withAddress: Boolean,
     hasDateOfBirth: Boolean? = null,
-    notBannedBeforeDate: LocalDate? = null,
     approvedVisitorsOnly: Boolean,
     uriBuilder: UriBuilder,
   ): UriBuilder {
     uriBuilder.queryParamIfPresent("id", Optional.ofNullable(personId))
     uriBuilder.queryParamIfPresent("hasDateOfBirth", Optional.ofNullable(hasDateOfBirth))
-    uriBuilder.queryParamIfPresent("notBannedBeforeDate", Optional.ofNullable(notBannedBeforeDate))
     uriBuilder.queryParam("withAddress", withAddress)
     uriBuilder.queryParam("approvedVisitorsOnly", approvedVisitorsOnly)
     return uriBuilder

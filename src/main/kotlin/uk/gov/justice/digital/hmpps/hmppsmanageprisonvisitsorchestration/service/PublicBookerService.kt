@@ -10,11 +10,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.Boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.RestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorInfoDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorRestrictionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorRestrictionType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerAuthFailureException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtil
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.PublicBookerValidationUtil
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.PublicBookerValidationUtil.Companion.PRISONER_VALIDATION_ERROR_MSG
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.PublicBookerValidationUtil.Companion.PRISON_VALIDATION_ERROR_MSG
@@ -89,10 +92,10 @@ class PublicBookerService(
       throw ValidationException(message)
     }
 
-    return getValidVisitors(bookerReference, prisonerNumber, prison)
+    return getValidVisitors(bookerReference, prisonerNumber)
   }
 
-  private fun getValidVisitors(bookerReference: String, prisonerNumber: String, prison: VisitSchedulerPrisonDto): List<VisitorInfoDto> {
+  private fun getValidVisitors(bookerReference: String, prisonerNumber: String): List<VisitorInfoDto> {
     val visitorDetailsList = mutableListOf<VisitorInfoDto>()
     val associatedVisitors = prisonVisitBookerRegistryClient.getPermittedVisitorsForBookersAssociatedPrisoner(bookerReference, prisonerNumber)
 
@@ -100,7 +103,7 @@ class PublicBookerService(
       // get approved visitors for a prisoner with a DOB and not BANNED
       var allValidContacts = emptyList<PrisonerContactDto>()
       try {
-        allValidContacts = getAllValidContacts(prison, prisonerNumber)
+        allValidContacts = getAllValidContacts(prisonerNumber)
       } catch (nfe: NotFoundException) {
         logger.error("No valid contacts found for prisoner id - $prisonerNumber")
       }
@@ -109,7 +112,8 @@ class PublicBookerService(
       if (allValidContacts.isNotEmpty()) {
         associatedVisitors.forEach { associatedVisitor ->
           allValidContacts.firstOrNull { it.personId == associatedVisitor.visitorId }?.let { contact ->
-            visitorDetailsList.add(VisitorInfoDto(contact))
+            val visitorRestrictions = getRestrictions(contact.restrictions)
+            visitorDetailsList.add(VisitorInfoDto(contact, visitorRestrictions))
           }
         }
       }
@@ -118,13 +122,45 @@ class PublicBookerService(
     return visitorDetailsList.toList()
   }
 
-  private fun getAllValidContacts(prison: VisitSchedulerPrisonDto, prisonerNumber: String): List<PrisonerContactDto> {
-    val lastBookableDate = getLastBookableSessionDate(prison)
-
-    return prisonerContactService.getPrisonersSocialContactsWithDOBAndNotBannedBeforeDate(prisonerNumber, lastBookableDate)
+  private fun getAllValidContacts(prisonerNumber: String): List<PrisonerContactDto> {
+    return prisonerContactService.getPrisonersApprovedSocialContactsWithDOB(prisonerNumber)
   }
 
-  private fun getLastBookableSessionDate(prison: VisitSchedulerPrisonDto): LocalDate {
-    return prisonService.getLastBookableSessionDate(prison, LocalDate.now())
+  private fun getMaxExpiryDate(restrictions: List<RestrictionDto>): LocalDate? {
+    val expiryDates = restrictions.map { it.expiryDate }
+    return if (expiryDates.contains(null)) {
+      null
+    } else {
+      expiryDates.maxWith(Comparator.naturalOrder())
+    }
+  }
+
+  private fun getRestrictions(restrictions: List<RestrictionDto>): Set<VisitorRestrictionDto> {
+    val relevantVisitorRestrictions: MutableSet<VisitorRestrictionDto> = mutableSetOf()
+
+    VisitorRestrictionType.entries.forEach { restrictionType ->
+      val restrictionsByType = restrictions.filter { restriction ->
+        isRestrictionType(restrictionType, restriction) &&
+          hasRestrictionForDate(restriction, DateUtil().getCurrentDate())
+      }
+
+      if (restrictionsByType.isNotEmpty()) {
+        relevantVisitorRestrictions.add(VisitorRestrictionDto(restrictionType, getMaxExpiryDate(restrictionsByType)))
+      }
+    }
+
+    return relevantVisitorRestrictions.toSet()
+  }
+
+  private fun hasRestrictionForDate(restriction: RestrictionDto, date: LocalDate): Boolean {
+    return isRestrictionApplicableForDate(restriction.expiryDate, date)
+  }
+
+  private fun isRestrictionType(visitorRestrictionType: VisitorRestrictionType, restriction: RestrictionDto): Boolean {
+    return restriction.restrictionType == visitorRestrictionType.toString()
+  }
+
+  private fun isRestrictionApplicableForDate(restrictionEndDate: LocalDate?, date: LocalDate): Boolean {
+    return (restrictionEndDate == null || (date <= restrictionEndDate))
   }
 }

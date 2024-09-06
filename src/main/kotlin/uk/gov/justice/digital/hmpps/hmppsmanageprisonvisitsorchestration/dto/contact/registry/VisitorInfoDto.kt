@@ -13,11 +13,14 @@ data class VisitorInfoDto(
   val lastName: String,
   @Schema(description = "Date of birth", example = "2000-01-31", required = false)
   val dateOfBirth: LocalDate?,
+  @Schema(description = "Relevant visitor restrictions that impact visits or empty list if none", required = true)
+  val visitorRestrictions: Set<VisitorRestrictionDto>,
 ) {
-  constructor(contact: PrisonerContactDto) : this(
+  constructor(contact: PrisonerContactDto, visitorRestrictions: Set<VisitorRestrictionDto>) : this(
     visitorId = contact.personId!!,
     firstName = contact.firstName,
     lastName = contact.lastName,
     dateOfBirth = contact.dateOfBirth,
+    visitorRestrictions = visitorRestrictions,
   )
 }
