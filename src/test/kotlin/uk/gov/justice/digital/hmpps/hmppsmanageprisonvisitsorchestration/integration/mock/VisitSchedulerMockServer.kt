@@ -508,13 +508,18 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
         ),
     )
   }
-  fun stubGetSupportedPrisons(type: UserType, supportedPrisonsList: List<String>) {
+  fun stubGetSupportedPrisons(type: UserType, supportedPrisonsList: List<String>?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
     stubFor(
       get("/config/prisons/user-type/${type.name}/supported")
         .willReturn(
-          createJsonResponseBuilder()
-            .withStatus(HttpStatus.OK.value())
-            .withBody(getJsonString(supportedPrisonsList)),
+          if (supportedPrisonsList == null) {
+            createJsonResponseBuilder()
+              .withStatus(httpStatus.value())
+          } else {
+            createJsonResponseBuilder()
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(supportedPrisonsList))
+          },
         ),
     )
   }
