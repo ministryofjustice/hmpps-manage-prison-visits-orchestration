@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.Valid
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -15,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.PrisonExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonService
-import java.time.LocalDate
 
 const val ORCHESTRATION_PRISONS_EXCLUDE_DATE_CONTROLLER_PATH: String = "$ORCHESTRATION_PRISONS_CONFIG_CONTROLLER_PATH/prison/{prisonCode}/exclude-date"
 const val ORCHESTRATION_PRISONS_EXCLUDE_DATE_ADD_CONTROLLER_PATH: String = "$ORCHESTRATION_PRISONS_EXCLUDE_DATE_CONTROLLER_PATH/add"
@@ -153,8 +154,9 @@ class OrchestrationPrisonsExcludeDateController(
     prisonCode: String,
     @RequestBody @Valid
     prisonExcludeDate: PrisonExcludeDateDto,
-  ): List<LocalDate> {
-    return prisonService.addExcludeDateForPrison(prisonCode, prisonExcludeDate)
+  ): ResponseEntity<HttpStatus> {
+    prisonService.addExcludeDateForPrison(prisonCode, prisonExcludeDate)
+    return ResponseEntity(HttpStatus.OK)
   }
 
   @PreAuthorize("hasAnyRole('VSIP_ORCHESTRATION_SERVICE', 'VISIT_SCHEDULER')")
@@ -201,7 +203,8 @@ class OrchestrationPrisonsExcludeDateController(
     prisonCode: String,
     @RequestBody @Valid
     prisonExcludeDate: PrisonExcludeDateDto,
-  ): List<LocalDate> {
-    return prisonService.removeExcludeDateForPrison(prisonCode, prisonExcludeDate)
+  ): ResponseEntity<HttpStatus> {
+    prisonService.removeExcludeDateForPrison(prisonCode, prisonExcludeDate)
+    return ResponseEntity(HttpStatus.OK)
   }
 }
