@@ -57,12 +57,12 @@ class PrisonService(
 
   fun getFutureExcludeDatesForPrison(prisonCode: String): List<PrisonExcludeDateDto> {
     val futureDatesPredicate: Predicate<PrisonExcludeDateDto> = Predicate { it.excludeDate >= dateUtils.getCurrentDate() }
-    return getExcludeDatesForPrison(prisonCode, futureDatesPredicate)
+    return getExcludeDatesForPrison(prisonCode, futureDatesPredicate).sortedBy { it.excludeDate }
   }
 
   fun getPastExcludeDatesForPrison(prisonCode: String): List<PrisonExcludeDateDto> {
     val pastDatesPredicate: Predicate<PrisonExcludeDateDto> = Predicate { it.excludeDate < dateUtils.getCurrentDate() }
-    return getExcludeDatesForPrison(prisonCode, pastDatesPredicate)
+    return getExcludeDatesForPrison(prisonCode, pastDatesPredicate).sortedByDescending { it.excludeDate }
   }
 
   private fun getExcludeDatesForPrison(prisonCode: String, excludeDatesFilter: Predicate<PrisonExcludeDateDto>): List<PrisonExcludeDateDto> {
