@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.IsExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.PrisonExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
 import java.time.LocalDate
@@ -69,6 +70,13 @@ class PrisonService(
     return getExcludeDatesForPrison(prisonCode).filter { excludeDatesFilter.test(it) }.also {
       setActionedByFullName(it)
     }
+  }
+
+  fun isDateExcludedForPrisonVisits(prisonCode: String, date: LocalDate): IsExcludeDateDto {
+    logger.trace("isDateExcluded - prison - {}, date - {}", prisonCode, date)
+    val isExcluded = getExcludeDatesForPrison(prisonCode).map { it.excludeDate }.contains(date)
+    logger.trace("isDateExcluded - prison - {}, date - {}, isExcluded - {}", prisonCode, date, isExcluded)
+    return IsExcludeDateDto(isExcluded)
   }
 
   fun addExcludeDateForPrison(prisonCode: String, prisonExcludeDate: PrisonExcludeDateDto): List<LocalDate> {
