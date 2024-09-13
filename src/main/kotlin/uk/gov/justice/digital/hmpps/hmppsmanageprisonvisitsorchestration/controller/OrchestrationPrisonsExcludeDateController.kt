@@ -122,12 +122,6 @@ class OrchestrationPrisonsExcludeDateController(
       ApiResponse(
         responseCode = "200",
         description = "Exclude dates successfully added",
-        content = [
-          Content(
-            mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = PrisonExcludeDateDto::class)),
-          ),
-        ],
       ),
       ApiResponse(
         responseCode = "400",
@@ -169,14 +163,8 @@ class OrchestrationPrisonsExcludeDateController(
     description = "Remove exclude date for a given prison",
     responses = [
       ApiResponse(
-        responseCode = "201",
+        responseCode = "200",
         description = "Exclude dates successfully removed",
-        content = [
-          Content(
-            mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = PrisonExcludeDateDto::class)),
-          ),
-        ],
       ),
       ApiResponse(
         responseCode = "400",
@@ -223,7 +211,7 @@ class OrchestrationPrisonsExcludeDateController(
         content = [
           Content(
             mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = PrisonExcludeDateDto::class)),
+            schema = Schema(implementation = IsExcludeDateDto::class),
           ),
         ],
       ),
