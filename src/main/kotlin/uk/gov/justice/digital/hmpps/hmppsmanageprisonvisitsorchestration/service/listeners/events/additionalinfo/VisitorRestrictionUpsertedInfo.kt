@@ -20,4 +20,4 @@ data class VisitorRestrictionUpsertedInfo(
 
   @NotBlank
   val restrictionType: String,
-)
+) : EventInfo

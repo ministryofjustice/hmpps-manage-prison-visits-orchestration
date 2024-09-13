@@ -23,4 +23,9 @@ abstract class PrisonerNonAssociationNotifier() : EventNotifier() {
     LOG.debug("Enter PrisonerNonAssociationNotifier ${type.value} Info:$additionalInfo")
     getVisitSchedulerService().processNonAssociations(additionalInfo, type)
   }
+
+  override fun isProcessableEvent(domainEvent: DomainEvent): Boolean {
+    // TODO - implement
+    return true
+  }
 }
