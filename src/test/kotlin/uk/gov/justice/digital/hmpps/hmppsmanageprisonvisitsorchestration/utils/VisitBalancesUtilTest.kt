@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import java.time.LocalDate
 
 class VisitBalancesUtilTest {
-  private val dateUtil: DateUtil = mock()
+  private val dateUtil: DateUtils = mock()
 
   @Test
   fun `test available VOs is a total of VO and PVO`() {

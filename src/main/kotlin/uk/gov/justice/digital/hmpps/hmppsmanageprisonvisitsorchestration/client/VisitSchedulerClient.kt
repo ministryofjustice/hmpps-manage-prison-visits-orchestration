@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.PrisonExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
@@ -481,6 +482,31 @@ class VisitSchedulerClient(
       .uri("/visits/notification/visit/$reference/types")
       .retrieve()
       .bodyToMono<List<NotificationEventType>>().block(apiTimeout)
+  }
+
+  fun getPrisonExcludeDates(prisonCode: String): List<PrisonExcludeDateDto>? {
+    return webClient.get()
+      .uri("/prisons/prison/$prisonCode/exclude-date")
+      .retrieve()
+      .bodyToMono<List<PrisonExcludeDateDto>>().block(apiTimeout)
+  }
+
+  fun addPrisonExcludeDate(prisonCode: String, prisonExcludeDate: PrisonExcludeDateDto): List<LocalDate>? {
+    return webClient.put()
+      .uri("/prisons/prison/$prisonCode/exclude-date/add")
+      .body(BodyInserters.fromValue(prisonExcludeDate))
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<List<LocalDate>>().block(apiTimeout)
+  }
+
+  fun removePrisonExcludeDate(prisonCode: String, prisonExcludeDate: PrisonExcludeDateDto): List<LocalDate>? {
+    return webClient.put()
+      .uri("/prisons/prison/$prisonCode/exclude-date/remove")
+      .body(BodyInserters.fromValue(prisonExcludeDate))
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<List<LocalDate>>().block(apiTimeout)
   }
 
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {

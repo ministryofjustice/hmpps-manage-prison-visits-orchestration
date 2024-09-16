@@ -74,11 +74,11 @@ class ManageUsersService(
   }
 
   @Cacheable(value = ["UserFullName"], key = "#userName")
-  fun getUserFullName(userName: String): String {
+  fun getUserFullName(userName: String, userNameIfNotAvailable: String = NOT_KNOWN): String {
     return if (userName == NOT_KNOWN) {
       userName
     } else {
-      manageUsersApiClient.getUserDetails(userName).block(apiTimeout)?.fullName ?: NOT_KNOWN
+      manageUsersApiClient.getUserDetails(userName).block(apiTimeout)?.fullName ?: userNameIfNotAvailable
     }
   }
 }
