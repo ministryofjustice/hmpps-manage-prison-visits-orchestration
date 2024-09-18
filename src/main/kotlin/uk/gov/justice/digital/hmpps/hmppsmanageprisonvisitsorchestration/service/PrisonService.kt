@@ -89,9 +89,11 @@ class PrisonService(
 
   fun getToDaysBookableDateRange(
     prisonCode: String,
+    fromDateOverride: Int? = null,
+    toDateOverride: Int? = null,
   ): DateRange {
     val prison = visitSchedulerClient.getPrison(prisonCode)
-    return dateUtils.getToDaysDateRange(prison)
+    return dateUtils.getToDaysDateRange(prison = prison, minOverride = fromDateOverride, maxOverride = toDateOverride)
   }
 
   private fun getExcludeDatesForPrison(prisonCode: String): List<PrisonExcludeDateDto> {

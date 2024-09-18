@@ -23,7 +23,7 @@ class DateUtils {
   }
 
   fun advanceFromDate(dateRange: DateRange, advanceFromDateByDays: Int): DateRange {
-    // if advanceFromDateByDays is greater than zero and new from date is beofre toDate
+    // if advanceFromDateByDays is greater than zero and new from date is before toDate
     if (advanceFromDateByDays > 0) {
       val fromDate = dateRange.fromDate.plusDays(advanceFromDateByDays.toLong())
 

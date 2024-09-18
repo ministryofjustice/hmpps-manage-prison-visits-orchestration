@@ -425,6 +425,8 @@ abstract class IntegrationTestBase {
     authHttpHeaders: (HttpHeaders) -> Unit,
     excludedApplicationReference: String? = null,
     advanceFromDateByDays: Int? = null,
+    fromDateOverride: Int? = null,
+    toDateOverride: Int? = null,
     currentUser: String? = null,
   ): WebTestClient.ResponseSpec {
     val uri = "/visit-sessions/available"
@@ -437,6 +439,8 @@ abstract class IntegrationTestBase {
         visitorIds = visitorIds,
         withAppointmentsCheck = withAppointmentsCheck,
         excludedApplicationReference = excludedApplicationReference,
+        fromDateOverride = fromDateOverride,
+        toDateOverride = toDateOverride,
         advanceFromDateByDays = advanceFromDateByDays,
       ).joinToString("&")
 
@@ -570,6 +574,8 @@ abstract class IntegrationTestBase {
     withAppointmentsCheck: Boolean,
     excludedApplicationReference: String?,
     advanceFromDateByDays: Int?,
+    fromDateOverride: Int? = null,
+    toDateOverride: Int? = null,
     currentUser: String? = null,
   ): List<String> {
     val queryParams = java.util.ArrayList<String>()
@@ -586,6 +592,12 @@ abstract class IntegrationTestBase {
     }
     advanceFromDateByDays?.let {
       queryParams.add("advanceFromDateByDays=$advanceFromDateByDays")
+    }
+    fromDateOverride?.let {
+      queryParams.add("fromDateOverride=$fromDateOverride")
+    }
+    toDateOverride?.let {
+      queryParams.add("toDateOverride=$toDateOverride")
     }
     currentUser?.let {
       queryParams.add("currentUser=$currentUser")

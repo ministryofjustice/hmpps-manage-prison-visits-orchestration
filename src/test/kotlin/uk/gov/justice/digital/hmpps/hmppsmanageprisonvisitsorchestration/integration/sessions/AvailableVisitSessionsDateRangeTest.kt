@@ -233,4 +233,58 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
     // Then
     verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, excludedApplicationReference = null)
   }
+
+  @Test
+  fun `when fromDateOverride is passed as 2 the original opening booking window is today + 2 days`() {
+    // Given
+    val fromDateOverride = 5
+    visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3))
+
+    // When
+    callGetAvailableVisitSessions(
+      webTestClient,
+      prisonCode = prisonCode,
+      prisonerId = prisonerId,
+      sessionRestriction = OPEN,
+      withAppointmentsCheck = true,
+      excludedApplicationReference = null,
+      fromDateOverride = fromDateOverride,
+      authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
+    )
+
+    // Then
+    val dateRange = DateRange(
+      fromDate = LocalDate.now().plusDays(fromDateOverride.toLong()),
+      toDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMax.toLong()),
+    )
+
+    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, excludedApplicationReference = null)
+  }
+
+  @Test
+  fun `when toDateOverride is passed as 20 the original closing booking window is today + 20 days`() {
+    // Given
+    val toDateOverride = 20
+    visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3))
+
+    // When
+    callGetAvailableVisitSessions(
+      webTestClient,
+      prisonCode = prisonCode,
+      prisonerId = prisonerId,
+      sessionRestriction = OPEN,
+      withAppointmentsCheck = true,
+      excludedApplicationReference = null,
+      toDateOverride = toDateOverride,
+      authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
+    )
+
+    // Then
+    val dateRange = DateRange(
+      fromDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMin.toLong()),
+      toDate = LocalDate.now().plusDays(toDateOverride.toLong()),
+    )
+
+    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, excludedApplicationReference = null)
+  }
 }

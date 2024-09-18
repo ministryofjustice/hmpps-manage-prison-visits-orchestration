@@ -45,12 +45,14 @@ class VisitSchedulerSessionsService(
     withAppointmentsCheck: Boolean,
     excludedApplicationReference: String? = null,
     advanceFromDateByDays: Int,
+    fromDateOverride: Int? = null,
+    toDateOverride: Int? = null,
     username: String? = null,
   ): List<AvailableVisitSessionDto> {
     val sessionRestriction = updateRequestedRestriction(requestedSessionRestriction, prisonerId, visitors)
 
     // advance from date by n days
-    var dateRange = prisonService.getToDaysBookableDateRange(prisonCode)
+    var dateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, fromDateOverride = fromDateOverride, toDateOverride = toDateOverride)
     dateRange = dateUtils.advanceFromDate(dateRange, advanceFromDateByDays)
 
     var availableVisitSessions = try {
