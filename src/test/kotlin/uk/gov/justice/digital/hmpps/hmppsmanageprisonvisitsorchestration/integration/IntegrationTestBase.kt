@@ -424,7 +424,7 @@ abstract class IntegrationTestBase {
     withAppointmentsCheck: Boolean,
     authHttpHeaders: (HttpHeaders) -> Unit,
     excludedApplicationReference: String? = null,
-    advanceFromDateByDays: Int? = null,
+    pvbAdvanceFromDateByDays: Int? = null,
     fromDateOverride: Int? = null,
     toDateOverride: Int? = null,
     currentUser: String? = null,
@@ -441,7 +441,7 @@ abstract class IntegrationTestBase {
         excludedApplicationReference = excludedApplicationReference,
         fromDateOverride = fromDateOverride,
         toDateOverride = toDateOverride,
-        advanceFromDateByDays = advanceFromDateByDays,
+        pvbAdvanceFromDateByDays = pvbAdvanceFromDateByDays,
       ).joinToString("&")
 
     return webTestClient.get().uri("$uri?$uriParams")
@@ -573,7 +573,7 @@ abstract class IntegrationTestBase {
     visitorIds: List<Long>? = null,
     withAppointmentsCheck: Boolean,
     excludedApplicationReference: String?,
-    advanceFromDateByDays: Int?,
+    pvbAdvanceFromDateByDays: Int?,
     fromDateOverride: Int? = null,
     toDateOverride: Int? = null,
     currentUser: String? = null,
@@ -590,8 +590,8 @@ abstract class IntegrationTestBase {
     excludedApplicationReference?.let {
       queryParams.add("excludedApplicationReference=$excludedApplicationReference")
     }
-    advanceFromDateByDays?.let {
-      queryParams.add("advanceFromDateByDays=$advanceFromDateByDays")
+    pvbAdvanceFromDateByDays?.let {
+      queryParams.add("pvbAdvanceFromDateByDays=$pvbAdvanceFromDateByDays")
     }
     fromDateOverride?.let {
       queryParams.add("fromDateOverride=$fromDateOverride")

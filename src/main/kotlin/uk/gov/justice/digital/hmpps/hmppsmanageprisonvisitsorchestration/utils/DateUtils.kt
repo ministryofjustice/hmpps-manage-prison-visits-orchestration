@@ -22,10 +22,10 @@ class DateUtils {
     return DateRange(bookableStartDate, bookableEndDate)
   }
 
-  fun advanceFromDate(dateRange: DateRange, advanceFromDateByDays: Int): DateRange {
-    // if advanceFromDateByDays is greater than zero and new from date is before toDate
-    if (advanceFromDateByDays > 0) {
-      val fromDate = dateRange.fromDate.plusDays(advanceFromDateByDays.toLong())
+  fun advanceFromDate(dateRange: DateRange, pvbAdvanceFromDateByDays: Int): DateRange {
+    // if pvbAdvanceFromDateByDays is greater than zero and new from date is before toDate
+    if (pvbAdvanceFromDateByDays > 0) {
+      val fromDate = dateRange.fromDate.plusDays(pvbAdvanceFromDateByDays.toLong())
 
       // check if new fromDate is before or equal to toDate
       if (fromDate <= dateRange.toDate) {

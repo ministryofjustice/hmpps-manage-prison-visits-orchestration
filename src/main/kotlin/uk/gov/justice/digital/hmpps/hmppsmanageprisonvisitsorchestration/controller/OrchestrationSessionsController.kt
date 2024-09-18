@@ -143,10 +143,9 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       example = "dfs-wjs-eqr",
     )
     excludedApplicationReference: String? = null,
-    @Parameter(
-      description = "Advances the available visits slots sought from date by n days. Defaults to 0 if not passed.",
-    )
-    advanceFromDateByDays: Int? = 0,
+    @RequestParam(value = "pvbAdvanceFromDateByDays", required = false)
+    @Parameter(description = "For PVB only. Allows service to advance the opening session slot booking window by n days on top of any other overrides. Defaults to 0 if not passed.")
+    pvbAdvanceFromDateByDays: Int? = 0,
     @RequestParam(value = "fromDateOverride", required = false)
     @Parameter(description = "minimum override in days for opening session slot booking window, E.g. 2 will set min booking window to today + 2 days")
     fromDateOverride: Int? = null,
@@ -167,7 +166,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       visitors = visitors,
       withAppointmentsCheck = withAppointmentsCheck ?: true,
       excludedApplicationReference = excludedApplicationReference,
-      advanceFromDateByDays = advanceFromDateByDays ?: 0,
+      pvbAdvanceFromDateByDays = pvbAdvanceFromDateByDays ?: 0,
       fromDateOverride = fromDateOverride,
       toDateOverride = toDateOverride,
       username = username,

@@ -44,7 +44,7 @@ class VisitSchedulerSessionsService(
     visitors: List<Long>?,
     withAppointmentsCheck: Boolean,
     excludedApplicationReference: String? = null,
-    advanceFromDateByDays: Int,
+    pvbAdvanceFromDateByDays: Int,
     fromDateOverride: Int? = null,
     toDateOverride: Int? = null,
     username: String? = null,
@@ -53,7 +53,7 @@ class VisitSchedulerSessionsService(
 
     // advance from date by n days
     var dateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, fromDateOverride = fromDateOverride, toDateOverride = toDateOverride)
-    dateRange = dateUtils.advanceFromDate(dateRange, advanceFromDateByDays)
+    dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
 
     var availableVisitSessions = try {
       val updatedDateRange =
