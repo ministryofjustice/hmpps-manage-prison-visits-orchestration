@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.con
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerAuthFailureException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtil
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.PublicBookerValidationUtil
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.PublicBookerValidationUtil.Companion.PRISONER_VALIDATION_ERROR_MSG
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.PublicBookerValidationUtil.Companion.PRISON_VALIDATION_ERROR_MSG
@@ -30,6 +30,7 @@ class PublicBookerService(
   private val prisonerSearchService: PrisonerSearchService,
   private val prisonerContactService: PrisonerContactService,
   private val prisonService: PrisonService,
+  private val dateUtils: DateUtils,
   private val bookerPrisonerInfoClient: BookerPrisonerInfoClient,
   private val publicBookerValidationUtil: PublicBookerValidationUtil,
 ) {
@@ -141,7 +142,7 @@ class PublicBookerService(
     VisitorRestrictionType.entries.forEach { restrictionType ->
       val restrictionsByType = restrictions.filter { restriction ->
         isRestrictionType(restrictionType, restriction) &&
-          hasRestrictionForDate(restriction, DateUtil().getCurrentDate())
+          hasRestrictionForDate(restriction, dateUtils.getCurrentDate())
       }
 
       if (restrictionsByType.isNotEmpty()) {
