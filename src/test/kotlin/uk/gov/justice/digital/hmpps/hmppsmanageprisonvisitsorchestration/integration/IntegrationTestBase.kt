@@ -424,7 +424,9 @@ abstract class IntegrationTestBase {
     withAppointmentsCheck: Boolean,
     authHttpHeaders: (HttpHeaders) -> Unit,
     excludedApplicationReference: String? = null,
-    advanceFromDateByDays: Int? = null,
+    pvbAdvanceFromDateByDays: Int? = null,
+    fromDateOverride: Int? = null,
+    toDateOverride: Int? = null,
     currentUser: String? = null,
   ): WebTestClient.ResponseSpec {
     val uri = "/visit-sessions/available"
@@ -437,7 +439,9 @@ abstract class IntegrationTestBase {
         visitorIds = visitorIds,
         withAppointmentsCheck = withAppointmentsCheck,
         excludedApplicationReference = excludedApplicationReference,
-        advanceFromDateByDays = advanceFromDateByDays,
+        fromDateOverride = fromDateOverride,
+        toDateOverride = toDateOverride,
+        pvbAdvanceFromDateByDays = pvbAdvanceFromDateByDays,
       ).joinToString("&")
 
     return webTestClient.get().uri("$uri?$uriParams")
@@ -569,7 +573,9 @@ abstract class IntegrationTestBase {
     visitorIds: List<Long>? = null,
     withAppointmentsCheck: Boolean,
     excludedApplicationReference: String?,
-    advanceFromDateByDays: Int?,
+    pvbAdvanceFromDateByDays: Int?,
+    fromDateOverride: Int? = null,
+    toDateOverride: Int? = null,
     currentUser: String? = null,
   ): List<String> {
     val queryParams = java.util.ArrayList<String>()
@@ -584,8 +590,14 @@ abstract class IntegrationTestBase {
     excludedApplicationReference?.let {
       queryParams.add("excludedApplicationReference=$excludedApplicationReference")
     }
-    advanceFromDateByDays?.let {
-      queryParams.add("advanceFromDateByDays=$advanceFromDateByDays")
+    pvbAdvanceFromDateByDays?.let {
+      queryParams.add("pvbAdvanceFromDateByDays=$pvbAdvanceFromDateByDays")
+    }
+    fromDateOverride?.let {
+      queryParams.add("fromDateOverride=$fromDateOverride")
+    }
+    toDateOverride?.let {
+      queryParams.add("toDateOverride=$toDateOverride")
     }
     currentUser?.let {
       queryParams.add("currentUser=$currentUser")

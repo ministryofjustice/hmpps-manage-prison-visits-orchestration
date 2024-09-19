@@ -40,7 +40,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when advanceFromDateByDays is not passed the original date range is passed`() {
+  fun `when pvbAdvanceFromDateByDays is not passed the original date range is passed`() {
     // Given
     visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3))
 
@@ -58,7 +58,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
       sessionRestriction = OPEN,
       withAppointmentsCheck = true,
       excludedApplicationReference = null,
-      advanceFromDateByDays = null,
+      pvbAdvanceFromDateByDays = null,
       authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
     )
     // Then
@@ -66,14 +66,14 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when advanceFromDateByDays is passed as 1 the original date range from date is moved by 1`() {
+  fun `when pvbAdvanceFromDateByDays is passed as 1 the original date range from date is moved by 1`() {
     // Given
-    val advanceFromDateByDays = 1
+    val pvbAdvanceFromDateByDays = 1
     visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3))
 
     // appointment is not on the same date as the visits
     val dateRange = DateRange(
-      fromDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMin.toLong() + advanceFromDateByDays),
+      fromDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMin.toLong() + pvbAdvanceFromDateByDays),
       toDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMax.toLong()),
     )
 
@@ -85,7 +85,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
       sessionRestriction = OPEN,
       withAppointmentsCheck = true,
       excludedApplicationReference = null,
-      advanceFromDateByDays = advanceFromDateByDays,
+      pvbAdvanceFromDateByDays = pvbAdvanceFromDateByDays,
       authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
     )
 
@@ -94,14 +94,14 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when advanceFromDateByDays is passed as 3 the original date range from date is moved by 3`() {
+  fun `when pvbAdvanceFromDateByDays is passed as 3 the original date range from date is moved by 3`() {
     // Given
-    val advanceFromDateByDays = 3
+    val pvbAdvanceFromDateByDays = 3
     visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3))
 
     // appointment is not on the same date as the visits
     val dateRange = DateRange(
-      fromDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMin.toLong() + advanceFromDateByDays.toLong()),
+      fromDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMin.toLong() + pvbAdvanceFromDateByDays.toLong()),
       toDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMax.toLong()),
     )
 
@@ -113,7 +113,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
       sessionRestriction = OPEN,
       withAppointmentsCheck = true,
       excludedApplicationReference = null,
-      advanceFromDateByDays = advanceFromDateByDays,
+      pvbAdvanceFromDateByDays = pvbAdvanceFromDateByDays,
       authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
     )
 
@@ -122,14 +122,14 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when advanceFromDateByDays is passed as 0 the original date range from date is not moved`() {
+  fun `when pvbAdvanceFromDateByDays is passed as 0 the original date range from date is not moved`() {
     // Given
-    val advanceFromDateByDays = 0
+    val pvbAdvanceFromDateByDays = 0
     visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3))
 
     // appointment is not on the same date as the visits
     val dateRange = DateRange(
-      fromDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMin.toLong() + advanceFromDateByDays),
+      fromDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMin.toLong() + pvbAdvanceFromDateByDays),
       toDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMax.toLong()),
     )
 
@@ -141,7 +141,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
       sessionRestriction = OPEN,
       withAppointmentsCheck = true,
       excludedApplicationReference = null,
-      advanceFromDateByDays = advanceFromDateByDays,
+      pvbAdvanceFromDateByDays = pvbAdvanceFromDateByDays,
       authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
     )
 
@@ -150,9 +150,9 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when advanceFromDateByDays is passed as more than policy max days the original date range from date is not moved`() {
+  fun `when pvbAdvanceFromDateByDays is passed as more than policy max days the original date range from date is not moved`() {
     // Given
-    val advanceFromDateByDays = 28
+    val pvbAdvanceFromDateByDays = 28
     visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3))
 
     // appointment is not on the same date as the visits
@@ -169,7 +169,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
       sessionRestriction = OPEN,
       withAppointmentsCheck = true,
       excludedApplicationReference = null,
-      advanceFromDateByDays = advanceFromDateByDays,
+      pvbAdvanceFromDateByDays = pvbAdvanceFromDateByDays,
       authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
     )
 
@@ -178,14 +178,14 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when advanceFromDateByDays passed makes from date same as to date then from date is moved`() {
+  fun `when pvbAdvanceFromDateByDays passed makes from date same as to date then from date is moved`() {
     // Given
-    val advanceFromDateByDays = visitSchedulerPrisonDto.policyNoticeDaysMax - visitSchedulerPrisonDto.policyNoticeDaysMin
+    val pvbAdvanceFromDateByDays = visitSchedulerPrisonDto.policyNoticeDaysMax - visitSchedulerPrisonDto.policyNoticeDaysMin
     visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3))
 
     // appointment is not on the same date as the visits
     val dateRange = DateRange(
-      fromDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMin.toLong() + advanceFromDateByDays),
+      fromDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMin.toLong() + pvbAdvanceFromDateByDays),
       toDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMax.toLong()),
     )
     Assertions.assertThat(dateRange.fromDate).isEqualTo(dateRange.toDate)
@@ -198,7 +198,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
       sessionRestriction = OPEN,
       withAppointmentsCheck = true,
       excludedApplicationReference = null,
-      advanceFromDateByDays = advanceFromDateByDays,
+      pvbAdvanceFromDateByDays = pvbAdvanceFromDateByDays,
       authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
     )
 
@@ -207,9 +207,9 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when advanceFromDateByDays is passed as a -ve value than policy max days the original date range from date is not moved`() {
+  fun `when pvbAdvanceFromDateByDays is passed as a -ve value than policy max days the original date range from date is not moved`() {
     // Given
-    val advanceFromDateByDays = -2
+    val pvbAdvanceFromDateByDays = -2
     visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3))
 
     // appointment is not on the same date as the visits
@@ -226,11 +226,65 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
       sessionRestriction = OPEN,
       withAppointmentsCheck = true,
       excludedApplicationReference = null,
-      advanceFromDateByDays = advanceFromDateByDays,
+      pvbAdvanceFromDateByDays = pvbAdvanceFromDateByDays,
       authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
     )
 
     // Then
+    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, excludedApplicationReference = null)
+  }
+
+  @Test
+  fun `when fromDateOverride is passed as 2 the original opening booking window is today + 2 days`() {
+    // Given
+    val fromDateOverride = 5
+    visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3))
+
+    // When
+    callGetAvailableVisitSessions(
+      webTestClient,
+      prisonCode = prisonCode,
+      prisonerId = prisonerId,
+      sessionRestriction = OPEN,
+      withAppointmentsCheck = true,
+      excludedApplicationReference = null,
+      fromDateOverride = fromDateOverride,
+      authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
+    )
+
+    // Then
+    val dateRange = DateRange(
+      fromDate = LocalDate.now().plusDays(fromDateOverride.toLong()),
+      toDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMax.toLong()),
+    )
+
+    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, excludedApplicationReference = null)
+  }
+
+  @Test
+  fun `when toDateOverride is passed as 20 the original closing booking window is today + 20 days`() {
+    // Given
+    val toDateOverride = 20
+    visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3))
+
+    // When
+    callGetAvailableVisitSessions(
+      webTestClient,
+      prisonCode = prisonCode,
+      prisonerId = prisonerId,
+      sessionRestriction = OPEN,
+      withAppointmentsCheck = true,
+      excludedApplicationReference = null,
+      toDateOverride = toDateOverride,
+      authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
+    )
+
+    // Then
+    val dateRange = DateRange(
+      fromDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMin.toLong()),
+      toDate = LocalDate.now().plusDays(toDateOverride.toLong()),
+    )
+
     verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, excludedApplicationReference = null)
   }
 }
