@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "6.0.5"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "6.0.6"
   kotlin("plugin.spring") version "2.0.20"
   id("org.jetbrains.kotlin.plugin.noarg") version "2.0.20"
 }
@@ -19,7 +19,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
   implementation("org.springframework.boot:spring-boot-starter-cache")
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:4.4.3")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:4.4.4")
   implementation("com.hazelcast:hazelcast:5.5.0")
   implementation("com.hazelcast:hazelcast-spring:5.5.0")
 
