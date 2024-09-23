@@ -87,7 +87,7 @@ class PublicFutureVisitsByBookerReferenceTest : IntegrationTestBase() {
     Assertions.assertThat(visits[0].visitors.size).isEqualTo(2)
     assertVisitorDetails(visits[0].visitors, contacts)
     assertVisitorDetails(visits[1].visitors, contacts)
-    Mockito.verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false, false, null, null, null)
+    Mockito.verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false, false, null, null)
   }
 
   @Test
@@ -132,7 +132,7 @@ class PublicFutureVisitsByBookerReferenceTest : IntegrationTestBase() {
       Assertions.assertThat(visitor.lastName).isNull()
     }
 
-    Mockito.verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false, approvedVisitorsOnly = false, null, null, null)
+    Mockito.verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false, approvedVisitorsOnly = false, null, null)
   }
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<OrchestrationVisitDto> {

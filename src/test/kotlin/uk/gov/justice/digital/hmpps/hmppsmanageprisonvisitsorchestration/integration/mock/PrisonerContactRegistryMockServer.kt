@@ -8,7 +8,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.createJsonResponseBuilder
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.getJsonString
-import java.time.LocalDate
 
 class PrisonerContactRegistryMockServer : WireMockServer(8095) {
   fun stubGetPrisonerContacts(
@@ -17,14 +16,13 @@ class PrisonerContactRegistryMockServer : WireMockServer(8095) {
     approvedVisitorsOnly: Boolean = true,
     personId: Long? = null,
     hasDateOfBirth: Boolean? = null,
-    notBannedBeforeDate: LocalDate? = null,
     contactsList: List<PrisonerContactDto>?,
     httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
   ) {
     val responseBuilder = createJsonResponseBuilder()
 
     stubFor(
-      get("/prisoners/$prisonerId/contacts/social?${getContactsQueryParams(personId, hasDateOfBirth, notBannedBeforeDate, withAddress, approvedVisitorsOnly)}")
+      get("/prisoners/$prisonerId/contacts/social?${getContactsQueryParams(personId, hasDateOfBirth, withAddress, approvedVisitorsOnly)}")
         .willReturn(
           if (contactsList == null) {
             responseBuilder
@@ -86,7 +84,6 @@ class PrisonerContactRegistryMockServer : WireMockServer(8095) {
   private fun getContactsQueryParams(
     personId: Long? = null,
     hasDateOfBirth: Boolean? = null,
-    notBannedBeforeDate: LocalDate? = null,
     withAddress: Boolean? = null,
     approvedVisitorsOnly: Boolean? = null,
   ): String {
@@ -96,9 +93,6 @@ class PrisonerContactRegistryMockServer : WireMockServer(8095) {
     }
     hasDateOfBirth?.let {
       queryParams.add("hasDateOfBirth=$it")
-    }
-    notBannedBeforeDate?.let {
-      queryParams.add("notBannedBeforeDate=$it")
     }
     withAddress?.let {
       queryParams.add("withAddress=$it")
