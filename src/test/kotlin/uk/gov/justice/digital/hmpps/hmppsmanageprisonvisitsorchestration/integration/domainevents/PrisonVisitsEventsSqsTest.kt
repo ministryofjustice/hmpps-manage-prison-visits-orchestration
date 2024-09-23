@@ -16,7 +16,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_RECEIVED_CHANGE_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_VISITOR_APPROVED_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_VISITOR_RESTRICTION_UPSERTED_PATH
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_VISITOR_UNAPPROVED_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertCodeSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonerReceivedReasonType
@@ -27,6 +29,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertsAddedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorApprovedUnapprovedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerReceivedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.DELETE_INCENTIVES_EVENT_TYPE
@@ -39,7 +42,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_RECEIVED_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_RELEASED_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.UPDATED_INCENTIVES_EVENT_TYPE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.VISITOR_APPROVED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.VISITOR_RESTRICTION_UPSERTED_TYPE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.VISITOR_UNAPPROVED_EVENT_TYPE
 import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 import java.time.LocalDate
 
@@ -404,6 +409,68 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     // Then
     await untilAsserted { Assertions.assertThat(eventFeatureSwitch.isEnabled(TEST_TYPE)).isFalse }
     await untilAsserted { verify(domainEventListenerServiceSpy, never()).getNotifier(any()) }
+  }
+
+  @Test
+  fun `test visitor unapproved is processed`() {
+    // Given
+    val visitorUnapprovedEventType = VISITOR_UNAPPROVED_EVENT_TYPE
+    val sentRequestToVsip = VisitorApprovedUnapprovedNotificationDto(
+      prisonerNumber = "TEST",
+      visitorId = "12345",
+    )
+
+    val domainEvent =
+      createDomainEventJson(
+        visitorUnapprovedEventType,
+        createAdditionalInformationJson(
+          nomsNumber = "TEST",
+          personId = "12345",
+        ),
+      )
+
+    val publishRequest = createDomainEventPublishRequest(visitorUnapprovedEventType, domainEvent)
+
+    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_VISITOR_UNAPPROVED_PATH)
+
+    // When
+    sendSqSMessage(publishRequest)
+
+    // Then
+    assertStandardCalls(visitorUnapprovedNotifier, VISIT_NOTIFICATION_VISITOR_UNAPPROVED_PATH, sentRequestToVsip)
+    await untilAsserted { verify(visitSchedulerService, times(1)).processVisitorUnapproved(any()) }
+    await untilAsserted { verify(visitSchedulerClient, times(1)).processVisitorUnapproved(any()) }
+  }
+
+  @Test
+  fun `test visitor approved is processed`() {
+    // Given
+    val visitorApprovedEventType = VISITOR_APPROVED_EVENT_TYPE
+    val sentRequestToVsip = VisitorApprovedUnapprovedNotificationDto(
+      prisonerNumber = "TEST",
+      visitorId = "12345",
+    )
+
+    val domainEvent =
+      createDomainEventJson(
+        visitorApprovedEventType,
+        createAdditionalInformationJson(
+          nomsNumber = "TEST",
+          personId = "12345",
+        ),
+      )
+
+    val publishRequest = createDomainEventPublishRequest(visitorApprovedEventType, domainEvent)
+
+    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_VISITOR_APPROVED_PATH)
+
+    // When
+    sendSqSMessage(publishRequest)
+
+    // Then
+    assertStandardCalls(visitorApprovedNotifier, VISIT_NOTIFICATION_VISITOR_APPROVED_PATH, sentRequestToVsip)
+    await untilAsserted { verify(visitSchedulerService, times(1)).processVisitorApproved(any()) }
+    await untilAsserted { verify(visitSchedulerClient, times(1)).processVisitorApproved(any()) }
   }
 
   private fun sendSqSMessage(publishRequest: PublishRequest?) {
