@@ -28,6 +28,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerRestrictionChangeNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorApprovedUnapprovedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.NonAssociationChangedInfo
@@ -36,6 +37,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerReceivedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerReleasedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerRestrictionChangeInfo
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.VisitorApprovedUnapprovedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.VisitorRestrictionUpsertedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.NonAssociationDomainEventType
 
@@ -176,6 +178,14 @@ class VisitSchedulerService(
 
   fun processVisitorRestrictionUpserted(info: VisitorRestrictionUpsertedInfo) {
     visitSchedulerClient.processVisitorRestrictionUpserted(VisitorRestrictionUpsertedNotificationDto(info))
+  }
+
+  fun processVisitorUnapproved(info: VisitorApprovedUnapprovedInfo) {
+    visitSchedulerClient.processVisitorUnapproved(VisitorApprovedUnapprovedNotificationDto(info))
+  }
+
+  fun processVisitorApproved(info: VisitorApprovedUnapprovedInfo) {
+    visitSchedulerClient.processVisitorApproved(VisitorApprovedUnapprovedNotificationDto(info))
   }
 
   fun processPrisonerAlertsUpdated(info: PrisonerAlertsUpdatedNotificationInfo, description: String?) {

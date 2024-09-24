@@ -43,6 +43,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerRestrictionChangeNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorApprovedUnapprovedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.ApplicationValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
@@ -57,11 +58,13 @@ const val GET_VISIT_HISTORY_CONTROLLER_PATH: String = "$VISIT_CONTROLLER_PATH/{r
 
 const val VISIT_NOTIFICATION_CONTROLLER_PATH: String = "$VISIT_CONTROLLER_PATH/notification"
 const val VISIT_NOTIFICATION_NON_ASSOCIATION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/non-association/changed"
-const val VISIT_NOTIFICATION_PERSON_RESTRICTION_UPSERTED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/person/restriction/upserted"
 const val VISIT_NOTIFICATION_PRISONER_RECEIVED_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/received"
 const val VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/released"
 const val VISIT_NOTIFICATION_PRISONER_RESTRICTION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/restriction/changed"
+const val VISIT_NOTIFICATION_PERSON_RESTRICTION_UPSERTED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/person/restriction/upserted"
 const val VISIT_NOTIFICATION_VISITOR_RESTRICTION_UPSERTED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/visitor/restriction/upserted"
+const val VISIT_NOTIFICATION_VISITOR_APPROVED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/visitor/approved"
+const val VISIT_NOTIFICATION_VISITOR_UNAPPROVED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/visitor/unapproved"
 
 const val GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/booked/future"
 const val GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/cancelled"
@@ -404,6 +407,26 @@ class VisitSchedulerClient(
       .retrieve()
       .toBodilessEntity()
       .doOnError { e -> LOG.error("Could not processVisitorRestrictionUpserted :", e) }
+      .block(apiTimeout)
+  }
+
+  fun processVisitorUnapproved(sendDto: VisitorApprovedUnapprovedNotificationDto) {
+    webClient.post()
+      .uri(VISIT_NOTIFICATION_VISITOR_UNAPPROVED_PATH)
+      .body(BodyInserters.fromValue(sendDto))
+      .retrieve()
+      .toBodilessEntity()
+      .doOnError { e -> LOG.error("Could not processVisitorUnapproved :", e) }
+      .block(apiTimeout)
+  }
+
+  fun processVisitorApproved(sendDto: VisitorApprovedUnapprovedNotificationDto) {
+    webClient.post()
+      .uri(VISIT_NOTIFICATION_VISITOR_APPROVED_PATH)
+      .body(BodyInserters.fromValue(sendDto))
+      .retrieve()
+      .toBodilessEntity()
+      .doOnError { e -> LOG.error("Could not processVisitorApproved :", e) }
       .block(apiTimeout)
   }
 

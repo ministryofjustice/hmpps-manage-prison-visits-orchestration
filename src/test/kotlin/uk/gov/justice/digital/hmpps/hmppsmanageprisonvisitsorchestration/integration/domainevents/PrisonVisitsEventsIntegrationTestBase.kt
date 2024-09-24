@@ -37,7 +37,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerNonAssociationNotifierCreatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerReceivedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerReleasedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.VisitorApprovedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.VisitorRestrictionChangedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.VisitorUnapprovedNotifier
 import uk.gov.justice.hmpps.sqs.HmppsQueue
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.HmppsTopic
@@ -87,6 +89,12 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
 
   @SpyBean
   lateinit var personRestrictionUpsertedNotifierSpy: PersonRestrictionUpsertedNotifier
+
+  @SpyBean
+  lateinit var visitorUnapprovedNotifier: VisitorUnapprovedNotifier
+
+  @SpyBean
+  lateinit var visitorApprovedNotifier: VisitorApprovedNotifier
 
   @SpyBean
   lateinit var prisonerReceivedNotifierSpy: PrisonerReceivedNotifier
