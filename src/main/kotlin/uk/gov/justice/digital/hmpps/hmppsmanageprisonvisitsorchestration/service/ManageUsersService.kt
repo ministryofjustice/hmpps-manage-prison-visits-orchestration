@@ -75,7 +75,6 @@ class ManageUsersService(
     }
   }
 
-  // TODO: Public user calling manage-user-service???
   @Cacheable(value = ["UserFullName"], key = "#userName")
   fun getUserFullName(userName: String, userNameIfNotAvailable: String = NOT_KNOWN): String {
     return if (userName == NOT_KNOWN) {
