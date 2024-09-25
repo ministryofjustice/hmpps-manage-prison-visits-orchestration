@@ -87,9 +87,9 @@ class ManageUsersService(
 
   fun getFullNameFromActionedBy(actionedByDto: ActionedByDto): String {
     return when (actionedByDto.userType) {
-      UserType.STAFF -> manageUsersApiClient.getUserDetails(actionedByDto.userName!!).block(apiTimeout)?.fullName ?: "NOT_KNOWN"
+      UserType.STAFF -> manageUsersApiClient.getUserDetails(actionedByDto.userName!!).block(apiTimeout)?.fullName ?: NOT_KNOWN
       UserType.PUBLIC -> "Public User"
-      UserType.SYSTEM -> "NOT_KNOWN"
+      UserType.SYSTEM -> NOT_KNOWN
     }
   }
 }
