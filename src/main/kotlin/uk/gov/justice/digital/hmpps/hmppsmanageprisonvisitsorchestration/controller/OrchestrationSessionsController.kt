@@ -28,6 +28,9 @@ const val GET_VISIT_SESSIONS = "/visit-sessions"
 const val GET_VISIT_SESSIONS_AVAILABLE = "$GET_VISIT_SESSIONS/available"
 const val GET_VISIT_SESSIONS_AVAILABLE_RESTRICTION = "$GET_VISIT_SESSIONS_AVAILABLE/restriction"
 const val GET_VISIT_SESSIONS_CAPACITY = "$GET_VISIT_SESSIONS/capacity"
+
+const val GET_VISIT_SESSION = "$GET_VISIT_SESSIONS/session"
+
 const val GET_VISIT_SESSIONS_SCHEDULE = "$GET_VISIT_SESSIONS/schedule"
 
 @RestController
@@ -267,6 +270,49 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     )
     sessionEndTime: LocalTime,
   ): SessionCapacityDto? = visitSchedulerSessionsService.getSessionCapacity(prisonCode, sessionDate, sessionStartTime, sessionEndTime)
+
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @GetMapping(GET_VISIT_SESSION)
+  @Operation(
+    summary = "Returns a single VSIP session",
+    description = "Returns a single VSIP session",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "the session was found and returned",
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Session not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getSession(
+    @RequestParam(value = "sessionDate", required = true)
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @Parameter(
+      description = "Session date",
+      example = "2020-11-01",
+    )
+    sessionDate: LocalDate,
+    @RequestParam(value = "sessionTemplateReference", required = true)
+    @Parameter(
+      description = "Session template reference",
+      example = "xye-fjc-abc",
+    )
+    sessionTemplateReference: String,
+  ): VisitSessionDto? = visitSchedulerSessionsService.getSession(sessionDate, sessionTemplateReference)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(GET_VISIT_SESSIONS_SCHEDULE)

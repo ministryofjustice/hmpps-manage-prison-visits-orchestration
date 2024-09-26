@@ -335,6 +335,21 @@ class VisitSchedulerClient(
       .bodyToMono<SessionCapacityDto>().block(apiTimeout)
   }
 
+  fun getSession(
+    sessionDate: LocalDate,
+    sessionTemplateReference: String,
+  ): VisitSessionDto? {
+    return webClient.get()
+      .uri("/visit-sessions/session") {
+        it.queryParam("sessionDate", sessionDate)
+          .queryParam("sessionTemplateReference", sessionTemplateReference)
+          .build()
+      }
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<VisitSessionDto>().block(apiTimeout)
+  }
+
   fun getSessionSchedule(
     prisonCode: String,
     sessionDate: LocalDate,
