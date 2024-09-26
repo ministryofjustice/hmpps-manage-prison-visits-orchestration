@@ -572,13 +572,14 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
   }
 
   fun stubGetSession(
+    prisonCode: String,
     sessionDate: LocalDate,
     sessionTemplateReference: String,
     visitSessionDto: VisitSessionDto?,
   ) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
-      get("/visit-sessions/session?sessionDate=$sessionDate&sessionTemplateReference=$sessionTemplateReference")
+      get("/visit-sessions/session?prisonCode=$prisonCode&sessionDate=$sessionDate&sessionTemplateReference=$sessionTemplateReference")
         .willReturn(
           if (visitSessionDto == null) {
             responseBuilder.withStatus(HttpStatus.NOT_FOUND.value())

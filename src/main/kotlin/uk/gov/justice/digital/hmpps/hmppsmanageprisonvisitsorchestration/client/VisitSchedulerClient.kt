@@ -336,12 +336,14 @@ class VisitSchedulerClient(
   }
 
   fun getSession(
+    prisonCode: String,
     sessionDate: LocalDate,
     sessionTemplateReference: String,
   ): VisitSessionDto? {
     return webClient.get()
       .uri("/visit-sessions/session") {
-        it.queryParam("sessionDate", sessionDate)
+        it.queryParam("prisonCode", prisonCode)
+          .queryParam("sessionDate", sessionDate)
           .queryParam("sessionTemplateReference", sessionTemplateReference)
           .build()
       }

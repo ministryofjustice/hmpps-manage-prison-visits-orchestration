@@ -13,12 +13,13 @@ import java.time.LocalDate
 class VisitSessionTest : IntegrationTestBase() {
   fun callGetSession(
     webTestClient: WebTestClient,
+    prisonCode: String,
     sessionDate: LocalDate,
     sessionTemplateReference: String,
     visitSessionDto: VisitSessionDto?,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
-    return webTestClient.get().uri("/visit-sessions/session?sessionDate=$sessionDate&sessionTemplateReference=$sessionTemplateReference")
+    return webTestClient.get().uri("/visit-sessions/session?prisonCode=$prisonCode&sessionDate=$sessionDate&sessionTemplateReference=$sessionTemplateReference")
       .headers(authHttpHeaders)
       .exchange()
   }
@@ -31,10 +32,10 @@ class VisitSessionTest : IntegrationTestBase() {
     val sessionTemplateReference = "abc-def-ghi"
     val visitSessionDto = createVisitSessionDto(prisonCode, sessionTemplateReference)
 
-    visitSchedulerMockServer.stubGetSession(sessionDate, sessionTemplateReference, visitSessionDto)
+    visitSchedulerMockServer.stubGetSession(prisonCode, sessionDate, sessionTemplateReference, visitSessionDto)
 
     // When
-    val responseSpec = callGetSession(webTestClient, sessionDate, sessionTemplateReference, visitSessionDto, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetSession(webTestClient, prisonCode, sessionDate, sessionTemplateReference, visitSessionDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val visitSessionDtoResponse = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, VisitSessionDto::class.java)
@@ -45,14 +46,15 @@ class VisitSessionTest : IntegrationTestBase() {
   @Test
   fun `when session is invalid or doesn't exist then a NOT_FOUND status is returned`() {
     // Given
+    val prisonCode = "MDI"
     val sessionDate = LocalDate.now()
     val sessionTemplateReference = "abc-def-ghi"
     val visitSessionDto = null
 
-    visitSchedulerMockServer.stubGetSession(sessionDate, sessionTemplateReference, visitSessionDto)
+    visitSchedulerMockServer.stubGetSession(prisonCode, sessionDate, sessionTemplateReference, visitSessionDto)
 
     // When
-    val responseSpec = callGetSession(webTestClient, sessionDate, sessionTemplateReference, visitSessionDto, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetSession(webTestClient, prisonCode, sessionDate, sessionTemplateReference, visitSessionDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound

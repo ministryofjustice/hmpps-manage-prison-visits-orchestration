@@ -298,7 +298,13 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       ),
     ],
   )
-  fun getSession(
+  fun getVisitSession(
+    @RequestParam(value = "prisonCode", required = true)
+    @Parameter(
+      description = "Prison code",
+      example = "MDI",
+    )
+    prisonCode: String,
     @RequestParam(value = "sessionDate", required = true)
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Parameter(
@@ -312,7 +318,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       example = "xye-fjc-abc",
     )
     sessionTemplateReference: String,
-  ): VisitSessionDto? = visitSchedulerSessionsService.getSession(sessionDate, sessionTemplateReference)
+  ): VisitSessionDto? = visitSchedulerSessionsService.getSession(prisonCode, sessionDate, sessionTemplateReference)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(GET_VISIT_SESSIONS_SCHEDULE)

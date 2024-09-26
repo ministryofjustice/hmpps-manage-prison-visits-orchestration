@@ -81,10 +81,11 @@ class VisitSchedulerSessionsService(
   }
 
   fun getSession(
+    prisonCode: String,
     sessionDate: LocalDate,
     sessionTemplateReference: String,
   ): VisitSessionDto? {
-    return visitSchedulerClient.getSession(sessionDate, sessionTemplateReference)
+    return visitSchedulerClient.getSession(prisonCode, sessionDate, sessionTemplateReference)
   }
 
   fun getSessionSchedule(prisonCode: String, sessionDate: LocalDate): List<SessionScheduleDto>? {
