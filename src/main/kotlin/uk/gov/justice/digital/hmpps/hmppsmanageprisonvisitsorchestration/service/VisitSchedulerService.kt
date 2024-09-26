@@ -213,10 +213,10 @@ class VisitSchedulerService(
       val affectedVisits = group.affectedVisits.map {
         OrchestrationPrisonerVisitsNotificationDto(
           it.prisonerNumber,
-          getUsernameFromActionedBy(it.actionedBy),
+          getUsernameFromActionedBy(it.lastActionedBy),
           it.visitDate,
           it.bookingReference,
-          manageUsersService.getFullNameFromActionedBy(it.actionedBy),
+          manageUsersService.getFullNameFromActionedBy(it.lastActionedBy),
         )
       }
       OrchestrationNotificationGroupDto(group.reference, group.type, affectedVisits)
