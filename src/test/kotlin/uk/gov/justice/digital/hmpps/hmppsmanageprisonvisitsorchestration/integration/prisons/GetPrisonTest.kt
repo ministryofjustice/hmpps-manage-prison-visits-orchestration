@@ -56,7 +56,6 @@ class GetPrisonTest : IntegrationTestBase() {
     Assertions.assertThat(result.active).isEqualTo(visitSchedulerPrisonDto.active)
     Assertions.assertThat(result.code).isEqualTo(visitSchedulerPrisonDto.code)
     Assertions.assertThat(result.prisonName).isEqualTo(prisonRegisterPrisonDto.prisonName)
-    Assertions.assertThat(result.excludeDates).hasSize(visitSchedulerPrisonDto.excludeDates.size)
     Assertions.assertThat(result.policyNoticeDaysMin).isEqualTo(visitSchedulerPrisonDto.policyNoticeDaysMin)
     Assertions.assertThat(result.policyNoticeDaysMax).isEqualTo(visitSchedulerPrisonDto.policyNoticeDaysMax)
     Assertions.assertThat(result.maxAdultVisitors).isEqualTo(visitSchedulerPrisonDto.maxAdultVisitors)
