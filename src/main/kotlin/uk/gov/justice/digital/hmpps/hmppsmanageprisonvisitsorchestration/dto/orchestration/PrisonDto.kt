@@ -56,7 +56,6 @@ data class PrisonDto(
     maxAdultVisitors = visitSchedulerPrisonDto.maxAdultVisitors,
     maxChildVisitors = visitSchedulerPrisonDto.maxChildVisitors,
     adultAgeYears = visitSchedulerPrisonDto.adultAgeYears,
-    excludeDates = visitSchedulerPrisonDto.excludeDates,
     clients = visitSchedulerPrisonDto.clients,
   )
 }

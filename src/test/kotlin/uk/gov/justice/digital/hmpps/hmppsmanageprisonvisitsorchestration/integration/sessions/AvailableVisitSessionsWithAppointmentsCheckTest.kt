@@ -34,7 +34,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
   private val visitSession3 = AvailableVisitSessionDto(LocalDate.now().plusDays(5), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
   private val visitSession4 = AvailableVisitSessionDto(visitSession1.sessionDate, "session1", SessionTimeSlotDto(LocalTime.of(15, 0), LocalTime.of(16, 0)), OPEN)
 
-  private val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18, setOf(LocalDate.now()))
+  private val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18)
   private val visitorIds = listOf(1L, 2L, 3L)
 
   private val eventType = "APP"
