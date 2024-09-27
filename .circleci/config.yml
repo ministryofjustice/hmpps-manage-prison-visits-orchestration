@@ -110,7 +110,7 @@ workflows:
           env: "staging"
           context:
             - hmpps-common-vars
-            - hmpps-manage-prison-visits-orchestration-stage
+            - visit-someone-in-prison-backend-svc-staging
           filters:
             branches:
               only:
@@ -139,7 +139,7 @@ workflows:
           env: "preprod"
           context:
             - hmpps-common-vars
-            - hmpps-manage-prison-visits-orchestration-preprod
+            - visit-someone-in-prison-backend-svc-preprod
           filters:
             branches:
               only:
@@ -162,7 +162,7 @@ workflows:
           slack_channel_name: << pipeline.parameters.releases-slack-channel >>
           context:
             - hmpps-common-vars
-            - hmpps-manage-prison-visits-orchestration-prod
+            - visit-someone-in-prison-backend-svc-prod
           filters:
             branches:
               only:
@@ -228,7 +228,7 @@ workflows:
           env: "staging"
           context:
             - hmpps-common-vars
-            - hmpps-manage-prison-visits-orchestration-stage
+            - visit-someone-in-prison-backend-svc-staging
           filters:
             branches:
               ignore:

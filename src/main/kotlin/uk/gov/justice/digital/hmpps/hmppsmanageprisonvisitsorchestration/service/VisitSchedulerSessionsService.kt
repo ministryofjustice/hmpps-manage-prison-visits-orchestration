@@ -80,6 +80,14 @@ class VisitSchedulerSessionsService(
     return visitSchedulerClient.getSessionCapacity(prisonCode, sessionDate, sessionStartTime, sessionEndTime)
   }
 
+  fun getSession(
+    prisonCode: String,
+    sessionDate: LocalDate,
+    sessionTemplateReference: String,
+  ): VisitSessionDto? {
+    return visitSchedulerClient.getSession(prisonCode, sessionDate, sessionTemplateReference)
+  }
+
   fun getSessionSchedule(prisonCode: String, sessionDate: LocalDate): List<SessionScheduleDto>? {
     return visitSchedulerClient.getSessionSchedule(prisonCode, sessionDate)
   }
