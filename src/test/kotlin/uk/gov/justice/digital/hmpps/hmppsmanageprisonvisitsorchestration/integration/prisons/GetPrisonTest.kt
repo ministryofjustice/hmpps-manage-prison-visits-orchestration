@@ -15,7 +15,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
-import java.time.LocalDate
 
 @DisplayName("Get prison tests")
 class GetPrisonTest : IntegrationTestBase() {
@@ -26,7 +25,7 @@ class GetPrisonTest : IntegrationTestBase() {
   lateinit var visitSchedulerClientSpy: VisitSchedulerClient
 
   final val prisonCode = "HEI"
-  val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18, setOf(LocalDate.now()))
+  val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18)
   val prisonRegisterPrisonDto = PrisonRegisterPrisonDto(prisonCode, "HMP Hewell", true)
 
   fun callGetSupportedPrisons(
