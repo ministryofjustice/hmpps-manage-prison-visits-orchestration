@@ -39,7 +39,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.getJsonString
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.ArrayList
 
 class VisitSchedulerMockServer : WireMockServer(8092) {
   fun stubGetVisit(reference: String, visitDto: VisitDto?) {
@@ -568,6 +567,26 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
           } else {
             responseBuilder.withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(sessionCapacityDto))
+          },
+        ),
+    )
+  }
+
+  fun stubGetSession(
+    prisonCode: String,
+    sessionDate: LocalDate,
+    sessionTemplateReference: String,
+    visitSessionDto: VisitSessionDto?,
+  ) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      get("/visit-sessions/session?prisonCode=$prisonCode&sessionDate=$sessionDate&sessionTemplateReference=$sessionTemplateReference")
+        .willReturn(
+          if (visitSessionDto == null) {
+            responseBuilder.withStatus(HttpStatus.NOT_FOUND.value())
+          } else {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(visitSessionDto))
           },
         ),
     )
