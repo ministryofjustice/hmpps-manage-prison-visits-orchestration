@@ -16,10 +16,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationPrisonerVisitsNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ActionedByDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.IgnoreVisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
@@ -211,10 +213,10 @@ class VisitSchedulerService(
       val affectedVisits = group.affectedVisits.map {
         OrchestrationPrisonerVisitsNotificationDto(
           it.prisonerNumber,
-          it.bookedByUserName,
+          getUsernameFromActionedBy(it.lastActionedBy),
           it.visitDate,
           it.bookingReference,
-          manageUsersService.getUserFullName(it.bookedByUserName),
+          manageUsersService.getFullNameFromActionedBy(it.lastActionedBy),
         )
       }
       OrchestrationNotificationGroupDto(group.reference, group.type, affectedVisits)
@@ -232,5 +234,13 @@ class VisitSchedulerService(
       val contacts = prisonerContactsMap[it.prisonerId] ?: emptyList()
       orchestrationVisitDtoBuilder.build(it, contacts)
     }?.toList() ?: emptyList()
+  }
+
+  private fun getUsernameFromActionedBy(actionedByDto: ActionedByDto): String {
+    return when (actionedByDto.userType) {
+      UserType.STAFF -> actionedByDto.userName!!
+      UserType.PUBLIC -> actionedByDto.bookerReference!!
+      UserType.SYSTEM -> ""
+    }
   }
 }

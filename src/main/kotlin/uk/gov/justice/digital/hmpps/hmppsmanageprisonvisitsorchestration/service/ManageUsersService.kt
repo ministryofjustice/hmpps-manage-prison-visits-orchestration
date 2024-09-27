@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ManageUsersApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.manage.users.UserDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ActionedByDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
 import java.time.Duration
 
@@ -79,6 +81,14 @@ class ManageUsersService(
       userName
     } else {
       manageUsersApiClient.getUserDetails(userName).block(apiTimeout)?.fullName ?: userNameIfNotAvailable
+    }
+  }
+
+  fun getFullNameFromActionedBy(actionedByDto: ActionedByDto): String {
+    return when (actionedByDto.userType) {
+      UserType.STAFF -> manageUsersApiClient.getUserDetails(actionedByDto.userName!!).block(apiTimeout)?.fullName ?: NOT_KNOWN
+      UserType.PUBLIC -> "Public User"
+      UserType.SYSTEM -> NOT_KNOWN
     }
   }
 }
