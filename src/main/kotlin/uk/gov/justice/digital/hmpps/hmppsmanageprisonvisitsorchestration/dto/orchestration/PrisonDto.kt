@@ -5,7 +5,6 @@ import jakarta.validation.constraints.Min
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
-import java.time.LocalDate
 
 @Schema(description = "Prison dto")
 data class PrisonDto(
@@ -39,9 +38,6 @@ data class PrisonDto(
 
   @Schema(description = "Age of adults in years")
   val adultAgeYears: Int,
-
-  @Schema(description = "exclude dates", required = false)
-  val excludeDates: Set<LocalDate> = setOf(),
 
   @Schema(description = "prison user client", required = false)
   val clients: List<PrisonUserClientDto> = listOf(),
