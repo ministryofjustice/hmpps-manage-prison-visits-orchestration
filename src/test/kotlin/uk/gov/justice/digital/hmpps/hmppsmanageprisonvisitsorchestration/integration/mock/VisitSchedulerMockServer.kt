@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ApplicationValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ActionedByDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
@@ -408,8 +409,8 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
       "v7*d7*ed*7u",
       NON_ASSOCIATION_EVENT,
       listOf(
-        PrisonerVisitsNotificationDto("AF34567G", "Username1", now, "v1-d7-ed-7u"),
-        PrisonerVisitsNotificationDto("BF34567G", "Username2", now.plusDays(1), "v2-d7-ed-7u"),
+        PrisonerVisitsNotificationDto("AF34567G", ActionedByDto(bookerReference = null, userName = "Username1", userType = UserType.STAFF), now, "v1-d7-ed-7u"),
+        PrisonerVisitsNotificationDto("BF34567G", ActionedByDto(bookerReference = null, userName = "Username2", userType = UserType.STAFF), now.plusDays(1), "v2-d7-ed-7u"),
       ),
     )
 
