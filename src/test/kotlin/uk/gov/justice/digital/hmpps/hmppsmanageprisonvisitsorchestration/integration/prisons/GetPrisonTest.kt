@@ -12,6 +12,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonRegisterClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.PrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterContactDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
@@ -27,6 +28,7 @@ class GetPrisonTest : IntegrationTestBase() {
   final val prisonCode = "HEI"
   val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18)
   val prisonRegisterPrisonDto = PrisonRegisterPrisonDto(prisonCode, "HMP Hewell", true)
+  val prisonRegisterPrisonContactDetailsDto = PrisonRegisterContactDetailsDto("example@email.com", "07777777777", "website")
 
   fun callGetSupportedPrisons(
     webTestClient: WebTestClient,
@@ -44,6 +46,7 @@ class GetPrisonTest : IntegrationTestBase() {
 
     visitSchedulerMockServer.stubGetPrison("HEI", visitSchedulerPrisonDto = visitSchedulerPrisonDto)
     prisonRegisterMockServer.stubGetPrison(prisonCode, prisonRegisterPrisonDto)
+    prisonRegisterMockServer.stubGetPrisonContactDetails(prisonCode, prisonRegisterPrisonContactDetailsDto)
 
     // When
     val responseSpec = callGetSupportedPrisons(webTestClient, "HEI", roleVSIPOrchestrationServiceHttpHeaders)

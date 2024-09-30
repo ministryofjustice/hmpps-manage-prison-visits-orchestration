@@ -49,15 +49,10 @@ data class PrisonDto(
   @Schema(description = "Website of prison", required = false)
   val website: String?,
 
-  @Schema(description = "exclude dates", required = false)
-  val excludeDates: Set<LocalDate> = setOf(),
-
   @Schema(description = "prison user client", required = false)
   val clients: List<PrisonUserClientDto> = listOf(),
 ) {
-  constructor(visitSchedulerPrisonDto: VisitSchedulerPrisonDto,
-              prisonRegisterPrisonDto: PrisonRegisterPrisonDto,
-              prisonRegisterContactDetailsDto: PrisonRegisterContactDetailsDto) : this(
+  constructor(visitSchedulerPrisonDto: VisitSchedulerPrisonDto, prisonRegisterPrisonDto: PrisonRegisterPrisonDto, prisonRegisterContactDetailsDto: PrisonRegisterContactDetailsDto) : this(
     code = visitSchedulerPrisonDto.code,
     prisonName = prisonRegisterPrisonDto.prisonName,
     active = visitSchedulerPrisonDto.active,
