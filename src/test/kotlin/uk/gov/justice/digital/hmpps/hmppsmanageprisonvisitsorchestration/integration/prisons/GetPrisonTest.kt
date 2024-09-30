@@ -92,9 +92,9 @@ class GetPrisonTest : IntegrationTestBase() {
     Assertions.assertThat(result.maxChildVisitors).isEqualTo(visitSchedulerPrisonDto.maxChildVisitors)
     Assertions.assertThat(result.maxTotalVisitors).isEqualTo(visitSchedulerPrisonDto.maxTotalVisitors)
     Assertions.assertThat(result.adultAgeYears).isEqualTo(visitSchedulerPrisonDto.adultAgeYears)
-    Assertions.assertThat(result.emailAddress).isEmpty()
-    Assertions.assertThat(result.phoneNumber).isEmpty()
-    Assertions.assertThat(result.website).isEmpty()
+    Assertions.assertThat(result.emailAddress).isNull()
+    Assertions.assertThat(result.phoneNumber).isNull()
+    Assertions.assertThat(result.website).isNull()
 
     verify(prisonRegisterClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
