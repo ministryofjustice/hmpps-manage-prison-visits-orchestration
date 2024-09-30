@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Min
-import java.time.LocalDate
 
 @Schema(description = "Prison dto")
 data class VisitSchedulerPrisonDto(
@@ -33,9 +32,6 @@ data class VisitSchedulerPrisonDto(
 
   @Schema(description = "Age of adults in years")
   val adultAgeYears: Int,
-
-  @Schema(description = "exclude dates", required = false)
-  val excludeDates: Set<LocalDate> = setOf(),
 
   @Schema(description = "prison user client", required = false)
   val clients: List<PrisonUserClientDto> = listOf(),

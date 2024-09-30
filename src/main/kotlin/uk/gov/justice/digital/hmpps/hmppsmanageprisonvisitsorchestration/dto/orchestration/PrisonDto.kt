@@ -6,7 +6,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
-import java.time.LocalDate
 
 @Schema(description = "Prison dto")
 data class PrisonDto(
@@ -68,7 +67,6 @@ data class PrisonDto(
     maxAdultVisitors = visitSchedulerPrisonDto.maxAdultVisitors,
     maxChildVisitors = visitSchedulerPrisonDto.maxChildVisitors,
     adultAgeYears = visitSchedulerPrisonDto.adultAgeYears,
-    excludeDates = visitSchedulerPrisonDto.excludeDates,
     clients = visitSchedulerPrisonDto.clients,
     emailAddress = prisonRegisterContactDetailsDto.emailAddress,
     phoneNumber = prisonRegisterContactDetailsDto.phoneNumber,
