@@ -33,7 +33,8 @@ class PrisonService(
   fun getPrisonWithName(prisonCode: String): PrisonDto {
     val visitSchedulerPrison = visitSchedulerClient.getPrison(prisonCode)
     val prisonRegisterPrison = prisonRegisterClient.getPrison(prisonCode)
-    return PrisonDto(visitSchedulerPrison, prisonRegisterPrison)
+    val prisonRegisterPrisonContractDetails = prisonRegisterClient.getPrisonContactDetails(prisonCode)
+    return PrisonDto(visitSchedulerPrison, prisonRegisterPrison, prisonRegisterPrisonContractDetails)
   }
 
   fun getVSIPPrison(prisonCode: String): VisitSchedulerPrisonDto {

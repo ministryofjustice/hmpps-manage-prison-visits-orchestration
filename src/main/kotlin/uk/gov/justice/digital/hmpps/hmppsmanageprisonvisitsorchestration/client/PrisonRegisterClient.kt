@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterContactDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonNameDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
@@ -39,5 +40,23 @@ class PrisonRegisterClient(
         }
       }
       .blockOptional(apiTimeout).orElseThrow { NotFoundException("Prison with code - $prisonCode not found on prison-register") }
+  }
+
+  fun getPrisonContactDetails(prisonCode: String): PrisonRegisterContactDetailsDto {
+    val uri = "/secure/prisons/id/$prisonCode/contact-details?departmentType=prison"
+    return webClient.get().uri(uri)
+      .retrieve()
+      .bodyToMono<PrisonRegisterContactDetailsDto>()
+      .onErrorResume {
+          e ->
+        if (!ClientUtils.isNotFoundError(e)) {
+          PrisonVisitBookerRegistryClient.logger.error("getPrisonContactDetails Failed for get request $uri")
+          Mono.error(e)
+        } else {
+          PrisonVisitBookerRegistryClient.logger.error("getPrisonContactDetails NOT_FOUND for get request $uri")
+          Mono.error { NotFoundException("Prison with code - $prisonCode not found on prison-register") }
+        }
+      }
+      .blockOptional(apiTimeout).orElseThrow { NotFoundException("Prison $prisonCode not found on prison-register or has no contact information") }
   }
 }
