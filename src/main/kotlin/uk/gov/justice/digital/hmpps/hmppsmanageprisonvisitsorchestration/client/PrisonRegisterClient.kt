@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import java.time.Duration
+import java.util.*
 
 @Component
 class PrisonRegisterClient(
@@ -42,21 +43,21 @@ class PrisonRegisterClient(
       .blockOptional(apiTimeout).orElseThrow { NotFoundException("Prison with code - $prisonCode not found on prison-register") }
   }
 
-  fun getPrisonContactDetails(prisonCode: String): PrisonRegisterContactDetailsDto {
+  fun getPrisonContactDetails(prisonCode: String): Optional<PrisonRegisterContactDetailsDto> {
     val uri = "/secure/prisons/id/$prisonCode/contact-details?departmentType=prison"
-    return webClient.get().uri(uri)
+    return webClient.get()
+      .uri(uri)
       .retrieve()
       .bodyToMono<PrisonRegisterContactDetailsDto>()
-      .onErrorResume {
-          e ->
+      .onErrorResume { e ->
         if (!ClientUtils.isNotFoundError(e)) {
-          PrisonVisitBookerRegistryClient.logger.error("getPrisonContactDetails Failed for get request $uri")
+          PrisonVisitBookerRegistryClient.logger.error("getPrisonContactDetails Failed for get request $uri", e)
           Mono.error(e)
         } else {
-          PrisonVisitBookerRegistryClient.logger.error("getPrisonContactDetails NOT_FOUND for get request $uri")
-          Mono.error { NotFoundException("Prison with code - $prisonCode not found on prison-register") }
+          PrisonVisitBookerRegistryClient.logger.error("getPrisonContactDetails NOT_FOUND for prison $prisonCode contact details on get request $uri")
+          Mono.empty()
         }
       }
-      .blockOptional(apiTimeout).orElseThrow { NotFoundException("Prison $prisonCode not found on prison-register or has no contact information") }
+      .blockOptional(apiTimeout)
   }
 }

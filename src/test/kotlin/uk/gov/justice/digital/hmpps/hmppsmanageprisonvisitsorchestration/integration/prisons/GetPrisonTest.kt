@@ -70,6 +70,37 @@ class GetPrisonTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `when NOT_FOUND returned from prison-register for contact details, then NO contact details are set and prison is returned`() {
+    // Given
+    visitSchedulerMockServer.stubGetPrison("HEI", visitSchedulerPrisonDto = visitSchedulerPrisonDto)
+    prisonRegisterMockServer.stubGetPrison(prisonCode, prisonRegisterPrisonDto)
+    prisonRegisterMockServer.stubGetPrisonContactDetails(prisonCode, null)
+
+    // When
+    val responseSpec = callGetSupportedPrisons(webTestClient, "HEI", roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val result = getResult(returnResult)
+
+    Assertions.assertThat(result.active).isEqualTo(visitSchedulerPrisonDto.active)
+    Assertions.assertThat(result.code).isEqualTo(visitSchedulerPrisonDto.code)
+    Assertions.assertThat(result.prisonName).isEqualTo(prisonRegisterPrisonDto.prisonName)
+    Assertions.assertThat(result.policyNoticeDaysMin).isEqualTo(visitSchedulerPrisonDto.policyNoticeDaysMin)
+    Assertions.assertThat(result.policyNoticeDaysMax).isEqualTo(visitSchedulerPrisonDto.policyNoticeDaysMax)
+    Assertions.assertThat(result.maxAdultVisitors).isEqualTo(visitSchedulerPrisonDto.maxAdultVisitors)
+    Assertions.assertThat(result.maxChildVisitors).isEqualTo(visitSchedulerPrisonDto.maxChildVisitors)
+    Assertions.assertThat(result.maxTotalVisitors).isEqualTo(visitSchedulerPrisonDto.maxTotalVisitors)
+    Assertions.assertThat(result.adultAgeYears).isEqualTo(visitSchedulerPrisonDto.adultAgeYears)
+    Assertions.assertThat(result.emailAddress).isEmpty()
+    Assertions.assertThat(result.phoneNumber).isEmpty()
+    Assertions.assertThat(result.website).isEmpty()
+
+    verify(prisonRegisterClientSpy, times(1)).getPrison(prisonCode)
+    verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
+  }
+
+  @Test
   fun `when NOT_FOUND is returned from visit scheduler then NOT_FOUND status is sent back`() {
     // Given
     visitSchedulerMockServer.stubGetPrison("HEI", null)

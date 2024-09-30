@@ -63,6 +63,7 @@ data class PrisonDto(
     maxChildVisitors = visitSchedulerPrisonDto.maxChildVisitors,
     adultAgeYears = visitSchedulerPrisonDto.adultAgeYears,
     clients = visitSchedulerPrisonDto.clients,
+
     emailAddress = prisonRegisterContactDetailsDto.emailAddress,
     phoneNumber = prisonRegisterContactDetailsDto.phoneNumber,
     website = prisonRegisterContactDetailsDto.website,

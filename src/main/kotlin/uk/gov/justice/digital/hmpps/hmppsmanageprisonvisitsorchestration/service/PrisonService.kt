@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonRegisterClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.PrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterContactDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
@@ -33,7 +34,8 @@ class PrisonService(
   fun getPrisonWithName(prisonCode: String): PrisonDto {
     val visitSchedulerPrison = visitSchedulerClient.getPrison(prisonCode)
     val prisonRegisterPrison = prisonRegisterClient.getPrison(prisonCode)
-    val prisonRegisterPrisonContractDetails = prisonRegisterClient.getPrisonContactDetails(prisonCode)
+    val prisonRegisterPrisonContractDetails = prisonRegisterClient.getPrisonContactDetails(prisonCode).orElse(PrisonRegisterContactDetailsDto())
+
     return PrisonDto(visitSchedulerPrison, prisonRegisterPrison, prisonRegisterPrisonContractDetails)
   }
 

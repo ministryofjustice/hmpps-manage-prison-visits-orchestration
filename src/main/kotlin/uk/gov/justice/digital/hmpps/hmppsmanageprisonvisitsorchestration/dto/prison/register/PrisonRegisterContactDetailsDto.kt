@@ -7,9 +7,9 @@ import io.swagger.v3.oas.annotations.media.Schema
 @Schema(description = "Prison Contact Details such as email adress and website")
 data class PrisonRegisterContactDetailsDto(
   @Schema(description = "Contact email address of prison", example = "example@example.com", required = false)
-  val emailAddress: String?,
+  val emailAddress: String? = "",
   @Schema(description = "Contact number of prison", required = false)
-  val phoneNumber: String?,
+  val phoneNumber: String? = "",
   @Schema(description = "Website of prison", required = false)
-  val website: String?,
+  val website: String? = "",
 )
