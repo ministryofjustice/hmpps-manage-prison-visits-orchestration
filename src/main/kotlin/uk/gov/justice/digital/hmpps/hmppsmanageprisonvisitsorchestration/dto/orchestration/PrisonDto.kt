@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.or
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Min
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterContactDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
@@ -39,10 +40,19 @@ data class PrisonDto(
   @Schema(description = "Age of adults in years")
   val adultAgeYears: Int,
 
+  @Schema(description = "Contact email address of prison", example = "example@example.com", required = false)
+  val emailAddress: String?,
+
+  @Schema(description = "Contact number of prison", required = false)
+  val phoneNumber: String?,
+
+  @Schema(description = "Website of prison", required = false)
+  val website: String?,
+
   @Schema(description = "prison user client", required = false)
   val clients: List<PrisonUserClientDto> = listOf(),
 ) {
-  constructor(visitSchedulerPrisonDto: VisitSchedulerPrisonDto, prisonRegisterPrisonDto: PrisonRegisterPrisonDto) : this(
+  constructor(visitSchedulerPrisonDto: VisitSchedulerPrisonDto, prisonRegisterPrisonDto: PrisonRegisterPrisonDto, prisonRegisterContactDetailsDto: PrisonRegisterContactDetailsDto) : this(
     code = visitSchedulerPrisonDto.code,
     prisonName = prisonRegisterPrisonDto.prisonName,
     active = visitSchedulerPrisonDto.active,
@@ -53,5 +63,9 @@ data class PrisonDto(
     maxChildVisitors = visitSchedulerPrisonDto.maxChildVisitors,
     adultAgeYears = visitSchedulerPrisonDto.adultAgeYears,
     clients = visitSchedulerPrisonDto.clients,
+
+    emailAddress = prisonRegisterContactDetailsDto.emailAddress,
+    phoneNumber = prisonRegisterContactDetailsDto.phoneNumber,
+    website = prisonRegisterContactDetailsDto.website,
   )
 }
