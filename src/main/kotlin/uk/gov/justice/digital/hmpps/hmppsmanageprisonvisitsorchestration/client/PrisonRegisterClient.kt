@@ -44,7 +44,7 @@ class PrisonRegisterClient(
   }
 
   fun getPrisonContactDetails(prisonCode: String): Optional<PrisonRegisterContactDetailsDto> {
-    val uri = "/secure/prisons/id/$prisonCode/department/contact-details?departmentType=social_visit"
+    val uri = "/secure/prisons/id/$prisonCode/department/contact-details?departmentType=SOCIAL_VISIT"
     return webClient.get()
       .uri(uri)
       .retrieve()
