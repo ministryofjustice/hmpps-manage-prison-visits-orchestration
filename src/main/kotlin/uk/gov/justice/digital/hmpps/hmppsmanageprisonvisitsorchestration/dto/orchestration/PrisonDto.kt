@@ -46,8 +46,8 @@ data class PrisonDto(
   @Schema(description = "Contact number of prison", required = false)
   val phoneNumber: String?,
 
-  @Schema(description = "Website of prison", required = false)
-  val website: String?,
+  @Schema(description = "Web address of prison", required = false)
+  val webAddress: String?,
 
   @Schema(description = "prison user client", required = false)
   val clients: List<PrisonUserClientDto> = listOf(),
@@ -66,6 +66,6 @@ data class PrisonDto(
 
     emailAddress = prisonRegisterContactDetailsDto.emailAddress,
     phoneNumber = prisonRegisterContactDetailsDto.phoneNumber,
-    website = prisonRegisterContactDetailsDto.website,
+    webAddress = prisonRegisterContactDetailsDto.webAddress,
   )
 }

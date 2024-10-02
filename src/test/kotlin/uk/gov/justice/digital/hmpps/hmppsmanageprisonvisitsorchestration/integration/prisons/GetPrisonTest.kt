@@ -28,7 +28,7 @@ class GetPrisonTest : IntegrationTestBase() {
   final val prisonCode = "HEI"
   val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18)
   val prisonRegisterPrisonDto = PrisonRegisterPrisonDto(prisonCode, "HMP Hewell", true)
-  val prisonRegisterPrisonContactDetailsDto = PrisonRegisterContactDetailsDto("example@email.com", "07777777777", "website")
+  val prisonRegisterPrisonContactDetailsDto = PrisonRegisterContactDetailsDto("example@email.com", "07777777777", "https://www.example.com")
 
   fun callGetSupportedPrisons(
     webTestClient: WebTestClient,
@@ -94,7 +94,7 @@ class GetPrisonTest : IntegrationTestBase() {
     Assertions.assertThat(result.adultAgeYears).isEqualTo(visitSchedulerPrisonDto.adultAgeYears)
     Assertions.assertThat(result.emailAddress).isNull()
     Assertions.assertThat(result.phoneNumber).isNull()
-    Assertions.assertThat(result.website).isNull()
+    Assertions.assertThat(result.webAddress).isNull()
 
     verify(prisonRegisterClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
