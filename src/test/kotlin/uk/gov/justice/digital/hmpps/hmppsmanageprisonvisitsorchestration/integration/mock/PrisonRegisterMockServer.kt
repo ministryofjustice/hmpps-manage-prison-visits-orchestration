@@ -50,7 +50,7 @@ class PrisonRegisterMockServer : WireMockServer(8096) {
     val responseBuilder = createJsonResponseBuilder()
 
     stubFor(
-      get("/secure/prisons/id/$prisonCode/department/contact-details?departmentType=social_visit")
+      get("/secure/prisons/id/$prisonCode/department/contact-details?departmentType=SOCIAL_VISIT")
         .willReturn(
           if (prisonRegisterContactDetailsDto == null) {
             responseBuilder
