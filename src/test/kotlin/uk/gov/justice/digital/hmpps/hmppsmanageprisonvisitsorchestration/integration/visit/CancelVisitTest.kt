@@ -29,7 +29,8 @@ class CancelVisitTest : IntegrationTestBase() {
   fun `when cancel visit is successful then OK status is returned`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val cancelVisitOrchestrationDto = CancelVisitOrchestrationDto(OutcomeDto(CANCELLATION), PHONE)
+    val username = "A_USER"
+    val cancelVisitOrchestrationDto = CancelVisitOrchestrationDto(OutcomeDto(CANCELLATION), PHONE, username)
     val visitDto = createVisitDto(reference = reference)
     visitSchedulerMockServer.stubCancelVisit(reference, visitDto)
 
@@ -46,7 +47,8 @@ class CancelVisitTest : IntegrationTestBase() {
   fun `when cancel visit is unsuccessful then NOT_FOUND status is returned`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val cancelVisitOrchestrationDto = CancelVisitOrchestrationDto(OutcomeDto(CANCELLATION), PHONE)
+    val username = "A_USER"
+    val cancelVisitOrchestrationDto = CancelVisitOrchestrationDto(OutcomeDto(CANCELLATION), PHONE, username)
     val visitDto = null
     visitSchedulerMockServer.stubCancelVisit(reference, visitDto)
 

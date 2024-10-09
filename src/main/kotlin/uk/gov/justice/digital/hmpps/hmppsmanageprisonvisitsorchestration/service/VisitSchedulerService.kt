@@ -138,13 +138,9 @@ class VisitSchedulerService(
   }
 
   fun cancelVisit(reference: String, cancelVisitDto: CancelVisitOrchestrationDto): VisitDto? {
-    return visitSchedulerClient.cancelVisit(
+    return visitSchedulerClient.cancelVisit (
       reference,
-      CancelVisitDto(
-        cancelVisitDto.cancelOutcome,
-        authenticationHelperService.currentUserName,
-        cancelVisitDto.applicationMethodType,
-      ),
+      CancelVisitDto(cancelVisitDto),
     )
   }
 
