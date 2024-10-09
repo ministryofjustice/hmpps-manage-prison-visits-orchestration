@@ -18,7 +18,7 @@ data class CancelVisitDto(
   @field:NotNull
   val applicationMethodType: ApplicationMethodType,
 ) {
-  constructor(cancelVisitOrchestrationDto: CancelVisitOrchestrationDto): this (
+  constructor(cancelVisitOrchestrationDto: CancelVisitOrchestrationDto) : this (
     cancelOutcome = cancelVisitOrchestrationDto.cancelOutcome,
     actionedBy = cancelVisitOrchestrationDto.actionedBy,
     applicationMethodType = cancelVisitOrchestrationDto.applicationMethodType,
