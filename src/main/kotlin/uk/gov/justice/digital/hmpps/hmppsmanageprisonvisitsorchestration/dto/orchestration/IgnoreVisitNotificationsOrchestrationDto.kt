@@ -7,4 +7,8 @@ data class IgnoreVisitNotificationsOrchestrationDto(
   @Schema(description = "Reason why the visit's notifications can be ignored", required = true)
   @field:NotBlank
   val reason: String,
+
+  @Schema(description = "Username for user who actioned this request", required = true)
+  @field:NotBlank
+  val actionedBy: String,
 )

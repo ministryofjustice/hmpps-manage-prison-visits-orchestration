@@ -27,7 +27,8 @@ class IgnoreVisitNotificationsTest : IntegrationTestBase() {
   fun `when ignore visit notifications is successful then OK status is returned`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val ignoreVisitNotifications = IgnoreVisitNotificationsOrchestrationDto("reason")
+    val username = "A_USER"
+    val ignoreVisitNotifications = IgnoreVisitNotificationsOrchestrationDto("reason", username)
     val visitDto = createVisitDto(reference = reference)
     visitSchedulerMockServer.stubIgnoreVisitNotifications(reference, visitDto)
 
@@ -44,7 +45,8 @@ class IgnoreVisitNotificationsTest : IntegrationTestBase() {
   fun `when ignore visit notifications is unsuccessful then NOT_FOUND status is returned`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val ignoreVisitNotifications = IgnoreVisitNotificationsOrchestrationDto("reason")
+    val username = "A_USER"
+    val ignoreVisitNotifications = IgnoreVisitNotificationsOrchestrationDto("reason", username)
     val visitDto = null
     visitSchedulerMockServer.stubIgnoreVisitNotifications(reference, visitDto)
 
@@ -59,7 +61,8 @@ class IgnoreVisitNotificationsTest : IntegrationTestBase() {
   fun `when ignore visit notifications is unsuccessful with forbidden then FORBIDDEN status is returned`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val ignoreVisitNotifications = IgnoreVisitNotificationsOrchestrationDto("reason")
+    val username = "A_USER"
+    val ignoreVisitNotifications = IgnoreVisitNotificationsOrchestrationDto("reason", username)
     val visitDto = null
     visitSchedulerMockServer.stubIgnoreVisitNotifications(reference, visitDto, HttpStatus.FORBIDDEN)
 

@@ -47,7 +47,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 class VisitSchedulerService(
   private val visitSchedulerClient: VisitSchedulerClient,
   private val prisonerContactService: PrisonerContactService,
-  private val authenticationHelperService: AuthenticationHelperService,
   private val manageUsersService: ManageUsersService,
   private val alertService: AlertsService,
   private val orchestrationVisitDtoBuilder: OrchestrationVisitDtoBuilder,
@@ -147,10 +146,7 @@ class VisitSchedulerService(
   fun ignoreVisitNotifications(reference: String, ignoreVisitNotifications: IgnoreVisitNotificationsOrchestrationDto): VisitDto? {
     return visitSchedulerClient.ignoreVisitNotification(
       reference,
-      IgnoreVisitNotificationsDto(
-        ignoreVisitNotifications.reason,
-        authenticationHelperService.currentUserName,
-      ),
+      IgnoreVisitNotificationsDto(ignoreVisitNotifications),
     )
   }
 
