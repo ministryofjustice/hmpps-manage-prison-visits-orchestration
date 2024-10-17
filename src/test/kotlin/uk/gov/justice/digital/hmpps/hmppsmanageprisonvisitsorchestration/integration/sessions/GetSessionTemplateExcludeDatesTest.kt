@@ -54,19 +54,19 @@ class GetSessionTemplateExcludeDatesTest : IntegrationTestBase() {
     val excludeDateFuture2 = LocalDate.now().plusDays(2)
     val excludeDateFuture3 = LocalDate.now().plusDays(3)
     val excludeDates = listOf(
-      ExcludeDateDto(excludeDatePast1, "user-11"),
-      ExcludeDateDto(excludeDatePast2, "user-12"),
-      ExcludeDateDto(excludeDatePast3, "user-13"),
-      ExcludeDateDto(excludeDateCurrent, "user-14"),
-      ExcludeDateDto(excludeDateFuture1, "user-15"),
-      ExcludeDateDto(excludeDateFuture2, "user-16"),
-      ExcludeDateDto(excludeDateFuture3, "user-16"),
+      ExcludeDateDto(excludeDatePast1, "user-31"),
+      ExcludeDateDto(excludeDatePast2, "user-32"),
+      ExcludeDateDto(excludeDatePast3, "user-33"),
+      ExcludeDateDto(excludeDateCurrent, "user-34"),
+      ExcludeDateDto(excludeDateFuture1, "user-35"),
+      ExcludeDateDto(excludeDateFuture2, "user-36"),
+      ExcludeDateDto(excludeDateFuture3, "user-36"),
     )
 
     visitSchedulerMockServer.stubGetSessionTemplateExcludeDates(sessionTemplateReference, excludeDates.sortedByDescending { it.excludeDate })
-    // user-14 and user-16 exist on hmpps-auth but not user-15
-    manageUsersApiMockServer.stubGetUserDetails("user-14", "User Fourteen")
-    manageUsersApiMockServer.stubGetUserDetails("user-16", "User Sixteen")
+    // user-34 and user-36 exist on hmpps-auth but not user-35
+    manageUsersApiMockServer.stubGetUserDetails("user-34", "User ThirtyFour")
+    manageUsersApiMockServer.stubGetUserDetails("user-36", "User ThirtySix")
 
     // When
     val responseSpec = callGetSessionTemplateFutureExcludeDates(webTestClient, sessionTemplateReference, roleVSIPOrchestrationServiceHttpHeaders)
@@ -75,14 +75,14 @@ class GetSessionTemplateExcludeDatesTest : IntegrationTestBase() {
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val dates = getResults(returnResult)
     Assertions.assertThat(dates).hasSize(4)
-    Assertions.assertThat(dates[0]).isEqualTo(ExcludeDateDto(excludeDateCurrent, "User Fourteen"))
-    Assertions.assertThat(dates[1]).isEqualTo(ExcludeDateDto(excludeDateFuture1, "user-15"))
-    Assertions.assertThat(dates[2]).isEqualTo(ExcludeDateDto(excludeDateFuture2, "User Sixteen"))
-    Assertions.assertThat(dates[3]).isEqualTo(ExcludeDateDto(excludeDateFuture3, "User Sixteen"))
+    Assertions.assertThat(dates[0]).isEqualTo(ExcludeDateDto(excludeDateCurrent, "User ThirtyFour"))
+    Assertions.assertThat(dates[1]).isEqualTo(ExcludeDateDto(excludeDateFuture1, "user-35"))
+    Assertions.assertThat(dates[2]).isEqualTo(ExcludeDateDto(excludeDateFuture2, "User ThirtySix"))
+    Assertions.assertThat(dates[3]).isEqualTo(ExcludeDateDto(excludeDateFuture3, "User ThirtySix"))
     verify(manageUsersApiClientSpy, times(3)).getUserDetails(any())
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-14")
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-15")
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-16")
+    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-34")
+    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-35")
+    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-36")
   }
 
   @Test
@@ -91,11 +91,11 @@ class GetSessionTemplateExcludeDatesTest : IntegrationTestBase() {
     val excludeDateCurrent = LocalDate.now()
 
     val excludeDates = listOf(
-      ExcludeDateDto(excludeDateCurrent, "user-11"),
+      ExcludeDateDto(excludeDateCurrent, "user-41"),
     )
 
     visitSchedulerMockServer.stubGetSessionTemplateExcludeDates(sessionTemplateReference, excludeDates.sortedByDescending { it.excludeDate })
-    manageUsersApiMockServer.stubGetUserDetails("user-11", "User Eleven")
+    manageUsersApiMockServer.stubGetUserDetails("user-41", "User FortyOne")
 
     // When
     val responseSpec = callGetSessionTemplateFutureExcludeDates(webTestClient, sessionTemplateReference, roleVSIPOrchestrationServiceHttpHeaders)
@@ -104,8 +104,8 @@ class GetSessionTemplateExcludeDatesTest : IntegrationTestBase() {
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val dates = getResults(returnResult)
     Assertions.assertThat(dates).hasSize(1)
-    Assertions.assertThat(dates[0]).isEqualTo(ExcludeDateDto(excludeDateCurrent, "User Eleven"))
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-11")
+    Assertions.assertThat(dates[0]).isEqualTo(ExcludeDateDto(excludeDateCurrent, "User FortyOne"))
+    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-41")
   }
 
   @Test
