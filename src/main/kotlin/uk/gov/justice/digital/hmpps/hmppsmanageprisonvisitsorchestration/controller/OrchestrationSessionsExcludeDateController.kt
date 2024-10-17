@@ -60,7 +60,7 @@ class OrchestrationSessionsExcludeDateController(
       ),
       ApiResponse(
         responseCode = "404",
-        description = "Prison not found on visit-scheduler",
+        description = "Session template not found on visit-scheduler",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
@@ -141,19 +141,19 @@ class OrchestrationSessionsExcludeDateController(
       ),
       ApiResponse(
         responseCode = "404",
-        description = "Prison not found on visit-scheduler",
+        description = "Session template not found on visit-scheduler",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
   )
-  fun addExcludeDateForPrison(
+  fun addExcludeDateForSessionTemplate(
     @Schema(description = "session template reference", example = "aaa-bbb-ccc", required = true)
     @PathVariable
     sessionTemplateReference: String,
     @RequestBody @Valid
-    prisonExcludeDate: ExcludeDateDto,
+    excludeDate: ExcludeDateDto,
   ): ResponseEntity<HttpStatus> {
-    sessionsService.addExcludeDateForSessionTemplate(sessionTemplateReference, prisonExcludeDate)
+    sessionsService.addExcludeDateForSessionTemplate(sessionTemplateReference, excludeDate)
     return ResponseEntity(HttpStatus.OK)
   }
 
@@ -184,7 +184,7 @@ class OrchestrationSessionsExcludeDateController(
       ),
       ApiResponse(
         responseCode = "404",
-        description = "Prison not found on visit-scheduler",
+        description = "Session Template not found on visit-scheduler",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
@@ -194,9 +194,9 @@ class OrchestrationSessionsExcludeDateController(
     @PathVariable
     sessionTemplateReference: String,
     @RequestBody @Valid
-    prisonExcludeDate: ExcludeDateDto,
+    excludeDate: ExcludeDateDto,
   ): ResponseEntity<HttpStatus> {
-    sessionsService.removeExcludeDateForSessionTemplate(sessionTemplateReference, prisonExcludeDate)
+    sessionsService.removeExcludeDateForSessionTemplate(sessionTemplateReference, excludeDate)
     return ResponseEntity(HttpStatus.OK)
   }
 
