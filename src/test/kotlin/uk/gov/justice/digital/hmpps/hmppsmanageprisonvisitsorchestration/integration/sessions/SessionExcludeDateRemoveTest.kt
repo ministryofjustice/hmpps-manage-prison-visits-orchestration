@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.prisons
+package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.sessions
 
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -10,18 +10,18 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 
-@DisplayName("Remove prison exclude dates tests")
-class PrisonExcludeDateRemoveTest : IntegrationTestBase() {
-  final val prisonCode = "HEI"
+@DisplayName("Remove session exclude dates tests")
+class SessionExcludeDateRemoveTest : IntegrationTestBase() {
+  private final val sessionTemplateReference = "aaa-bbb-ccc"
 
-  fun callRemoveExcludeDate(
+  fun callRemoveSessionExcludeDate(
     webTestClient: WebTestClient,
-    prisonCode: String,
+    sessionTemplateReference: String,
     excludeDateDto: ExcludeDateDto,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     return webTestClient.put()
-      .uri("/config/prisons/prison/$prisonCode/exclude-date/remove")
+      .uri("/config/sessions/session/$sessionTemplateReference/exclude-date/remove")
       .body(BodyInserters.fromValue(excludeDateDto))
       .headers(authHttpHeaders)
       .exchange()
@@ -33,10 +33,10 @@ class PrisonExcludeDateRemoveTest : IntegrationTestBase() {
     val excludeDateFuture = LocalDate.now().plusDays(3)
     val excludeDateDto = ExcludeDateDto(excludeDateFuture, "user-6")
 
-    visitSchedulerMockServer.stubRemoveExcludeDate(prisonCode, listOf(LocalDate.now()))
+    visitSchedulerMockServer.stubRemoveSessionTemplateExcludeDate(sessionTemplateReference, listOf(LocalDate.now()))
 
     // When
-    val responseSpec = callRemoveExcludeDate(webTestClient, "HEI", excludeDateDto, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callRemoveSessionExcludeDate(webTestClient, sessionTemplateReference, excludeDateDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().is2xxSuccessful
@@ -45,12 +45,11 @@ class PrisonExcludeDateRemoveTest : IntegrationTestBase() {
   @Test
   fun `when NOT_FOUND is returned from visit scheduler then NOT_FOUND status is sent back`() {
     // Given
-    val prisonCode = "HEI"
     val excludeDateDto = ExcludeDateDto(LocalDate.now(), "user-6")
-    visitSchedulerMockServer.stubRemoveExcludeDate(prisonCode, null, HttpStatus.NOT_FOUND)
+    visitSchedulerMockServer.stubRemoveSessionTemplateExcludeDate(sessionTemplateReference, null, HttpStatus.NOT_FOUND)
 
     // When
-    val responseSpec = callRemoveExcludeDate(webTestClient, "HEI", excludeDateDto, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callRemoveSessionExcludeDate(webTestClient, sessionTemplateReference, excludeDateDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -59,12 +58,11 @@ class PrisonExcludeDateRemoveTest : IntegrationTestBase() {
   @Test
   fun `when BAD_REQUEST is returned from visit scheduler then BAD_REQUEST status is sent back`() {
     // Given
-    val prisonCode = "HEI"
     val excludeDateDto = ExcludeDateDto(LocalDate.now(), "user-6")
-    visitSchedulerMockServer.stubRemoveExcludeDate(prisonCode, null, HttpStatus.BAD_REQUEST)
+    visitSchedulerMockServer.stubRemoveSessionTemplateExcludeDate(sessionTemplateReference, null, HttpStatus.BAD_REQUEST)
 
     // When
-    val responseSpec = callRemoveExcludeDate(webTestClient, "HEI", excludeDateDto, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callRemoveSessionExcludeDate(webTestClient, sessionTemplateReference, excludeDateDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isBadRequest
