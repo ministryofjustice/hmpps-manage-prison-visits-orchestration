@@ -17,7 +17,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 
-
 @DisplayName("Get prison exclude dates tests")
 @DirtiesContext(classMode = BEFORE_EACH_TEST_METHOD)
 class GetPrisonExcludeDatesTest : IntegrationTestBase() {
