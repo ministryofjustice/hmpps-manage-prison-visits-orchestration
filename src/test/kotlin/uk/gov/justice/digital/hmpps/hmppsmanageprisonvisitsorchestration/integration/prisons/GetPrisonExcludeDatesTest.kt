@@ -11,7 +11,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ManageUsersApiClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.PrisonExcludeDateDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 
@@ -54,13 +54,13 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
     val excludeDateFuture2 = LocalDate.now().plusDays(2)
     val excludeDateFuture3 = LocalDate.now().plusDays(3)
     val excludeDates = listOf(
-      PrisonExcludeDateDto(excludeDatePast1, "user-1"),
-      PrisonExcludeDateDto(excludeDatePast2, "user-2"),
-      PrisonExcludeDateDto(excludeDatePast3, "user-3"),
-      PrisonExcludeDateDto(excludeDateCurrent, "user-4"),
-      PrisonExcludeDateDto(excludeDateFuture1, "user-5"),
-      PrisonExcludeDateDto(excludeDateFuture2, "user-6"),
-      PrisonExcludeDateDto(excludeDateFuture3, "user-6"),
+      ExcludeDateDto(excludeDatePast1, "user-1"),
+      ExcludeDateDto(excludeDatePast2, "user-2"),
+      ExcludeDateDto(excludeDatePast3, "user-3"),
+      ExcludeDateDto(excludeDateCurrent, "user-4"),
+      ExcludeDateDto(excludeDateFuture1, "user-5"),
+      ExcludeDateDto(excludeDateFuture2, "user-6"),
+      ExcludeDateDto(excludeDateFuture3, "user-6"),
     )
 
     visitSchedulerMockServer.stubGetExcludeDates("HEI", excludeDates.sortedByDescending { it.excludeDate })
@@ -75,10 +75,10 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val dates = getResults(returnResult)
     Assertions.assertThat(dates).hasSize(4)
-    Assertions.assertThat(dates[0]).isEqualTo(PrisonExcludeDateDto(excludeDateCurrent, "User Four"))
-    Assertions.assertThat(dates[1]).isEqualTo(PrisonExcludeDateDto(excludeDateFuture1, "user-5"))
-    Assertions.assertThat(dates[2]).isEqualTo(PrisonExcludeDateDto(excludeDateFuture2, "User Six"))
-    Assertions.assertThat(dates[3]).isEqualTo(PrisonExcludeDateDto(excludeDateFuture3, "User Six"))
+    Assertions.assertThat(dates[0]).isEqualTo(ExcludeDateDto(excludeDateCurrent, "User Four"))
+    Assertions.assertThat(dates[1]).isEqualTo(ExcludeDateDto(excludeDateFuture1, "user-5"))
+    Assertions.assertThat(dates[2]).isEqualTo(ExcludeDateDto(excludeDateFuture2, "User Six"))
+    Assertions.assertThat(dates[3]).isEqualTo(ExcludeDateDto(excludeDateFuture3, "User Six"))
     verify(manageUsersApiClientSpy, times(3)).getUserDetails(any())
     verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-4")
     verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-5")
@@ -91,7 +91,7 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
     val excludeDateCurrent = LocalDate.now()
 
     val excludeDates = listOf(
-      PrisonExcludeDateDto(excludeDateCurrent, "user-1"),
+      ExcludeDateDto(excludeDateCurrent, "user-1"),
     )
 
     visitSchedulerMockServer.stubGetExcludeDates("HEI", excludeDates.sortedByDescending { it.excludeDate })
@@ -104,7 +104,7 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val dates = getResults(returnResult)
     Assertions.assertThat(dates).hasSize(1)
-    Assertions.assertThat(dates[0]).isEqualTo(PrisonExcludeDateDto(excludeDateCurrent, "User One"))
+    Assertions.assertThat(dates[0]).isEqualTo(ExcludeDateDto(excludeDateCurrent, "User One"))
     verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-1")
   }
 
@@ -116,9 +116,9 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
     val excludeDatePast3 = LocalDate.now().minusDays(3)
 
     val excludeDates = listOf(
-      PrisonExcludeDateDto(excludeDatePast1, "user-1"),
-      PrisonExcludeDateDto(excludeDatePast2, "user-2"),
-      PrisonExcludeDateDto(excludeDatePast3, "user-3"),
+      ExcludeDateDto(excludeDatePast1, "user-1"),
+      ExcludeDateDto(excludeDatePast2, "user-2"),
+      ExcludeDateDto(excludeDatePast3, "user-3"),
     )
 
     visitSchedulerMockServer.stubGetExcludeDates("HEI", excludeDates.sortedByDescending { it.excludeDate })
@@ -160,13 +160,13 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
     val excludeDateFuture2 = LocalDate.now().plusDays(2)
     val excludeDateFuture3 = LocalDate.now().plusDays(3)
     val excludeDates = listOf(
-      PrisonExcludeDateDto(excludeDatePast1, "user-11"),
-      PrisonExcludeDateDto(excludeDatePast2, "user-12"),
-      PrisonExcludeDateDto(excludeDatePast3, "user-13"),
-      PrisonExcludeDateDto(excludeDateCurrent, "user-4"),
-      PrisonExcludeDateDto(excludeDateFuture1, "user-5"),
-      PrisonExcludeDateDto(excludeDateFuture2, "user-6"),
-      PrisonExcludeDateDto(excludeDateFuture3, "user-6"),
+      ExcludeDateDto(excludeDatePast1, "user-11"),
+      ExcludeDateDto(excludeDatePast2, "user-12"),
+      ExcludeDateDto(excludeDatePast3, "user-13"),
+      ExcludeDateDto(excludeDateCurrent, "user-4"),
+      ExcludeDateDto(excludeDateFuture1, "user-5"),
+      ExcludeDateDto(excludeDateFuture2, "user-6"),
+      ExcludeDateDto(excludeDateFuture3, "user-6"),
     )
 
     visitSchedulerMockServer.stubGetExcludeDates("HEI", excludeDates.sortedByDescending { it.excludeDate })
@@ -181,9 +181,9 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val dates = getResults(returnResult)
     Assertions.assertThat(dates).hasSize(3)
-    Assertions.assertThat(dates[2]).isEqualTo(PrisonExcludeDateDto(excludeDatePast3, "User Thirteen"))
-    Assertions.assertThat(dates[1]).isEqualTo(PrisonExcludeDateDto(excludeDatePast2, "user-12"))
-    Assertions.assertThat(dates[0]).isEqualTo(PrisonExcludeDateDto(excludeDatePast1, "User Eleven"))
+    Assertions.assertThat(dates[2]).isEqualTo(ExcludeDateDto(excludeDatePast3, "User Thirteen"))
+    Assertions.assertThat(dates[1]).isEqualTo(ExcludeDateDto(excludeDatePast2, "user-12"))
+    Assertions.assertThat(dates[0]).isEqualTo(ExcludeDateDto(excludeDatePast1, "User Eleven"))
     verify(manageUsersApiClientSpy, times(3)).getUserDetails(any())
     verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-11")
     verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-12")
@@ -199,10 +199,10 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
     val excludeDateFuture3 = LocalDate.now().plusDays(3)
 
     val excludeDates = listOf(
-      PrisonExcludeDateDto(excludeDateCurrent, "user-4"),
-      PrisonExcludeDateDto(excludeDateFuture1, "user-5"),
-      PrisonExcludeDateDto(excludeDateFuture2, "user-6"),
-      PrisonExcludeDateDto(excludeDateFuture3, "user-6"),
+      ExcludeDateDto(excludeDateCurrent, "user-4"),
+      ExcludeDateDto(excludeDateFuture1, "user-5"),
+      ExcludeDateDto(excludeDateFuture2, "user-6"),
+      ExcludeDateDto(excludeDateFuture3, "user-6"),
     )
 
     visitSchedulerMockServer.stubGetExcludeDates("HEI", excludeDates.sortedByDescending { it.excludeDate })
@@ -258,7 +258,7 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<PrisonExcludeDateDto> {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<PrisonExcludeDateDto>::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<ExcludeDateDto> {
+    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<ExcludeDateDto>::class.java)
   }
 }

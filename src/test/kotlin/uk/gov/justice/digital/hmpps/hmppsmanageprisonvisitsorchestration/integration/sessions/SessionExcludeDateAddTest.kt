@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.prisons
+package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.sessions
 
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -10,33 +10,33 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 
-@DisplayName("Remove prison exclude dates tests")
-class PrisonExcludeDateRemoveTest : IntegrationTestBase() {
-  final val prisonCode = "HEI"
+@DisplayName("Add session exclude dates tests")
+class SessionExcludeDateAddTest : IntegrationTestBase() {
+  private final val sessionTemplateReference = "aaa-bbb-ccc"
 
-  fun callRemoveExcludeDate(
+  fun callAddSessionExcludeDate(
     webTestClient: WebTestClient,
-    prisonCode: String,
+    sessionTemplateReference: String,
     excludeDateDto: ExcludeDateDto,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     return webTestClient.put()
-      .uri("/config/prisons/prison/$prisonCode/exclude-date/remove")
+      .uri("/config/sessions/session/$sessionTemplateReference/exclude-date/add")
       .body(BodyInserters.fromValue(excludeDateDto))
       .headers(authHttpHeaders)
       .exchange()
   }
 
   @Test
-  fun `when remove exclude date added and is successful a successful response is returned`() {
+  fun `when add exclude date added and is successful a 201 is returned`() {
     // Given
     val excludeDateFuture = LocalDate.now().plusDays(3)
     val excludeDateDto = ExcludeDateDto(excludeDateFuture, "user-6")
 
-    visitSchedulerMockServer.stubRemoveExcludeDate(prisonCode, listOf(LocalDate.now()))
+    visitSchedulerMockServer.stubAddSessionTemplateExcludeDate(sessionTemplateReference, listOf(excludeDateFuture))
 
     // When
-    val responseSpec = callRemoveExcludeDate(webTestClient, "HEI", excludeDateDto, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callAddSessionExcludeDate(webTestClient, sessionTemplateReference, excludeDateDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().is2xxSuccessful
@@ -45,12 +45,12 @@ class PrisonExcludeDateRemoveTest : IntegrationTestBase() {
   @Test
   fun `when NOT_FOUND is returned from visit scheduler then NOT_FOUND status is sent back`() {
     // Given
-    val prisonCode = "HEI"
+    val sessionTemplateReference = sessionTemplateReference
     val excludeDateDto = ExcludeDateDto(LocalDate.now(), "user-6")
-    visitSchedulerMockServer.stubRemoveExcludeDate(prisonCode, null, HttpStatus.NOT_FOUND)
+    visitSchedulerMockServer.stubAddSessionTemplateExcludeDate(sessionTemplateReference, null, HttpStatus.NOT_FOUND)
 
     // When
-    val responseSpec = callRemoveExcludeDate(webTestClient, "HEI", excludeDateDto, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callAddSessionExcludeDate(webTestClient, sessionTemplateReference, excludeDateDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -59,12 +59,12 @@ class PrisonExcludeDateRemoveTest : IntegrationTestBase() {
   @Test
   fun `when BAD_REQUEST is returned from visit scheduler then BAD_REQUEST status is sent back`() {
     // Given
-    val prisonCode = "HEI"
+    val sessionTemplateReference = sessionTemplateReference
     val excludeDateDto = ExcludeDateDto(LocalDate.now(), "user-6")
-    visitSchedulerMockServer.stubRemoveExcludeDate(prisonCode, null, HttpStatus.BAD_REQUEST)
+    visitSchedulerMockServer.stubAddSessionTemplateExcludeDate(sessionTemplateReference, null, HttpStatus.BAD_REQUEST)
 
     // When
-    val responseSpec = callRemoveExcludeDate(webTestClient, "HEI", excludeDateDto, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callAddSessionExcludeDate(webTestClient, sessionTemplateReference, excludeDateDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isBadRequest
