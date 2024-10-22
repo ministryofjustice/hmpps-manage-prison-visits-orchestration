@@ -3,16 +3,19 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.bu
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 
 @Component
 class OrchestrationVisitDtoBuilder(
   private val orchestrationVisitorDtoBuilder: OrchestrationVisitorDtoBuilder,
 ) {
-  fun build(visitDto: VisitDto, prisonerContacts: List<PrisonerContactDto>): OrchestrationVisitDto {
+  fun build(visitDto: VisitDto, prisonerContacts: List<PrisonerContactDto>, prisoner: PrisonerDto? = null): OrchestrationVisitDto {
     return OrchestrationVisitDto(
       reference = visitDto.reference,
       prisonerId = visitDto.prisonerId,
+      prisonerFirstName = prisoner?.firstName,
+      prisonerLastName = prisoner?.lastName,
       prisonCode = visitDto.prisonCode,
       visitStatus = visitDto.visitStatus,
       outcomeStatus = visitDto.outcomeStatus,
