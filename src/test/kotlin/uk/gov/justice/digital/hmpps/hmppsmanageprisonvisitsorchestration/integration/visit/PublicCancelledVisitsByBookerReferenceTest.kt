@@ -107,7 +107,7 @@ class PublicCancelledVisitsByBookerReferenceTest : IntegrationTestBase() {
     assertVisitorDetails(visits[1].visitors, contacts)
 
     Mockito.verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false, false, null, null)
-    Mockito.verify(prisonerSearchClient, times(visits.size)).getPrisonerById(prisonerId)
+    Mockito.verify(prisonerSearchClient, times(1)).getPrisonerById(prisonerId)
   }
 
   @Test
@@ -159,7 +159,7 @@ class PublicCancelledVisitsByBookerReferenceTest : IntegrationTestBase() {
     }
 
     Mockito.verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false, approvedVisitorsOnly = false, null, null)
-    Mockito.verify(prisonerSearchClient, times(visits.size)).getPrisonerById(prisonerId)
+    Mockito.verify(prisonerSearchClient, times(1)).getPrisonerById(prisonerId)
   }
 
   @Test
@@ -186,7 +186,7 @@ class PublicCancelledVisitsByBookerReferenceTest : IntegrationTestBase() {
     assertVisitorDetails(visits[1].visitors, contacts)
 
     Mockito.verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false, false, null, null)
-    Mockito.verify(prisonerSearchClient, times(visits.size)).getPrisonerById(prisonerId)
+    Mockito.verify(prisonerSearchClient, times(1)).getPrisonerById(prisonerId)
   }
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<OrchestrationVisitDto> {

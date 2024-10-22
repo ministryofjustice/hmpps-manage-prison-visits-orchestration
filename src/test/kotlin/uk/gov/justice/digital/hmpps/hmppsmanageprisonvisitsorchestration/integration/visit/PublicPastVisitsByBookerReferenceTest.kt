@@ -104,7 +104,7 @@ class PublicPastVisitsByBookerReferenceTest : IntegrationTestBase() {
     assertVisitorDetails(visits[1].visitors, contacts)
 
     Mockito.verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false, approvedVisitorsOnly = false, null, null)
-    Mockito.verify(prisonerSearchClient, times(visits.size)).getPrisonerById(prisonerId)
+    Mockito.verify(prisonerSearchClient, times(1)).getPrisonerById(prisonerId)
   }
 
   @Test
@@ -139,7 +139,7 @@ class PublicPastVisitsByBookerReferenceTest : IntegrationTestBase() {
     }
 
     Mockito.verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false, approvedVisitorsOnly = false, null, null)
-    Mockito.verify(prisonerSearchClient, times(visits.size)).getPrisonerById(prisonerId)
+    Mockito.verify(prisonerSearchClient, times(1)).getPrisonerById(prisonerId)
   }
 
   @Test
@@ -168,7 +168,7 @@ class PublicPastVisitsByBookerReferenceTest : IntegrationTestBase() {
     Assertions.assertThat(visits[0].prisonerLastName).isEqualTo(null)
 
     Mockito.verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false, approvedVisitorsOnly = false, null, null)
-    Mockito.verify(prisonerSearchClient, times(visits.size)).getPrisonerById(prisonerId)
+    Mockito.verify(prisonerSearchClient, times(1)).getPrisonerById(prisonerId)
   }
 
   @Test
