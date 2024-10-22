@@ -15,6 +15,10 @@ data class OrchestrationVisitDto(
   val reference: String,
   @Schema(description = "Prisoner Id", example = "AF34567G", required = true)
   val prisonerId: String,
+  @Schema(description = "Prisoner first name", example = "James", required = false)
+  val prisonerFirstName: String?,
+  @Schema(description = "Prisoner last name", example = "Smith", required = false)
+  val prisonerLastName: String?,
   @JsonProperty("prisonId")
   @Schema(description = "Prison Id", example = "MDI", required = true)
   val prisonCode: String,

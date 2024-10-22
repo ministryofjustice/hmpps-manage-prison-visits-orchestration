@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerRestrictionChangeNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorApprovedUnapprovedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionUpsertedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.NonAssociationChangedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PersonRestrictionUpsertedInfo
@@ -50,6 +51,7 @@ class VisitSchedulerService(
   private val manageUsersService: ManageUsersService,
   private val alertService: AlertsService,
   private val orchestrationVisitDtoBuilder: OrchestrationVisitDtoBuilder,
+  private val prisonerSearchService: PrisonerSearchService,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -222,9 +224,15 @@ class VisitSchedulerService(
   private fun mapVisitDtoToOrchestrationVisitDto(visits: List<VisitDto>?): List<OrchestrationVisitDto> {
     val prisonerIds = visits?.map { it.prisonerId }?.toSet() ?: emptySet()
     val prisonerContactsMap = prisonerContactService.getPrisonersContacts(prisonerIds)
-    return visits?.map {
-      val contacts = prisonerContactsMap[it.prisonerId] ?: emptyList()
-      orchestrationVisitDtoBuilder.build(it, contacts)
+    return visits?.map { visit ->
+      val contacts = prisonerContactsMap[visit.prisonerId] ?: emptyList()
+      try {
+        val prisoner = prisonerSearchService.getPrisoner(visit.prisonerId)
+        orchestrationVisitDtoBuilder.build(visit, contacts, prisoner)
+      } catch (e: NotFoundException) {
+        LOG.error("prisoner search failed to find prisoner, skipping populating prisoner details")
+        orchestrationVisitDtoBuilder.build(visit, contacts)
+      }
     }?.toList() ?: emptyList()
   }
 

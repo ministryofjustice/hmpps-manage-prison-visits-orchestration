@@ -9,8 +9,10 @@ import org.mockito.kotlin.times
 import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
@@ -21,16 +23,23 @@ class PublicPastVisitsByBookerReferenceTest : IntegrationTestBase() {
   @SpyBean
   private lateinit var prisonerContactRegistryClient: PrisonerContactRegistryClient
 
+  @SpyBean
+  private lateinit var prisonerSearchClient: PrisonerSearchClient
+
   private lateinit var visitDto: VisitDto
   private lateinit var visitDto2: VisitDto
+  private lateinit var prisoner: PrisonerDto
   private lateinit var contact1: PrisonerContactDto
   private lateinit var contact2: PrisonerContactDto
   private lateinit var contact3: PrisonerContactDto
   private lateinit var contacts: List<PrisonerContactDto>
   private final val prisonerId = "ABC"
+  private final val prisonId = "MDI"
 
   @BeforeEach
   fun setup() {
+    prisoner = createPrisoner(prisonerId, "james", "smith", LocalDate.of(1965, 12, 12), prisonId)
+
     contact1 = createContactDto(firstName = "First", lastName = "Smith", dateOfBirth = LocalDate.of(2000, 1, 1))
     contact2 = createContactDto(firstName = "Second", lastName = "Smith", dateOfBirth = LocalDate.of(2000, 1, 1))
     contact3 = createContactDto(firstName = "Third", lastName = "Smith", dateOfBirth = LocalDate.of(2000, 1, 1))
@@ -57,6 +66,7 @@ class PublicPastVisitsByBookerReferenceTest : IntegrationTestBase() {
     // Given
     val visitsList = mutableListOf(visitDto, visitDto2)
     visitSchedulerMockServer.stubPublicPastVisitsByBookerReference(prisonerId, visitsList)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisoner)
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = false, approvedVisitorsOnly = false, contactsList = listOf(contact1, contact2, contact3))
 
     // When
@@ -71,11 +81,75 @@ class PublicPastVisitsByBookerReferenceTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when past visits for booker exists then the visitors names are also populated`() {
+  fun `when past visits for booker exists then the visitors names and prisoner info are also populated`() {
     // Given
     val visitsList = mutableListOf(visitDto, visitDto2)
     visitSchedulerMockServer.stubPublicPastVisitsByBookerReference(prisonerId, visitsList)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisoner)
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = false, approvedVisitorsOnly = false, contactsList = listOf(contact1, contact2, contact3))
+
+    // When
+    val responseSpec = callPublicPastVisits(webTestClient, prisonerId, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk
+      .expectBody()
+
+    val visits = getResults(returnResult)
+    Assertions.assertThat(visits.size).isEqualTo(2)
+    Assertions.assertThat(visits[0].visitors.size).isEqualTo(2)
+    Assertions.assertThat(visits[0].prisonerFirstName).isEqualTo(prisoner.firstName)
+    Assertions.assertThat(visits[0].prisonerLastName).isEqualTo(prisoner.lastName)
+    assertVisitorDetails(visits[0].visitors, contacts)
+    assertVisitorDetails(visits[1].visitors, contacts)
+
+    Mockito.verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false, approvedVisitorsOnly = false, null, null)
+    Mockito.verify(prisonerSearchClient, times(visits.size)).getPrisonerById(prisonerId)
+  }
+
+  @Test
+  fun `when past visits for booker exists but prisoner contact registry returns 404 visits are returned but visitors names are not populated`() {
+    // Given
+    val visitsList = mutableListOf(visitDto, visitDto2)
+    visitSchedulerMockServer.stubPublicPastVisitsByBookerReference(prisonerId, visitsList)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisoner)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = false, approvedVisitorsOnly = false, contactsList = null)
+
+    // When
+    val responseSpec = callPublicPastVisits(webTestClient, prisonerId, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk
+      .expectBody()
+
+    val visits = getResults(returnResult)
+    Assertions.assertThat(visits.size).isEqualTo(2)
+    Assertions.assertThat(visits[0].visitors.size).isEqualTo(2)
+    Assertions.assertThat(visits[0].prisonerFirstName).isEqualTo(prisoner.firstName)
+    Assertions.assertThat(visits[0].prisonerLastName).isEqualTo(prisoner.lastName)
+    Assertions.assertThat(visits[1].visitors.size).isEqualTo(2)
+    Assertions.assertThat(visits[1].prisonerFirstName).isEqualTo(prisoner.firstName)
+    Assertions.assertThat(visits[1].prisonerLastName).isEqualTo(prisoner.lastName)
+
+    val allVisitors = visits.flatMap { it.visitors }
+    for (visitor in allVisitors) {
+      Assertions.assertThat(visitor.nomisPersonId).isNotNull()
+      Assertions.assertThat(visitor.firstName).isNull()
+      Assertions.assertThat(visitor.lastName).isNull()
+    }
+
+    Mockito.verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false, approvedVisitorsOnly = false, null, null)
+    Mockito.verify(prisonerSearchClient, times(visits.size)).getPrisonerById(prisonerId)
+  }
+
+  @Test
+  fun `when past visits for booker exists but prisoner search returns a 404 then visits are returned without prisoner info`() {
+    // Given
+    val visitsList = mutableListOf(visitDto, visitDto2)
+    visitSchedulerMockServer.stubPublicPastVisitsByBookerReference(prisonerId, visitsList)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, null)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = false, approvedVisitorsOnly = false, contactsList = listOf(contact1, contact2, contact3))
+
     // When
     val responseSpec = callPublicPastVisits(webTestClient, prisonerId, roleVSIPOrchestrationServiceHttpHeaders)
 
@@ -87,36 +161,14 @@ class PublicPastVisitsByBookerReferenceTest : IntegrationTestBase() {
     Assertions.assertThat(visits.size).isEqualTo(2)
     Assertions.assertThat(visits[0].visitors.size).isEqualTo(2)
     assertVisitorDetails(visits[0].visitors, contacts)
+    Assertions.assertThat(visits[0].prisonerFirstName).isEqualTo(null)
+    Assertions.assertThat(visits[0].prisonerLastName).isEqualTo(null)
     assertVisitorDetails(visits[1].visitors, contacts)
-    Mockito.verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false, approvedVisitorsOnly = false, null, null)
-  }
-
-  @Test
-  fun `when past visits for booker exists but prisoner contact registry returns 404 visits are returned but visitors names are not populated`() {
-    // Given
-    val visitsList = mutableListOf(visitDto, visitDto2)
-    visitSchedulerMockServer.stubPublicPastVisitsByBookerReference(prisonerId, visitsList)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = false, approvedVisitorsOnly = false, contactsList = null)
-    // When
-    val responseSpec = callPublicPastVisits(webTestClient, prisonerId, roleVSIPOrchestrationServiceHttpHeaders)
-
-    // Then
-    val returnResult = responseSpec.expectStatus().isOk
-      .expectBody()
-
-    val visits = getResults(returnResult)
-    Assertions.assertThat(visits.size).isEqualTo(2)
-    Assertions.assertThat(visits[0].visitors.size).isEqualTo(2)
-    Assertions.assertThat(visits[1].visitors.size).isEqualTo(2)
-
-    val allVisitors = visits.flatMap { it.visitors }
-    for (visitor in allVisitors) {
-      Assertions.assertThat(visitor.nomisPersonId).isNotNull()
-      Assertions.assertThat(visitor.firstName).isNull()
-      Assertions.assertThat(visitor.lastName).isNull()
-    }
+    Assertions.assertThat(visits[0].prisonerFirstName).isEqualTo(null)
+    Assertions.assertThat(visits[0].prisonerLastName).isEqualTo(null)
 
     Mockito.verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false, approvedVisitorsOnly = false, null, null)
+    Mockito.verify(prisonerSearchClient, times(visits.size)).getPrisonerById(prisonerId)
   }
 
   @Test
