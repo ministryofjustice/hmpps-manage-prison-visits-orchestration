@@ -28,7 +28,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.PrisonExcludeDateDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType.NON_ASSOCIATION_EVENT
@@ -609,7 +609,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
 
   fun stubGetExcludeDates(
     prisonCode: String,
-    excludeDates: List<PrisonExcludeDateDto>?,
+    excludeDates: List<ExcludeDateDto>?,
     httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
   ) {
     val responseBuilder = createJsonResponseBuilder()
@@ -653,6 +653,63 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
       put("/prisons/prison/$prisonCode/exclude-date/remove")
+        .willReturn(
+          if (excludeDates != null) {
+            responseBuilder.withStatus(HttpStatus.CREATED.value())
+              .withBody(getJsonString(excludeDates))
+          } else {
+            responseBuilder.withStatus(httpStatus.value())
+          },
+        ),
+    )
+  }
+
+  fun stubGetSessionTemplateExcludeDates(
+    sessionTemplateReference: String,
+    excludeDates: List<ExcludeDateDto>?,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      get("/admin/session-templates/template/$sessionTemplateReference/exclude-date")
+        .willReturn(
+          if (excludeDates != null) {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(excludeDates))
+          } else {
+            responseBuilder.withStatus(httpStatus.value())
+          },
+        ),
+    )
+  }
+
+  fun stubAddSessionTemplateExcludeDate(
+    sessionTemplateReference: String,
+    excludeDates: List<LocalDate>?,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      put("/admin/session-templates/template/$sessionTemplateReference/exclude-date/add")
+        .willReturn(
+          if (excludeDates != null) {
+            responseBuilder.withStatus(HttpStatus.CREATED.value())
+              .withBody(getJsonString(excludeDates))
+          } else {
+            responseBuilder.withStatus(httpStatus.value())
+          },
+        ),
+    )
+  }
+
+  fun stubRemoveSessionTemplateExcludeDate(
+    sessionTemplateReference: String,
+    excludeDates: List<LocalDate>?,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      put("/admin/session-templates/template/$sessionTemplateReference/exclude-date/remove")
         .willReturn(
           if (excludeDates != null) {
             responseBuilder.withStatus(HttpStatus.CREATED.value())

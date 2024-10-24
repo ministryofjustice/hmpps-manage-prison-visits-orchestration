@@ -33,7 +33,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.PrisonExcludeDateDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
@@ -524,14 +524,14 @@ class VisitSchedulerClient(
       .bodyToMono<List<NotificationEventType>>().block(apiTimeout)
   }
 
-  fun getPrisonExcludeDates(prisonCode: String): List<PrisonExcludeDateDto>? {
+  fun getPrisonExcludeDates(prisonCode: String): List<ExcludeDateDto>? {
     return webClient.get()
       .uri("/prisons/prison/$prisonCode/exclude-date")
       .retrieve()
-      .bodyToMono<List<PrisonExcludeDateDto>>().block(apiTimeout)
+      .bodyToMono<List<ExcludeDateDto>>().block(apiTimeout)
   }
 
-  fun addPrisonExcludeDate(prisonCode: String, prisonExcludeDate: PrisonExcludeDateDto): List<LocalDate>? {
+  fun addPrisonExcludeDate(prisonCode: String, prisonExcludeDate: ExcludeDateDto): List<LocalDate>? {
     return webClient.put()
       .uri("/prisons/prison/$prisonCode/exclude-date/add")
       .body(BodyInserters.fromValue(prisonExcludeDate))
@@ -540,10 +540,35 @@ class VisitSchedulerClient(
       .bodyToMono<List<LocalDate>>().block(apiTimeout)
   }
 
-  fun removePrisonExcludeDate(prisonCode: String, prisonExcludeDate: PrisonExcludeDateDto): List<LocalDate>? {
+  fun removePrisonExcludeDate(prisonCode: String, prisonExcludeDate: ExcludeDateDto): List<LocalDate>? {
     return webClient.put()
       .uri("/prisons/prison/$prisonCode/exclude-date/remove")
       .body(BodyInserters.fromValue(prisonExcludeDate))
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<List<LocalDate>>().block(apiTimeout)
+  }
+
+  fun getSessionTemplateExcludeDates(sessionTemplateReference: String): List<ExcludeDateDto>? {
+    return webClient.get()
+      .uri("/admin/session-templates/template/$sessionTemplateReference/exclude-date")
+      .retrieve()
+      .bodyToMono<List<ExcludeDateDto>>().block(apiTimeout)
+  }
+
+  fun addSessionTemplateExcludeDate(sessionTemplateReference: String, sessionExcludeDate: ExcludeDateDto): List<LocalDate>? {
+    return webClient.put()
+      .uri("/admin/session-templates/template/$sessionTemplateReference/exclude-date/add")
+      .body(BodyInserters.fromValue(sessionExcludeDate))
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<List<LocalDate>>().block(apiTimeout)
+  }
+
+  fun removeSessionTemplateExcludeDate(sessionTemplateReference: String, sessionExcludeDate: ExcludeDateDto): List<LocalDate>? {
+    return webClient.put()
+      .uri("/admin/session-templates/template/$sessionTemplateReference/exclude-date/remove")
+      .body(BodyInserters.fromValue(sessionExcludeDate))
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono<List<LocalDate>>().block(apiTimeout)

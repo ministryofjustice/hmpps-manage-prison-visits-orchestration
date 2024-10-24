@@ -13,13 +13,13 @@ import org.springframework.http.HttpStatus
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ManageUsersApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.IsExcludeDateDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.PrisonExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 
-@DisplayName("Get prison exclude dates tests")
-class IsDateExcludedForVisitsTest : IntegrationTestBase() {
+@DisplayName("Is date excluded for prison tests")
+class IsDateExcludedForPrisonTest : IntegrationTestBase() {
   @SpyBean
   lateinit var manageUsersApiClientSpy: ManageUsersApiClient
 
@@ -51,13 +51,13 @@ class IsDateExcludedForVisitsTest : IntegrationTestBase() {
     val excludeDateFuture2 = LocalDate.now().plusDays(2)
     val excludeDateFuture3 = LocalDate.now().plusDays(3)
     val excludeDates = listOf(
-      PrisonExcludeDateDto(excludeDatePast1, "user-1"),
-      PrisonExcludeDateDto(excludeDatePast2, "user-2"),
-      PrisonExcludeDateDto(excludeDatePast3, "user-3"),
-      PrisonExcludeDateDto(excludeDateCurrent, "user-4"),
-      PrisonExcludeDateDto(excludeDateFuture1, "user-5"),
-      PrisonExcludeDateDto(excludeDateFuture2, "user-6"),
-      PrisonExcludeDateDto(excludeDateFuture3, "user-6"),
+      ExcludeDateDto(excludeDatePast1, "user-1"),
+      ExcludeDateDto(excludeDatePast2, "user-2"),
+      ExcludeDateDto(excludeDatePast3, "user-3"),
+      ExcludeDateDto(excludeDateCurrent, "user-4"),
+      ExcludeDateDto(excludeDateFuture1, "user-5"),
+      ExcludeDateDto(excludeDateFuture2, "user-6"),
+      ExcludeDateDto(excludeDateFuture3, "user-6"),
     )
 
     visitSchedulerMockServer.stubGetExcludeDates("HEI", excludeDates.sortedByDescending { it.excludeDate })

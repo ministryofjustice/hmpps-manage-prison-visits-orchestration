@@ -6,7 +6,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.PrisonExcludeDateDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 
@@ -17,7 +17,7 @@ class PrisonExcludeDateAddTest : IntegrationTestBase() {
   fun callAddExcludeDate(
     webTestClient: WebTestClient,
     prisonCode: String,
-    excludeDateDto: PrisonExcludeDateDto,
+    excludeDateDto: ExcludeDateDto,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     return webTestClient.put()
@@ -31,7 +31,7 @@ class PrisonExcludeDateAddTest : IntegrationTestBase() {
   fun `when add exclude date added and is successful a 201 is returned`() {
     // Given
     val excludeDateFuture = LocalDate.now().plusDays(3)
-    val excludeDateDto = PrisonExcludeDateDto(excludeDateFuture, "user-6")
+    val excludeDateDto = ExcludeDateDto(excludeDateFuture, "user-6")
 
     visitSchedulerMockServer.stubAddExcludeDate(prisonCode, listOf(excludeDateFuture))
 
@@ -46,7 +46,7 @@ class PrisonExcludeDateAddTest : IntegrationTestBase() {
   fun `when NOT_FOUND is returned from visit scheduler then NOT_FOUND status is sent back`() {
     // Given
     val prisonCode = "HEI"
-    val excludeDateDto = PrisonExcludeDateDto(LocalDate.now(), "user-6")
+    val excludeDateDto = ExcludeDateDto(LocalDate.now(), "user-6")
     visitSchedulerMockServer.stubAddExcludeDate(prisonCode, null, HttpStatus.NOT_FOUND)
 
     // When
@@ -60,7 +60,7 @@ class PrisonExcludeDateAddTest : IntegrationTestBase() {
   fun `when BAD_REQUEST is returned from visit scheduler then BAD_REQUEST status is sent back`() {
     // Given
     val prisonCode = "HEI"
-    val excludeDateDto = PrisonExcludeDateDto(LocalDate.now(), "user-6")
+    val excludeDateDto = ExcludeDateDto(LocalDate.now(), "user-6")
     visitSchedulerMockServer.stubAddExcludeDate(prisonCode, null, HttpStatus.BAD_REQUEST)
 
     // When
