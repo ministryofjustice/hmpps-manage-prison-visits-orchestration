@@ -23,7 +23,6 @@ dependencies {
   implementation("com.hazelcast:hazelcast:5.5.0")
   implementation("com.hazelcast:hazelcast-spring:5.5.0")
 
-  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.2")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8")
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.9.0")
