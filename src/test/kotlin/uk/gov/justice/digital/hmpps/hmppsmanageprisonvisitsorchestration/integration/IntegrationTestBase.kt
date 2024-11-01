@@ -204,7 +204,7 @@ abstract class IntegrationTestBase {
     modifiedTimestamp: LocalDateTime = LocalDateTime.now(),
     sessionTemplateReference: String? = "ref.ref.ref",
     visitors: List<VisitorDto>? = null,
-    contact: ContactDto = ContactDto("Jane Doe", "01234567890"),
+    contact: ContactDto = ContactDto("Jane Doe", "01234567890", "email@example.com"),
   ): VisitDto {
     return VisitDto(
       applicationReference = applicationReference,
