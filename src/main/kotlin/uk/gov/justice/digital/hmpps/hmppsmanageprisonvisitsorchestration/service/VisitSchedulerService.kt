@@ -50,6 +50,7 @@ class VisitSchedulerService(
   private val manageUsersService: ManageUsersService,
   private val alertService: AlertsService,
   private val orchestrationVisitDtoBuilder: OrchestrationVisitDtoBuilder,
+  private val prisonerSearchService: PrisonerSearchService,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -221,10 +222,15 @@ class VisitSchedulerService(
 
   private fun mapVisitDtoToOrchestrationVisitDto(visits: List<VisitDto>?): List<OrchestrationVisitDto> {
     val prisonerIds = visits?.map { it.prisonerId }?.toSet() ?: emptySet()
+
+    val prisonersInfoMap = prisonerSearchService.getPrisoners(prisonerIds)
     val prisonerContactsMap = prisonerContactService.getPrisonersContacts(prisonerIds)
-    return visits?.map {
-      val contacts = prisonerContactsMap[it.prisonerId] ?: emptyList()
-      orchestrationVisitDtoBuilder.build(it, contacts)
+
+    return visits?.map { visit ->
+      val contacts = prisonerContactsMap[visit.prisonerId] ?: emptyList()
+      val prisoner = prisonersInfoMap[visit.prisonerId]
+
+      orchestrationVisitDtoBuilder.build(visit, contacts, prisoner)
     }?.toList() ?: emptyList()
   }
 

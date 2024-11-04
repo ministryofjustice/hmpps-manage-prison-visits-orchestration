@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonerContactService.Companion.LOG
 
 @Service
 class PrisonerSearchService(
@@ -16,5 +18,20 @@ class PrisonerSearchService(
 
   fun getPrisoner(prisonerNumber: String): PrisonerDto {
     return prisonerSearchClient.getPrisonerById(prisonerNumber)
+  }
+
+  fun getPrisoners(prisonerIds: Set<String>): Map<String, PrisonerDto?> {
+    val prisonerInfoMap = mutableMapOf<String, PrisonerDto?>()
+    prisonerIds.forEach { prisonerId ->
+      val prisoner = try {
+        getPrisoner(prisonerId)
+      } catch (e: NotFoundException) {
+        LOG.info("No prisoner found for prisoner id - $prisonerId")
+        null
+      }
+      prisonerInfoMap[prisonerId] = prisoner
+    }
+
+    return prisonerInfoMap
   }
 }
