@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.OutcomeStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
@@ -60,8 +59,6 @@ class VisitDto(
   @Schema(description = "The visit modified date and time", example = "2018-12-01T13:45:00", required = true)
   @field:NotBlank
   val modifiedTimestamp: LocalDateTime,
-  @Schema(description = "User type", example = "STAFF", required = true)
-  val userType: UserType,
   @Schema(description = "Date the visit was first booked or migrated", example = "2018-12-01T13:45:00", required = false)
   val firstBookedDateTime: LocalDateTime? = null,
 )

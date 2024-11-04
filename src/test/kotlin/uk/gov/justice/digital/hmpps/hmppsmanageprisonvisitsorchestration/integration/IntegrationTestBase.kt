@@ -224,7 +224,6 @@ abstract class IntegrationTestBase {
       modifiedTimestamp = modifiedTimestamp,
       visitors = visitors,
       visitContact = contact,
-      userType = STAFF,
       firstBookedDateTime = firstBookedDate,
     )
   }
