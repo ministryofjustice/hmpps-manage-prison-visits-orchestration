@@ -59,4 +59,6 @@ class VisitDto(
   @Schema(description = "The visit modified date and time", example = "2018-12-01T13:45:00", required = true)
   @field:NotBlank
   val modifiedTimestamp: LocalDateTime,
+  @Schema(description = "Date the visit was first booked or migrated", example = "2018-12-01T13:45:00", required = false)
+  val firstBookedDateTime: LocalDateTime? = null,
 )

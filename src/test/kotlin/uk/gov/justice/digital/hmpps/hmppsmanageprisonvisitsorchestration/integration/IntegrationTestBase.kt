@@ -205,6 +205,7 @@ abstract class IntegrationTestBase {
     sessionTemplateReference: String? = "ref.ref.ref",
     visitors: List<VisitorDto>? = null,
     contact: ContactDto = ContactDto("Jane Doe", "01234567890"),
+    firstBookedDate: LocalDateTime? = null,
   ): VisitDto {
     return VisitDto(
       applicationReference = applicationReference,
@@ -223,6 +224,7 @@ abstract class IntegrationTestBase {
       modifiedTimestamp = modifiedTimestamp,
       visitors = visitors,
       visitContact = contact,
+      firstBookedDateTime = firstBookedDate,
     )
   }
 
