@@ -13,8 +13,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.CLOSED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.OPEN
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.IsExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.ScheduledEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.DateRangeNotFoundException
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonService.Companion.logger
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
 import java.time.LocalDate
 import java.time.LocalTime
@@ -25,6 +28,7 @@ class VisitSchedulerSessionsService(
   private val appointmentsService: AppointmentsService,
   private val prisonerProfileService: PrisonerProfileService,
   private val prisonService: PrisonService,
+  private val excludeDatesService: ExcludeDatesService,
   private val dateUtils: DateUtils,
 ) {
   companion object {
@@ -114,6 +118,32 @@ class VisitSchedulerSessionsService(
     return AvailableVisitSessionRestrictionDto(sessionRestriction)
   }
 
+  fun getFutureExcludeDatesForSessionTemplate(sessionTemplateReference: String): List<ExcludeDateDto> {
+    val excludeDates = getExcludeDatesForSessionTemplate(sessionTemplateReference)
+    return excludeDatesService.getFutureExcludeDates(excludeDates)
+  }
+
+  fun getPastExcludeDatesForSessionTemplate(sessionTemplateReference: String): List<ExcludeDateDto> {
+    val excludeDates = getExcludeDatesForSessionTemplate(sessionTemplateReference)
+    return excludeDatesService.getPastExcludeDates(excludeDates)
+  }
+
+  fun isDateExcludedForSessionTemplateVisits(sessionTemplateReference: String, date: LocalDate): IsExcludeDateDto {
+    logger.trace("isDateExcluded - session template - {}, date - {}", sessionTemplateReference, date)
+    val excludeDates = getExcludeDatesForSessionTemplate(sessionTemplateReference)
+    val isExcluded = excludeDatesService.isDateExcluded(excludeDates, date)
+    logger.trace("isDateExcluded - session template - {}, date - {}, isExcluded - {}", sessionTemplateReference, date, isExcluded)
+    return isExcluded
+  }
+
+  fun addExcludeDateForSessionTemplate(sessionTemplateReference: String, sessionExcludeDate: ExcludeDateDto): List<LocalDate> {
+    return visitSchedulerClient.addSessionTemplateExcludeDate(sessionTemplateReference, sessionExcludeDate)?.sortedByDescending { it } ?: emptyList()
+  }
+
+  fun removeExcludeDateForSessionTemplate(sessionTemplateReference: String, sessionExcludeDate: ExcludeDateDto): List<LocalDate> {
+    return visitSchedulerClient.removeSessionTemplateExcludeDate(sessionTemplateReference, sessionExcludeDate)?.sortedByDescending { it } ?: emptyList()
+  }
+
   private fun filterAvailableVisitsByHigherPriorityAppointments(prisonerId: String, dateRange: DateRange, availableVisitSessions: List<AvailableVisitSessionDto>): List<AvailableVisitSessionDto> {
     val higherPriorityAppointments = appointmentsService.getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
     return availableVisitSessions.filterNot { availableSession ->
@@ -194,5 +224,9 @@ class VisitSchedulerSessionsService(
       { it.sessionTimeSlot.startTime },
       { it.sessionTimeSlot.endTime },
     )
+  }
+
+  private fun getExcludeDatesForSessionTemplate(sessionTemplateReference: String): List<ExcludeDateDto> {
+    return visitSchedulerClient.getSessionTemplateExcludeDates(sessionTemplateReference) ?: emptyList()
   }
 }

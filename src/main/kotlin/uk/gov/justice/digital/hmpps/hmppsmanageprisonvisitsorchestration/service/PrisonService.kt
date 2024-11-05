@@ -10,18 +10,17 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.IsExcludeDateDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.PrisonExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
 import java.time.LocalDate
-import java.util.function.Predicate
 
 @Service
 class PrisonService(
   val visitSchedulerClient: VisitSchedulerClient,
   private val prisonRegisterClient: PrisonRegisterClient,
-  private val manageUsersService: ManageUsersService,
   private val dateUtils: DateUtils,
+  private val excludeDatesService: ExcludeDatesService,
 ) {
   companion object {
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
@@ -51,42 +50,33 @@ class PrisonService(
     return prison.clients.firstOrNull { it.userType == userType }?.active ?: false
   }
 
-  fun getLastBookableSessionDate(prison: VisitSchedulerPrisonDto, date: LocalDate): LocalDate {
-    return date.plusDays(prison.policyNoticeDaysMax.toLong())
-  }
-
   fun getSupportedPrisons(type: UserType): List<String> {
     return visitSchedulerClient.getSupportedPrisons(type)
   }
 
-  fun getFutureExcludeDatesForPrison(prisonCode: String): List<PrisonExcludeDateDto> {
-    val futureDatesPredicate: Predicate<PrisonExcludeDateDto> = Predicate { it.excludeDate >= dateUtils.getCurrentDate() }
-    return getExcludeDatesForPrison(prisonCode, futureDatesPredicate).sortedBy { it.excludeDate }
+  fun getFutureExcludeDatesForPrison(prisonCode: String): List<ExcludeDateDto> {
+    val excludeDates = getExcludeDatesForPrison(prisonCode)
+    return excludeDatesService.getFutureExcludeDates(excludeDates)
   }
 
-  fun getPastExcludeDatesForPrison(prisonCode: String): List<PrisonExcludeDateDto> {
-    val pastDatesPredicate: Predicate<PrisonExcludeDateDto> = Predicate { it.excludeDate < dateUtils.getCurrentDate() }
-    return getExcludeDatesForPrison(prisonCode, pastDatesPredicate).sortedByDescending { it.excludeDate }
-  }
-
-  private fun getExcludeDatesForPrison(prisonCode: String, excludeDatesFilter: Predicate<PrisonExcludeDateDto>): List<PrisonExcludeDateDto> {
-    return getExcludeDatesForPrison(prisonCode).filter { excludeDatesFilter.test(it) }.also {
-      setActionedByFullName(it)
-    }
+  fun getPastExcludeDatesForPrison(prisonCode: String): List<ExcludeDateDto> {
+    val excludeDates = getExcludeDatesForPrison(prisonCode)
+    return excludeDatesService.getPastExcludeDates(excludeDates)
   }
 
   fun isDateExcludedForPrisonVisits(prisonCode: String, date: LocalDate): IsExcludeDateDto {
     logger.trace("isDateExcluded - prison - {}, date - {}", prisonCode, date)
-    val isExcluded = getExcludeDatesForPrison(prisonCode).map { it.excludeDate }.contains(date)
+    val excludeDates = getExcludeDatesForPrison(prisonCode)
+    val isExcluded = excludeDatesService.isDateExcluded(excludeDates, date)
     logger.trace("isDateExcluded - prison - {}, date - {}, isExcluded - {}", prisonCode, date, isExcluded)
-    return IsExcludeDateDto(isExcluded)
+    return isExcluded
   }
 
-  fun addExcludeDateForPrison(prisonCode: String, prisonExcludeDate: PrisonExcludeDateDto): List<LocalDate> {
+  fun addExcludeDateForPrison(prisonCode: String, prisonExcludeDate: ExcludeDateDto): List<LocalDate> {
     return visitSchedulerClient.addPrisonExcludeDate(prisonCode, prisonExcludeDate)?.sortedByDescending { it } ?: emptyList()
   }
 
-  fun removeExcludeDateForPrison(prisonCode: String, prisonExcludeDate: PrisonExcludeDateDto): List<LocalDate> {
+  fun removeExcludeDateForPrison(prisonCode: String, prisonExcludeDate: ExcludeDateDto): List<LocalDate> {
     return visitSchedulerClient.removePrisonExcludeDate(prisonCode, prisonExcludeDate)?.sortedByDescending { it } ?: emptyList()
   }
 
@@ -99,31 +89,7 @@ class PrisonService(
     return dateUtils.getToDaysDateRange(prison = prison, minOverride = fromDateOverride, maxOverride = toDateOverride)
   }
 
-  private fun getExcludeDatesForPrison(prisonCode: String): List<PrisonExcludeDateDto> {
+  private fun getExcludeDatesForPrison(prisonCode: String): List<ExcludeDateDto> {
     return visitSchedulerClient.getPrisonExcludeDates(prisonCode) ?: emptyList()
-  }
-
-  private fun setActionedByFullName(excludeDates: List<PrisonExcludeDateDto>): List<PrisonExcludeDateDto> {
-    if (excludeDates.isNotEmpty()) {
-      val userNameMap = getUserNamesMap(excludeDates.map { it.actionedBy }.toSet())
-
-      for (excludeDate in excludeDates) {
-        excludeDate.actionedBy = userNameMap[excludeDate.actionedBy] ?: excludeDate.actionedBy
-      }
-    }
-
-    return excludeDates
-  }
-
-  /**
-   * returns Map<String, String> where key = username, value = full name.
-   */
-  private fun getUserNamesMap(usernames: Set<String>): Map<String, String> {
-    val userNameMap = HashMap<String, String>()
-    for (username in usernames) {
-      userNameMap[username] = manageUsersService.getUserFullName(username, userNameIfNotAvailable = username)
-    }
-
-    return userNameMap
   }
 }
