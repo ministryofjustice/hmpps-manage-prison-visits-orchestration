@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull
+import java.time.LocalDateTime
 
 /**
  * A visit's preview with minimum visit details.
@@ -30,6 +31,18 @@ data class VisitPreviewDto(
   @Schema(description = "Timeslot for the visit", required = true)
   @NotNull
   val visitTimeSlot: SessionTimeSlotDto,
+
+  @Schema(description = "Date the visit was first booked or migrated", example = "2018-12-01T13:45:00", required = false)
+  val firstBookedDateTime: LocalDateTime? = null,
 ) {
-  constructor(prisonerId: String, visitReference: String, visitorCount: Int, visitTimeSlot: SessionTimeSlotDto) : this(prisonerId, prisonerId, prisonerId, visitReference, visitorCount, visitTimeSlot)
+  constructor(prisonerId: String, visitReference: String, visitorCount: Int, visitTimeSlot: SessionTimeSlotDto, firstBookedDateTime: LocalDateTime?) :
+    this(
+      prisonerId = prisonerId,
+      firstName = prisonerId,
+      lastName = prisonerId,
+      visitReference = visitReference,
+      visitorCount = visitorCount,
+      visitTimeSlot = visitTimeSlot,
+      firstBookedDateTime = firstBookedDateTime,
+    )
 }
