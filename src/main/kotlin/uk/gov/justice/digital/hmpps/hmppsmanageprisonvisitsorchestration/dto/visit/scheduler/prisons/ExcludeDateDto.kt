@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
 @Schema(description = "Prison exclude date")
-data class PrisonExcludeDateDto(
+data class ExcludeDateDto(
   @Schema(description = "exclude date", example = "2024-26-12", required = true)
   val excludeDate: LocalDate,
 
