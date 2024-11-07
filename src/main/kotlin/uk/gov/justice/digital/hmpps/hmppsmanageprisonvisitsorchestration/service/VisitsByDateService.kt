@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTimeSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
@@ -46,27 +45,12 @@ class VisitsByDateService(
       page = PAGE_NUMBER,
       size = MAX_VISIT_RECORDS,
     )?.toList()?.map { visit ->
-      val visitorCount = visit.visitors?.size ?: 0
-      val visitTimeSlot = SessionTimeSlotDto(visit.startTimestamp.toLocalTime(), visit.endTimestamp.toLocalTime())
       try {
         val prisoner = prisonerSearchClient.getPrisonerById(visit.prisonerId)
-        VisitPreviewDto(
-          prisonerId = visit.prisonerId,
-          firstName = prisoner.firstName,
-          lastName = prisoner.lastName,
-          visitReference = visit.reference,
-          visitorCount = visitorCount,
-          visitTimeSlot = visitTimeSlot,
-          firstBookedDateTime = visit.firstBookedDateTime,
-        )
+        VisitPreviewDto(visit, prisoner)
       } catch (e: Exception) {
-        VisitPreviewDto(
-          prisonerId = visit.prisonerId,
-          visitReference = visit.reference,
-          visitorCount = visitorCount,
-          visitTimeSlot = visitTimeSlot,
-          firstBookedDateTime = visit.firstBookedDateTime,
-        )
+        LOG.debug("Unable to find prisoner ${visit.prisonerId}", e)
+        VisitPreviewDto(visit)
       }
     } ?: emptyList()
   }
