@@ -17,25 +17,26 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.IsExcludeDateDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonService
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerSessionsService
 import java.time.LocalDate
 
-const val ORCHESTRATION_PRISONS_EXCLUDE_DATE_CONTROLLER_PATH: String = "$ORCHESTRATION_PRISONS_CONFIG_CONTROLLER_PATH/prison/{prisonCode}/exclude-date"
-const val ORCHESTRATION_PRISONS_EXCLUDE_DATE_ADD_CONTROLLER_PATH: String = "$ORCHESTRATION_PRISONS_EXCLUDE_DATE_CONTROLLER_PATH/add"
-const val ORCHESTRATION_PRISONS_EXCLUDE_DATE_REMOVE_CONTROLLER_PATH: String = "$ORCHESTRATION_PRISONS_EXCLUDE_DATE_CONTROLLER_PATH/remove"
-const val ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_FUTURE_CONTROLLER_PATH: String = "$ORCHESTRATION_PRISONS_EXCLUDE_DATE_CONTROLLER_PATH/future"
-const val ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_PAST_CONTROLLER_PATH: String = "$ORCHESTRATION_PRISONS_EXCLUDE_DATE_CONTROLLER_PATH/past"
-const val ORCHESTRATION_PRISONS_IS_DATE_EXCLUDED_CONTROLLER_PATH: String = "$ORCHESTRATION_PRISONS_EXCLUDE_DATE_CONTROLLER_PATH/{excludeDate}/isExcluded"
+const val ORCHESTRATION_SESSIONS_CONFIG_CONTROLLER_PATH: String = "/config/sessions"
+const val ORCHESTRATION_SESSIONS_EXCLUDE_DATE_CONTROLLER_PATH: String = "$ORCHESTRATION_SESSIONS_CONFIG_CONTROLLER_PATH/session/{sessionTemplateReference}/exclude-date"
+const val ORCHESTRATION_SESSIONS_EXCLUDE_DATE_ADD_CONTROLLER_PATH: String = "$ORCHESTRATION_SESSIONS_EXCLUDE_DATE_CONTROLLER_PATH/add"
+const val ORCHESTRATION_SESSIONS_EXCLUDE_DATE_REMOVE_CONTROLLER_PATH: String = "$ORCHESTRATION_SESSIONS_EXCLUDE_DATE_CONTROLLER_PATH/remove"
+const val ORCHESTRATION_SESSIONS_EXCLUDE_DATE_GET_FUTURE_CONTROLLER_PATH: String = "$ORCHESTRATION_SESSIONS_EXCLUDE_DATE_CONTROLLER_PATH/future"
+const val ORCHESTRATION_SESSIONS_EXCLUDE_DATE_GET_PAST_CONTROLLER_PATH: String = "$ORCHESTRATION_SESSIONS_EXCLUDE_DATE_CONTROLLER_PATH/past"
+const val ORCHESTRATION_SESSIONS_IS_DATE_EXCLUDED_CONTROLLER_PATH: String = "$ORCHESTRATION_SESSIONS_EXCLUDE_DATE_CONTROLLER_PATH/{excludeDate}/isExcluded"
 
 @RestController
-class OrchestrationPrisonsExcludeDateController(
-  private val prisonService: PrisonService,
+class OrchestrationSessionsExcludeDateController(
+  private val sessionsService: VisitSchedulerSessionsService,
 ) {
   @PreAuthorize("hasAnyRole('VSIP_ORCHESTRATION_SERVICE', 'VISIT_SCHEDULER')")
-  @GetMapping(ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_FUTURE_CONTROLLER_PATH)
+  @GetMapping(ORCHESTRATION_SESSIONS_EXCLUDE_DATE_GET_FUTURE_CONTROLLER_PATH)
   @Operation(
-    summary = "Get all current or future exclude dates for a given prison",
-    description = "Get current or future exclude dates for a given prison",
+    summary = "Get all current or future exclude dates for a given session template",
+    description = "Get current or future exclude dates for a given session template",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -59,24 +60,24 @@ class OrchestrationPrisonsExcludeDateController(
       ),
       ApiResponse(
         responseCode = "404",
-        description = "Prison not found on visit-scheduler",
+        description = "Session template not found on visit-scheduler",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
   )
-  fun getFutureExcludeDatesForPrison(
-    @Schema(description = "prison code", example = "HEI", required = true)
+  fun getFutureExcludeDatesForSessionTemplate(
+    @Schema(description = "session template reference", example = "aaa-bbb-ccc", required = true)
     @PathVariable
-    prisonCode: String,
+    sessionTemplateReference: String,
   ): List<ExcludeDateDto>? {
-    return prisonService.getFutureExcludeDatesForPrison(prisonCode)
+    return sessionsService.getFutureExcludeDatesForSessionTemplate(sessionTemplateReference)
   }
 
   @PreAuthorize("hasAnyRole('VSIP_ORCHESTRATION_SERVICE', 'VISIT_SCHEDULER')")
-  @GetMapping(ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_PAST_CONTROLLER_PATH)
+  @GetMapping(ORCHESTRATION_SESSIONS_EXCLUDE_DATE_GET_PAST_CONTROLLER_PATH)
   @Operation(
-    summary = "Get all past exclude dates for a given prison",
-    description = "Get all past exclude dates for a given prison",
+    summary = "Get all past exclude dates for a given session template",
+    description = "Get all past exclude dates for a given session template",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -100,24 +101,24 @@ class OrchestrationPrisonsExcludeDateController(
       ),
       ApiResponse(
         responseCode = "404",
-        description = "Prison not found on visit-scheduler",
+        description = "Session template not found",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
   )
-  fun getPastExcludeDatesForPrison(
-    @Schema(description = "prison code", example = "HEI", required = true)
+  fun getPastExcludeDatesForSessionTemplate(
+    @Schema(description = "session template reference", example = "aaa-bbb-ccc", required = true)
     @PathVariable
-    prisonCode: String,
+    sessionTemplateReference: String,
   ): List<ExcludeDateDto>? {
-    return prisonService.getPastExcludeDatesForPrison(prisonCode)
+    return sessionsService.getPastExcludeDatesForSessionTemplate(sessionTemplateReference)
   }
 
   @PreAuthorize("hasAnyRole('VSIP_ORCHESTRATION_SERVICE', 'VISIT_SCHEDULER')")
-  @PutMapping(ORCHESTRATION_PRISONS_EXCLUDE_DATE_ADD_CONTROLLER_PATH)
+  @PutMapping(ORCHESTRATION_SESSIONS_EXCLUDE_DATE_ADD_CONTROLLER_PATH)
   @Operation(
-    summary = "Add exclude date for a given prison",
-    description = "Add exclude date for a given prison",
+    summary = "Add exclude date for a given session template",
+    description = "Add exclude date for a given session template",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -140,27 +141,27 @@ class OrchestrationPrisonsExcludeDateController(
       ),
       ApiResponse(
         responseCode = "404",
-        description = "Prison not found on visit-scheduler",
+        description = "Session template not found on visit-scheduler",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
   )
-  fun addExcludeDateForPrison(
-    @Schema(description = "prison code", example = "HEI", required = true)
+  fun addExcludeDateForSessionTemplate(
+    @Schema(description = "session template reference", example = "aaa-bbb-ccc", required = true)
     @PathVariable
-    prisonCode: String,
+    sessionTemplateReference: String,
     @RequestBody @Valid
-    prisonExcludeDate: ExcludeDateDto,
+    excludeDate: ExcludeDateDto,
   ): ResponseEntity<HttpStatus> {
-    prisonService.addExcludeDateForPrison(prisonCode, prisonExcludeDate)
+    sessionsService.addExcludeDateForSessionTemplate(sessionTemplateReference, excludeDate)
     return ResponseEntity(HttpStatus.OK)
   }
 
   @PreAuthorize("hasAnyRole('VSIP_ORCHESTRATION_SERVICE', 'VISIT_SCHEDULER')")
-  @PutMapping(ORCHESTRATION_PRISONS_EXCLUDE_DATE_REMOVE_CONTROLLER_PATH)
+  @PutMapping(ORCHESTRATION_SESSIONS_EXCLUDE_DATE_REMOVE_CONTROLLER_PATH)
   @Operation(
-    summary = "Remove exclude date for a given prison",
-    description = "Remove exclude date for a given prison",
+    summary = "Remove exclude date for a given session template",
+    description = "Remove exclude date for a given session template",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -183,31 +184,31 @@ class OrchestrationPrisonsExcludeDateController(
       ),
       ApiResponse(
         responseCode = "404",
-        description = "Prison not found on visit-scheduler",
+        description = "Session Template not found on visit-scheduler",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
   )
-  fun removeExcludeDateForPrison(
-    @Schema(description = "prison code", example = "HEI", required = true)
+  fun removeExcludeDateForSessionTemplate(
+    @Schema(description = "session template reference", example = "aaa-bbb-ccc", required = true)
     @PathVariable
-    prisonCode: String,
+    sessionTemplateReference: String,
     @RequestBody @Valid
-    prisonExcludeDate: ExcludeDateDto,
+    excludeDate: ExcludeDateDto,
   ): ResponseEntity<HttpStatus> {
-    prisonService.removeExcludeDateForPrison(prisonCode, prisonExcludeDate)
+    sessionsService.removeExcludeDateForSessionTemplate(sessionTemplateReference, excludeDate)
     return ResponseEntity(HttpStatus.OK)
   }
 
   @PreAuthorize("hasAnyRole('VSIP_ORCHESTRATION_SERVICE', 'VISIT_SCHEDULER')")
-  @GetMapping(ORCHESTRATION_PRISONS_IS_DATE_EXCLUDED_CONTROLLER_PATH)
+  @GetMapping(ORCHESTRATION_SESSIONS_IS_DATE_EXCLUDED_CONTROLLER_PATH)
   @Operation(
-    summary = "Endpoint to check if the date passed has been excluded for visits by the prison",
-    description = "Returns true if the date passed has been excluded for visits by the prison, false otherwise.",
+    summary = "Endpoint to check if the date passed has been excluded for visits for the session template",
+    description = "Returns true if the date passed has been excluded for visits for the session template, false otherwise.",
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "Successful response if the date is excluded for visits at the prison",
+        description = "Successful response if the date is excluded for the session template",
         content = [
           Content(
             mediaType = "application/json",
@@ -227,19 +228,19 @@ class OrchestrationPrisonsExcludeDateController(
       ),
       ApiResponse(
         responseCode = "404",
-        description = "Prison not found on visit-scheduler",
+        description = "Session template not found",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
   )
-  fun isDateExcludedForPrisonVisits(
-    @Schema(description = "prison code", example = "HEI", required = true)
+  fun isDateExcludedForSessionTemplateVisits(
+    @Schema(description = "session template reference", example = "aaa-bbb-ccc", required = true)
     @PathVariable
-    prisonCode: String,
-    @Schema(description = "date to be checked if excluded by prison for visits", example = "2024-12-26", required = true)
+    sessionTemplateReference: String,
+    @Schema(description = "date to be checked if excluded for session template", example = "2024-12-26", required = true)
     @PathVariable
     excludeDate: LocalDate,
   ): IsExcludeDateDto {
-    return prisonService.isDateExcludedForPrisonVisits(prisonCode, excludeDate)
+    return sessionsService.isDateExcludedForSessionTemplateVisits(sessionTemplateReference, excludeDate)
   }
 }
