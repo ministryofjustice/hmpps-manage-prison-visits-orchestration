@@ -119,7 +119,6 @@ To register pre-commit check to run Ktlint format:
 ./gradlew ktlintApplyToIdea addKtlintCheckGitPreCommitHook
 ```
 
-
 #### Send notifications locally
 To help test notification events locally we can send events to localstack to replicate what NOMIS would do -
 ##### Step 1 - Start Orchestration service on local
