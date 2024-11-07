@@ -206,7 +206,7 @@ abstract class IntegrationTestBase {
     visitors: List<VisitorDto>? = null,
     contact: ContactDto = ContactDto("Jane Doe", "01234567890", "email@example.com"),
     firstBookedDate: LocalDateTime? = null,
-    ): VisitDto {
+  ): VisitDto {
     return VisitDto(
       applicationReference = applicationReference,
       sessionTemplateReference = sessionTemplateReference,
