@@ -38,10 +38,10 @@ class VisitByReferenceTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when visit exists without a phone number for contact search by reference still returns that visit`() {
+  fun `when visit exists without a phone number or email for contact search by reference still returns that visit`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val visitDto = createVisitDto(reference = reference, contact = ContactDto("Jane Doe", null))
+    val visitDto = createVisitDto(reference = reference, contact = ContactDto("Jane Doe", null, null))
     visitSchedulerMockServer.stubGetVisit(reference, visitDto)
 
     // When
@@ -52,6 +52,7 @@ class VisitByReferenceTest : IntegrationTestBase() {
     val visitDtoResponse = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, VisitDto::class.java)
     Assertions.assertThat(visitDtoResponse.reference).isEqualTo(visitDto.reference)
     Assertions.assertThat(visitDtoResponse.visitContact!!.telephone).isNull()
+    Assertions.assertThat(visitDtoResponse.visitContact!!.email).isNull()
     Assertions.assertThat(visitDtoResponse.visitContact!!.name).isEqualTo("Jane Doe")
   }
 
