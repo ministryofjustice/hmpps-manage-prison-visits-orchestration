@@ -2,12 +2,13 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import java.time.LocalDateTime
 
 /**
  * A visit's preview with minimum visit details.
  */
-data class VisitPreviewDto(
+data class VisitPreviewDto internal constructor(
   @Schema(required = true, description = "Prisoner Number", example = "A1234AA")
   @NotNull
   val prisonerId: String,
@@ -32,17 +33,28 @@ data class VisitPreviewDto(
   @NotNull
   val visitTimeSlot: SessionTimeSlotDto,
 
-  @Schema(description = "Date the visit was first booked or migrated", example = "2018-12-01T13:45:00", required = false)
-  val firstBookedDateTime: LocalDateTime? = null,
+  @Schema(description = "Date the visit was first booked or migrated", example = "2018-12-01T13:45:00", required = true)
+  val firstBookedDateTime: LocalDateTime,
 ) {
-  constructor(prisonerId: String, visitReference: String, visitorCount: Int, visitTimeSlot: SessionTimeSlotDto, firstBookedDateTime: LocalDateTime?) :
+  constructor(visit: VisitDto, prisoner: PrisonerDto) :
     this(
-      prisonerId = prisonerId,
-      firstName = prisonerId,
-      lastName = prisonerId,
-      visitReference = visitReference,
-      visitorCount = visitorCount,
-      visitTimeSlot = visitTimeSlot,
-      firstBookedDateTime = firstBookedDateTime,
+      prisonerId = visit.prisonerId,
+      firstName = prisoner.firstName,
+      lastName = prisoner.lastName,
+      visitReference = visit.reference,
+      visitorCount = visit.visitors?.size ?: 0,
+      visitTimeSlot = SessionTimeSlotDto(visit.startTimestamp.toLocalTime(), visit.endTimestamp.toLocalTime()),
+      firstBookedDateTime = visit.firstBookedDateTime ?: visit.createdTimestamp,
+    )
+
+  constructor(visit: VisitDto) :
+    this(
+      prisonerId = visit.prisonerId,
+      firstName = visit.prisonerId,
+      lastName = visit.prisonerId,
+      visitReference = visit.reference,
+      visitorCount = visit.visitors?.size ?: 0,
+      visitTimeSlot = SessionTimeSlotDto(visit.startTimestamp.toLocalTime(), visit.endTimestamp.toLocalTime()),
+      firstBookedDateTime = visit.firstBookedDateTime ?: visit.createdTimestamp,
     )
 }
