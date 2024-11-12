@@ -96,6 +96,12 @@ class PublicBookerService(
     return getValidVisitors(bookerReference, prisonerNumber)
   }
 
+  fun validatePrisoner(bookerReference: String, prisonerNumber: String) {
+    logger.trace("validate prisoner called for $prisonerNumber with booker reference $bookerReference")
+    prisonVisitBookerRegistryClient.validatePrisoner(bookerReference, prisonerNumber)
+    logger.trace("validate prisoner successful for $prisonerNumber with booker reference $bookerReference")
+  }
+
   private fun getValidVisitors(bookerReference: String, prisonerNumber: String): List<VisitorInfoDto> {
     val visitorDetailsList = mutableListOf<VisitorInfoDto>()
     val associatedVisitors = prisonVisitBookerRegistryClient.getPermittedVisitorsForBookersAssociatedPrisoner(bookerReference, prisonerNumber)
