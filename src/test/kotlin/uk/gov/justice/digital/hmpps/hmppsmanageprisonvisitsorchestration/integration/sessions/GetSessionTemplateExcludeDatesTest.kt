@@ -10,7 +10,7 @@ import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.test.annotation.DirtiesContext
-import org.springframework.test.annotation.DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD
+import org.springframework.test.annotation.DirtiesContext.ClassMode.BEFORE_CLASS
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ManageUsersApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import java.time.LocalDate
 
 @DisplayName("Get session template exclude dates tests")
-@DirtiesContext(classMode = BEFORE_EACH_TEST_METHOD)
+@DirtiesContext(classMode = BEFORE_CLASS)
 class GetSessionTemplateExcludeDatesTest : IntegrationTestBase() {
   @SpyBean
   lateinit var manageUsersApiClientSpy: ManageUsersApiClient
