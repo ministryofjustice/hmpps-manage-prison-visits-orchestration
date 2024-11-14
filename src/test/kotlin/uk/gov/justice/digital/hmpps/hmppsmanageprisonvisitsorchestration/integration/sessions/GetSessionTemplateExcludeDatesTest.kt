@@ -94,11 +94,11 @@ class GetSessionTemplateExcludeDatesTest : IntegrationTestBase() {
     val excludeDateCurrent = LocalDate.now()
 
     val excludeDates = listOf(
-      ExcludeDateDto(excludeDateCurrent, "user-11"),
+      ExcludeDateDto(excludeDateCurrent, "user-51"),
     )
 
     visitSchedulerMockServer.stubGetSessionTemplateExcludeDates(sessionTemplateReference, excludeDates.sortedByDescending { it.excludeDate })
-    manageUsersApiMockServer.stubGetUserDetails("user-11", "User Eleven")
+    manageUsersApiMockServer.stubGetUserDetails("user-51", "User FiftyOne")
 
     // When
     val responseSpec = callGetSessionTemplateFutureExcludeDates(webTestClient, sessionTemplateReference, roleVSIPOrchestrationServiceHttpHeaders)
@@ -107,8 +107,8 @@ class GetSessionTemplateExcludeDatesTest : IntegrationTestBase() {
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val dates = getResults(returnResult)
     Assertions.assertThat(dates).hasSize(1)
-    Assertions.assertThat(dates[0]).isEqualTo(ExcludeDateDto(excludeDateCurrent, "User Eleven"))
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-11")
+    Assertions.assertThat(dates[0]).isEqualTo(ExcludeDateDto(excludeDateCurrent, "User FiftyOne"))
+    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-51")
   }
 
   @Test
