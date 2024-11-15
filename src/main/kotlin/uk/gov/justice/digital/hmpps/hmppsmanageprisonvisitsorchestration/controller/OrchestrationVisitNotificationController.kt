@@ -20,10 +20,11 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.IgnoreVisitNotificationsOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationNotificationGroupDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.IgnoreVisitNotificationsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.OrchestrationService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
 
 const val VISIT_NOTIFICATION_CONTROLLER_PATH: String = "/visits/notification"
@@ -39,6 +40,7 @@ const val VISIT_NOTIFICATION_IGNORE: String = "$VISIT_NOTIFICATION_CONTROLLER_PA
 @RequestMapping(name = "Visit notification Resource", produces = [MediaType.APPLICATION_JSON_VALUE])
 class VisitNotificationController(
   private val visitSchedulerService: VisitSchedulerService,
+  private val orchestrationService: OrchestrationService,
 ) {
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
@@ -203,7 +205,7 @@ class VisitNotificationController(
     reference: String,
     @RequestBody @Valid
     ignoreVisitNotifications: IgnoreVisitNotificationsOrchestrationDto,
-  ): VisitDto? {
-    return visitSchedulerService.ignoreVisitNotifications(reference.trim(), ignoreVisitNotifications)
+  ): VisitDetailsDto? {
+    return orchestrationService.ignoreVisitNotifications(reference.trim(), ignoreVisitNotifications)
   }
 }

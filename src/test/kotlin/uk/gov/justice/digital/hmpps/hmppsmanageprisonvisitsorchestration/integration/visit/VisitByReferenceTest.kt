@@ -5,8 +5,8 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
 @DisplayName("Get visits by reference")
@@ -33,7 +33,7 @@ class VisitByReferenceTest : IntegrationTestBase() {
 
     // Then
     responseSpec.expectStatus().isOk
-    val visitDtoResponse = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, VisitDto::class.java)
+    val visitDtoResponse = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, VisitDetailsDto::class.java)
     Assertions.assertThat(visitDtoResponse.reference).isEqualTo(visitDto.reference)
   }
 
@@ -49,7 +49,7 @@ class VisitByReferenceTest : IntegrationTestBase() {
 
     // Then
     responseSpec.expectStatus().isOk
-    val visitDtoResponse = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, VisitDto::class.java)
+    val visitDtoResponse = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, VisitDetailsDto::class.java)
     Assertions.assertThat(visitDtoResponse.reference).isEqualTo(visitDto.reference)
     Assertions.assertThat(visitDtoResponse.visitContact!!.telephone).isNull()
     Assertions.assertThat(visitDtoResponse.visitContact!!.email).isNull()

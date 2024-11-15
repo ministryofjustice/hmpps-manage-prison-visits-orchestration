@@ -26,12 +26,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.BookingOrchestrationRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.OrchestrationService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitsByDateService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.validation.NullableNotBlank
@@ -45,6 +46,7 @@ const val ORCHESTRATION_GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: Strin
 
 @RestController
 class OrchestrationVisitsController(
+  private val orchestrationService: OrchestrationService,
   private val visitSchedulerService: VisitSchedulerService,
   private val visitsByDateService: VisitsByDateService,
 ) {
@@ -80,8 +82,8 @@ class OrchestrationVisitsController(
       ),
     ],
   )
-  fun getVisitsByReference(@PathVariable reference: String): VisitDto? {
-    return visitSchedulerService.getVisitByReference(reference)
+  fun getVisitsByReference(@PathVariable reference: String): VisitDetailsDto? {
+    return orchestrationService.getVisitByReference(reference)
   }
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
@@ -297,7 +299,7 @@ class OrchestrationVisitsController(
       example = "50",
     )
     size: Int,
-  ): Page<VisitDto>? {
+  ): Page<VisitDetailsDto>? {
     val visitSearchRequestFilter = VisitSearchRequestFilter(
       prisonCode = prisonCode,
       prisonerId = prisonerId,
@@ -307,7 +309,7 @@ class OrchestrationVisitsController(
       page = page,
       size = size,
     )
-    return visitSchedulerService.visitsSearch(visitSearchRequestFilter)
+    return orchestrationService.visitsSearch(visitSearchRequestFilter)
   }
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
@@ -353,8 +355,8 @@ class OrchestrationVisitsController(
     applicationReference: String,
     @RequestBody @Valid
     bookingRequestDto: BookingOrchestrationRequestDto,
-  ): VisitDto? {
-    return visitSchedulerService.bookVisit(applicationReference, bookingRequestDto)
+  ): VisitDetailsDto? {
+    return orchestrationService.bookVisit(applicationReference, bookingRequestDto)
   }
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
@@ -397,8 +399,8 @@ class OrchestrationVisitsController(
       ),
     ],
   )
-  fun cancelVisit(@PathVariable reference: String, @RequestBody cancelVisitDto: CancelVisitOrchestrationDto): VisitDto? {
-    return visitSchedulerService.cancelVisit(reference, cancelVisitDto)
+  fun cancelVisit(@PathVariable reference: String, @RequestBody cancelVisitDto: CancelVisitOrchestrationDto): VisitDetailsDto? {
+    return orchestrationService.cancelVisit(reference, cancelVisitDto)
   }
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
@@ -486,7 +488,7 @@ class OrchestrationVisitsController(
     @NotBlank
     @Length(min = 3, max = 50)
     prisonerId: String,
-  ): List<VisitDto> {
-    return visitSchedulerService.findFutureVisitsForPrisoner(prisonerId)
+  ): List<VisitDetailsDto> {
+    return orchestrationService.findFutureVisitsForPrisoner(prisonerId)
   }
 }
