@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -18,6 +20,10 @@ class PrisonRegisterClient(
   @Qualifier("prisonRegisterWebClient") private val webClient: WebClient,
   @Value("\${prison-register.api.timeout:10s}") private val apiTimeout: Duration,
 ) {
+  companion object {
+    val logger: Logger = LoggerFactory.getLogger(this::class.java)
+  }
+
   fun getPrisonNames(): List<PrisonNameDto>? {
     return webClient.get().uri("/prisons/names")
       .retrieve()
@@ -33,10 +39,10 @@ class PrisonRegisterClient(
       .onErrorResume {
           e ->
         if (!ClientUtils.isNotFoundError(e)) {
-          PrisonVisitBookerRegistryClient.logger.error("getPrison Failed for get request $uri")
+          logger.error("getPrison Failed for get request $uri")
           Mono.error(e)
         } else {
-          PrisonVisitBookerRegistryClient.logger.error("getPrison NOT_FOUND for get request $uri")
+          logger.error("getPrison NOT_FOUND for get request $uri")
           Mono.error { NotFoundException("Prison with code - $prisonCode not found on prison-register") }
         }
       }
@@ -51,10 +57,10 @@ class PrisonRegisterClient(
       .bodyToMono<PrisonRegisterContactDetailsDto>()
       .onErrorResume { e ->
         if (!ClientUtils.isNotFoundError(e)) {
-          PrisonVisitBookerRegistryClient.logger.error("getPrisonContactDetails Failed for get request $uri", e)
+          logger.error("getPrisonContactDetails Failed for get request $uri", e)
           Mono.error(e)
         } else {
-          PrisonVisitBookerRegistryClient.logger.error("getPrisonContactDetails NOT_FOUND for prison $prisonCode contact details on get request $uri")
+          logger.error("getPrisonContactDetails NOT_FOUND for prison $prisonCode contact details on get request $uri")
           Mono.empty()
         }
       }
