@@ -26,9 +26,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.BookingOrchestrationRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
@@ -82,7 +82,7 @@ class OrchestrationVisitsController(
       ),
     ],
   )
-  fun getVisitsByReference(@PathVariable reference: String): VisitDetailsDto? {
+  fun getVisitsByReference(@PathVariable reference: String): VisitSummaryDto? {
     return orchestrationService.getVisitByReference(reference)
   }
 
@@ -299,7 +299,7 @@ class OrchestrationVisitsController(
       example = "50",
     )
     size: Int,
-  ): Page<VisitDetailsDto>? {
+  ): Page<VisitSummaryDto>? {
     val visitSearchRequestFilter = VisitSearchRequestFilter(
       prisonCode = prisonCode,
       prisonerId = prisonerId,
@@ -355,7 +355,7 @@ class OrchestrationVisitsController(
     applicationReference: String,
     @RequestBody @Valid
     bookingRequestDto: BookingOrchestrationRequestDto,
-  ): VisitDetailsDto? {
+  ): VisitSummaryDto? {
     return orchestrationService.bookVisit(applicationReference, bookingRequestDto)
   }
 
@@ -399,7 +399,7 @@ class OrchestrationVisitsController(
       ),
     ],
   )
-  fun cancelVisit(@PathVariable reference: String, @RequestBody cancelVisitDto: CancelVisitOrchestrationDto): VisitDetailsDto? {
+  fun cancelVisit(@PathVariable reference: String, @RequestBody cancelVisitDto: CancelVisitOrchestrationDto): VisitSummaryDto? {
     return orchestrationService.cancelVisit(reference, cancelVisitDto)
   }
 
@@ -488,7 +488,7 @@ class OrchestrationVisitsController(
     @NotBlank
     @Length(min = 3, max = 50)
     prisonerId: String,
-  ): List<VisitDetailsDto> {
+  ): List<VisitSummaryDto> {
     return orchestrationService.findFutureVisitsForPrisoner(prisonerId)
   }
 }

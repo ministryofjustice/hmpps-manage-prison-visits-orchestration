@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSummaryDto
 
 @JsonInclude(Include.NON_NULL)
 @Schema(description = "Visit")
@@ -14,5 +15,5 @@ class VisitHistoryDetailsDto(
 
   @Schema(description = "The visit details", required = true)
   @field:NotNull
-  val visit: VisitDetailsDto,
+  val visit: VisitSummaryDto,
 )

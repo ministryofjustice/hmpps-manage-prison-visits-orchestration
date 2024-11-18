@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 
+import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -7,24 +8,26 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.BookingOrchestrationRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.IgnoreVisitNotificationsOrchestrationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService.Companion.LOG
 
 @Service
 class OrchestrationService(
   private val visitSchedulerService: VisitSchedulerService,
 ) {
-  fun getVisitByReference(reference: String): VisitDetailsDto? {
+  companion object {
+    private val LOG = LoggerFactory.getLogger(OrchestrationService::class.java)
+  }
+  fun getVisitByReference(reference: String): VisitSummaryDto? {
     return visitSchedulerService.getVisitByReference(reference)?.let {
-      VisitDetailsDto(it)
+      VisitSummaryDto(it)
     }
   }
 
-  fun visitsSearch(visitSearchRequestFilter: VisitSearchRequestFilter): Page<VisitDetailsDto>? {
+  fun visitsSearch(visitSearchRequestFilter: VisitSearchRequestFilter): Page<VisitSummaryDto>? {
     try {
       return visitSchedulerService.visitsSearch(visitSearchRequestFilter)?.map {
-        VisitDetailsDto(it)
+        VisitSummaryDto(it)
       }
     } catch (e: WebClientResponseException) {
       if (e.statusCode != HttpStatus.NOT_FOUND) {
@@ -36,25 +39,25 @@ class OrchestrationService(
     return Page.empty()
   }
 
-  fun bookVisit(applicationReference: String, requestDto: BookingOrchestrationRequestDto): VisitDetailsDto? {
+  fun bookVisit(applicationReference: String, requestDto: BookingOrchestrationRequestDto): VisitSummaryDto? {
     return visitSchedulerService.bookVisit(applicationReference, requestDto)?.let {
-      VisitDetailsDto(it)
+      VisitSummaryDto(it)
     }
   }
 
-  fun cancelVisit(reference: String, cancelVisitDto: CancelVisitOrchestrationDto): VisitDetailsDto? {
+  fun cancelVisit(reference: String, cancelVisitDto: CancelVisitOrchestrationDto): VisitSummaryDto? {
     return visitSchedulerService.cancelVisit(reference, cancelVisitDto)?.let {
-      VisitDetailsDto(it)
+      VisitSummaryDto(it)
     }
   }
 
-  fun ignoreVisitNotifications(reference: String, ignoreVisitNotifications: IgnoreVisitNotificationsOrchestrationDto): VisitDetailsDto? {
+  fun ignoreVisitNotifications(reference: String, ignoreVisitNotifications: IgnoreVisitNotificationsOrchestrationDto): VisitSummaryDto? {
     return visitSchedulerService.ignoreVisitNotifications(reference, ignoreVisitNotifications)?.let {
-      VisitDetailsDto(it)
+      VisitSummaryDto(it)
     }
   }
 
-  fun findFutureVisitsForPrisoner(prisonerId: String): List<VisitDetailsDto> {
-    return visitSchedulerService.findFutureVisitsForPrisoner(prisonerId).map { VisitDetailsDto(it) }
+  fun findFutureVisitsForPrisoner(prisonerId: String): List<VisitSummaryDto> {
+    return visitSchedulerService.findFutureVisitsForPrisoner(prisonerId).map { VisitSummaryDto(it) }
   }
 }

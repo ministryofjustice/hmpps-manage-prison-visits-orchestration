@@ -4,8 +4,8 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDateTime
 
@@ -48,7 +48,7 @@ class FutureVisitsByPrisonerTest : IntegrationTestBase() {
     Assertions.assertThat(visits.size).isEqualTo(0)
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<VisitDetailsDto> {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<VisitDetailsDto>::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<VisitSummaryDto> {
+    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<VisitSummaryDto>::class.java)
   }
 }
