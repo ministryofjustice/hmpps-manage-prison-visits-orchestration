@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.OutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType.PHONE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.OutcomeStatus.CANCELLATION
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
 @DisplayName("Cancel a visit")
@@ -30,7 +31,7 @@ class CancelVisitTest : IntegrationTestBase() {
     // Given
     val reference = "aa-bb-cc-dd"
     val username = "A_USER"
-    val cancelVisitOrchestrationDto = CancelVisitOrchestrationDto(OutcomeDto(CANCELLATION), PHONE, username)
+    val cancelVisitOrchestrationDto = CancelVisitOrchestrationDto(OutcomeDto(CANCELLATION), PHONE, username, UserType.STAFF)
     val visitDto = createVisitDto(reference = reference)
     visitSchedulerMockServer.stubCancelVisit(reference, visitDto)
 
@@ -48,7 +49,7 @@ class CancelVisitTest : IntegrationTestBase() {
     // Given
     val reference = "aa-bb-cc-dd"
     val username = "A_USER"
-    val cancelVisitOrchestrationDto = CancelVisitOrchestrationDto(OutcomeDto(CANCELLATION), PHONE, username)
+    val cancelVisitOrchestrationDto = CancelVisitOrchestrationDto(OutcomeDto(CANCELLATION), PHONE, username, UserType.STAFF)
     val visitDto = null
     visitSchedulerMockServer.stubCancelVisit(reference, visitDto)
 

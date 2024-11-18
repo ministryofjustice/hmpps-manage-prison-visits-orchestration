@@ -100,10 +100,10 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
     Assertions.assertThat(visitReferences).containsExactlyInAnyOrder(visitDto.reference, visitDto2.reference)
 
     val visit1 = getVisitByReference(visits, visitDto.reference)
-    assertVisitDetails(visit1, visitDto.reference, prisonerId1, prisonerDto1.firstName, prisonerDto1.lastName, 3, null)
+    assertVisitDetails(visit1, visitDto.reference, prisonerId1, prisonerDto1.firstName, prisonerDto1.lastName, 3, visitDto.createdTimestamp)
 
     val visit2 = getVisitByReference(visits, visitDto2.reference)
-    assertVisitDetails(visit2, visitDto2.reference, prisonerId2, prisonerDto2.firstName, prisonerDto2.lastName, 0, null)
+    assertVisitDetails(visit2, visitDto2.reference, prisonerId2, prisonerDto2.firstName, prisonerDto2.lastName, 0, visitDto2.createdTimestamp)
   }
 
   @Test
@@ -158,10 +158,10 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
 
     val visit1 = getVisitByReference(visits, visitDto.reference)
     // prisoner names should be replaced by prisoner ids
-    assertVisitDetails(visit1, visitDto.reference, prisonerId1, prisonerId1, prisonerId1, 3, null)
+    assertVisitDetails(visit1, visitDto.reference, prisonerId1, prisonerId1, prisonerId1, 3, visitDto.createdTimestamp)
 
     val visit2 = getVisitByReference(visits, visitDto2.reference)
-    assertVisitDetails(visit2, visitDto2.reference, prisonerId2, prisonerDto2.firstName, prisonerDto2.lastName, 2, null)
+    assertVisitDetails(visit2, visitDto2.reference, prisonerId2, prisonerDto2.firstName, prisonerDto2.lastName, 2, visitDto2.createdTimestamp)
   }
 
   private fun getResults(responseSpec: WebTestClient.ResponseSpec): Array<VisitPreviewDto> {
