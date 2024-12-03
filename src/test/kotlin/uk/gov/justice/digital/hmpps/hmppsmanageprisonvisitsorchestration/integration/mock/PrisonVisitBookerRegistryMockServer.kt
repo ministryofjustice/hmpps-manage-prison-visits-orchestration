@@ -5,6 +5,8 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PERMITTED_PRISONERS
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PERMITTED_VISITORS
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VALIDATE_PRISONER
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.PrisonerValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
@@ -55,6 +57,29 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(visitors))
           },
+        ),
+    )
+  }
+
+  fun stubValidateBookerPrisoner(bookerReference: String, prisonerNumber: String, httpStatus: HttpStatus) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      WireMock.get(VALIDATE_PRISONER.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerNumber))
+        .willReturn(
+          responseBuilder
+            .withStatus(httpStatus.value()),
+        ),
+    )
+  }
+
+  fun stubPrisonerValidationFailure(bookerReference: String, prisonerNumber: String, errorResponse: PrisonerValidationErrorResponse) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      WireMock.get(VALIDATE_PRISONER.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerNumber))
+        .willReturn(
+          responseBuilder
+            .withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+            .withBody(getJsonString(errorResponse)),
         ),
     )
   }
