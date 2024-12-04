@@ -103,7 +103,7 @@ class PrisonVisitBookerRegistryClient(
     if (e is WebClientResponseException && isUnprocessableEntityError(e)) {
       try {
         val errorResponse = objectMapper.readValue(e.responseBodyAsString, PrisonerValidationErrorResponse::class.java)
-        return BookerPrisonerValidationException(errorResponse.validationErrors)
+        return BookerPrisonerValidationException(errorResponse.validationError)
       } catch (jsonProcessingException: Exception) {
         LOG.error("An error occurred processing the booker prisoner validation error response - ${e.stackTraceToString()}")
         throw jsonProcessingException

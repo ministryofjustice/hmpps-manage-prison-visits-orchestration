@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.PrisonerValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_VALIDATE_PRISONER_CONTROLLER_PATH
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.BookerPrisonerValidationErrorCodes
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.BookerPrisonerValidationErrorCodes.PRISONER_RELEASED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
 @DisplayName("Validate prisoner for a public booker")
@@ -46,7 +46,7 @@ class BookerPrisonerValidateTest : IntegrationTestBase() {
     // Given
     val bookerReference = "booker-reference"
     val prisonerId = "prisoner-id"
-    val prisonerValidationErrorResponse = PrisonerValidationErrorResponse(status = HttpStatus.UNPROCESSABLE_ENTITY.value(), validationErrors = listOf(BookerPrisonerValidationErrorCodes.PRISONER_RELEASED))
+    val prisonerValidationErrorResponse = PrisonerValidationErrorResponse(status = HttpStatus.UNPROCESSABLE_ENTITY.value(), validationError = PRISONER_RELEASED)
     prisonVisitBookerRegistryMockServer.stubPrisonerValidationFailure(bookerReference, prisonerId, prisonerValidationErrorResponse)
 
     // When
@@ -55,8 +55,7 @@ class BookerPrisonerValidateTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
     val errorResponse = getValidationErrorResponse(responseSpec)
-    assertThat(errorResponse.validationErrors.size).isEqualTo(1)
-    assertThat(errorResponse.validationErrors).contains(BookerPrisonerValidationErrorCodes.PRISONER_RELEASED)
+    assertThat(errorResponse.validationError).isEqualTo(PRISONER_RELEASED)
   }
 
   fun getValidationErrorResponse(responseSpec: WebTestClient.ResponseSpec): PrisonerValidationErrorResponse =
