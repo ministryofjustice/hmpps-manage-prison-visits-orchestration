@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
@@ -20,7 +20,7 @@ class BookerAuthorisationTest : IntegrationTestBase() {
   val authDetail = AuthDetailDto("one-login-sub", "test@example.com")
   val bookerReference = BookerReference("reference")
 
-  @SpyBean
+  @MockitoSpyBean
   lateinit var prisonVisitBookerRegistryClientSpy: PrisonVisitBookerRegistryClient
 
   fun callBookerAuthorisation(

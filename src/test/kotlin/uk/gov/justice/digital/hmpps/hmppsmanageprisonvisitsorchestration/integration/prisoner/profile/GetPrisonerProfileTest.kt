@@ -9,9 +9,9 @@ import org.mockito.kotlin.isNull
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.AlertsApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonApiClient
@@ -94,22 +94,22 @@ class GetPrisonerProfileTest(
   // visit2 has 1 visitor in visitors list
   private final val visit2 = createVisitDto(reference = "visit-2", prisonerId = PRISONER_ID, visitors = visit2Visitors, prisonCode = "ABC")
 
-  @SpyBean
+  @MockitoSpyBean
   lateinit var visitSchedulerClientSpy: VisitSchedulerClient
 
-  @SpyBean
+  @MockitoSpyBean
   lateinit var prisonAPiClientSpy: PrisonApiClient
 
-  @SpyBean
+  @MockitoSpyBean
   lateinit var alertsApiClient: AlertsApiClient
 
-  @SpyBean
+  @MockitoSpyBean
   lateinit var prisonerSearchClientSpy: PrisonerSearchClient
 
-  @SpyBean
+  @MockitoSpyBean
   lateinit var prisonerContactRegistryClientSpy: PrisonerContactRegistryClient
 
-  @SpyBean
+  @MockitoSpyBean
   lateinit var prisonRegisterClientSpy: PrisonRegisterClient
 
   fun callGetPrisonerProfile(

@@ -7,9 +7,9 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.HttpStatus.NOT_FOUND
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionDto
@@ -29,13 +29,13 @@ import java.time.LocalTime
 @DisplayName("Get available visit sessions without appointments check")
 class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase() {
 
-  @SpyBean
+  @MockitoSpyBean
   private lateinit var visitSchedulerClient: VisitSchedulerClient
 
-  @SpyBean
+  @MockitoSpyBean
   private lateinit var appointmentsService: AppointmentsService
 
-  @SpyBean
+  @MockitoSpyBean
   private lateinit var prisonerProfileService: PrisonerProfileService
 
   @Test

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.springframework.boot.test.mock.mockito.SpyBean
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionsDto
@@ -18,7 +18,7 @@ import java.time.LocalDate
 @DisplayName("Get available visit session restriction")
 class AvailableVisitSessionsRestrictionTest : IntegrationTestBase() {
 
-  @SpyBean
+  @MockitoSpyBean
   private lateinit var prisonerProfileService: PrisonerProfileService
 
   @Test

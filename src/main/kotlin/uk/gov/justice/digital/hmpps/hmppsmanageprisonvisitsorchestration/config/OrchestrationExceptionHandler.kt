@@ -13,7 +13,6 @@ import org.springframework.web.reactive.function.client.WebClientException
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationValidationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.BookerPrisonerValidationErrorCodes
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ValidationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.ApplicationValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerAuthFailureException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerPrisonerValidationException
@@ -125,7 +124,7 @@ class OrchestrationExceptionHandler {
   fun handleApplicationValidationException(e: ApplicationValidationException): ResponseEntity<ValidationErrorResponse> {
     log.debug("Application Validation exception: {}, {}", e.message, e.errorCodes)
     val message = e.localizedMessage
-    val error = ValidationErrorResponse(
+    val error = ApplicationValidationErrorResponse(
       status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
       userMessage = "Application validation failed",
       developerMessage = message,
@@ -137,13 +136,13 @@ class OrchestrationExceptionHandler {
 
   @ExceptionHandler(BookerPrisonerValidationException::class)
   fun handleBookerPrisonerValidationException(e: BookerPrisonerValidationException): ResponseEntity<ValidationErrorResponse> {
-    log.debug("Prisoner Validation exception: {}, {}", e.message, e.errorCodes)
+    log.debug("Prisoner Validation exception: {}, {}", e.message, e.errorCode)
     val message = e.localizedMessage
-    val error = ValidationErrorResponse(
+    val error = PrisonerValidationErrorResponse(
       status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
       userMessage = "Prisoner validation failed",
       developerMessage = message,
-      validationErrors = e.errorCodes,
+      validationError = e.errorCode,
     )
 
     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error)
@@ -174,7 +173,6 @@ open class ValidationErrorResponse(
   open val errorCode: Int? = null,
   open val userMessage: String? = null,
   open val developerMessage: String? = null,
-  open val validationErrors: List<ValidationErrorCodes>,
 )
 
 data class ApplicationValidationErrorResponse(
@@ -182,13 +180,13 @@ data class ApplicationValidationErrorResponse(
   override val errorCode: Int? = null,
   override val userMessage: String? = null,
   override val developerMessage: String? = null,
-  override val validationErrors: List<ApplicationValidationErrorCodes>,
-) : ValidationErrorResponse(status, errorCode, userMessage, developerMessage, validationErrors)
+  val validationErrors: List<ApplicationValidationErrorCodes>,
+) : ValidationErrorResponse(status, errorCode, userMessage, developerMessage)
 
 data class PrisonerValidationErrorResponse(
   override val status: Int,
   override val errorCode: Int? = null,
   override val userMessage: String? = null,
   override val developerMessage: String? = null,
-  override val validationErrors: List<BookerPrisonerValidationErrorCodes>,
-) : ValidationErrorResponse(status, errorCode, userMessage, developerMessage, validationErrors)
+  val validationError: BookerPrisonerValidationErrorCodes,
+) : ValidationErrorResponse(status, errorCode, userMessage, developerMessage)

@@ -5,9 +5,9 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonRegisterClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
@@ -19,10 +19,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 
 @DisplayName("Get prison tests")
 class GetPrisonTest : IntegrationTestBase() {
-  @SpyBean
+  @MockitoSpyBean
   lateinit var prisonRegisterClientSpy: PrisonRegisterClient
 
-  @SpyBean
+  @MockitoSpyBean
   lateinit var visitSchedulerClientSpy: VisitSchedulerClient
 
   final val prisonCode = "HEI"

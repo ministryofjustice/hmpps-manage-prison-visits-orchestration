@@ -8,11 +8,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import software.amazon.awssdk.services.sns.model.PublishRequest
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
@@ -75,49 +75,49 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     }
   }
 
-  @SpyBean
+  @MockitoSpyBean
   lateinit var eventFeatureSwitch: EventFeatureSwitch
 
-  @SpyBean
+  @MockitoSpyBean
   lateinit var prisonerIncentivesUpdatedNotifierSpy: PrisonerIncentivesUpdatedNotifier
 
-  @SpyBean
+  @MockitoSpyBean
   lateinit var prisonerIncentivesInsertedNotifierSpy: PrisonerIncentivesInsertedNotifier
 
-  @SpyBean
+  @MockitoSpyBean
   lateinit var prisonerIncentivesDeletedNotifierSpy: PrisonerIncentivesDeletedNotifier
 
-  @SpyBean
+  @MockitoSpyBean
   lateinit var personRestrictionUpsertedNotifierSpy: PersonRestrictionUpsertedNotifier
 
-  @SpyBean
+  @MockitoSpyBean
   lateinit var visitorUnapprovedNotifier: VisitorUnapprovedNotifier
 
-  @SpyBean
+  @MockitoSpyBean
   lateinit var visitorApprovedNotifier: VisitorApprovedNotifier
 
-  @SpyBean
+  @MockitoSpyBean
   lateinit var prisonerReceivedNotifierSpy: PrisonerReceivedNotifier
 
-  @SpyBean
+  @MockitoSpyBean
   lateinit var prisonerReleasedNotifierSpy: PrisonerReleasedNotifier
 
-  @SpyBean
+  @MockitoSpyBean
   lateinit var visitorRestrictionChangedNotifierSpy: VisitorRestrictionChangedNotifier
 
-  @SpyBean
+  @MockitoSpyBean
   lateinit var domainEventListenerServiceSpy: DomainEventListenerService
 
-  @SpyBean
+  @MockitoSpyBean
   lateinit var visitSchedulerClient: VisitSchedulerClient
 
-  @SpyBean
+  @MockitoSpyBean
   lateinit var visitSchedulerService: VisitSchedulerService
 
-  @SpyBean
+  @MockitoSpyBean
   lateinit var prisonerNonAssociationCreatedNotifier: PrisonerNonAssociationNotifierCreatedNotifier
 
-  @SpyBean
+  @MockitoSpyBean
   lateinit var prisonerAlertsUpdatedNotifier: PrisonerAlertsUpdatedNotifier
 
   @Autowired

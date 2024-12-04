@@ -47,7 +47,7 @@ class PrisonVisitBookerRegistryClient(
       .bodyToMono<BookerReference>().block(apiTimeout)
   }
 
-  fun getPermittedVisitorsForPermittedPrisonerAndBooker(bookerReference: String): List<PermittedPrisonerForBookerDto> {
+  fun getPermittedPrisonersForBooker(bookerReference: String): List<PermittedPrisonerForBookerDto> {
     val uri = PERMITTED_PRISONERS.replace("{bookerReference}", bookerReference) + "?active=true"
     return webClient.get()
       .uri(uri)
@@ -103,7 +103,7 @@ class PrisonVisitBookerRegistryClient(
     if (e is WebClientResponseException && isUnprocessableEntityError(e)) {
       try {
         val errorResponse = objectMapper.readValue(e.responseBodyAsString, PrisonerValidationErrorResponse::class.java)
-        return BookerPrisonerValidationException(errorResponse.validationErrors)
+        return BookerPrisonerValidationException(errorResponse.validationError)
       } catch (jsonProcessingException: Exception) {
         LOG.error("An error occurred processing the booker prisoner validation error response - ${e.stackTraceToString()}")
         throw jsonProcessingException

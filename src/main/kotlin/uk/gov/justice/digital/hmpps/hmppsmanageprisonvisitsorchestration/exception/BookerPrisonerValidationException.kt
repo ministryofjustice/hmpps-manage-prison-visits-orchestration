@@ -4,5 +4,5 @@ import jakarta.validation.ValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.BookerPrisonerValidationErrorCodes
 
 class BookerPrisonerValidationException(
-  val errorCodes: List<BookerPrisonerValidationErrorCodes>,
+  val errorCode: BookerPrisonerValidationErrorCodes,
 ) : ValidationException()

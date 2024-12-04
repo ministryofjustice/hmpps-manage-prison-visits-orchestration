@@ -6,7 +6,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.times
-import org.springframework.boot.test.mock.mockito.SpyBean
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
@@ -21,10 +21,10 @@ import java.time.LocalDateTime
 
 @DisplayName("Get public cancelled visits by booker reference")
 class PublicCancelledVisitsByBookerReferenceTest : IntegrationTestBase() {
-  @SpyBean
+  @MockitoSpyBean
   private lateinit var prisonerContactRegistryClient: PrisonerContactRegistryClient
 
-  @SpyBean
+  @MockitoSpyBean
   private lateinit var prisonerSearchClient: PrisonerSearchClient
 
   private lateinit var visitDto: VisitDto
