@@ -9,7 +9,10 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.PrisonerValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_VALIDATE_PRISONER_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.BookerPrisonerValidationErrorCodes.PRISONER_RELEASED
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.BookerPrisonerValidationErrorCodes.REGISTERED_PRISON_NOT_SUPPORTED
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import java.time.LocalDate
 
 @DisplayName("Validate prisoner for a public booker")
 class BookerPrisonerValidateTest : IntegrationTestBase() {
@@ -32,7 +35,17 @@ class BookerPrisonerValidateTest : IntegrationTestBase() {
     // Given
     val bookerReference = "booker-reference"
     val prisonerId = "prisoner-id"
+    val prisonId = "MDI"
+    val prisoner1Dto = createPrisoner(
+      prisonerId = prisonerId,
+      firstName = "FirstName",
+      lastName = "LastName",
+      dateOfBirth = LocalDate.of(2000, 1, 31),
+      prisonId = prisonId,
+    )
     prisonVisitBookerRegistryMockServer.stubValidateBookerPrisoner(bookerReference, prisonerId, HttpStatus.OK)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisoner1Dto)
+    visitSchedulerMockServer.stubGetSupportedPrisons(PUBLIC, listOf(prisonId))
 
     // When
     val responseSpec = callPrisonerValidate(bookerReference, prisonerId, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
@@ -42,7 +55,7 @@ class BookerPrisonerValidateTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when validate booker prisoner is unsuccesful an error response is returned`() {
+  fun `when validate booker prisoner is unsuccessful an error response is returned`() {
     // Given
     val bookerReference = "booker-reference"
     val prisonerId = "prisoner-id"
@@ -56,6 +69,117 @@ class BookerPrisonerValidateTest : IntegrationTestBase() {
     responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
     val errorResponse = getValidationErrorResponse(responseSpec)
     assertThat(errorResponse.validationError).isEqualTo(PRISONER_RELEASED)
+  }
+
+  @Test
+  fun `when prisoner's prison is not supported on visit scheduler a REGISTERED_PRISON_NOT_SUPPORTED error is returned`() {
+    // Given
+    val bookerReference = "booker-reference"
+    val prisonerId = "prisoner-id"
+    val prisonId = "MDI"
+    val prisoner1Dto = createPrisoner(
+      prisonerId = prisonerId,
+      firstName = "FirstName",
+      lastName = "LastName",
+      dateOfBirth = LocalDate.of(2000, 1, 31),
+      prisonId = prisonId,
+    )
+
+    prisonVisitBookerRegistryMockServer.stubValidateBookerPrisoner(bookerReference, prisonerId, HttpStatus.OK)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisoner1Dto)
+
+    // prison code MDI is not supported on visit-scheduler
+    visitSchedulerMockServer.stubGetSupportedPrisons(PUBLIC, listOf("ABC", "XYZ"))
+
+    // When
+    val responseSpec = callPrisonerValidate(bookerReference, prisonerId, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+    val errorResponse = getValidationErrorResponse(responseSpec)
+    assertThat(errorResponse.validationError).isEqualTo(REGISTERED_PRISON_NOT_SUPPORTED)
+  }
+
+  @Test
+  fun `when prisoner offender search call returns NOT_FOUND a NOT_FOUND response is returned`() {
+    // Given
+    val bookerReference = "booker-reference"
+    val prisonerId = "prisoner-id"
+    val prisonId = "MDI"
+    prisonVisitBookerRegistryMockServer.stubValidateBookerPrisoner(bookerReference, prisonerId, HttpStatus.OK)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, null, HttpStatus.NOT_FOUND)
+    visitSchedulerMockServer.stubGetSupportedPrisons(PUBLIC, listOf(prisonId))
+
+    // When
+    val responseSpec = callPrisonerValidate(bookerReference, prisonerId, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isNotFound
+  }
+
+  @Test
+  fun `when prisoner offender search call returns INTERNAL_SERVER_ERROR a INTERNAL_SERVER_ERROR response is returned`() {
+    // Given
+    val bookerReference = "booker-reference"
+    val prisonerId = "prisoner-id"
+    val prisonId = "MDI"
+    prisonVisitBookerRegistryMockServer.stubValidateBookerPrisoner(bookerReference, prisonerId, HttpStatus.OK)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, null, HttpStatus.INTERNAL_SERVER_ERROR)
+    visitSchedulerMockServer.stubGetSupportedPrisons(PUBLIC, listOf(prisonId))
+
+    // When
+    val responseSpec = callPrisonerValidate(bookerReference, prisonerId, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().is5xxServerError
+  }
+
+  @Test
+  fun `when visit scheduler call returns NOT_FOUND a NOT_FOUND response is returned`() {
+    // Given
+    val bookerReference = "booker-reference"
+    val prisonerId = "prisoner-id"
+    val prisonId = "MDI"
+    val prisoner1Dto = createPrisoner(
+      prisonerId = prisonerId,
+      firstName = "FirstName",
+      lastName = "LastName",
+      dateOfBirth = LocalDate.of(2000, 1, 31),
+      prisonId = prisonId,
+    )
+    prisonVisitBookerRegistryMockServer.stubValidateBookerPrisoner(bookerReference, prisonerId, HttpStatus.OK)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisoner1Dto)
+    visitSchedulerMockServer.stubGetSupportedPrisons(PUBLIC, null, HttpStatus.NOT_FOUND)
+
+    // When
+    val responseSpec = callPrisonerValidate(bookerReference, prisonerId, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isNotFound
+  }
+
+  @Test
+  fun `when visit scheduler call returns INTERNAL_SERVER_ERROR a INTERNAL_SERVER_ERROR response is returned`() {
+    // Given
+    val bookerReference = "booker-reference"
+    val prisonerId = "prisoner-id"
+    val prisonId = "MDI"
+    val prisoner1Dto = createPrisoner(
+      prisonerId = prisonerId,
+      firstName = "FirstName",
+      lastName = "LastName",
+      dateOfBirth = LocalDate.of(2000, 1, 31),
+      prisonId = prisonId,
+    )
+    prisonVisitBookerRegistryMockServer.stubValidateBookerPrisoner(bookerReference, prisonerId, HttpStatus.OK)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisoner1Dto)
+    visitSchedulerMockServer.stubGetSupportedPrisons(PUBLIC, null, HttpStatus.INTERNAL_SERVER_ERROR)
+
+    // When
+    val responseSpec = callPrisonerValidate(bookerReference, prisonerId, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().is5xxServerError
   }
 
   fun getValidationErrorResponse(responseSpec: WebTestClient.ResponseSpec): PrisonerValidationErrorResponse =
