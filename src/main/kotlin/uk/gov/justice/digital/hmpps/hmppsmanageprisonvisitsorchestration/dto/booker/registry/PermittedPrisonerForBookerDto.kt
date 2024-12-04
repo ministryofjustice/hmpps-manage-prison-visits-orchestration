@@ -18,6 +18,9 @@ data class PermittedPrisonerForBookerDto(
   @field:NotNull
   val active: Boolean,
 
+  @Schema(description = "prison code", example = "MDI", required = true)
+  val prisonCode: String,
+
   @JsonProperty("permittedVisitors")
   @Schema(description = "Permitted visitors", required = true)
   @field:Valid

@@ -47,7 +47,7 @@ class PrisonVisitBookerRegistryClient(
       .bodyToMono<BookerReference>().block(apiTimeout)
   }
 
-  fun getPermittedVisitorsForPermittedPrisonerAndBooker(bookerReference: String): List<PermittedPrisonerForBookerDto> {
+  fun getPermittedPrisonersForBooker(bookerReference: String): List<PermittedPrisonerForBookerDto> {
     val uri = PERMITTED_PRISONERS.replace("{bookerReference}", bookerReference) + "?active=true"
     return webClient.get()
       .uri(uri)
