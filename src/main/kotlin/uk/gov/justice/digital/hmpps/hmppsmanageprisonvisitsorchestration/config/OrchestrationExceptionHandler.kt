@@ -138,7 +138,7 @@ class OrchestrationExceptionHandler {
   fun handleBookerPrisonerValidationException(e: BookerPrisonerValidationException): ResponseEntity<ValidationErrorResponse> {
     log.debug("Prisoner Validation exception: {}, {}", e.message, e.errorCode)
     val message = e.localizedMessage
-    val error = PrisonerValidationErrorResponse(
+    val error = BookerPrisonerValidationErrorResponse(
       status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
       userMessage = "Prisoner validation failed",
       developerMessage = message,
@@ -183,7 +183,7 @@ data class ApplicationValidationErrorResponse(
   val validationErrors: List<ApplicationValidationErrorCodes>,
 ) : ValidationErrorResponse(status, errorCode, userMessage, developerMessage)
 
-data class PrisonerValidationErrorResponse(
+data class BookerPrisonerValidationErrorResponse(
   override val status: Int,
   override val errorCode: Int? = null,
   override val userMessage: String? = null,

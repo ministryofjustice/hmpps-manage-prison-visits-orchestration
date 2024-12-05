@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PERMITTED_PRISONERS
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PERMITTED_VISITORS
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VALIDATE_PRISONER
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.PrisonerValidationErrorResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
@@ -72,7 +72,7 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
     )
   }
 
-  fun stubPrisonerValidationFailure(bookerReference: String, prisonerNumber: String, errorResponse: PrisonerValidationErrorResponse) {
+  fun stubPrisonerValidationFailure(bookerReference: String, prisonerNumber: String, errorResponse: BookerPrisonerValidationErrorResponse) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
       WireMock.get(VALIDATE_PRISONER.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerNumber))
