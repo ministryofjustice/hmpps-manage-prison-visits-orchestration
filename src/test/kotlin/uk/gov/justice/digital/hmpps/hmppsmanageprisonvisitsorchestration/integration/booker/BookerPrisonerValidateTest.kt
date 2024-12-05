@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.PrisonerValidationErrorResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_VALIDATE_PRISONER_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.BookerPrisonerValidationErrorCodes.PRISONER_RELEASED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.BookerPrisonerValidationErrorCodes.REGISTERED_PRISON_NOT_SUPPORTED
@@ -59,8 +59,8 @@ class BookerPrisonerValidateTest : IntegrationTestBase() {
     // Given
     val bookerReference = "booker-reference"
     val prisonerId = "prisoner-id"
-    val prisonerValidationErrorResponse = PrisonerValidationErrorResponse(status = HttpStatus.UNPROCESSABLE_ENTITY.value(), validationError = PRISONER_RELEASED)
-    prisonVisitBookerRegistryMockServer.stubPrisonerValidationFailure(bookerReference, prisonerId, prisonerValidationErrorResponse)
+    val bookerPrisonerValidationErrorResponse = BookerPrisonerValidationErrorResponse(status = HttpStatus.UNPROCESSABLE_ENTITY.value(), validationError = PRISONER_RELEASED)
+    prisonVisitBookerRegistryMockServer.stubPrisonerValidationFailure(bookerReference, prisonerId, bookerPrisonerValidationErrorResponse)
 
     // When
     val responseSpec = callPrisonerValidate(bookerReference, prisonerId, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
@@ -182,6 +182,6 @@ class BookerPrisonerValidateTest : IntegrationTestBase() {
     responseSpec.expectStatus().is5xxServerError
   }
 
-  fun getValidationErrorResponse(responseSpec: WebTestClient.ResponseSpec): PrisonerValidationErrorResponse =
-    objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, PrisonerValidationErrorResponse::class.java)
+  fun getValidationErrorResponse(responseSpec: WebTestClient.ResponseSpec): BookerPrisonerValidationErrorResponse =
+    objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerPrisonerValidationErrorResponse::class.java)
 }
