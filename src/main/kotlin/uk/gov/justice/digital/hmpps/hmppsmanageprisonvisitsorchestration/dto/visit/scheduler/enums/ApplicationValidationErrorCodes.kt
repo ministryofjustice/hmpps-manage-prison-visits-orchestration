@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums
 
-enum class ApplicationValidationErrorCodes {
+enum class ApplicationValidationErrorCodes : ValidationErrorCodes {
   APPLICATION_INVALID_PRISONER_NOT_FOUND,
   APPLICATION_INVALID_PRISON_PRISONER_MISMATCH,
   APPLICATION_INVALID_SESSION_NOT_AVAILABLE,

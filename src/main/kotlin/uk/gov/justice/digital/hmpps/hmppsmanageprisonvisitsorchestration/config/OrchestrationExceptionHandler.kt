@@ -12,8 +12,10 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 import org.springframework.web.reactive.function.client.WebClientException
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationValidationErrorCodes
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.BookerPrisonerValidationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.ApplicationValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerAuthFailureException
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerPrisonerValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 
@@ -107,7 +109,7 @@ class OrchestrationExceptionHandler {
 
   @ExceptionHandler(HandlerMethodValidationException::class)
   fun handleHandlerMethodValidationException(e: HandlerMethodValidationException): ResponseEntity<ErrorResponse> {
-    log.debug("Validation exception: {}", e.message)
+    log.debug("Handler method validation exception: {}", e.message)
     val message = e.localizedMessage
     val error = ErrorResponse(
       status = HttpStatus.BAD_REQUEST,
@@ -119,7 +121,7 @@ class OrchestrationExceptionHandler {
   }
 
   @ExceptionHandler(ApplicationValidationException::class)
-  fun handleApplicationValidationException(e: ApplicationValidationException): ResponseEntity<ApplicationValidationErrorResponse> {
+  fun handleApplicationValidationException(e: ApplicationValidationException): ResponseEntity<ValidationErrorResponse> {
     log.debug("Application Validation exception: {}, {}", e.message, e.errorCodes)
     val message = e.localizedMessage
     val error = ApplicationValidationErrorResponse(
@@ -127,6 +129,20 @@ class OrchestrationExceptionHandler {
       userMessage = "Application validation failed",
       developerMessage = message,
       validationErrors = e.errorCodes,
+    )
+
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error)
+  }
+
+  @ExceptionHandler(BookerPrisonerValidationException::class)
+  fun handleBookerPrisonerValidationException(e: BookerPrisonerValidationException): ResponseEntity<ValidationErrorResponse> {
+    log.debug("Prisoner Validation exception: {}, {}", e.message, e.errorCode)
+    val message = e.localizedMessage
+    val error = BookerPrisonerValidationErrorResponse(
+      status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+      userMessage = "Prisoner validation failed",
+      developerMessage = message,
+      validationError = e.errorCode,
     )
 
     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error)
@@ -152,10 +168,25 @@ data class ErrorResponse(
     this(status.value(), errorCode, userMessage, developerMessage)
 }
 
-data class ApplicationValidationErrorResponse(
-  val status: Int,
-  val errorCode: Int? = null,
-  val userMessage: String? = null,
-  val developerMessage: String? = null,
-  val validationErrors: List<ApplicationValidationErrorCodes>,
+open class ValidationErrorResponse(
+  open val status: Int,
+  open val errorCode: Int? = null,
+  open val userMessage: String? = null,
+  open val developerMessage: String? = null,
 )
+
+data class ApplicationValidationErrorResponse(
+  override val status: Int,
+  override val errorCode: Int? = null,
+  override val userMessage: String? = null,
+  override val developerMessage: String? = null,
+  val validationErrors: List<ApplicationValidationErrorCodes>,
+) : ValidationErrorResponse(status, errorCode, userMessage, developerMessage)
+
+data class BookerPrisonerValidationErrorResponse(
+  override val status: Int,
+  override val errorCode: Int? = null,
+  override val userMessage: String? = null,
+  override val developerMessage: String? = null,
+  val validationError: BookerPrisonerValidationErrorCodes,
+) : ValidationErrorResponse(status, errorCode, userMessage, developerMessage)

@@ -7,19 +7,17 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.BookerPrisonerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.PublicBookerValidationUtil
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.PublicBookerValidationUtil.Companion.PRISON_VALIDATION_ERROR_MSG
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisteredPrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.VisitBalancesUtil
-import java.text.MessageFormat
 import java.time.Duration
 import kotlin.jvm.optionals.getOrNull
 
 @Component
 class BookerPrisonerInfoClient(
   private val prisonApiClient: PrisonApiClient,
-  private val visitSchedulerClient: VisitSchedulerClient,
-  private val publicBookerValidationUtil: PublicBookerValidationUtil,
+  private val prisonRegisterClient: PrisonRegisterClient,
+  private val prisonerSearchClient: PrisonerSearchClient,
   private val visitBalancesUtil: VisitBalancesUtil,
   @Value("\${prisoner.profile.timeout:10s}") private val apiTimeout: Duration,
 ) {
@@ -28,39 +26,40 @@ class BookerPrisonerInfoClient(
   }
 
   fun getPermittedPrisonerInfo(
-    offenderSearchPrisoner: PrisonerDto,
     bookerPrisoner: PermittedPrisonerForBookerDto,
   ): BookerPrisonerInfoDto? {
-    val prisonCode = offenderSearchPrisoner.prisonId!!
-    val prisonMono = visitSchedulerClient.getPrisonAsMono(prisonCode)
-    val visitBalancesDtoMono = prisonApiClient.getVisitBalancesAsMono(offenderSearchPrisoner.prisonerNumber)
-
-    Mono.zip(prisonMono, visitBalancesDtoMono).block(apiTimeout).also {
-      val prison = it?.t1?.getOrNull()
+    val prisonCode = bookerPrisoner.prisonCode
+    val prisonerId = bookerPrisoner.prisonerId
+    val offenderSearchPrisonerDtoMono = prisonerSearchClient.getPrisonerByIdAsMonoEmptyIfNotFound(prisonerId)
+    val visitBalancesDtoMono = prisonApiClient.getVisitBalancesAsMono(prisonerId)
+    val registeredPrisonMono = prisonRegisterClient.getPrisonAsMonoEmptyIfNotFound(prisonCode)
+    Mono.zip(offenderSearchPrisonerDtoMono, visitBalancesDtoMono, registeredPrisonMono).block(apiTimeout).also {
+      val offenderSearchPrisoner = it?.t1
       val visitBalancesDto = it?.t2?.getOrNull()
-      if (prison != null) {
-        publicBookerValidationUtil.validatePrison(prison)?.let { msg ->
-          LOG.error(
-            "getPermittedPrisonerInfo - ${
-              MessageFormat.format(
-                PRISON_VALIDATION_ERROR_MSG,
-                prisonCode,
-                bookerPrisoner.prisonerId,
-                msg,
-              )
-            }",
-          )
-        } ?: return BookerPrisonerInfoDto(
+      val registeredPrison = getRegisteredPrison(prisonCode, it?.t3?.getOrNull())
+
+      return if (offenderSearchPrisoner == null) {
+        LOG.error("getPermittedPrisonerInfo - prisoner with id - $prisonerId not found on offender search")
+        null
+      } else {
+        return BookerPrisonerInfoDto(
           offenderSearchPrisoner,
           visitBalancesUtil.calculateAvailableVos(visitBalancesDto),
           visitBalancesUtil.calculateVoRenewalDate(visitBalancesDto),
+          registeredPrison,
         )
-      } else {
-        LOG.error("getPermittedPrisonerInfo Prison with code - $prisonCode, not enabled on visit-scheduler")
-        return null
       }
     }
+  }
 
-    return null
+  private fun getRegisteredPrison(prisonCode: String, prisonDto: PrisonRegisterPrisonDto?): RegisteredPrisonDto {
+    return if (prisonDto != null) {
+      RegisteredPrisonDto(prisonDto)
+    } else {
+      RegisteredPrisonDto(
+        prisonCode = prisonCode,
+        prisonName = prisonCode,
+      )
+    }
   }
 }
