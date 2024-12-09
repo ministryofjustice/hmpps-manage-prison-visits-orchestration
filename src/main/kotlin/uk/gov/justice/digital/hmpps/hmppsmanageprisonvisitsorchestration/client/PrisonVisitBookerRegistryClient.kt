@@ -14,7 +14,7 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isUnprocessableEntityError
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient.Companion.LOG
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.PrisonerValidationErrorResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
@@ -47,7 +47,7 @@ class PrisonVisitBookerRegistryClient(
       .bodyToMono<BookerReference>().block(apiTimeout)
   }
 
-  fun getPermittedVisitorsForPermittedPrisonerAndBooker(bookerReference: String): List<PermittedPrisonerForBookerDto> {
+  fun getPermittedPrisonersForBooker(bookerReference: String): List<PermittedPrisonerForBookerDto> {
     val uri = PERMITTED_PRISONERS.replace("{bookerReference}", bookerReference) + "?active=true"
     return webClient.get()
       .uri(uri)
@@ -102,8 +102,8 @@ class PrisonVisitBookerRegistryClient(
   private fun getPrisonerValidationErrorResponse(e: Throwable): Throwable {
     if (e is WebClientResponseException && isUnprocessableEntityError(e)) {
       try {
-        val errorResponse = objectMapper.readValue(e.responseBodyAsString, PrisonerValidationErrorResponse::class.java)
-        return BookerPrisonerValidationException(errorResponse.validationErrors)
+        val errorResponse = objectMapper.readValue(e.responseBodyAsString, BookerPrisonerValidationErrorResponse::class.java)
+        return BookerPrisonerValidationException(errorResponse.validationError)
       } catch (jsonProcessingException: Exception) {
         LOG.error("An error occurred processing the booker prisoner validation error response - ${e.stackTraceToString()}")
         throw jsonProcessingException

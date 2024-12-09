@@ -1,11 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 
-import jakarta.validation.ValidationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.BookerPrisonerInfoClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.BookerPrisonerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
@@ -14,25 +15,22 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.con
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorRestrictionType
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.BookerPrisonerValidationErrorCodes.REGISTERED_PRISON_NOT_SUPPORTED
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerAuthFailureException
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerPrisonerValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.PublicBookerValidationUtil
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.PublicBookerValidationUtil.Companion.PRISONER_VALIDATION_ERROR_MSG
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.PublicBookerValidationUtil.Companion.PRISON_VALIDATION_ERROR_MSG
-import java.text.MessageFormat
 import java.time.LocalDate
 
 @Service
 class PublicBookerService(
   private val prisonVisitBookerRegistryClient: PrisonVisitBookerRegistryClient,
-  private val prisonerSearchService: PrisonerSearchService,
   private val prisonerContactService: PrisonerContactService,
-  private val prisonService: PrisonService,
   private val dateUtils: DateUtils,
   private val bookerPrisonerInfoClient: BookerPrisonerInfoClient,
-  private val publicBookerValidationUtil: PublicBookerValidationUtil,
+  private val visitSchedulerClient: VisitSchedulerClient,
+  private val prisonerSearchClient: PrisonerSearchClient,
 ) {
   companion object {
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
@@ -44,26 +42,12 @@ class PublicBookerService(
 
   fun getPermittedPrisonersForBooker(bookerReference: String): List<BookerPrisonerInfoDto> {
     val prisonerDetailsList = mutableListOf<BookerPrisonerInfoDto>()
-    val prisoners = prisonVisitBookerRegistryClient.getPermittedVisitorsForPermittedPrisonerAndBooker(bookerReference)
+    val prisoners = prisonVisitBookerRegistryClient.getPermittedPrisonersForBooker(bookerReference)
     logger.debug("getPermittedPrisonersForBooker ${prisoners.size} prisoners found for bookerReference : $bookerReference")
 
     prisoners.forEach { prisoner ->
-      // get the offender details from prisoner search and validate but do not throw an exception
-      var offenderSearchPrisoner: PrisonerDto? = null
-      try {
-        offenderSearchPrisoner = prisonerSearchService.getPrisoner(prisoner.prisonerId)
-      } catch (nfe: NotFoundException) {
-        logger.error("getPermittedPrisonersForBooker Prisoner with id - ${prisoner.prisonerId} not found on offender search")
-      }
-
-      offenderSearchPrisoner?.let {
-        publicBookerValidationUtil.validatePrisoner(prisoner.prisonerId, offenderSearchPrisoner)?.let {
-          logger.error("getPermittedPrisonersForBooker " + MessageFormat.format(PRISONER_VALIDATION_ERROR_MSG, prisoner.prisonerId, it))
-        } ?: run {
-          bookerPrisonerInfoClient.getPermittedPrisonerInfo(offenderSearchPrisoner, prisoner)?.let {
-            prisonerDetailsList.add(it)
-          }
-        }
+      bookerPrisonerInfoClient.getPermittedPrisonerInfo(prisoner)?.let {
+        prisonerDetailsList.add(it)
       }
     }
 
@@ -71,35 +55,29 @@ class PublicBookerService(
   }
 
   fun getPermittedVisitorsForPermittedPrisonerAndBooker(bookerReference: String, prisonerNumber: String): List<VisitorInfoDto> {
-    prisonVisitBookerRegistryClient.getPermittedVisitorsForPermittedPrisonerAndBooker(bookerReference)
+    prisonVisitBookerRegistryClient.getPermittedPrisonersForBooker(bookerReference)
       .firstOrNull { it.prisonerId == prisonerNumber }
       ?: throw NotFoundException("Prisoner with number - $prisonerNumber not found for booker reference - $bookerReference")
-
-    // get the offender details from prisoner search and validate
-    val offenderSearchPrisoner = prisonerSearchService.getPrisoner(prisonerNumber)
-
-    publicBookerValidationUtil.validatePrisoner(prisonerNumber, offenderSearchPrisoner)?.let {
-      val message = MessageFormat.format(PRISONER_VALIDATION_ERROR_MSG, prisonerNumber, it)
-      logger.error(message)
-      throw ValidationException(message)
-    }
-
-    val prisonCode = offenderSearchPrisoner.prisonId!!
-    // get the prison and validate
-    val prison = prisonService.getVSIPPrison(prisonCode)
-    publicBookerValidationUtil.validatePrison(prison)?.let {
-      val message = MessageFormat.format(PRISON_VALIDATION_ERROR_MSG, prisonCode, prisonerNumber, it)
-      logger.error(message)
-      throw ValidationException(message)
-    }
 
     return getValidVisitors(bookerReference, prisonerNumber)
   }
 
   fun validatePrisoner(bookerReference: String, prisonerNumber: String) {
     logger.trace("validate prisoner called for $prisonerNumber with booker reference $bookerReference")
+    // check if the prisoner's prison is supported on Visits
+    prisonerSearchClient.getPrisonerById(prisonerNumber).prisonId?.let { prisonId ->
+      if (!isPrisonSupportedOnVisits(prisonId)) {
+        throw BookerPrisonerValidationException(REGISTERED_PRISON_NOT_SUPPORTED)
+      }
+    }
+
+    // finally run the booker-registry checks
     prisonVisitBookerRegistryClient.validatePrisoner(bookerReference, prisonerNumber)
     logger.trace("validate prisoner successful for $prisonerNumber with booker reference $bookerReference")
+  }
+
+  private fun isPrisonSupportedOnVisits(prisonId: String): Boolean {
+    return visitSchedulerClient.getSupportedPrisons(PUBLIC).map { it.uppercase() }.contains(prisonId.uppercase())
   }
 
   private fun getValidVisitors(bookerReference: String, prisonerNumber: String): List<VisitorInfoDto> {

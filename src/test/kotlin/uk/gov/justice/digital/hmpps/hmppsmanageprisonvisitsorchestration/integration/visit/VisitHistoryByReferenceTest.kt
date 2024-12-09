@@ -7,8 +7,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.http.HttpHeaders
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
@@ -34,7 +34,7 @@ private const val NOT_KNOWN = "NOT_KNOWN"
 @ExtendWith(SpringExtension::class)
 class VisitHistoryByReferenceTest : IntegrationTestBase() {
 
-  @SpyBean
+  @MockitoSpyBean
   private lateinit var manageUsersApiClient: ManageUsersApiClient
 
   fun callVisitHistoryByReference(
