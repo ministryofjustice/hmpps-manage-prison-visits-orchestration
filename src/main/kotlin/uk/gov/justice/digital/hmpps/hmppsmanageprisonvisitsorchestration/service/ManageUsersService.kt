@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ManageUsersApiClient
@@ -75,7 +74,6 @@ class ManageUsersService(
     }
   }
 
-  @Cacheable(value = ["UserFullName"], key = "#userName")
   fun getUserFullName(userName: String, userNameIfNotAvailable: String = NOT_KNOWN): String {
     return if (userName == NOT_KNOWN) {
       userName
