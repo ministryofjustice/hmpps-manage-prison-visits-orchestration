@@ -59,7 +59,19 @@ class BookerPrisonerValidateTest : IntegrationTestBase() {
     // Given
     val bookerReference = "booker-reference"
     val prisonerId = "prisoner-id"
+    val prisonId = "MDI"
+
     val bookerPrisonerValidationErrorResponse = BookerPrisonerValidationErrorResponse(status = HttpStatus.UNPROCESSABLE_ENTITY.value(), validationError = PRISONER_RELEASED)
+    val prisoner1Dto = createPrisoner(
+      prisonerId = prisonerId,
+      firstName = "FirstName",
+      lastName = "LastName",
+      dateOfBirth = LocalDate.of(2000, 1, 31),
+      prisonId = prisonId,
+    )
+
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisoner1Dto)
+    visitSchedulerMockServer.stubGetSupportedPrisons(PUBLIC, listOf("ABC", prisonId))
     prisonVisitBookerRegistryMockServer.stubPrisonerValidationFailure(bookerReference, prisonerId, bookerPrisonerValidationErrorResponse)
 
     // When
