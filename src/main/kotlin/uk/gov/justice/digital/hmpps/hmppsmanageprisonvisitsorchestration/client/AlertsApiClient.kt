@@ -33,8 +33,8 @@ class AlertsApiClient(
       .uri(uri)
       .retrieve()
       .bodyToMono<RestPage<AlertResponseDto>>()
-      .doOnError {
-        LOG.error("getPrisonerAlertsAsMono Failed for get request $uri")
+      .doOnError { e ->
+        LOG.error("getPrisonerAlertsAsMono Failed for get request $uri, exception - $e")
       }
   }
 }
