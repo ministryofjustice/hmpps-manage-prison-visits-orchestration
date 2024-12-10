@@ -14,18 +14,20 @@ class AlertsService(
 ) {
   companion object {
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
+    val prisonerSupportedAlertCodes = PrisonerSupportedAlertCodeType.entries.map { it.name }.toSet()
   }
 
   /**
    * Gets all alerts and filters them to only return active. Maps the alert object to only capture the alert codes as a list<String>.
    */
-  fun getPrisonerActiveAlertCodes(prisonerId: String): List<String> {
+  fun getPrisonerAlertCodes(prisonerId: String): List<AlertResponseDto> {
     logger.info("getPrisonerActiveAlertCodes called for $prisonerId")
-    return filterSupportedAlerts(alertsApiClient.getPrisonerAlerts(prisonerId)).filter { it.active }.map { it.alertCode.code }
+
+    val alerts = alertsApiClient.getPrisonerAlerts(prisonerId)
+    return alerts.content.toList().filter { code -> code.alertCode.code in prisonerSupportedAlertCodes }
   }
 
   fun filterSupportedAlerts(prisonerAlerts: RestPage<AlertResponseDto>): List<AlertResponseDto> {
-    val prisonerSupportedAlertCodes = PrisonerSupportedAlertCodeType.entries.map { it.name }.toSet()
     return prisonerAlerts.content.toList().filter { code -> code.alertCode.code in prisonerSupportedAlertCodes }
   }
 }
