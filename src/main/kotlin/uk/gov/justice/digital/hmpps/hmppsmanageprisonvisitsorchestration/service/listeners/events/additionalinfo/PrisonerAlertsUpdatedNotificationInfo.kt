@@ -9,8 +9,8 @@ data class PrisonerAlertsUpdatedNotificationInfo(
   val nomsNumber: String,
 
   @JsonProperty("alertsAdded")
-  val alertsAdded: List<String>,
+  var alertsAdded: List<String>,
 
   @JsonProperty("alertsRemoved")
-  val alertsRemoved: List<String>,
+  var alertsRemoved: List<String>,
 ) : EventInfo
