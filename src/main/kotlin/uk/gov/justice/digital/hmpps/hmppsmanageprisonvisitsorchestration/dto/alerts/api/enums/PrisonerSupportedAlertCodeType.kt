@@ -12,8 +12,10 @@ enum class PrisonerSupportedAlertCodeType {
   CC4,
   CPC,
   CPRC,
+  OHCO,
   ONCR,
   RCDR,
+  RCON,
   RCP,
   RCS,
   RDV,
@@ -34,4 +36,5 @@ enum class PrisonerSupportedAlertCodeType {
   XCSEA,
   XRF,
   XSO,
+  OVI,
 }
