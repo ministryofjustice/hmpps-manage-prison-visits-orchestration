@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.con
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AlertsService
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AlertsService.Companion.predicateFilterSupportedCodes
 import java.time.Duration
 
 @Component
@@ -23,7 +23,6 @@ class PrisonerProfileClient(
   private val prisonerContactRegistryClient: PrisonerContactRegistryClient,
   private val prisonRegisterClient: PrisonRegisterClient,
   @Value("\${prisoner.profile.timeout:10s}") private val apiTimeout: Duration,
-  private val alertsService: AlertsService,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -49,7 +48,7 @@ class PrisonerProfileClient(
         val visitBalances = if (prisonerProfileMonos.t3.isEmpty) null else prisonerProfileMonos.t3.get()
         val prisonerBookingSummary = prisonerProfileMonos.t4.content.firstOrNull()
         val visits = prisonerProfileMonos.t5.content.map { visitDto -> VisitSummaryDto(visitDto = visitDto) }
-        val prisonerAlerts = alertsService.filterSupportedAlerts(prisonerProfileMonos.t6).map { alertResponse -> AlertDto(alertResponse) }
+        val prisonerAlerts = prisonerProfileMonos.t6.content.filter { predicateFilterSupportedCodes.test(it) }.map { alertResponse -> AlertDto(alertResponse) }
 
         PrisonerProfileDto(
           prisoner,

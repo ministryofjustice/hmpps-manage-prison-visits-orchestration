@@ -265,7 +265,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
         AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "SC", description = "Alert Code Desc"),
         createdAt = LocalDate.of(1995, 12, 3),
         activeTo = null,
-        active = false,
+        active = true,
         description = "Alert code comment",
       ),
     )
@@ -276,7 +276,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
       prisonerNumber,
       alertsAdded,
       alertsRemoved,
-      emptyList(),
+      activeAlerts = activeAlert.map { alert -> alert.alertCode.code }.toList(),
       eventDescription,
     )
 
@@ -315,7 +315,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
         AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "SC", description = "Alert Code Desc"),
         createdAt = LocalDate.of(1995, 12, 3),
         activeTo = null,
-        active = false,
+        active = true,
         description = "Alert code comment",
       ),
     )
@@ -326,7 +326,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
       prisonerNumber,
       alertsAdded,
       alertsRemoved,
-      emptyList(),
+      activeAlerts = activeAlert.map { alert -> alert.alertCode.code }.toList(),
       eventDescription,
     )
 

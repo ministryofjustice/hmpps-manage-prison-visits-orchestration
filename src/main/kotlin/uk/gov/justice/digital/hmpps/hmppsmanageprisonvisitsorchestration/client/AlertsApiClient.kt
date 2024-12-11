@@ -28,7 +28,7 @@ class AlertsApiClient(
   }
 
   fun getPrisonerAlertsAsMono(prisonerId: String): Mono<RestPage<AlertResponseDto>> {
-    val uri = "/prisoners/$prisonerId/alerts"
+    val uri = "/prisoners/$prisonerId/alerts?isActive=true"
     return webClient.get()
       .uri(uri)
       .retrieve()

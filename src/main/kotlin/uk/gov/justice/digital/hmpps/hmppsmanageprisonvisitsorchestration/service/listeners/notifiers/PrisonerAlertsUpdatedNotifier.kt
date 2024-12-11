@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.servic
 
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.enums.PrisonerSupportedAlertCodeType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AlertsService.Companion.prisonerSupportedAlertCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.DomainEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerAlertsUpdatedNotificationInfo
 
@@ -20,8 +21,6 @@ class PrisonerAlertsUpdatedNotifier : EventNotifier() {
   }
 
   private fun filterCodes(prisonerAlertsUpdatedNotificationInfo: PrisonerAlertsUpdatedNotificationInfo): PrisonerAlertsUpdatedNotificationInfo {
-    val prisonerSupportedAlertCodes = PrisonerSupportedAlertCodeType.entries.map { it.name }.toSet()
-
     // A temporary helper function to filter the alert codes
     fun List<String>.filterSupported() = filter { it in prisonerSupportedAlertCodes }
 
