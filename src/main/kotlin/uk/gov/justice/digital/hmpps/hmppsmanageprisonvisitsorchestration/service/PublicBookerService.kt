@@ -64,15 +64,16 @@ class PublicBookerService(
 
   fun validatePrisoner(bookerReference: String, prisonerNumber: String) {
     logger.trace("validate prisoner called for $prisonerNumber with booker reference $bookerReference")
-    // check if the prisoner's prison is supported on Visits
+    // run the booker-registry checks
+    prisonVisitBookerRegistryClient.validatePrisoner(bookerReference, prisonerNumber)
+
+    // finally check if the prisoner's prison is supported on Visits
     prisonerSearchClient.getPrisonerById(prisonerNumber).prisonId?.let { prisonId ->
       if (!isPrisonSupportedOnVisits(prisonId)) {
         throw BookerPrisonerValidationException(REGISTERED_PRISON_NOT_SUPPORTED)
       }
     }
 
-    // finally run the booker-registry checks
-    prisonVisitBookerRegistryClient.validatePrisoner(bookerReference, prisonerNumber)
     logger.trace("validate prisoner successful for $prisonerNumber with booker reference $bookerReference")
   }
 
