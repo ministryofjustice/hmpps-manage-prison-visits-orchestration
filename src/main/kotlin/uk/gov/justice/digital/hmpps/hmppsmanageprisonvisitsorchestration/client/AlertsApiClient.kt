@@ -22,15 +22,19 @@ class AlertsApiClient(
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun getPrisonerAlerts(prisonerId: String): RestPage<AlertResponseDto>? {
-    return getPrisonerAlertsAsMono(prisonerId)
-      .block(apiTimeout)
+  fun getPrisonerAlerts(prisonerId: String): RestPage<AlertResponseDto> {
+    return getPrisonerAlertsAsMono(prisonerId).block(apiTimeout)
+      ?: throw IllegalStateException("Unable to retrieve alerts for prisoner, possibly due to timeout $prisonerId")
   }
 
   fun getPrisonerAlertsAsMono(prisonerId: String): Mono<RestPage<AlertResponseDto>> {
+    val uri = "/prisoners/$prisonerId/alerts?isActive=true"
     return webClient.get()
-      .uri("/prisoners/$prisonerId/alerts")
+      .uri(uri)
       .retrieve()
-      .bodyToMono()
+      .bodyToMono<RestPage<AlertResponseDto>>()
+      .doOnError { e ->
+        LOG.error("getPrisonerAlertsAsMono Failed for get request $uri, exception - $e")
+      }
   }
 }

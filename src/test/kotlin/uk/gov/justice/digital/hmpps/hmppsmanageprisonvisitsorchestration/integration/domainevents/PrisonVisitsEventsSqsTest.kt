@@ -258,14 +258,14 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     // Given
     val prisonerNumber = "A8713DY"
     val bookingId = 100L
-    val alertsAdded = listOf("AL1", "AL2")
+    val alertsAdded = listOf("C1", "C2")
     val alertsRemoved = emptyList<String>()
     val activeAlert = listOf(
       AlertResponseDto(
-        AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "AL3", description = "Alert Code Desc"),
+        AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "SC", description = "Alert Code Desc"),
         createdAt = LocalDate.of(1995, 12, 3),
         activeTo = null,
-        active = false,
+        active = true,
         description = "Alert code comment",
       ),
     )
@@ -276,7 +276,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
       prisonerNumber,
       alertsAdded,
       alertsRemoved,
-      emptyList(),
+      activeAlerts = activeAlert.map { alert -> alert.alertCode.code }.toList(),
       eventDescription,
     )
 
@@ -308,14 +308,14 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     // Given
     val prisonerNumber = "A8713DY"
     val bookingId = 100L
-    val alertsAdded = listOf("AL1", "AL2")
+    val alertsAdded = listOf("C1", "C2")
     val alertsRemoved = emptyList<String>()
     val activeAlert = listOf(
       AlertResponseDto(
-        AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "AL3", description = "Alert Code Desc"),
+        AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "SC", description = "Alert Code Desc"),
         createdAt = LocalDate.of(1995, 12, 3),
         activeTo = null,
-        active = false,
+        active = true,
         description = "Alert code comment",
       ),
     )
@@ -326,7 +326,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
       prisonerNumber,
       alertsAdded,
       alertsRemoved,
-      emptyList(),
+      activeAlerts = activeAlert.map { alert -> alert.alertCode.code }.toList(),
       eventDescription,
     )
 
@@ -359,10 +359,10 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     val prisonerNumber = "A8713DY"
     val bookingId = 100L
     val alertsAdded = emptyList<String>()
-    val alertsRemoved = listOf("AL1", "AL2")
+    val alertsRemoved = listOf("C1", "C2")
     val activeAlert = listOf(
       AlertResponseDto(
-        AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "AL3", description = "Alert Code Desc"),
+        AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "C1", description = "Alert Code Desc"),
         createdAt = LocalDate.of(1995, 12, 3),
         activeTo = null,
         active = true,
@@ -471,6 +471,58 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     assertStandardCalls(visitorApprovedNotifier, VISIT_NOTIFICATION_VISITOR_APPROVED_PATH, sentRequestToVsip)
     await untilAsserted { verify(visitSchedulerService, times(1)).processVisitorApproved(any()) }
     await untilAsserted { verify(visitSchedulerClient, times(1)).processVisitorApproved(any()) }
+  }
+
+  @Test
+  fun `test prisoner add alerts event is processed then alerts are correctly filtered to only supported codes`() {
+    // Given
+    val prisonerNumber = "A8713DY"
+    val bookingId = 100L
+    val alertsAdded = listOf("C2", "BAD_CODE2")
+    val alertsRemoved = listOf("C1", "BAD_CODE")
+    val activeAlert = listOf(
+      AlertResponseDto(
+        AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "SC", description = "Alert Code Desc"),
+        createdAt = LocalDate.of(1995, 12, 3),
+        activeTo = null,
+        active = true,
+        description = "Alert code comment",
+      ),
+      AlertResponseDto(
+        AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "BAD_CODE", description = "Alert Code Desc"),
+        createdAt = LocalDate.of(1995, 12, 3),
+        activeTo = null,
+        active = true,
+        description = "Alert code comment",
+      ),
+    )
+
+    val eventDescription = "2 alerts added, 2 alerts removed"
+
+    val sentRequestToVsip = PrisonerAlertsAddedNotificationDto(
+      prisonerNumber,
+      listOf("C2"),
+      listOf("C1"),
+      listOf("SC"),
+      eventDescription,
+    )
+
+    val domainEvent = createDomainEventJson(
+      PRISONER_ALERTS_UPDATED,
+      eventDescription,
+      createAlertsUpdatedAdditionalInformationJson(prisonerNumber, bookingId, alertsAdded, alertsRemoved),
+    )
+    val publishRequest = createDomainEventPublishRequest(PRISONER_ALERTS_UPDATED, domainEvent)
+
+    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH)
+    alertsApiMockServer.stubGetPrisonerAlertsMono(prisonerNumber, activeAlert)
+
+    // When
+    sendSqSMessage(publishRequest)
+
+    // Then
+    verify(prisonerAlertsUpdatedNotifier, times(0)).processEvent(any())
+    await untilAsserted { verify(visitSchedulerClient, times(1)).processPrisonerAlertsUpdated(sendDto = sentRequestToVsip) }
   }
 
   private fun sendSqSMessage(publishRequest: PublishRequest?) {

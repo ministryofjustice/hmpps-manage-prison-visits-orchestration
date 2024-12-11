@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.con
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AlertsService.Companion.predicateFilterSupportedCodes
 import java.time.Duration
 
 @Component
@@ -47,7 +48,7 @@ class PrisonerProfileClient(
         val visitBalances = if (prisonerProfileMonos.t3.isEmpty) null else prisonerProfileMonos.t3.get()
         val prisonerBookingSummary = prisonerProfileMonos.t4.content.firstOrNull()
         val visits = prisonerProfileMonos.t5.content.map { visitDto -> VisitSummaryDto(visitDto = visitDto) }
-        val prisonerAlerts = prisonerProfileMonos.t6.content.map { alertResponse -> AlertDto(alertResponse) }
+        val prisonerAlerts = prisonerProfileMonos.t6.content.filter { predicateFilterSupportedCodes.test(it) }.map { alertResponse -> AlertDto(alertResponse) }
 
         PrisonerProfileDto(
           prisoner,

@@ -13,7 +13,7 @@ class AlertsApiMockServer : WireMockServer(9000) {
     val totalElements = alertResponseDto.size
     val restPage = RestPage(alertResponseDto, 1, 100, totalElements.toLong())
     stubFor(
-      get("/prisoners/$prisonerId/alerts")
+      get("/prisoners/$prisonerId/alerts?isActive=true")
         .willReturn(
           aResponse()
             .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
