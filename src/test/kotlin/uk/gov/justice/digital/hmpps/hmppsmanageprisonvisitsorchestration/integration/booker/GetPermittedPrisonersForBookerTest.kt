@@ -108,8 +108,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     val prisonerDetailsList = getResults(returnResult)
 
     Assertions.assertThat(prisonerDetailsList.size).isEqualTo(2)
-    assertPrisonerBasicDetails(prisonerBasicInfo = prisonerDetailsList[0], prisonerDto = prisoner1Dto, availableVOs = 7, nextVORefreshDate = LocalDate.now().plusDays(2), registeredPrisonDto)
-    assertPrisonerBasicDetails(prisonerBasicInfo = prisonerDetailsList[1], prisonerDto = prisoner2Dto, availableVOs = 5, nextVORefreshDate = LocalDate.now().plusDays(7), registeredPrisonDto)
+    assertPrisonerBasicDetails(prisonerBasicInfo = prisonerDetailsList[0], prisonerDto = prisoner1Dto, availableVOs = 7, registeredPrisonDto)
+    assertPrisonerBasicDetails(prisonerBasicInfo = prisonerDetailsList[1], prisonerDto = prisoner2Dto, availableVOs = 5, registeredPrisonDto)
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(2)).getPrisonerByIdAsMono(any())
@@ -172,7 +172,7 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     val prisonerDetailsList = getResults(returnResult)
 
     Assertions.assertThat(prisonerDetailsList.size).isEqualTo(1)
-    assertPrisonerBasicDetails(prisonerBasicInfo = prisonerDetailsList[0], prisonerDto = prisoner1Dto, availableVOs = 7, nextVORefreshDate = LocalDate.now().plusDays(2), registeredPrisonDto)
+    assertPrisonerBasicDetails(prisonerBasicInfo = prisonerDetailsList[0], prisonerDto = prisoner1Dto, availableVOs = 7, registeredPrisonDto)
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(2)).getPrisonerByIdAsMono(any())
@@ -206,8 +206,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     val prisonerDetailsList = getResults(returnResult)
 
     Assertions.assertThat(prisonerDetailsList.size).isEqualTo(2)
-    assertPrisonerBasicDetails(prisonerBasicInfo = prisonerDetailsList[0], prisonerDto = prisoner1Dto, availableVOs = 7, nextVORefreshDate = LocalDate.now().plusDays(2), registeredPrisonDto)
-    assertPrisonerBasicDetails(prisonerBasicInfo = prisonerDetailsList[1], prisonerDto = prisoner3Dto, availableVOs = 0, nextVORefreshDate = LocalDate.now().plusDays(14), registeredPrisonDto)
+    assertPrisonerBasicDetails(prisonerBasicInfo = prisonerDetailsList[0], prisonerDto = prisoner1Dto, availableVOs = 7, registeredPrisonDto)
+    assertPrisonerBasicDetails(prisonerBasicInfo = prisonerDetailsList[1], prisonerDto = prisoner3Dto, availableVOs = 0, registeredPrisonDto)
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(2)).getPrisonerByIdAsMono(any())
@@ -407,8 +407,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val prisonerDetailsList = getResults(returnResult)
     Assertions.assertThat(prisonerDetailsList.size).isEqualTo(2)
-    assertPrisonerBasicDetails(prisonerBasicInfo = prisonerDetailsList[0], prisonerDto = prisoner1Dto, availableVOs = 7, nextVORefreshDate = LocalDate.now().plusDays(2), registeredPrisonDtoWhenNotReturned)
-    assertPrisonerBasicDetails(prisonerBasicInfo = prisonerDetailsList[1], prisonerDto = prisoner2Dto, availableVOs = 5, nextVORefreshDate = LocalDate.now().plusDays(7), registeredPrisonDtoWhenNotReturned)
+    assertPrisonerBasicDetails(prisonerBasicInfo = prisonerDetailsList[0], prisonerDto = prisoner1Dto, availableVOs = 7, registeredPrisonDtoWhenNotReturned)
+    assertPrisonerBasicDetails(prisonerBasicInfo = prisonerDetailsList[1], prisonerDto = prisoner2Dto, availableVOs = 5, registeredPrisonDtoWhenNotReturned)
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(2)).getPrisonerByIdAsMono(any())
@@ -477,14 +477,12 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     verify(prisonRegisterClientSpy, times(0)).getPrisonAsMonoEmptyIfNotFound(any())
   }
 
-  private fun assertPrisonerBasicDetails(prisonerBasicInfo: BookerPrisonerInfoDto, prisonerDto: PrisonerDto, availableVOs: Int, nextVORefreshDate: LocalDate, registeredPrisonDto: RegisteredPrisonDto) {
+  private fun assertPrisonerBasicDetails(prisonerBasicInfo: BookerPrisonerInfoDto, prisonerDto: PrisonerDto, availableVOs: Int, registeredPrisonDto: RegisteredPrisonDto) {
     Assertions.assertThat(prisonerBasicInfo.prisoner.prisonerNumber).isEqualTo(prisonerDto.prisonerNumber)
     Assertions.assertThat(prisonerBasicInfo.prisoner.firstName).isEqualTo(prisonerDto.firstName)
     Assertions.assertThat(prisonerBasicInfo.prisoner.lastName).isEqualTo(prisonerDto.lastName)
     Assertions.assertThat(prisonerBasicInfo.availableVos).isEqualTo(availableVOs)
-
-    // TODO checking if not null temporarily, re-introduce check later
-    Assertions.assertThat(prisonerBasicInfo.nextAvailableVoDate).isNotNull()
+    Assertions.assertThat(prisonerBasicInfo.nextAvailableVoDate).isAfter(LocalDate.now())
     Assertions.assertThat(prisonerBasicInfo.registeredPrison).isEqualTo(registeredPrisonDto)
   }
 
