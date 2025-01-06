@@ -129,11 +129,11 @@ class VisitSchedulerService(
     return existingBooking?.let {
       visitSchedulerClient.updateBookedVisit(
         applicationReference,
-        BookingRequestDto(requestDto.actionedBy, requestDto.applicationMethodType, requestDto.allowOverBooking),
+        BookingRequestDto(requestDto.actionedBy, requestDto.applicationMethodType, requestDto.allowOverBooking, requestDto.userType),
       )
     } ?: visitSchedulerClient.bookVisitSlot(
       applicationReference,
-      BookingRequestDto(requestDto.actionedBy, requestDto.applicationMethodType, requestDto.allowOverBooking),
+      BookingRequestDto(requestDto.actionedBy, requestDto.applicationMethodType, requestDto.allowOverBooking, requestDto.userType),
     )
   }
 
