@@ -12,7 +12,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType.EMAIL
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationValidationErrorCodes.APPLICATION_INVALID_NON_ASSOCIATION_VISITS
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationValidationErrorCodes.APPLICATION_INVALID_NO_VO_BALANCE
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
 @DisplayName("Book Visit")
@@ -26,7 +25,7 @@ class BookVisitTest : IntegrationTestBase() {
     val visitDto = createVisitDto(reference = reference, applicationReference = applicationReference)
     visitSchedulerMockServer.stubGetBookedVisitByApplicationReference(applicationReference, null)
     visitSchedulerMockServer.stubBookVisit(applicationReference, visitDto)
-    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL, false, UserType.STAFF)
+    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL)
 
     // When
     val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
@@ -45,7 +44,7 @@ class BookVisitTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetBookedVisitByApplicationReference(applicationReference, null)
     visitSchedulerMockServer.stubBookVisit(applicationReference, visitDto)
 
-    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL, false, UserType.STAFF)
+    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL)
 
     // When
     val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
@@ -67,7 +66,7 @@ class BookVisitTest : IntegrationTestBase() {
       ),
     )
 
-    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL, false, UserType.STAFF)
+    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL)
 
     // When
     val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
@@ -89,7 +88,7 @@ class BookVisitTest : IntegrationTestBase() {
       applicationReference,
     )
 
-    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL, false, UserType.STAFF)
+    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL)
 
     // When
     val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
@@ -106,7 +105,7 @@ class BookVisitTest : IntegrationTestBase() {
     val visitDto = createVisitDto(reference = reference, applicationReference = applicationReference)
     visitSchedulerMockServer.stubGetBookedVisitByApplicationReference(applicationReference, visitDto)
     visitSchedulerMockServer.stubUpdateVisit(applicationReference, visitDto)
-    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL, false, UserType.STAFF)
+    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL)
 
     // When
     val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
@@ -126,7 +125,7 @@ class BookVisitTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetBookedVisitByApplicationReference(applicationReference, visitDto)
     visitSchedulerMockServer.stubUpdateVisit(applicationReference, null)
 
-    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL, false, UserType.STAFF)
+    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL)
 
     // When
     val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
@@ -151,7 +150,7 @@ class BookVisitTest : IntegrationTestBase() {
       ),
     )
 
-    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL, false, UserType.STAFF)
+    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL)
 
     // When
     val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
@@ -173,7 +172,7 @@ class BookVisitTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetBookedVisitByApplicationReference(applicationReference, visitDto)
     visitSchedulerMockServer.stubUpdateVisitApplicationValidationFailureInvalid(applicationReference)
 
-    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL, false, UserType.STAFF)
+    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL)
 
     // When
     val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
