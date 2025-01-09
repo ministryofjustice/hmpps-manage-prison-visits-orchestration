@@ -102,3 +102,4 @@ hmpps:
     timeout: 10s
   sqs:
     enabled: ${hmpps.sqs.enabled}
+    queueAdminRole: ROLE_VISITS_QUEUE_ADMIN
