@@ -26,9 +26,7 @@ dependencies {
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.11.0")
 
   implementation("org.springframework.data:spring-data-commons:3.4.1")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.1")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.1")
-  implementation("org.springdoc:springdoc-openapi-starter-common:2.8.1")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
 
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
