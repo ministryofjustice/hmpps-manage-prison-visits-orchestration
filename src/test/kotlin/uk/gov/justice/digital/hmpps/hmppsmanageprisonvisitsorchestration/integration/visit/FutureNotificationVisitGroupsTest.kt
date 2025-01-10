@@ -38,6 +38,7 @@ class FutureNotificationVisitGroupsTest : IntegrationTestBase() {
         Assertions.assertThat(bookedByName).isEqualTo("Aled")
         Assertions.assertThat(visitDate).isEqualTo(dtoStub.affectedVisits[0].visitDate)
         Assertions.assertThat(bookingReference).isEqualTo("v1-d7-ed-7u")
+        Assertions.assertThat(notificationEventAttributes.size).isEqualTo(1)
       }
       with(affectedVisits[1]) {
         Assertions.assertThat(prisonerNumber).isEqualTo("BF34567G")
@@ -45,6 +46,7 @@ class FutureNotificationVisitGroupsTest : IntegrationTestBase() {
         Assertions.assertThat(bookedByName).isEqualTo("Gwyn")
         Assertions.assertThat(visitDate).isEqualTo(dtoStub.affectedVisits[1].visitDate)
         Assertions.assertThat(bookingReference).isEqualTo("v2-d7-ed-7u")
+        Assertions.assertThat(notificationEventAttributes.size).isEqualTo(1)
       }
     }
   }

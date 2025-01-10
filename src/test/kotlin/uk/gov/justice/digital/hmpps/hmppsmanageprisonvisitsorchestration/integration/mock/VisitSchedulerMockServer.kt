@@ -25,15 +25,18 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ApplicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.NotificationEventAttributeType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitorSupportedRestrictionType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType.NON_ASSOCIATION_EVENT
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationGroupDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerVisitsNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventAttributeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase.Companion.getVisitsQueryParams
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.createJsonResponseBuilder
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.getJsonString
@@ -408,8 +411,8 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
       "v7*d7*ed*7u",
       NON_ASSOCIATION_EVENT,
       listOf(
-        PrisonerVisitsNotificationDto("AF34567G", ActionedByDto(bookerReference = null, userName = "Username1", userType = UserType.STAFF), now, "v1-d7-ed-7u"),
-        PrisonerVisitsNotificationDto("BF34567G", ActionedByDto(bookerReference = null, userName = "Username2", userType = UserType.STAFF), now.plusDays(1), "v2-d7-ed-7u"),
+        PrisonerVisitsNotificationDto("AF34567G", ActionedByDto(bookerReference = null, userName = "Username1", userType = UserType.STAFF), now, "v1-d7-ed-7u", listOf(VisitNotificationEventAttributeDto(NotificationEventAttributeType.VISITOR_RESTRICTION, VisitorSupportedRestrictionType.BAN.name))),
+        PrisonerVisitsNotificationDto("BF34567G", ActionedByDto(bookerReference = null, userName = "Username2", userType = UserType.STAFF), now.plusDays(1), "v2-d7-ed-7u", listOf(VisitNotificationEventAttributeDto(NotificationEventAttributeType.VISITOR_ID, "AA12345"))),
       ),
     )
 
