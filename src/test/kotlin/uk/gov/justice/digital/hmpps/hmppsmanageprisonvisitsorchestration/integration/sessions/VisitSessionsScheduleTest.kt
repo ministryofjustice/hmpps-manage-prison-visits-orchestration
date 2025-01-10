@@ -42,6 +42,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
       validFromDate = sessionDate.minusWeeks(1),
       validToDate = sessionDate.plusWeeks(2),
       areLocationGroupsInclusive = true,
+      visitRoom = "Visit Room 1",
     )
     val sessionScheduleDto2 = createSessionScheduleDto(
       reference = "reference-2",
@@ -49,6 +50,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
       endTime = LocalTime.of(11, 0),
       validFromDate = sessionDate.minusWeeks(2),
       areLocationGroupsInclusive = false,
+      visitRoom = "Visit Room 2",
     )
     visitSchedulerMockServer.stubGetSessionSchedule(
       prisonCode,
@@ -72,6 +74,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     assertThat(sessionScheduleResults[0].prisonerCategoryGroupNames.size).isEqualTo(3)
     assertThat(sessionScheduleResults[0].prisonerIncentiveLevelGroupNames.size).isEqualTo(4)
     assertThat(sessionScheduleResults[0].areLocationGroupsInclusive).isTrue()
+    assertThat(sessionScheduleResults[0].visitRoom).isEqualTo("Visit Room 1")
 
     assertThat(sessionScheduleResults[1].sessionTemplateReference).isEqualTo(sessionScheduleDto2.sessionTemplateReference)
     assertThat(sessionScheduleResults[1].sessionTimeSlot.startTime).isEqualTo(LocalTime.parse("10:00"))
@@ -82,6 +85,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     assertThat(sessionScheduleResults[1].prisonerCategoryGroupNames.size).isEqualTo(0)
     assertThat(sessionScheduleResults[1].prisonerIncentiveLevelGroupNames.size).isEqualTo(0)
     assertThat(sessionScheduleResults[1].areLocationGroupsInclusive).isFalse()
+    assertThat(sessionScheduleResults[1].visitRoom).isEqualTo("Visit Room 2")
   }
 
   @Test
@@ -111,6 +115,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     weeklyFrequency: Int = 1,
     validFromDate: LocalDate,
     validToDate: LocalDate? = null,
+    visitRoom: String,
     prisonerLocationGroupNames: List<String> = mutableListOf(),
     prisonerCategoryGroupNames: List<String> = mutableListOf(),
     prisonerIncentiveLevelGroupNames: List<String> = mutableListOf(),
@@ -126,6 +131,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
       prisonerLocationGroupNames = prisonerLocationGroupNames,
       prisonerCategoryGroupNames = prisonerCategoryGroupNames,
       prisonerIncentiveLevelGroupNames = prisonerIncentiveLevelGroupNames,
+      visitRoom = visitRoom,
     )
   }
 
