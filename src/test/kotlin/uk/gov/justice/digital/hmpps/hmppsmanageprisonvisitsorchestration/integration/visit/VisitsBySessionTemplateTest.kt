@@ -67,10 +67,10 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
     Assertions.assertThat(visitReferences).containsExactlyInAnyOrder(visitDto.reference, visitDto2.reference)
 
     val visit1 = getVisitByReference(visits, visitDto.reference)
-    assertVisitDetails(visit1, visitDto.reference, prisonerId1, prisonerDto1.firstName, prisonerDto1.lastName, 3, visitDto.firstBookedDateTime)
+    assertVisitDetails(visit1, visitDto.reference, prisonerId1, prisonerDto1.firstName, prisonerDto1.lastName, 3, visitDto.firstBookedDateTime, visitDto.visitRestriction)
 
     val visit2 = getVisitByReference(visits, visitDto2.reference)
-    assertVisitDetails(visit2, visitDto2.reference, prisonerId2, prisonerDto2.firstName, prisonerDto2.lastName, 0, visitDto2.firstBookedDateTime)
+    assertVisitDetails(visit2, visitDto2.reference, prisonerId2, prisonerDto2.firstName, prisonerDto2.lastName, 0, visitDto2.firstBookedDateTime, visitDto.visitRestriction)
   }
 
   @Test
@@ -100,10 +100,10 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
     Assertions.assertThat(visitReferences).containsExactlyInAnyOrder(visitDto.reference, visitDto2.reference)
 
     val visit1 = getVisitByReference(visits, visitDto.reference)
-    assertVisitDetails(visit1, visitDto.reference, prisonerId1, prisonerDto1.firstName, prisonerDto1.lastName, 3, visitDto.createdTimestamp)
+    assertVisitDetails(visit1, visitDto.reference, prisonerId1, prisonerDto1.firstName, prisonerDto1.lastName, 3, visitDto.createdTimestamp, visitDto.visitRestriction)
 
     val visit2 = getVisitByReference(visits, visitDto2.reference)
-    assertVisitDetails(visit2, visitDto2.reference, prisonerId2, prisonerDto2.firstName, prisonerDto2.lastName, 0, visitDto2.createdTimestamp)
+    assertVisitDetails(visit2, visitDto2.reference, prisonerId2, prisonerDto2.firstName, prisonerDto2.lastName, 0, visitDto2.createdTimestamp, visitDto.visitRestriction)
   }
 
   @Test
@@ -158,17 +158,17 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
 
     val visit1 = getVisitByReference(visits, visitDto.reference)
     // prisoner names should be replaced by prisoner ids
-    assertVisitDetails(visit1, visitDto.reference, prisonerId1, prisonerId1, prisonerId1, 3, visitDto.createdTimestamp)
+    assertVisitDetails(visit1, visitDto.reference, prisonerId1, prisonerId1, prisonerId1, 3, visitDto.createdTimestamp, visitDto.visitRestriction)
 
     val visit2 = getVisitByReference(visits, visitDto2.reference)
-    assertVisitDetails(visit2, visitDto2.reference, prisonerId2, prisonerDto2.firstName, prisonerDto2.lastName, 2, visitDto2.createdTimestamp)
+    assertVisitDetails(visit2, visitDto2.reference, prisonerId2, prisonerDto2.firstName, prisonerDto2.lastName, 2, visitDto2.createdTimestamp, visitDto.visitRestriction)
   }
 
   private fun getResults(responseSpec: WebTestClient.ResponseSpec): Array<VisitPreviewDto> {
     return objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, Array<VisitPreviewDto>::class.java)
   }
 
-  private fun assertVisitDetails(visit: VisitPreviewDto, visitReference: String, prisonerId: String, firstName: String, lastName: String, visitorCount: Int, firstBookedDateTime: LocalDateTime?) {
+  private fun assertVisitDetails(visit: VisitPreviewDto, visitReference: String, prisonerId: String, firstName: String, lastName: String, visitorCount: Int, firstBookedDateTime: LocalDateTime?, visitRestriction: VisitRestriction) {
     Assertions.assertThat(visit.visitReference).isEqualTo(visitReference)
     Assertions.assertThat(visit.prisonerId).isEqualTo(prisonerId)
     Assertions.assertThat(visit.firstName).isEqualTo(firstName)
@@ -176,6 +176,7 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
     Assertions.assertThat(visit.visitorCount).isEqualTo(visitorCount)
     Assertions.assertThat(visit.visitTimeSlot).isEqualTo(SessionTimeSlotDto(LocalTime.of(10, 0), LocalTime.of(11, 0)))
     Assertions.assertThat(visit.firstBookedDateTime).isEqualTo(firstBookedDateTime)
+    Assertions.assertThat(visit.visitRestriction).isEqualTo(visitRestriction)
   }
 
   private fun getVisitByReference(visits: List<VisitPreviewDto>, reference: String): VisitPreviewDto {
