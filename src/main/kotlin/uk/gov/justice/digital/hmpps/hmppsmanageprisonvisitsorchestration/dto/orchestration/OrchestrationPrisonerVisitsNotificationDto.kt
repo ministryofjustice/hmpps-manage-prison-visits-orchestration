@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.or
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventAttributeDto
 import java.time.LocalDate
 
 class OrchestrationPrisonerVisitsNotificationDto(
@@ -19,4 +20,6 @@ class OrchestrationPrisonerVisitsNotificationDto(
   @Schema(description = "Booked by name", example = "John Smith", required = true)
   @field:NotBlank
   val bookedByName: String,
+  @Schema(description = "A list of all notification attributes for a given visit", required = false)
+  val notificationEventAttributes: List<VisitNotificationEventAttributeDto>,
 )

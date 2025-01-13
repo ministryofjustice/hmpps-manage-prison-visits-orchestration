@@ -212,6 +212,7 @@ class VisitSchedulerService(
           it.visitDate,
           it.bookingReference,
           manageUsersService.getFullNameFromActionedBy(it.lastActionedBy),
+          it.notificationEventAttributes,
         )
       }
       OrchestrationNotificationGroupDto(group.reference, group.type, affectedVisits)
