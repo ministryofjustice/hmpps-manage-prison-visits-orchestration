@@ -19,7 +19,6 @@ jobs:
         environment:
           CHROME_HEADLESS: 1
     circleci_ip_ranges: true
-
     steps:
       - run:
           name: Checkout VSIP UI Tests
@@ -41,6 +40,40 @@ jobs:
           command: |
             cd hmpps-vsip-ui-tests
             mvn test -Dbrowser=remote-chrome -Dspring.profiles.active="staging" -Dtest=uk.gov.justice.digital.hmpps.vsip.suites.RunSuite
+
+  acceptance_tests_staff_playwright-e2e:
+    docker:
+      - image: mcr.microsoft.com/playwright:v1.47.2-jammy
+    circleci_ip_ranges: true
+    steps:
+      - run:
+          name: Checkout VSIP Staff UI Playwright E2E Tests
+          command: git clone https://github.com/ministryofjustice/hmpps-book-a-prison-visit-staff-e2e-tests.git
+      - run:
+          name: get git status
+          command: |
+            cd hmpps-book-a-prison-visit-staff-e2e-tests
+            git checkout main
+            git pull
+            git status
+      - attach_workspace:
+          at: ~/app
+      - run:
+          name: Install Dependencies
+          command: |
+            cd hmpps-book-a-prison-visit-staff-e2e-tests
+            npm ci --no-audit
+      - run:
+          name: Run Playwright Tests
+          command: |
+            cd hmpps-book-a-prison-visit-staff-e2e-tests
+            npm run test:ci
+      - store_test_results:
+          path: /root/project/hmpps-book-a-prison-visit-staff-e2e-tests/results.xml
+      - store_artifacts:
+          path: /root/project/hmpps-book-a-prison-visit-staff-e2e-tests/playwright-report/index.html
+      - store_artifacts:
+          path: /root/project/hmpps-book-a-prison-visit-staff-e2e-tests/test-results
 
   validate:
     executor:
@@ -84,14 +117,12 @@ workflows:
             branches:
               only:
                 - main
-
       - hmpps/build_multiplatform_docker:
           name: build_docker
           filters:
             branches:
               only:
                 - main
-
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
@@ -104,7 +135,6 @@ workflows:
             - validate
             - build_docker
             - helm_lint
-
       - hmpps/deploy_env:
           name: deploy_staging
           env: "staging"
@@ -117,7 +147,6 @@ workflows:
                 - main
           requires:
             - deploy_dev
-
       - acceptance_tests_main:
           requires:
             - request-acceptance-tests-approval
@@ -133,7 +162,6 @@ workflows:
             branches:
               only:
                 - main
-
       - hmpps/deploy_env:
           name: deploy_preprod
           env: "preprod"
@@ -154,7 +182,6 @@ workflows:
             branches:
               only:
                 - main
-
       - hmpps/deploy_env:
           name: deploy_prod
           env: "prod"
@@ -187,21 +214,18 @@ workflows:
             branches:
               ignore:
                 - main
-
       - hmpps/helm_lint:
           name: helm_lint
           filters:
             branches:
               ignore:
                 - main
-
       - hmpps/build_multiplatform_docker:
           name: build_docker
           filters:
             branches:
               ignore:
                 - main
-
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
@@ -222,7 +246,6 @@ workflows:
             branches:
               ignore:
                 - main
-
       - hmpps/deploy_env:
           name: deploy_staging
           env: "staging"
@@ -245,6 +268,13 @@ workflows:
             branches:
               ignore:
                 - main
+
+      # Add Playwright E2E Tests to feature branch workflow
+      - acceptance_tests_staff_playwright-e2e:
+          filters:
+            branches:
+              only:
+                - feature/*
 
   security:
     triggers:
