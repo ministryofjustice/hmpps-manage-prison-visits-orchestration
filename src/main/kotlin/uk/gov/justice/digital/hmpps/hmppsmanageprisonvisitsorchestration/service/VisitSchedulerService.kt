@@ -193,12 +193,8 @@ class VisitSchedulerService(
     visitSchedulerClient.processPrisonerAlertsUpdated(sendDto = prisonerAlertsAddedNotificationDto)
   }
 
-  fun getNotificationCountForPrison(prisonCode: String): NotificationCountDto? {
-    return visitSchedulerClient.getNotificationCountForPrison(prisonCode)
-  }
-
-  fun getNotificationCount(): NotificationCountDto? {
-    return visitSchedulerClient.getNotificationCount()
+  fun getNotificationCountForPrison(prisonCode: String, notificationEventTypes: List<NotificationEventType>?): NotificationCountDto? {
+    return visitSchedulerClient.getNotificationCountForPrison(prisonCode, notificationEventTypes?.map { it.name }?.toList())
   }
 
   fun getFutureNotificationVisitGroups(prisonCode: String): List<OrchestrationNotificationGroupDto>? {

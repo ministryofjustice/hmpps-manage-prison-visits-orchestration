@@ -376,28 +376,21 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     )
   }
 
-  fun stubGetCountVisitNotificationForPrison(prisonCode: String) {
+  fun stubGetCountVisitNotificationForPrison(prisonCode: String, notificationEventTypes: List<NotificationEventType>?, count: Int) {
     val responseBuilder = createJsonResponseBuilder()
+    var url = "/visits/notification/$prisonCode/count"
+    url = if (notificationEventTypes != null) {
+      url + "?types=${notificationEventTypes.joinToString(",") { it.name }}"
+    } else {
+      url
+    }
 
     stubFor(
-      get("/visits/notification/$prisonCode/count")
+      get(url)
         .willReturn(
           responseBuilder
             .withStatus(HttpStatus.OK.value())
-            .withBody(getJsonString(NotificationCountDto(1))),
-        ),
-    )
-  }
-
-  fun stubGetCountVisitNotification() {
-    val responseBuilder = createJsonResponseBuilder()
-
-    stubFor(
-      get("/visits/notification/count")
-        .willReturn(
-          responseBuilder
-            .withStatus(HttpStatus.OK.value())
-            .withBody(getJsonString(NotificationCountDto(2))),
+            .withBody(getJsonString(NotificationCountDto(count))),
         ),
     )
   }
