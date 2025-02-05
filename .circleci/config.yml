@@ -351,7 +351,7 @@ workflows:
             - request-acceptance-tests-approval
           filters:
             branches:
-              only:
+              ignore:
                 - main
       - request-acceptance-tests-approval:
           type: approval
@@ -359,7 +359,7 @@ workflows:
             - deploy_staging
           filters:
             branches:
-              only:
+              ignore:
                 - main
       - request-acceptance-tests-public-approval:
           type: approval
@@ -367,7 +367,7 @@ workflows:
             - deploy_staging
           filters:
             branches:
-              only:
+              ignore:
                 - main
       - acceptance_tests_public_ui_main:
           requires:
@@ -375,7 +375,7 @@ workflows:
           context: visits-public-e2e-tests
           filters:
             branches:
-              only:
+              ignore:
                 - main
       - request-acceptance-staff-playwright-approval:
           type: approval
@@ -383,16 +383,15 @@ workflows:
             - deploy_staging
           filters:
             branches:
-              only:
+              ignore:
                 - main
-
       - acceptance_tests_staff_playwright-e2e:
           requires:
             - request-acceptance-staff-playwright-approval
           context: playwright-book-a-prison-visit-staff-e2e-ui-tests-staging
           filters:
             branches:
-              only:
+              ignore:
                 - main
 
   security:
