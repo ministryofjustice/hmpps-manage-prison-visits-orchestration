@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integr
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
@@ -10,11 +11,14 @@ import org.springframework.http.MediaType
 
 class MockUtils {
   companion object {
-    private val objectMapper: ObjectMapper = ObjectMapper().registerModules(JavaTimeModule(), kotlinModule())
+    private val objectMapper: ObjectMapper = ObjectMapper()
+      .registerModules(JavaTimeModule(), kotlinModule())
       .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+      .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
     fun getJsonString(obj: Any): String {
-      return objectMapper.writer().writeValueAsString(obj)
+      val x = objectMapper.writer().writeValueAsString(obj)
+      return x
     }
 
     fun createJsonResponseBuilder(): ResponseDefinitionBuilder {
