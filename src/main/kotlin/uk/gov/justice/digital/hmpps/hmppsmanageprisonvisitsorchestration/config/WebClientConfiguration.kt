@@ -1,22 +1,13 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config
 
-import io.netty.resolver.DefaultAddressResolverGroup
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.http.client.reactive.ReactorClientHttpConnector
-import org.springframework.http.codec.ClientCodecConfigurer
-import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
-import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction
-import org.springframework.web.reactive.function.client.ExchangeStrategies
 import org.springframework.web.reactive.function.client.WebClient
-import reactor.netty.http.client.HttpClient
-import reactor.netty.resources.ConnectionProvider
-import java.time.Duration.ofSeconds
+import uk.gov.justice.hmpps.kotlin.auth.authorisedWebClient
+import uk.gov.justice.hmpps.kotlin.auth.healthWebClient
+import java.time.Duration
 
 @Configuration
 class WebClientConfiguration(
@@ -46,6 +37,12 @@ class WebClientConfiguration(
 
   @Value("\${prison-visit-booker-registry.api.url}")
   private val prisonVisitBookerRegistryApiUrl: String,
+
+  @Value("\${api.timeout:10s}")
+  private val apiTimeout: Duration,
+
+  @Value("\${api.health-timeout:2s}")
+  private val healthTimeout: Duration,
 ) {
   private enum class HmppsAuthClientRegistrationId(val clientRegistrationId: String) {
     VISIT_SCHEDULER("visit-scheduler"),
@@ -60,134 +57,66 @@ class WebClientConfiguration(
   }
 
   @Bean
-  fun visitSchedulerWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
-    val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.VISIT_SCHEDULER.clientRegistrationId)
-    return getWebClient(visitSchedulerBaseUrl, oauth2Client)
-  }
+  fun visitSchedulerWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient =
+    builder.authorisedWebClient(authorizedClientManager, registrationId = HmppsAuthClientRegistrationId.VISIT_SCHEDULER.clientRegistrationId, url = visitSchedulerBaseUrl, apiTimeout)
 
   @Bean
-  fun prisonApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
-    val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.PRISON_API.clientRegistrationId)
-    return getWebClient(prisonApiBaseUrl, oauth2Client)
-  }
+  fun prisonApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient =
+    builder.authorisedWebClient(authorizedClientManager, registrationId = HmppsAuthClientRegistrationId.PRISON_API.clientRegistrationId, url = prisonApiBaseUrl, apiTimeout)
 
   @Bean
-  fun alertsApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
-    val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.ALERTS_API.clientRegistrationId)
-    return getWebClient(alertsApiBaseUrl, oauth2Client)
-  }
+  fun alertsApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient =
+    builder.authorisedWebClient(authorizedClientManager, registrationId = HmppsAuthClientRegistrationId.ALERTS_API.clientRegistrationId, url = alertsApiBaseUrl, apiTimeout)
 
   @Bean
-  fun prisonerSearchWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
-    val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.PRISONER_SEARCH.clientRegistrationId)
-    return getWebClient(prisonSearchBaseUrl, oauth2Client)
-  }
+  fun prisonerSearchWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient =
+    builder.authorisedWebClient(authorizedClientManager, registrationId = HmppsAuthClientRegistrationId.PRISONER_SEARCH.clientRegistrationId, url = prisonSearchBaseUrl, apiTimeout)
 
   @Bean
-  fun prisonRegisterWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
-    val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.PRISON_REGISTER_CLIENT.clientRegistrationId)
-    return getWebClient(prisonRegisterBaseUrl, oauth2Client)
-  }
+  fun prisonRegisterWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient =
+    builder.authorisedWebClient(authorizedClientManager, registrationId = HmppsAuthClientRegistrationId.PRISON_REGISTER_CLIENT.clientRegistrationId, url = prisonRegisterBaseUrl, apiTimeout)
 
   @Bean
-  fun prisonerContactRegistryWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
-    val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.PRISON_CONTACT_REGISTRY_CLIENT.clientRegistrationId)
-    return getWebClient(prisonerContactRegistryBaseUrl, oauth2Client)
-  }
+  fun prisonerContactRegistryWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient =
+    builder.authorisedWebClient(authorizedClientManager, registrationId = HmppsAuthClientRegistrationId.PRISON_CONTACT_REGISTRY_CLIENT.clientRegistrationId, url = prisonerContactRegistryBaseUrl, apiTimeout)
 
   @Bean
-  fun manageUsersApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
-    val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.MANAGE_USERS_API_CLIENT.clientRegistrationId)
-    return getWebClient(manageUsersApiBaseUrl, oauth2Client)
-  }
+  fun manageUsersApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient =
+    builder.authorisedWebClient(authorizedClientManager, registrationId = HmppsAuthClientRegistrationId.MANAGE_USERS_API_CLIENT.clientRegistrationId, url = manageUsersApiBaseUrl, apiTimeout)
 
   @Bean
-  fun whereAboutsApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
-    val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.WHEREABOUTS_API_CLIENT.clientRegistrationId)
-    return getWebClient(whereAboutsApiUrl, oauth2Client)
-  }
+  fun whereAboutsApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient =
+    builder.authorisedWebClient(authorizedClientManager, registrationId = HmppsAuthClientRegistrationId.WHEREABOUTS_API_CLIENT.clientRegistrationId, url = whereAboutsApiUrl, apiTimeout)
 
   @Bean
-  fun prisonVisitBookerRegistryWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
-    val oauth2Client = getOauth2Client(authorizedClientManager, HmppsAuthClientRegistrationId.PRISON_VISIT_BOOKER_REGISTRY_API_CLIENT.clientRegistrationId)
-    return getWebClient(prisonVisitBookerRegistryApiUrl, oauth2Client)
-  }
-
-  private fun getOauth2Client(authorizedClientManager: OAuth2AuthorizedClientManager, clientRegistrationId: String): ServletOAuth2AuthorizedClientExchangeFilterFunction {
-    val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
-    oauth2Client.setDefaultClientRegistrationId(clientRegistrationId)
-    return oauth2Client
-  }
-
-  private fun getExchangeStrategies(): ExchangeStrategies {
-    return ExchangeStrategies.builder()
-      .codecs { configurer: ClientCodecConfigurer -> configurer.defaultCodecs().maxInMemorySize(-1) }
-      .build()
-  }
-
-  private fun getWebClient(baseUrl: String, oauth2Client: ServletOAuth2AuthorizedClientExchangeFilterFunction): WebClient {
-    val provider = ConnectionProvider.builder("custom")
-      .maxConnections(500)
-      .maxIdleTime(ofSeconds(20))
-      .maxLifeTime(ofSeconds(60))
-      .pendingAcquireTimeout(ofSeconds(60))
-      .evictInBackground(ofSeconds(120))
-      .build()
-
-    return WebClient.builder()
-      .baseUrl(baseUrl)
-      .clientConnector(
-        ReactorClientHttpConnector(
-          HttpClient.create(provider)
-            .resolver(DefaultAddressResolverGroup.INSTANCE)
-            .compress(true)
-            .responseTimeout(ofSeconds(30)),
-        ),
-      )
-      .apply(oauth2Client.oauth2Configuration())
-      .exchangeStrategies(getExchangeStrategies())
-      .build()
-  }
+  fun prisonVisitBookerRegistryWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient =
+    builder.authorisedWebClient(authorizedClientManager, registrationId = HmppsAuthClientRegistrationId.PRISON_VISIT_BOOKER_REGISTRY_API_CLIENT.clientRegistrationId, url = prisonVisitBookerRegistryApiUrl, apiTimeout)
 
   @Bean
-  fun visitSchedulerHealthWebClient(): WebClient {
-    return WebClient.builder().baseUrl(visitSchedulerBaseUrl).build()
-  }
+  fun visitSchedulerHealthWebClient(builder: WebClient.Builder): WebClient =
+    builder.healthWebClient(visitSchedulerBaseUrl, healthTimeout)
 
   @Bean
-  fun prisonApiHealthWebClient(): WebClient {
-    return WebClient.builder().baseUrl(prisonApiBaseUrl).build()
-  }
+  fun prisonApiHealthWebClient(builder: WebClient.Builder): WebClient =
+    builder.healthWebClient(prisonApiBaseUrl, healthTimeout)
 
   @Bean
-  fun prisonSearchHealthWebClient(): WebClient {
-    return WebClient.builder().baseUrl(prisonSearchBaseUrl).build()
-  }
+  fun prisonSearchHealthWebClient(builder: WebClient.Builder): WebClient =
+    builder.healthWebClient(prisonSearchBaseUrl, healthTimeout)
 
   @Bean
-  fun prisonRegisterHealthWebClient(): WebClient {
-    return WebClient.builder().baseUrl(prisonRegisterBaseUrl).build()
-  }
+  fun prisonRegisterHealthWebClient(builder: WebClient.Builder): WebClient =
+    builder.healthWebClient(prisonRegisterBaseUrl, healthTimeout)
 
   @Bean
-  fun prisonerContactRegistryHealthWebClient(): WebClient {
-    return WebClient.builder().baseUrl(prisonerContactRegistryBaseUrl).build()
-  }
+  fun prisonerContactRegistryHealthWebClient(builder: WebClient.Builder): WebClient =
+    builder.healthWebClient(prisonerContactRegistryBaseUrl, healthTimeout)
 
   @Bean
-  fun whereAboutsHealthWebClient(): WebClient {
-    return WebClient.builder().baseUrl(whereAboutsApiUrl).build()
-  }
+  fun whereAboutsHealthWebClient(builder: WebClient.Builder): WebClient =
+    builder.healthWebClient(whereAboutsApiUrl, healthTimeout)
 
   @Bean
-  fun authorizedClientManager(
-    clientRegistrationRepository: ClientRegistrationRepository?,
-    oAuth2AuthorizedClientService: OAuth2AuthorizedClientService?,
-  ): OAuth2AuthorizedClientManager? {
-    val authorizedClientProvider = OAuth2AuthorizedClientProviderBuilder.builder().clientCredentials().build()
-    val authorizedClientManager =
-      AuthorizedClientServiceOAuth2AuthorizedClientManager(clientRegistrationRepository, oAuth2AuthorizedClientService)
-    authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider)
-    return authorizedClientManager
-  }
+  fun prisonVisitBookerRegistryHealthWebClient(builder: WebClient.Builder): WebClient =
+    builder.healthWebClient(prisonVisitBookerRegistryApiUrl, healthTimeout)
 }
