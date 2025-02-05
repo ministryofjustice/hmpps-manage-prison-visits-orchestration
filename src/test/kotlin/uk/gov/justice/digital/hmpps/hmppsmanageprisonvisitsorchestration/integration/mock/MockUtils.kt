@@ -17,8 +17,7 @@ class MockUtils {
       .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
     fun getJsonString(obj: Any): String {
-      val x = objectMapper.writer().writeValueAsString(obj)
-      return x
+      return objectMapper.writer().writeValueAsString(obj)
     }
 
     fun createJsonResponseBuilder(): ResponseDefinitionBuilder {
