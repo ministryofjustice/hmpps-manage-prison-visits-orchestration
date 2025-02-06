@@ -457,9 +457,11 @@ class VisitSchedulerClient(
       .block(apiTimeout)
   }
 
-  fun getNotificationCountForPrison(prisonCode: String): NotificationCountDto? {
+  fun getNotificationCountForPrison(prisonCode: String, notificationEventTypes: List<String>?): NotificationCountDto? {
     return webClient.get()
-      .uri("/visits/notification/$prisonCode/count")
+      .uri("/visits/notification/$prisonCode/count") {
+        visitNotificationsCountUriBuilder(notificationEventTypes, it).build()
+      }
       .retrieve()
       .bodyToMono<NotificationCountDto>().block(apiTimeout)
   }
@@ -472,12 +474,6 @@ class VisitSchedulerClient(
       .bodyToMono<List<NotificationGroupDto>>().block(apiTimeout)
   }
 
-  fun getNotificationCount(): NotificationCountDto? {
-    return webClient.get()
-      .uri("/visits/notification/count")
-      .retrieve()
-      .bodyToMono<NotificationCountDto>().block(apiTimeout)
-  }
   fun getPrison(prisonCode: String): VisitSchedulerPrisonDto {
     val uri = "/admin/prisons/prison/$prisonCode"
 
@@ -629,6 +625,15 @@ class VisitSchedulerClient(
     uriBuilder.queryParam("sessionStartTime", sessionStartTime)
     uriBuilder.queryParam("sessionEndTime", sessionEndTime)
 
+    return uriBuilder
+  }
+
+  private fun visitNotificationsCountUriBuilder(
+    notificationEventTypes: List<String>?,
+    uriBuilder: UriBuilder,
+  ): UriBuilder {
+    uriBuilder.queryParamIfPresent("types", Optional.ofNullable(notificationEventTypes))
+      .build()
     return uriBuilder
   }
 }
