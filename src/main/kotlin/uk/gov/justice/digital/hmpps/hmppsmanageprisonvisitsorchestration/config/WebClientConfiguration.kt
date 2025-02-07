@@ -1,10 +1,14 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config
 
+import io.netty.channel.ChannelOption
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager
 import org.springframework.web.reactive.function.client.WebClient
+import reactor.netty.http.client.HttpClient
+import reactor.netty.resources.ConnectionProvider
 import uk.gov.justice.hmpps.kotlin.auth.authorisedWebClient
 import uk.gov.justice.hmpps.kotlin.auth.healthWebClient
 import java.time.Duration
@@ -54,6 +58,30 @@ class WebClientConfiguration(
     WHEREABOUTS_API_CLIENT("other-hmpps-apis"),
     PRISON_VISIT_BOOKER_REGISTRY_API_CLIENT("other-hmpps-apis"),
     ALERTS_API("other-hmpps-apis"),
+  }
+
+  @Bean
+  fun customConnectionProvider(): ConnectionProvider {
+    return ConnectionProvider.builder("custom")
+      .maxConnections(500)
+      .maxIdleTime(Duration.ofSeconds(30))
+      .maxLifeTime(Duration.ofHours(3))
+      .pendingAcquireTimeout(Duration.ofSeconds(60))
+      .evictInBackground(Duration.ofSeconds(120))
+      .build()
+  }
+
+  @Bean
+  fun customHttpClient(connectionProvider: ConnectionProvider): HttpClient {
+    return HttpClient.create(connectionProvider)
+      .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
+      .responseTimeout(Duration.ofSeconds(10))
+  }
+
+  @Bean
+  fun customWebClientBuilder(httpClient: HttpClient): WebClient.Builder {
+    return WebClient.builder()
+      .clientConnector(ReactorClientHttpConnector(httpClient))
   }
 
   @Bean
