@@ -22,3 +22,7 @@ generic-service:
 
   scheduledDowntime:
     enabled: true
+
+generic-prometheus-alerts:
+  alertSeverity: visits-alerts-nonprod
+  businessHoursOnly: true
