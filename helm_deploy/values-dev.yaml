@@ -22,14 +22,3 @@ generic-service:
 
   scheduledDowntime:
     enabled: true
-
-generic-prometheus-alerts:
-  alertSeverity: visits-alerts-nonprod
-  businessHoursOnly: true
-  sqsAlertsQueueNames:
-    - "book-a-prison-visit-dev-hmpps_prison_visits_event_queue"
-    - "book-a-prison-visit-dev-hmpps_prison_visits_event_dlq"
-  sqsAlertsOldestThreshold: 1
-  sqsAlertsTotalMessagesThreshold: 1
-
-
