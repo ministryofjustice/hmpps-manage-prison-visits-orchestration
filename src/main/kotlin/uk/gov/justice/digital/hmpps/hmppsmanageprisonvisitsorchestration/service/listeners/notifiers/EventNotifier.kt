@@ -11,7 +11,7 @@ interface IEventNotifier {
   fun process(domainEvent: DomainEvent)
 }
 
-abstract class EventNotifier() : IEventNotifier {
+abstract class EventNotifier : IEventNotifier {
 
   @Autowired
   private lateinit var objectMapper: ObjectMapper
@@ -30,9 +30,7 @@ abstract class EventNotifier() : IEventNotifier {
     }
   }
 
-  fun <T> getAdditionalInfo(domainEvent: DomainEvent, target: Class<T>): T {
-    return objectMapper.readValue(domainEvent.additionalInformation, target)
-  }
+  fun <T> getAdditionalInfo(domainEvent: DomainEvent, target: Class<T>): T = objectMapper.readValue(domainEvent.additionalInformation, target)
 
   fun getVisitSchedulerService() = visitSchedulerService
 

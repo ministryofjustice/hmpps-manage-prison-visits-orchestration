@@ -21,11 +21,9 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     prisonCode: String,
     sessionDate: LocalDate,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.get().uri("/visit-sessions/schedule?prisonId=$prisonCode&date=$sessionDate")
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.get().uri("/visit-sessions/schedule?prisonId=$prisonCode&date=$sessionDate")
+    .headers(authHttpHeaders)
+    .exchange()
 
   @Test
   fun `when multiple session schedules exist for a prison all session schedules are returned`() {
@@ -119,23 +117,19 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     prisonerLocationGroupNames: List<String> = mutableListOf(),
     prisonerCategoryGroupNames: List<String> = mutableListOf(),
     prisonerIncentiveLevelGroupNames: List<String> = mutableListOf(),
-  ): SessionScheduleDto {
-    return SessionScheduleDto(
-      sessionTemplateReference = reference,
-      sessionDateRange = SessionDateRangeDto(validFromDate, validToDate),
-      sessionTimeSlot = SessionTimeSlotDto(startTime = startTime, endTime = endTime),
-      capacity = sessionCapacityDto,
-      visitType = visitType,
-      areLocationGroupsInclusive = areLocationGroupsInclusive,
-      weeklyFrequency = weeklyFrequency,
-      prisonerLocationGroupNames = prisonerLocationGroupNames,
-      prisonerCategoryGroupNames = prisonerCategoryGroupNames,
-      prisonerIncentiveLevelGroupNames = prisonerIncentiveLevelGroupNames,
-      visitRoom = visitRoom,
-    )
-  }
+  ): SessionScheduleDto = SessionScheduleDto(
+    sessionTemplateReference = reference,
+    sessionDateRange = SessionDateRangeDto(validFromDate, validToDate),
+    sessionTimeSlot = SessionTimeSlotDto(startTime = startTime, endTime = endTime),
+    capacity = sessionCapacityDto,
+    visitType = visitType,
+    areLocationGroupsInclusive = areLocationGroupsInclusive,
+    weeklyFrequency = weeklyFrequency,
+    prisonerLocationGroupNames = prisonerLocationGroupNames,
+    prisonerCategoryGroupNames = prisonerCategoryGroupNames,
+    prisonerIncentiveLevelGroupNames = prisonerIncentiveLevelGroupNames,
+    visitRoom = visitRoom,
+  )
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<SessionScheduleDto> {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<SessionScheduleDto>::class.java)
-  }
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<SessionScheduleDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<SessionScheduleDto>::class.java)
 }

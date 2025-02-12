@@ -93,8 +93,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       example = "user-1",
     )
     username: String? = null,
-  ): List<VisitSessionDto>? =
-    visitSchedulerSessionsService.getVisitSessions(prisonCode, prisonerId, min, max, username)
+  ): List<VisitSessionDto>? = visitSchedulerSessionsService.getVisitSessions(prisonCode, prisonerId, min, max, username)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(GET_VISIT_SESSIONS_AVAILABLE)
@@ -161,19 +160,18 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       example = "user-1",
     )
     username: String? = null,
-  ): List<AvailableVisitSessionDto> =
-    visitSchedulerSessionsService.getAvailableVisitSessions(
-      prisonCode = prisonCode,
-      prisonerId = prisonerId,
-      requestedSessionRestriction = sessionRestriction,
-      visitors = visitors,
-      withAppointmentsCheck = withAppointmentsCheck ?: true,
-      excludedApplicationReference = excludedApplicationReference,
-      pvbAdvanceFromDateByDays = pvbAdvanceFromDateByDays ?: 0,
-      fromDateOverride = fromDateOverride,
-      toDateOverride = toDateOverride,
-      username = username,
-    )
+  ): List<AvailableVisitSessionDto> = visitSchedulerSessionsService.getAvailableVisitSessions(
+    prisonCode = prisonCode,
+    prisonerId = prisonerId,
+    requestedSessionRestriction = sessionRestriction,
+    visitors = visitors,
+    withAppointmentsCheck = withAppointmentsCheck ?: true,
+    excludedApplicationReference = excludedApplicationReference,
+    pvbAdvanceFromDateByDays = pvbAdvanceFromDateByDays ?: 0,
+    fromDateOverride = fromDateOverride,
+    toDateOverride = toDateOverride,
+    username = username,
+  )
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(GET_VISIT_SESSIONS_AVAILABLE_RESTRICTION)
@@ -208,11 +206,10 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     )
     @NullableNotEmpty(message = "An empty visitors list is not allowed")
     visitors: List<Long>? = null,
-  ): AvailableVisitSessionRestrictionDto =
-    visitSchedulerSessionsService.getAvailableVisitSessionsRestriction(
-      prisonerId = prisonerId,
-      visitors = visitors,
-    )
+  ): AvailableVisitSessionRestrictionDto = visitSchedulerSessionsService.getAvailableVisitSessionsRestriction(
+    prisonerId = prisonerId,
+    visitors = visitors,
+  )
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(GET_VISIT_SESSIONS_CAPACITY)

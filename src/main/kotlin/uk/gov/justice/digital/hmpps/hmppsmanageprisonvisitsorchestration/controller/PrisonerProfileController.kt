@@ -51,7 +51,5 @@ class PrisonerProfileController(
       ),
     ],
   )
-  fun getPrisonerProfile(@PathVariable prisonId: String, @PathVariable prisonerId: String): PrisonerProfileDto? {
-    return prisonerProfileService.getPrisonerProfile(prisonId, prisonerId)
-  }
+  fun getPrisonerProfile(@PathVariable prisonId: String, @PathVariable prisonerId: String): PrisonerProfileDto? = prisonerProfileService.getPrisonerProfile(prisonId, prisonerId)
 }

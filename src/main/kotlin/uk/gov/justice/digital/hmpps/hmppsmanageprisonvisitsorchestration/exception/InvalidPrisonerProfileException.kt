@@ -5,7 +5,5 @@ import java.util.function.Supplier
 class InvalidPrisonerProfileException(message: String? = null, cause: Throwable? = null) :
   RuntimeException(message, cause),
   Supplier<InvalidPrisonerProfileException> {
-  override fun get(): InvalidPrisonerProfileException {
-    return InvalidPrisonerProfileException(message, cause)
-  }
+  override fun get(): InvalidPrisonerProfileException = InvalidPrisonerProfileException(message, cause)
 }

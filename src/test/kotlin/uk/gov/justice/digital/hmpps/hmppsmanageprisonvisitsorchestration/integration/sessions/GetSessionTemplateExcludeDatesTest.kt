@@ -29,21 +29,17 @@ class GetSessionTemplateExcludeDatesTest : IntegrationTestBase() {
     webTestClient: WebTestClient,
     sessionTemplateReference: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.get().uri("/config/sessions/session/$sessionTemplateReference/exclude-date/future")
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.get().uri("/config/sessions/session/$sessionTemplateReference/exclude-date/future")
+    .headers(authHttpHeaders)
+    .exchange()
 
   fun callGetSessionTemplatePastExcludeDates(
     webTestClient: WebTestClient,
     sessionTemplateReference: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.get().uri("/config/sessions/session/$sessionTemplateReference/exclude-date/past")
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.get().uri("/config/sessions/session/$sessionTemplateReference/exclude-date/past")
+    .headers(authHttpHeaders)
+    .exchange()
 
   @Test
   fun `when session template has past and future exclude dates only future ones are returned on call to get future exclude dates`() {
@@ -260,7 +256,5 @@ class GetSessionTemplateExcludeDatesTest : IntegrationTestBase() {
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<ExcludeDateDto> {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<ExcludeDateDto>::class.java)
-  }
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<ExcludeDateDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<ExcludeDateDto>::class.java)
 }

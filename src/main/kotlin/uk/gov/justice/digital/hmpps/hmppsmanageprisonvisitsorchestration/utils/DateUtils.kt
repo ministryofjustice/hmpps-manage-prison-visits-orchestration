@@ -36,7 +36,5 @@ class DateUtils {
     return dateRange
   }
 
-  fun getCurrentDate(): LocalDate {
-    return LocalDate.now()
-  }
+  fun getCurrentDate(): LocalDate = LocalDate.now()
 }

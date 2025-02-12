@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.servic
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
+import reactor.util.function.Tuple2
+import reactor.util.function.Tuple3
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ManageUsersApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.manage.users.UserDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ActionedByDto
@@ -40,17 +42,24 @@ class ManageUsersService(
     if (monoCallsList.size > 1) {
       var zipResults: List<UserDetailsDto> = mutableListOf()
       if (monoCallsList.size == 2) {
-        val iterable = Mono.zip(monoCallsList[0], monoCallsList[1]).block(apiTimeout)
+        val iterable: Tuple2<UserDetailsDto, UserDetailsDto>? = Mono.zip(
+          monoCallsList[0],
+          monoCallsList[1],
+        ).block(apiTimeout)
+
         iterable?.let {
-          zipResults = iterable.toList() as List<UserDetailsDto>
+          zipResults = listOf(it.t1, it.t2) // Correct way to extract values from Tuple2
         }
       }
       if (monoCallsList.size == 3) {
-        val userDetailsTuples = Mono.zip(monoCallsList[0], monoCallsList[1], monoCallsList[2]).block(apiTimeout)
+        val userDetailsTuples: Tuple3<UserDetailsDto, UserDetailsDto, UserDetailsDto>? =
+          Mono.zip(monoCallsList[0], monoCallsList[1], monoCallsList[2]).block(apiTimeout)
+
         userDetailsTuples?.let {
-          zipResults = userDetailsTuples.toList() as List<UserDetailsDto>
+          zipResults = listOf(it.t1, it.t2, it.t3) // Extract values safely
         }
       }
+
       zipResults.forEach { userDetails -> userDetails.fullName?.let { results[userDetails.username] = userDetails.fullName } }
     }
 
@@ -59,10 +68,8 @@ class ManageUsersService(
 
   private fun createUserMonoCalls(
     userNames: Set<String>,
-  ): List<Mono<UserDetailsDto>> {
-    return userNames.map {
-      getFullNamesFromVisitHistory(it)
-    }
+  ): List<Mono<UserDetailsDto>> = userNames.map {
+    getFullNamesFromVisitHistory(it)
   }
 
   private fun getFullNamesFromVisitHistory(actionedBy: String): Mono<UserDetailsDto> {
@@ -74,19 +81,15 @@ class ManageUsersService(
     }
   }
 
-  fun getUserFullName(userName: String, userNameIfNotAvailable: String = NOT_KNOWN): String {
-    return if (userName == NOT_KNOWN) {
-      userName
-    } else {
-      manageUsersApiClient.getUserDetails(userName).block(apiTimeout)?.fullName ?: userNameIfNotAvailable
-    }
+  fun getUserFullName(userName: String, userNameIfNotAvailable: String = NOT_KNOWN): String = if (userName == NOT_KNOWN) {
+    userName
+  } else {
+    manageUsersApiClient.getUserDetails(userName).block(apiTimeout)?.fullName ?: userNameIfNotAvailable
   }
 
-  fun getFullNameFromActionedBy(actionedByDto: ActionedByDto): String {
-    return when (actionedByDto.userType) {
-      UserType.STAFF -> manageUsersApiClient.getUserDetails(actionedByDto.userName!!).block(apiTimeout)?.fullName ?: NOT_KNOWN
-      UserType.PUBLIC -> "GOV.UK"
-      UserType.SYSTEM -> NOT_KNOWN
-    }
+  fun getFullNameFromActionedBy(actionedByDto: ActionedByDto): String = when (actionedByDto.userType) {
+    UserType.STAFF -> manageUsersApiClient.getUserDetails(actionedByDto.userName!!).block(apiTimeout)?.fullName ?: NOT_KNOWN
+    UserType.PUBLIC -> "GOV.UK"
+    UserType.SYSTEM -> NOT_KNOWN
   }
 }

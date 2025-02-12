@@ -12,8 +12,6 @@ enum class NonAssociationDomainEventType(val value: String) {
   NON_ASSOCIATION_DELETED(PRISONER_NON_ASSOCIATION_DETAIL_DELETED_TYPE), ;
 
   companion object {
-    fun getFromValue(value: String): NonAssociationDomainEventType? {
-      return entries.firstOrNull { it.value.equals(value, true) }
-    }
+    fun getFromValue(value: String): NonAssociationDomainEventType? = entries.firstOrNull { it.value.equals(value, true) }
   }
 }

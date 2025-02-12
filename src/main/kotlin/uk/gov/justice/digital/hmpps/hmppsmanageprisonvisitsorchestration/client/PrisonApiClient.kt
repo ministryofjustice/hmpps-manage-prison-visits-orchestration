@@ -30,37 +30,27 @@ class PrisonApiClient(
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun getInmateDetails(prisonerId: String): InmateDetailDto? {
-    return getInmateDetailsAsMono(prisonerId)
-      .block(apiTimeout)
-  }
+  fun getInmateDetails(prisonerId: String): InmateDetailDto? = getInmateDetailsAsMono(prisonerId)
+    .block(apiTimeout)
 
-  fun getInmateDetailsAsMono(prisonerId: String): Mono<InmateDetailDto> {
-    return webClient.get()
-      .uri("/api/offenders/$prisonerId")
-      .retrieve()
-      .bodyToMono()
-  }
+  fun getInmateDetailsAsMono(prisonerId: String): Mono<InmateDetailDto> = webClient.get()
+    .uri("/api/offenders/$prisonerId")
+    .retrieve()
+    .bodyToMono()
 
-  fun getBookings(prisonId: String, prisonerId: String): RestPage<PrisonerBookingSummaryDto>? {
-    return getBookingsAsMono(prisonId, prisonerId)
-      .block(apiTimeout)
-  }
+  fun getBookings(prisonId: String, prisonerId: String): RestPage<PrisonerBookingSummaryDto>? = getBookingsAsMono(prisonId, prisonerId)
+    .block(apiTimeout)
 
-  fun getBookingsAsMono(prisonId: String, prisonerId: String): Mono<RestPage<PrisonerBookingSummaryDto>> {
-    return webClient.get()
-      .uri("/api/bookings/v2") {
-        it.queryParam("prisonId", prisonId)
-          .queryParam("offenderNo", prisonerId)
-          .queryParam("legalInfo", true).build()
-      }
-      .retrieve()
-      .bodyToMono()
-  }
+  fun getBookingsAsMono(prisonId: String, prisonerId: String): Mono<RestPage<PrisonerBookingSummaryDto>> = webClient.get()
+    .uri("/api/bookings/v2") {
+      it.queryParam("prisonId", prisonId)
+        .queryParam("offenderNo", prisonerId)
+        .queryParam("legalInfo", true).build()
+    }
+    .retrieve()
+    .bodyToMono()
 
-  fun getVisitBalances(prisonerId: String): Optional<VisitBalancesDto>? {
-    return getVisitBalancesAsMono(prisonerId).block(apiTimeout)
-  }
+  fun getVisitBalances(prisonerId: String): Optional<VisitBalancesDto>? = getVisitBalancesAsMono(prisonerId).block(apiTimeout)
 
   fun getVisitBalancesAsMono(prisonerId: String): Mono<Optional<VisitBalancesDto>> {
     return webClient.get()
@@ -85,8 +75,7 @@ class PrisonApiClient(
       }
       .retrieve()
       .bodyToMono<OffenderRestrictionsDto>()
-      .onErrorResume {
-          e ->
+      .onErrorResume { e ->
         if (!isNotFoundError(e)) {
           LOG.error("getOffenderRestrictions Failed get request $uri")
           Mono.error(e)

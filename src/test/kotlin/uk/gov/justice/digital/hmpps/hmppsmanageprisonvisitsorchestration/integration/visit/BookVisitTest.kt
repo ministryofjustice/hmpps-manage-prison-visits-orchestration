@@ -187,13 +187,10 @@ class BookVisitTest : IntegrationTestBase() {
     applicationReference: String,
     requestDto: BookingOrchestrationRequestDto,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.put().uri("/visits/$applicationReference/book")
-      .body(BodyInserters.fromValue(requestDto))
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.put().uri("/visits/$applicationReference/book")
+    .body(BodyInserters.fromValue(requestDto))
+    .headers(authHttpHeaders)
+    .exchange()
 
-  fun getValidationErrorResponse(responseSpec: WebTestClient.ResponseSpec): ApplicationValidationErrorResponse =
-    objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, ApplicationValidationErrorResponse::class.java)
+  fun getValidationErrorResponse(responseSpec: WebTestClient.ResponseSpec): ApplicationValidationErrorResponse = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, ApplicationValidationErrorResponse::class.java)
 }

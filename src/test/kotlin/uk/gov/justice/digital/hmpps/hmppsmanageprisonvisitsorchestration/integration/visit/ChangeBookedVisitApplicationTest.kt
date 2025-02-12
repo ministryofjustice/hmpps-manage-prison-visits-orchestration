@@ -15,12 +15,10 @@ class ChangeBookedVisitApplicationTest : IntegrationTestBase() {
     applicationReference: String,
     createApplicationDto: CreateApplicationDto,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.put().uri("/visits/application/$applicationReference/change")
-      .headers(authHttpHeaders)
-      .body(BodyInserters.fromValue(createApplicationDto))
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.put().uri("/visits/application/$applicationReference/change")
+    .headers(authHttpHeaders)
+    .body(BodyInserters.fromValue(createApplicationDto))
+    .exchange()
 
   @Test
   fun `when change a booked visit application is successful then OK status is returned`() {

@@ -26,21 +26,17 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
     webTestClient: WebTestClient,
     prisonCode: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.get().uri("/config/prisons/prison/$prisonCode/exclude-date/future")
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.get().uri("/config/prisons/prison/$prisonCode/exclude-date/future")
+    .headers(authHttpHeaders)
+    .exchange()
 
   fun callGetPastExcludeDates(
     webTestClient: WebTestClient,
     prisonCode: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.get().uri("/config/prisons/prison/$prisonCode/exclude-date/past")
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.get().uri("/config/prisons/prison/$prisonCode/exclude-date/past")
+    .headers(authHttpHeaders)
+    .exchange()
 
   @Test
   fun `when prison has past and future exclude dates only future ones are returned on call to get future exclude dates`() {
@@ -258,7 +254,5 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<ExcludeDateDto> {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<ExcludeDateDto>::class.java)
-  }
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<ExcludeDateDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<ExcludeDateDto>::class.java)
 }

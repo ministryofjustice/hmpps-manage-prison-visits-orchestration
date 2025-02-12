@@ -491,17 +491,13 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     return CurrentIncentive(incentiveLevel, LocalDateTime.now())
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerPrisonerInfoDto> {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<BookerPrisonerInfoDto>::class.java).toList()
-  }
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerPrisonerInfoDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<BookerPrisonerInfoDto>::class.java).toList()
 
   fun callGetPrisonersByBooker(
     webTestClient: WebTestClient,
     authHttpHeaders: (HttpHeaders) -> Unit,
     bookerReference: String,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.get().uri(PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH.replace("{bookerReference}", bookerReference))
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.get().uri(PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH.replace("{bookerReference}", bookerReference))
+    .headers(authHttpHeaders)
+    .exchange()
 }

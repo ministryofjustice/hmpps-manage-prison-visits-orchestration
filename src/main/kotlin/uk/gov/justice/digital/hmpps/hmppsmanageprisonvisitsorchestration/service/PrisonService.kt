@@ -38,21 +38,13 @@ class PrisonService(
     return PrisonDto(visitSchedulerPrison, prisonRegisterPrison, prisonRegisterPrisonContractDetails)
   }
 
-  fun getVSIPPrison(prisonCode: String): VisitSchedulerPrisonDto {
-    return visitSchedulerClient.getPrison(prisonCode)
-  }
+  fun getVSIPPrison(prisonCode: String): VisitSchedulerPrisonDto = visitSchedulerClient.getPrison(prisonCode)
 
-  fun isActive(prison: VisitSchedulerPrisonDto): Boolean {
-    return prison.active
-  }
+  fun isActive(prison: VisitSchedulerPrisonDto): Boolean = prison.active
 
-  fun isActive(prison: VisitSchedulerPrisonDto, userType: UserType): Boolean {
-    return prison.clients.firstOrNull { it.userType == userType }?.active ?: false
-  }
+  fun isActive(prison: VisitSchedulerPrisonDto, userType: UserType): Boolean = prison.clients.firstOrNull { it.userType == userType }?.active ?: false
 
-  fun getSupportedPrisons(type: UserType): List<String> {
-    return visitSchedulerClient.getSupportedPrisons(type)
-  }
+  fun getSupportedPrisons(type: UserType): List<String> = visitSchedulerClient.getSupportedPrisons(type)
 
   fun getFutureExcludeDatesForPrison(prisonCode: String): List<ExcludeDateDto> {
     val excludeDates = getExcludeDatesForPrison(prisonCode)
@@ -72,13 +64,9 @@ class PrisonService(
     return isExcluded
   }
 
-  fun addExcludeDateForPrison(prisonCode: String, prisonExcludeDate: ExcludeDateDto): List<LocalDate> {
-    return visitSchedulerClient.addPrisonExcludeDate(prisonCode, prisonExcludeDate)?.sortedByDescending { it } ?: emptyList()
-  }
+  fun addExcludeDateForPrison(prisonCode: String, prisonExcludeDate: ExcludeDateDto): List<LocalDate> = visitSchedulerClient.addPrisonExcludeDate(prisonCode, prisonExcludeDate)?.sortedByDescending { it } ?: emptyList()
 
-  fun removeExcludeDateForPrison(prisonCode: String, prisonExcludeDate: ExcludeDateDto): List<LocalDate> {
-    return visitSchedulerClient.removePrisonExcludeDate(prisonCode, prisonExcludeDate)?.sortedByDescending { it } ?: emptyList()
-  }
+  fun removeExcludeDateForPrison(prisonCode: String, prisonExcludeDate: ExcludeDateDto): List<LocalDate> = visitSchedulerClient.removePrisonExcludeDate(prisonCode, prisonExcludeDate)?.sortedByDescending { it } ?: emptyList()
 
   fun getToDaysBookableDateRange(
     prisonCode: String,
@@ -89,7 +77,5 @@ class PrisonService(
     return dateUtils.getToDaysDateRange(prison = prison, minOverride = fromDateOverride, maxOverride = toDateOverride)
   }
 
-  private fun getExcludeDatesForPrison(prisonCode: String): List<ExcludeDateDto> {
-    return visitSchedulerClient.getPrisonExcludeDates(prisonCode) ?: emptyList()
-  }
+  private fun getExcludeDatesForPrison(prisonCode: String): List<ExcludeDateDto> = visitSchedulerClient.getPrisonExcludeDates(prisonCode) ?: emptyList()
 }

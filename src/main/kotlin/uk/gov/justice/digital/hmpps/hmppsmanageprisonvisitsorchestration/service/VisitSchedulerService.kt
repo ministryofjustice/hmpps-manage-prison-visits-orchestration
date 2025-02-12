@@ -56,9 +56,7 @@ class VisitSchedulerService(
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun getVisitByReference(reference: String): VisitDto? {
-    return visitSchedulerClient.getVisitByReference(reference)
-  }
+  fun getVisitByReference(reference: String): VisitDto? = visitSchedulerClient.getVisitByReference(reference)
 
   /**
    * Gets further visit details like usernames, contact details etc. for a given visit reference.
@@ -108,21 +106,13 @@ class VisitSchedulerService(
     return Page.empty()
   }
 
-  fun getFuturePublicBookedVisitsByBookerReference(bookerReference: String): List<OrchestrationVisitDto> {
-    return mapVisitDtoToOrchestrationVisitDto(visitSchedulerClient.getFuturePublicBookedVisitsByBookerReference(bookerReference))
-  }
+  fun getFuturePublicBookedVisitsByBookerReference(bookerReference: String): List<OrchestrationVisitDto> = mapVisitDtoToOrchestrationVisitDto(visitSchedulerClient.getFuturePublicBookedVisitsByBookerReference(bookerReference))
 
-  fun getPastPublicBookedVisitsByBookerReference(bookerReference: String): List<OrchestrationVisitDto> {
-    return mapVisitDtoToOrchestrationVisitDto(visitSchedulerClient.getPastPublicBookedVisitsByBookerReference(bookerReference))
-  }
+  fun getPastPublicBookedVisitsByBookerReference(bookerReference: String): List<OrchestrationVisitDto> = mapVisitDtoToOrchestrationVisitDto(visitSchedulerClient.getPastPublicBookedVisitsByBookerReference(bookerReference))
 
-  fun getCancelledPublicVisitsByBookerReference(bookerReference: String): List<OrchestrationVisitDto> {
-    return mapVisitDtoToOrchestrationVisitDto(visitSchedulerClient.getCancelledPublicVisitsByBookerReference(bookerReference))
-  }
+  fun getCancelledPublicVisitsByBookerReference(bookerReference: String): List<OrchestrationVisitDto> = mapVisitDtoToOrchestrationVisitDto(visitSchedulerClient.getCancelledPublicVisitsByBookerReference(bookerReference))
 
-  fun findFutureVisitsForPrisoner(prisonerId: String): List<VisitDto> {
-    return visitSchedulerClient.getFutureVisitsForPrisoner(prisonerId) ?: emptyList()
-  }
+  fun findFutureVisitsForPrisoner(prisonerId: String): List<VisitDto> = visitSchedulerClient.getFutureVisitsForPrisoner(prisonerId) ?: emptyList()
 
   fun bookVisit(applicationReference: String, requestDto: BookingOrchestrationRequestDto): VisitDto? {
     val existingBooking = visitSchedulerClient.getBookedVisitByApplicationReference(applicationReference)
@@ -137,19 +127,15 @@ class VisitSchedulerService(
     )
   }
 
-  fun cancelVisit(reference: String, cancelVisitDto: CancelVisitOrchestrationDto): VisitDto? {
-    return visitSchedulerClient.cancelVisit(
-      reference,
-      CancelVisitDto(cancelVisitDto),
-    )
-  }
+  fun cancelVisit(reference: String, cancelVisitDto: CancelVisitOrchestrationDto): VisitDto? = visitSchedulerClient.cancelVisit(
+    reference,
+    CancelVisitDto(cancelVisitDto),
+  )
 
-  fun ignoreVisitNotifications(reference: String, ignoreVisitNotifications: IgnoreVisitNotificationsOrchestrationDto): VisitDto? {
-    return visitSchedulerClient.ignoreVisitNotification(
-      reference,
-      IgnoreVisitNotificationsDto(ignoreVisitNotifications),
-    )
-  }
+  fun ignoreVisitNotifications(reference: String, ignoreVisitNotifications: IgnoreVisitNotificationsOrchestrationDto): VisitDto? = visitSchedulerClient.ignoreVisitNotification(
+    reference,
+    IgnoreVisitNotificationsDto(ignoreVisitNotifications),
+  )
 
   fun processNonAssociations(info: NonAssociationChangedInfo, type: NonAssociationDomainEventType) {
     visitSchedulerClient.processNonAssociations(NonAssociationChangedNotificationDto(info, type))
@@ -193,9 +179,7 @@ class VisitSchedulerService(
     visitSchedulerClient.processPrisonerAlertsUpdated(sendDto = prisonerAlertsAddedNotificationDto)
   }
 
-  fun getNotificationCountForPrison(prisonCode: String, notificationEventTypes: List<NotificationEventType>?): NotificationCountDto? {
-    return visitSchedulerClient.getNotificationCountForPrison(prisonCode, notificationEventTypes?.map { it.name }?.toList())
-  }
+  fun getNotificationCountForPrison(prisonCode: String, notificationEventTypes: List<NotificationEventType>?): NotificationCountDto? = visitSchedulerClient.getNotificationCountForPrison(prisonCode, notificationEventTypes?.map { it.name }?.toList())
 
   fun getFutureNotificationVisitGroups(prisonCode: String): List<OrchestrationNotificationGroupDto>? {
     val groups = visitSchedulerClient.getFutureNotificationVisitGroups(prisonCode)
@@ -215,9 +199,7 @@ class VisitSchedulerService(
     }
   }
 
-  fun getNotificationsTypesForBookingReference(reference: String): List<NotificationEventType>? {
-    return visitSchedulerClient.getNotificationsTypesForBookingReference(reference)
-  }
+  fun getNotificationsTypesForBookingReference(reference: String): List<NotificationEventType>? = visitSchedulerClient.getNotificationsTypesForBookingReference(reference)
 
   private fun mapVisitDtoToOrchestrationVisitDto(visits: List<VisitDto>?): List<OrchestrationVisitDto> {
     val prisonerIds = visits?.map { it.prisonerId }?.toSet() ?: emptySet()
@@ -233,11 +215,9 @@ class VisitSchedulerService(
     }?.toList() ?: emptyList()
   }
 
-  private fun getUsernameFromActionedBy(actionedByDto: ActionedByDto): String {
-    return when (actionedByDto.userType) {
-      UserType.STAFF -> actionedByDto.userName!!
-      UserType.PUBLIC -> actionedByDto.bookerReference!!
-      UserType.SYSTEM -> ""
-    }
+  private fun getUsernameFromActionedBy(actionedByDto: ActionedByDto): String = when (actionedByDto.userType) {
+    UserType.STAFF -> actionedByDto.userName!!
+    UserType.PUBLIC -> actionedByDto.bookerReference!!
+    UserType.SYSTEM -> ""
   }
 }

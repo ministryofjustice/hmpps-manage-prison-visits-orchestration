@@ -56,16 +56,13 @@ class GetVisitNotificationsTest : IntegrationTestBase() {
     Assertions.assertThat(notifications.contains(VISITOR_RESTRICTION_UPSERTED_EVENT)).isTrue()
   }
 
-  fun getNotificationTypes(responseSpec: ResponseSpec): Array<NotificationEventType> =
-    objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, Array<NotificationEventType>::class.java)
+  fun getNotificationTypes(responseSpec: ResponseSpec): Array<NotificationEventType> = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, Array<NotificationEventType>::class.java)
 
   fun callGetVisitNotificationTypes(
     webTestClient: WebTestClient,
     bookingReference: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): ResponseSpec {
-    return webTestClient.get().uri(VISIT_NOTIFICATION_TYPES.replace("{reference}", bookingReference))
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): ResponseSpec = webTestClient.get().uri(VISIT_NOTIFICATION_TYPES.replace("{reference}", bookingReference))
+    .headers(authHttpHeaders)
+    .exchange()
 }

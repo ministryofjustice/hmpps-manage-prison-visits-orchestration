@@ -16,12 +16,10 @@ class IgnoreVisitNotificationsTest : IntegrationTestBase() {
     reference: String,
     ignoreVisitNotificationsOrchestration: IgnoreVisitNotificationsOrchestrationDto,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.put().uri("/visits/notification/visit/$reference/ignore")
-      .headers(authHttpHeaders)
-      .body(BodyInserters.fromValue(ignoreVisitNotificationsOrchestration))
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.put().uri("/visits/notification/visit/$reference/ignore")
+    .headers(authHttpHeaders)
+    .body(BodyInserters.fromValue(ignoreVisitNotificationsOrchestration))
+    .exchange()
 
   @Test
   fun `when ignore visit notifications is successful then OK status is returned`() {

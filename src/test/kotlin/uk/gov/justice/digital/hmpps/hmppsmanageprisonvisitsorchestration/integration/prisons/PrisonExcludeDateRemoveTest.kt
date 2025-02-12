@@ -19,13 +19,11 @@ class PrisonExcludeDateRemoveTest : IntegrationTestBase() {
     prisonCode: String,
     excludeDateDto: ExcludeDateDto,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.put()
-      .uri("/config/prisons/prison/$prisonCode/exclude-date/remove")
-      .body(BodyInserters.fromValue(excludeDateDto))
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.put()
+    .uri("/config/prisons/prison/$prisonCode/exclude-date/remove")
+    .body(BodyInserters.fromValue(excludeDateDto))
+    .headers(authHttpHeaders)
+    .exchange()
 
   @Test
   fun `when remove exclude date added and is successful a successful response is returned`() {

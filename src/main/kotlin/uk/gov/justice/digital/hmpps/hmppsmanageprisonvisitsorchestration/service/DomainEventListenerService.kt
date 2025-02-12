@@ -32,37 +32,35 @@ class DomainEventListenerService(
   @SqsListener(PRISON_VISITS_QUEUE_CONFIG_KEY, factory = "hmppsQueueContainerFactoryProxy")
   fun onDomainEvent(
     rawMessage: String,
-  ): CompletableFuture<Void> {
-    return asCompletableFuture {
-      var dLQException: Exception? = null
-      try {
-        val sqsMessage: SQSMessage = objectMapper.readValue(rawMessage)
-        if (sqsMessage.type == "Notification") {
-          if (eventFeatureSwitch.isAllEventsEnabled()) {
-            LOG.debug("Entered onDomainEvent")
-            val domainEvent = objectMapper.readValue<DomainEvent>(sqsMessage.message)
-            LOG.debug("Received message: type:${domainEvent.eventType} message:${domainEvent.additionalInformation}")
-            val enabled = eventFeatureSwitch.isEnabled(domainEvent.eventType)
-            if (enabled) {
-              try {
-                getNotifier(domainEvent)?.process(domainEvent)
-              } catch (e: Exception) {
-                LOG.error("Failed to process know domain event type:${domainEvent.eventType}", e)
-                dLQException = e
-              }
-            } else {
-              LOG.info("Received a message I wasn't expecting Type: ${domainEvent.eventType}")
+  ): CompletableFuture<Void> = asCompletableFuture {
+    var dLQException: Exception? = null
+    try {
+      val sqsMessage: SQSMessage = objectMapper.readValue(rawMessage)
+      if (sqsMessage.type == "Notification") {
+        if (eventFeatureSwitch.isAllEventsEnabled()) {
+          LOG.debug("Entered onDomainEvent")
+          val domainEvent = objectMapper.readValue<DomainEvent>(sqsMessage.message)
+          LOG.debug("Received message: type:${domainEvent.eventType} message:${domainEvent.additionalInformation}")
+          val enabled = eventFeatureSwitch.isEnabled(domainEvent.eventType)
+          if (enabled) {
+            try {
+              getNotifier(domainEvent)?.process(domainEvent)
+            } catch (e: Exception) {
+              LOG.error("Failed to process know domain event type:${domainEvent.eventType}", e)
+              dLQException = e
             }
+          } else {
+            LOG.info("Received a message I wasn't expecting Type: ${domainEvent.eventType}")
           }
         }
-      } catch (e: Exception) {
-        LOG.error("Failed to process unknown domain event $rawMessage", e)
       }
+    } catch (e: Exception) {
+      LOG.error("Failed to process unknown domain event $rawMessage", e)
+    }
 
-      if (dLQException != null) {
-        // Throw exception caught in processing known events to push message back on event queue
-        throw dLQException
-      }
+    if (dLQException != null) {
+      // Throw exception caught in processing known events to push message back on event queue
+      throw dLQException
     }
   }
 
@@ -77,8 +75,6 @@ class DomainEventListenerService(
 
 private fun asCompletableFuture(
   process: suspend () -> Unit,
-): CompletableFuture<Void> {
-  return CoroutineScope(Dispatchers.Default).future {
-    process()
-  }.thenAccept { }
-}
+): CompletableFuture<Void> = CoroutineScope(Dispatchers.Default).future {
+  process()
+}.thenAccept { }

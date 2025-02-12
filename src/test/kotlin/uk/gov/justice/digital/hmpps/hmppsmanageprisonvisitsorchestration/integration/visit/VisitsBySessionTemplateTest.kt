@@ -164,9 +164,7 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
     assertVisitDetails(visit2, visitDto2.reference, prisonerId2, prisonerDto2.firstName, prisonerDto2.lastName, 2, visitDto2.createdTimestamp, visitDto.visitRestriction)
   }
 
-  private fun getResults(responseSpec: WebTestClient.ResponseSpec): Array<VisitPreviewDto> {
-    return objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, Array<VisitPreviewDto>::class.java)
-  }
+  private fun getResults(responseSpec: WebTestClient.ResponseSpec): Array<VisitPreviewDto> = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, Array<VisitPreviewDto>::class.java)
 
   private fun assertVisitDetails(visit: VisitPreviewDto, visitReference: String, prisonerId: String, firstName: String, lastName: String, visitorCount: Int, firstBookedDateTime: LocalDateTime?, visitRestriction: VisitRestriction) {
     Assertions.assertThat(visit.visitReference).isEqualTo(visitReference)
@@ -179,7 +177,5 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
     Assertions.assertThat(visit.visitRestriction).isEqualTo(visitRestriction)
   }
 
-  private fun getVisitByReference(visits: List<VisitPreviewDto>, reference: String): VisitPreviewDto {
-    return visits.toList().stream().filter { it.visitReference == reference }.findFirst().get()
-  }
+  private fun getVisitByReference(visits: List<VisitPreviewDto>, reference: String): VisitPreviewDto = visits.toList().stream().filter { it.visitReference == reference }.findFirst().get()
 }

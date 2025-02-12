@@ -69,9 +69,7 @@ class OrchestrationSessionsExcludeDateController(
     @Schema(description = "session template reference", example = "aaa-bbb-ccc", required = true)
     @PathVariable
     sessionTemplateReference: String,
-  ): List<ExcludeDateDto>? {
-    return sessionsService.getFutureExcludeDatesForSessionTemplate(sessionTemplateReference)
-  }
+  ): List<ExcludeDateDto>? = sessionsService.getFutureExcludeDatesForSessionTemplate(sessionTemplateReference)
 
   @PreAuthorize("hasAnyRole('VSIP_ORCHESTRATION_SERVICE', 'VISIT_SCHEDULER')")
   @GetMapping(ORCHESTRATION_SESSIONS_EXCLUDE_DATE_GET_PAST_CONTROLLER_PATH)
@@ -110,9 +108,7 @@ class OrchestrationSessionsExcludeDateController(
     @Schema(description = "session template reference", example = "aaa-bbb-ccc", required = true)
     @PathVariable
     sessionTemplateReference: String,
-  ): List<ExcludeDateDto>? {
-    return sessionsService.getPastExcludeDatesForSessionTemplate(sessionTemplateReference)
-  }
+  ): List<ExcludeDateDto>? = sessionsService.getPastExcludeDatesForSessionTemplate(sessionTemplateReference)
 
   @PreAuthorize("hasAnyRole('VSIP_ORCHESTRATION_SERVICE', 'VISIT_SCHEDULER')")
   @PutMapping(ORCHESTRATION_SESSIONS_EXCLUDE_DATE_ADD_CONTROLLER_PATH)
@@ -240,7 +236,5 @@ class OrchestrationSessionsExcludeDateController(
     @Schema(description = "date to be checked if excluded for session template", example = "2024-12-26", required = true)
     @PathVariable
     excludeDate: LocalDate,
-  ): IsExcludeDateDto {
-    return sessionsService.isDateExcludedForSessionTemplateVisits(sessionTemplateReference, excludeDate)
-  }
+  ): IsExcludeDateDto = sessionsService.isDateExcludedForSessionTemplateVisits(sessionTemplateReference, excludeDate)
 }

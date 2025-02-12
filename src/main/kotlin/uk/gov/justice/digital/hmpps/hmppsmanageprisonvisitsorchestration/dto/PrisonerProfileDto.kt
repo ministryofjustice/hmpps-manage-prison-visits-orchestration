@@ -77,7 +77,5 @@ data class PrisonerProfileDto(
     visits = visits,
   )
 
-  override fun toString(): String {
-    return "PrisonerProfileDto(prisonerId='$prisonerId', prisonId=$prisonId, firstName='$firstName', lastName='$lastName', dateOfBirth=$dateOfBirth, cellLocation=$cellLocation, prisonName=$prisonName, category=$category, convictedStatus=$convictedStatus, incentiveLevel=$incentiveLevel, visitBalances=$visitBalances)"
-  }
+  override fun toString(): String = "PrisonerProfileDto(prisonerId='$prisonerId', prisonId=$prisonId, firstName='$firstName', lastName='$lastName', dateOfBirth=$dateOfBirth, cellLocation=$cellLocation, prisonName=$prisonName, category=$category, convictedStatus=$convictedStatus, incentiveLevel=$incentiveLevel, visitBalances=$visitBalances)"
 }

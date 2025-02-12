@@ -56,9 +56,7 @@ class OrchestrationPrisonsConfigController(
     @Schema(description = "type", example = "STAFF", required = true)
     @PathVariable
     type: UserType,
-  ): List<String>? {
-    return prisonService.getSupportedPrisons(type)
-  }
+  ): List<String>? = prisonService.getSupportedPrisons(type)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("$ORCHESTRATION_PRISONS_CONFIG_CONTROLLER_PATH/prison/{prisonCode}")
@@ -86,7 +84,5 @@ class OrchestrationPrisonsConfigController(
     @Schema(description = "prison id", example = "BHI", required = true)
     @PathVariable
     prisonCode: String,
-  ): PrisonDto {
-    return prisonService.getPrisonWithName(prisonCode)
-  }
+  ): PrisonDto = prisonService.getPrisonWithName(prisonCode)
 }

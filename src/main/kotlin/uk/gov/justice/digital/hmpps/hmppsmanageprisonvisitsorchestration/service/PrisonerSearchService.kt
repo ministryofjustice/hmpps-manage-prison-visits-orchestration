@@ -16,9 +16,7 @@ class PrisonerSearchService(
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun getPrisoner(prisonerNumber: String): PrisonerDto {
-    return prisonerSearchClient.getPrisonerById(prisonerNumber)
-  }
+  fun getPrisoner(prisonerNumber: String): PrisonerDto = prisonerSearchClient.getPrisonerById(prisonerNumber)
 
   fun getPrisoners(prisonerIds: Set<String>): Map<String, PrisonerDto?> {
     val prisonerInfoMap = mutableMapOf<String, PrisonerDto?>()

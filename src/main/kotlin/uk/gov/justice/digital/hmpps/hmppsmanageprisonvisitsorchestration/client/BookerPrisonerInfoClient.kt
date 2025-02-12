@@ -52,14 +52,12 @@ class BookerPrisonerInfoClient(
     }
   }
 
-  private fun getRegisteredPrison(prisonCode: String, prisonDto: PrisonRegisterPrisonDto?): RegisteredPrisonDto {
-    return if (prisonDto != null) {
-      RegisteredPrisonDto(prisonDto)
-    } else {
-      RegisteredPrisonDto(
-        prisonCode = prisonCode,
-        prisonName = prisonCode,
-      )
-    }
+  private fun getRegisteredPrison(prisonCode: String, prisonDto: PrisonRegisterPrisonDto?): RegisteredPrisonDto = if (prisonDto != null) {
+    RegisteredPrisonDto(prisonDto)
+  } else {
+    RegisteredPrisonDto(
+      prisonCode = prisonCode,
+      prisonName = prisonCode,
+    )
   }
 }

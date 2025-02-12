@@ -21,19 +21,15 @@ class AppointmentsService(
     prisonerId: String,
     fromDate: LocalDate,
     toDate: LocalDate,
-  ): List<ScheduledEventDto> {
-    return getAppointments(prisonerId, fromDate, toDate).filter { event ->
-      HigherPriorityMedicalOrLegalEvents.entries.map { it.code }.contains(event.eventSubType)
-    }
+  ): List<ScheduledEventDto> = getAppointments(prisonerId, fromDate, toDate).filter { event ->
+    HigherPriorityMedicalOrLegalEvents.entries.map { it.code }.contains(event.eventSubType)
   }
 
   private fun getAppointments(
     prisonerId: String,
     fromDate: LocalDate,
     toDate: LocalDate,
-  ): List<ScheduledEventDto> {
-    return whereAboutsApiClient.getEvents(prisonerId, fromDate, toDate).filter { event ->
-      event.eventType.equals(APPOINTMENT_EVENT_TYPE)
-    }
+  ): List<ScheduledEventDto> = whereAboutsApiClient.getEvents(prisonerId, fromDate, toDate).filter { event ->
+    event.eventType.equals(APPOINTMENT_EVENT_TYPE)
   }
 }

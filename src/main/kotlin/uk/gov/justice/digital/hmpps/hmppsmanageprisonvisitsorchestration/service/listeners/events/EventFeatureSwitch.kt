@@ -20,11 +20,7 @@ class EventFeatureSwitch(
     LOG.info("Domain sqs events enabled=${isAllEventsEnabled()}")
   }
 
-  fun isEnabled(eventType: String): Boolean {
-    return isAllEventsEnabled() && environment.getProperty("feature.event.$eventType", Boolean::class.java, true)
-  }
+  fun isEnabled(eventType: String): Boolean = isAllEventsEnabled() && environment.getProperty("feature.event.$eventType", Boolean::class.java, true)
 
-  final fun isAllEventsEnabled(): Boolean {
-    return allEventsEnabled
-  }
+  final fun isAllEventsEnabled(): Boolean = allEventsEnabled
 }

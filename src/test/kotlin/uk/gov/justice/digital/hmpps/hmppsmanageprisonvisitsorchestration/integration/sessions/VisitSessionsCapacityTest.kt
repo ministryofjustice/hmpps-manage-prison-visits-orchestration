@@ -19,11 +19,9 @@ class VisitSessionsCapacityTest : IntegrationTestBase() {
     sessionEndTime: LocalTime,
     sessionCapacityDto: SessionCapacityDto?,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.get().uri("/visit-sessions/capacity?prisonId=$prisonCode&sessionDate=$sessionDate&sessionStartTime=$sessionStartTime&sessionEndTime=$sessionEndTime")
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.get().uri("/visit-sessions/capacity?prisonId=$prisonCode&sessionDate=$sessionDate&sessionStartTime=$sessionStartTime&sessionEndTime=$sessionEndTime")
+    .headers(authHttpHeaders)
+    .exchange()
 
   @Test
   fun `when session capacity exists open and closed counts are returned`() {

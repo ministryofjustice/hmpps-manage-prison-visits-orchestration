@@ -24,20 +24,17 @@ class PrisonRegisterClient(
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun getPrisonNames(): List<PrisonNameDto>? {
-    return webClient.get().uri("/prisons/names")
-      .retrieve()
-      .bodyToMono<List<PrisonNameDto>>()
-      .block(apiTimeout)
-  }
+  fun getPrisonNames(): List<PrisonNameDto>? = webClient.get().uri("/prisons/names")
+    .retrieve()
+    .bodyToMono<List<PrisonNameDto>>()
+    .block(apiTimeout)
 
   fun getPrisonAsMono(prisonCode: String): Mono<PrisonRegisterPrisonDto> {
     val uri = "/prisons/id/$prisonCode"
     return webClient.get().uri(uri)
       .retrieve()
       .bodyToMono<PrisonRegisterPrisonDto>()
-      .onErrorResume {
-          e ->
+      .onErrorResume { e ->
         if (!ClientUtils.isNotFoundError(e)) {
           logger.error("getPrison Failed for get request $uri")
           Mono.error(e)
@@ -53,8 +50,7 @@ class PrisonRegisterClient(
     return webClient.get().uri(uri)
       .retrieve()
       .bodyToMono<Optional<PrisonRegisterPrisonDto>>()
-      .onErrorResume {
-          e ->
+      .onErrorResume { e ->
         if (!ClientUtils.isNotFoundError(e)) {
           logger.error("getPrisonAsMonoEmptyIfError Failed for get request $uri")
           Mono.error(e)
@@ -65,10 +61,8 @@ class PrisonRegisterClient(
       }
   }
 
-  fun getPrison(prisonCode: String): PrisonRegisterPrisonDto {
-    return getPrisonAsMono(prisonCode)
-      .blockOptional(apiTimeout).orElseThrow { NotFoundException("Prison with code - $prisonCode not found on prison-register") }
-  }
+  fun getPrison(prisonCode: String): PrisonRegisterPrisonDto = getPrisonAsMono(prisonCode)
+    .blockOptional(apiTimeout).orElseThrow { NotFoundException("Prison with code - $prisonCode not found on prison-register") }
 
   fun getPrisonContactDetails(prisonCode: String): Optional<PrisonRegisterContactDetailsDto> {
     val uri = "/secure/prisons/id/$prisonCode/department/contact-details?departmentType=SOCIAL_VISIT"

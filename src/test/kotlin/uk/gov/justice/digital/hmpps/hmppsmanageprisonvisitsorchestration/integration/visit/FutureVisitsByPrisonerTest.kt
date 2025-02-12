@@ -47,7 +47,5 @@ class FutureVisitsByPrisonerTest : IntegrationTestBase() {
     Assertions.assertThat(visits.size).isEqualTo(0)
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<VisitDto> {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<VisitDto>::class.java)
-  }
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<VisitDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<VisitDto>::class.java)
 }

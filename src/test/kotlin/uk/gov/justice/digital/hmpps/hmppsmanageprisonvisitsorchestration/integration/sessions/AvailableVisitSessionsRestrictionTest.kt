@@ -91,7 +91,5 @@ class AvailableVisitSessionsRestrictionTest : IntegrationTestBase() {
     verify(prisonerProfileService, times(1)).hasVisitorsGotClosedRestrictions(prisonerId, visitorIds)
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): AvailableVisitSessionRestrictionDto {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, AvailableVisitSessionRestrictionDto::class.java)
-  }
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): AvailableVisitSessionRestrictionDto = objectMapper.readValue(returnResult.returnResult().responseBody, AvailableVisitSessionRestrictionDto::class.java)
 }

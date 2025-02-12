@@ -117,11 +117,9 @@ class GetPrisonerProfileTest(
     authHttpHeaders: (HttpHeaders) -> Unit,
     prisonId: String,
     prisonerId: String,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.get().uri("/prisoner/$prisonId/$prisonerId/profile")
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.get().uri("/prisoner/$prisonId/$prisonerId/profile")
+    .headers(authHttpHeaders)
+    .exchange()
 
   @Test
   fun `when valid prisoner prisoner profile is collated and returned`() {
@@ -707,39 +705,29 @@ class GetPrisonerProfileTest(
     Assertions.assertThat(visitSummary.prisonName).isEqualTo(prisonName)
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): PrisonerProfileDto {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, PrisonerProfileDto::class.java)
-  }
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): PrisonerProfileDto = objectMapper.readValue(returnResult.returnResult().responseBody, PrisonerProfileDto::class.java)
 
   private fun createInmateDetails(
     prisonerId: String,
     category: String? = null,
-  ): InmateDetailDto {
-    return InmateDetailDto(offenderNo = prisonerId, category = category)
-  }
+  ): InmateDetailDto = InmateDetailDto(offenderNo = prisonerId, category = category)
 
-  private fun createAlertResponseDto(): AlertResponseDto {
-    return AlertResponseDto(
-      AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "C1", description = "Alert Code Desc"),
-      createdAt = LocalDate.now(),
-      activeTo = null,
-      active = true,
-      description = "Alert code comment",
-    )
-  }
+  private fun createAlertResponseDto(): AlertResponseDto = AlertResponseDto(
+    AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "C1", description = "Alert Code Desc"),
+    createdAt = LocalDate.now(),
+    activeTo = null,
+    active = true,
+    description = "Alert code comment",
+  )
 
-  private fun createVisitBalancesDto(): VisitBalancesDto {
-    return VisitBalancesDto(remainingVo = 10, remainingPvo = 10)
-  }
+  private fun createVisitBalancesDto(): VisitBalancesDto = VisitBalancesDto(remainingVo = 10, remainingPvo = 10)
 
   private fun createCurrentIncentive(): CurrentIncentive {
     val incentiveLevel = IncentiveLevel("S", "Standard")
     return CurrentIncentive(incentiveLevel, LocalDateTime.now())
   }
 
-  private fun createPrisonerBookingSummary(prisonerId: String, convictedStatus: String): PrisonerBookingSummaryDto {
-    return PrisonerBookingSummaryDto(prisonerId, convictedStatus)
-  }
+  private fun createPrisonerBookingSummary(prisonerId: String, convictedStatus: String): PrisonerBookingSummaryDto = PrisonerBookingSummaryDto(prisonerId, convictedStatus)
 
   private fun stubGetVisits(visits: List<VisitDto>) {
     visitSchedulerMockServer.stubGetVisits(

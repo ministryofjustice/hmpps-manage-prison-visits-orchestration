@@ -36,9 +36,7 @@ class PublicBookerService(
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun bookerAuthorisation(createBookerAuthDetail: AuthDetailDto): BookerReference {
-    return prisonVisitBookerRegistryClient.bookerAuthorisation(createBookerAuthDetail) ?: throw BookerAuthFailureException("Failed to authorise booker with details - $createBookerAuthDetail")
-  }
+  fun bookerAuthorisation(createBookerAuthDetail: AuthDetailDto): BookerReference = prisonVisitBookerRegistryClient.bookerAuthorisation(createBookerAuthDetail) ?: throw BookerAuthFailureException("Failed to authorise booker with details - $createBookerAuthDetail")
 
   fun getPermittedPrisonersForBooker(bookerReference: String): List<BookerPrisonerInfoDto> {
     val prisonerDetailsList = mutableListOf<BookerPrisonerInfoDto>()
@@ -77,9 +75,7 @@ class PublicBookerService(
     logger.trace("validate prisoner successful for $prisonerNumber with booker reference $bookerReference")
   }
 
-  private fun isPrisonSupportedOnVisits(prisonId: String): Boolean {
-    return visitSchedulerClient.getSupportedPrisons(PUBLIC).map { it.uppercase() }.contains(prisonId.uppercase())
-  }
+  private fun isPrisonSupportedOnVisits(prisonId: String): Boolean = visitSchedulerClient.getSupportedPrisons(PUBLIC).map { it.uppercase() }.contains(prisonId.uppercase())
 
   private fun getValidVisitors(bookerReference: String, prisonerNumber: String): List<VisitorInfoDto> {
     val visitorDetailsList = mutableListOf<VisitorInfoDto>()
@@ -108,9 +104,7 @@ class PublicBookerService(
     return visitorDetailsList.toList()
   }
 
-  private fun getAllValidContacts(prisonerNumber: String): List<PrisonerContactDto> {
-    return prisonerContactService.getPrisonersApprovedSocialContactsWithDOB(prisonerNumber)
-  }
+  private fun getAllValidContacts(prisonerNumber: String): List<PrisonerContactDto> = prisonerContactService.getPrisonersApprovedSocialContactsWithDOB(prisonerNumber)
 
   private fun getMaxExpiryDate(restrictions: List<RestrictionDto>): LocalDate? {
     val expiryDates = restrictions.map { it.expiryDate }
@@ -138,15 +132,9 @@ class PublicBookerService(
     return relevantVisitorRestrictions.toSet()
   }
 
-  private fun hasRestrictionForDate(restriction: RestrictionDto, date: LocalDate): Boolean {
-    return isRestrictionApplicableForDate(restriction.expiryDate, date)
-  }
+  private fun hasRestrictionForDate(restriction: RestrictionDto, date: LocalDate): Boolean = isRestrictionApplicableForDate(restriction.expiryDate, date)
 
-  private fun isRestrictionType(visitorRestrictionType: VisitorRestrictionType, restriction: RestrictionDto): Boolean {
-    return restriction.restrictionType == visitorRestrictionType.toString()
-  }
+  private fun isRestrictionType(visitorRestrictionType: VisitorRestrictionType, restriction: RestrictionDto): Boolean = restriction.restrictionType == visitorRestrictionType.toString()
 
-  private fun isRestrictionApplicableForDate(restrictionEndDate: LocalDate?, date: LocalDate): Boolean {
-    return (restrictionEndDate == null || (date <= restrictionEndDate))
-  }
+  private fun isRestrictionApplicableForDate(restrictionEndDate: LocalDate?, date: LocalDate): Boolean = (restrictionEndDate == null || (date <= restrictionEndDate))
 }

@@ -34,11 +34,9 @@ class GetPrisonTest : IntegrationTestBase() {
     webTestClient: WebTestClient,
     prisonCode: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.get().uri("/config/prisons/prison/$prisonCode")
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.get().uri("/config/prisons/prison/$prisonCode")
+    .headers(authHttpHeaders)
+    .exchange()
 
   @Test
   fun `when prison existS on both visit-scheduler and prison-register then prison is returned`() {
@@ -160,7 +158,5 @@ class GetPrisonTest : IntegrationTestBase() {
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
   }
 
-  private fun getResult(returnResult: WebTestClient.BodyContentSpec): PrisonDto {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, PrisonDto::class.java)
-  }
+  private fun getResult(returnResult: WebTestClient.BodyContentSpec): PrisonDto = objectMapper.readValue(returnResult.returnResult().responseBody, PrisonDto::class.java)
 }

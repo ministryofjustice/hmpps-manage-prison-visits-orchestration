@@ -68,9 +68,7 @@ class OrchestrationPrisonsExcludeDateController(
     @Schema(description = "prison code", example = "HEI", required = true)
     @PathVariable
     prisonCode: String,
-  ): List<ExcludeDateDto>? {
-    return prisonService.getFutureExcludeDatesForPrison(prisonCode)
-  }
+  ): List<ExcludeDateDto>? = prisonService.getFutureExcludeDatesForPrison(prisonCode)
 
   @PreAuthorize("hasAnyRole('VSIP_ORCHESTRATION_SERVICE', 'VISIT_SCHEDULER')")
   @GetMapping(ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_PAST_CONTROLLER_PATH)
@@ -109,9 +107,7 @@ class OrchestrationPrisonsExcludeDateController(
     @Schema(description = "prison code", example = "HEI", required = true)
     @PathVariable
     prisonCode: String,
-  ): List<ExcludeDateDto>? {
-    return prisonService.getPastExcludeDatesForPrison(prisonCode)
-  }
+  ): List<ExcludeDateDto>? = prisonService.getPastExcludeDatesForPrison(prisonCode)
 
   @PreAuthorize("hasAnyRole('VSIP_ORCHESTRATION_SERVICE', 'VISIT_SCHEDULER')")
   @PutMapping(ORCHESTRATION_PRISONS_EXCLUDE_DATE_ADD_CONTROLLER_PATH)
@@ -239,7 +235,5 @@ class OrchestrationPrisonsExcludeDateController(
     @Schema(description = "date to be checked if excluded by prison for visits", example = "2024-12-26", required = true)
     @PathVariable
     excludeDate: LocalDate,
-  ): IsExcludeDateDto {
-    return prisonService.isDateExcludedForPrisonVisits(prisonCode, excludeDate)
-  }
+  ): IsExcludeDateDto = prisonService.isDateExcludedForPrisonVisits(prisonCode, excludeDate)
 }

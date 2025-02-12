@@ -157,12 +157,10 @@ abstract class IntegrationTestBase {
     page: Int,
     size: Int,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.get()
-      .uri("/visits/search?${getVisitsQueryParams(prisonerId, visitStatus, startDateTime, endDateTime, page, size).joinToString("&")}")
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.get()
+    .uri("/visits/search?${getVisitsQueryParams(prisonerId, visitStatus, startDateTime, endDateTime, page, size).joinToString("&")}")
+    .headers(authHttpHeaders)
+    .exchange()
 
   private fun getVisitsQueryParams(
     prisonerId: String,
@@ -206,27 +204,25 @@ abstract class IntegrationTestBase {
     visitors: List<VisitorDto>? = null,
     contact: ContactDto = ContactDto("Jane Doe", "01234567890", "email@example.com"),
     firstBookedDate: LocalDateTime? = null,
-  ): VisitDto {
-    return VisitDto(
-      applicationReference = applicationReference,
-      sessionTemplateReference = sessionTemplateReference,
-      reference = reference,
-      prisonerId = prisonerId,
-      prisonCode = prisonCode,
-      visitRoom = visitRoom,
-      visitType = visitType,
-      visitStatus = visitStatus,
-      visitRestriction = visitRestriction,
-      startTimestamp = startTimestamp,
-      endTimestamp = endTimestamp,
-      outcomeStatus = outcomeStatus,
-      createdTimestamp = createdTimestamp,
-      modifiedTimestamp = modifiedTimestamp,
-      visitors = visitors,
-      visitContact = contact,
-      firstBookedDateTime = firstBookedDate,
-    )
-  }
+  ): VisitDto = VisitDto(
+    applicationReference = applicationReference,
+    sessionTemplateReference = sessionTemplateReference,
+    reference = reference,
+    prisonerId = prisonerId,
+    prisonCode = prisonCode,
+    visitRoom = visitRoom,
+    visitType = visitType,
+    visitStatus = visitStatus,
+    visitRestriction = visitRestriction,
+    startTimestamp = startTimestamp,
+    endTimestamp = endTimestamp,
+    outcomeStatus = outcomeStatus,
+    createdTimestamp = createdTimestamp,
+    modifiedTimestamp = modifiedTimestamp,
+    visitors = visitors,
+    visitContact = contact,
+    firstBookedDateTime = firstBookedDate,
+  )
 
   fun createCreateApplicationDto(prisonerId: String, sessionTemplateReference: String = "ref.ref.ref", sessionDate: LocalDate? = LocalDate.now()): CreateApplicationDto {
     val visitor = VisitorDto(1, false)
@@ -255,24 +251,22 @@ abstract class IntegrationTestBase {
     modifiedTimestamp: LocalDateTime = LocalDateTime.now(),
     sessionTemplateReference: String = "ref.ref.ref",
     visitors: List<VisitorDto>? = listOf(),
-  ): ApplicationDto {
-    return ApplicationDto(
-      sessionTemplateReference = sessionTemplateReference,
-      reference = reference,
-      prisonerId = prisonerId,
-      prisonCode = prisonCode,
-      visitType = visitType,
-      visitRestriction = visitRestriction,
-      startTimestamp = startTimestamp,
-      endTimestamp = endTimestamp,
-      createdTimestamp = createdTimestamp,
-      modifiedTimestamp = modifiedTimestamp,
-      visitors = visitors!!,
-      completed = false,
-      reserved = false,
-      userType = PUBLIC,
-    )
-  }
+  ): ApplicationDto = ApplicationDto(
+    sessionTemplateReference = sessionTemplateReference,
+    reference = reference,
+    prisonerId = prisonerId,
+    prisonCode = prisonCode,
+    visitType = visitType,
+    visitRestriction = visitRestriction,
+    startTimestamp = startTimestamp,
+    endTimestamp = endTimestamp,
+    createdTimestamp = createdTimestamp,
+    modifiedTimestamp = modifiedTimestamp,
+    visitors = visitors!!,
+    completed = false,
+    reserved = false,
+    userType = PUBLIC,
+  )
 
   fun createChangeApplicationDto(): ChangeApplicationDto {
     val visitor = VisitorDto(1, false)
@@ -286,25 +280,21 @@ abstract class IntegrationTestBase {
     )
   }
 
-  fun createVisitSessionDto(prisonCode: String, sessionTemplateReference: String): VisitSessionDto {
-    return VisitSessionDto(
-      sessionTemplateReference = sessionTemplateReference,
-      prisonCode = prisonCode,
-      visitRoom = "Visit Main Hall",
-      visitType = VisitType.SOCIAL,
-      closedVisitCapacity = 5,
-      openVisitCapacity = 30,
-      startTimestamp = LocalDateTime.now(),
-      endTimestamp = LocalDateTime.now().plusHours(1),
-    )
-  }
+  fun createVisitSessionDto(prisonCode: String, sessionTemplateReference: String): VisitSessionDto = VisitSessionDto(
+    sessionTemplateReference = sessionTemplateReference,
+    prisonCode = prisonCode,
+    visitRoom = "Visit Main Hall",
+    visitType = VisitType.SOCIAL,
+    closedVisitCapacity = 5,
+    openVisitCapacity = 30,
+    startTimestamp = LocalDateTime.now(),
+    endTimestamp = LocalDateTime.now().plusHours(1),
+  )
 
-  final fun createPrisonNameDto(prisonCode: String, name: String): PrisonNameDto {
-    return PrisonNameDto(
-      prisonId = prisonCode,
-      prisonName = name,
-    )
-  }
+  final fun createPrisonNameDto(prisonCode: String, name: String): PrisonNameDto = PrisonNameDto(
+    prisonId = prisonCode,
+    prisonName = name,
+  )
 
   final fun createScheduledEvent(
     bookingId: Long,
@@ -315,18 +305,16 @@ abstract class IntegrationTestBase {
     eventSubTypeDesc: String,
     eventStartTime: LocalDateTime? = null,
     eventEndTime: LocalDateTime? = null,
-  ): ScheduledEventDto {
-    return ScheduledEventDto(
-      bookingId = bookingId,
-      eventDate = eventDate,
-      eventType = eventType,
-      eventTypeDesc = eventTypeDesc,
-      eventSubType = eventSubType,
-      eventSubTypeDesc = eventSubTypeDesc,
-      startTime = eventStartTime,
-      endTime = eventEndTime,
-    )
-  }
+  ): ScheduledEventDto = ScheduledEventDto(
+    bookingId = bookingId,
+    eventDate = eventDate,
+    eventType = eventType,
+    eventTypeDesc = eventTypeDesc,
+    eventSubType = eventSubType,
+    eventSubTypeDesc = eventSubTypeDesc,
+    startTime = eventStartTime,
+    endTime = eventEndTime,
+  )
 
   fun getOrchestrationVisitsBySessionTemplateQueryParams(
     sessionTemplateReference: String?,
@@ -366,56 +354,46 @@ abstract class IntegrationTestBase {
     page: Int,
     size: Int,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.get()
-      .uri("/visits/session-template?${getOrchestrationVisitsBySessionTemplateQueryParams(sessionTemplateReference, sessionDate, visitStatus, visitRestriction, prisonCode, page, size).joinToString("&")}")
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.get()
+    .uri("/visits/session-template?${getOrchestrationVisitsBySessionTemplateQueryParams(sessionTemplateReference, sessionDate, visitStatus, visitRestriction, prisonCode, page, size).joinToString("&")}")
+    .headers(authHttpHeaders)
+    .exchange()
 
   fun callFutureVisits(
     webTestClient: WebTestClient,
     prisonerId: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.get()
-      .uri("/visits/search/future/$prisonerId")
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.get()
+    .uri("/visits/search/future/$prisonerId")
+    .headers(authHttpHeaders)
+    .exchange()
 
   fun callPublicFutureVisits(
     webTestClient: WebTestClient,
     bookerReference: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.get()
-      .uri(ORCHESTRATION_GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.get()
+    .uri(ORCHESTRATION_GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
+    .headers(authHttpHeaders)
+    .exchange()
 
   fun callPublicPastVisits(
     webTestClient: WebTestClient,
     bookerReference: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.get()
-      .uri(ORCHESTRATION_GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.get()
+    .uri(ORCHESTRATION_GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
+    .headers(authHttpHeaders)
+    .exchange()
 
   fun callPublicCancelledVisits(
     webTestClient: WebTestClient,
     bookerReference: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.get()
-      .uri(ORCHESTRATION_GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.get()
+    .uri(ORCHESTRATION_GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
+    .headers(authHttpHeaders)
+    .exchange()
 
   fun callGetAvailableVisitSessions(
     webTestClient: WebTestClient,
@@ -479,18 +457,16 @@ abstract class IntegrationTestBase {
     prisonName: String = "HMP Leeds",
     cellLocation: String? = null,
     currentIncentive: CurrentIncentive? = null,
-  ): PrisonerDto {
-    return PrisonerDto(
-      prisonerNumber = prisonerId,
-      firstName = firstName,
-      lastName = lastName,
-      dateOfBirth = dateOfBirth,
-      prisonId = prisonId,
-      prisonName = prisonName,
-      cellLocation = cellLocation,
-      currentIncentive = currentIncentive,
-    )
-  }
+  ): PrisonerDto = PrisonerDto(
+    prisonerNumber = prisonerId,
+    firstName = firstName,
+    lastName = lastName,
+    dateOfBirth = dateOfBirth,
+    prisonId = prisonId,
+    prisonName = prisonName,
+    cellLocation = cellLocation,
+    currentIncentive = currentIncentive,
+  )
 
   fun createContactDto(
     personId: Long = RandomUtils.nextLong(),
@@ -499,26 +475,22 @@ abstract class IntegrationTestBase {
     dateOfBirth: LocalDate? = null,
     approvedVisitor: Boolean = true,
     restrictions: List<RestrictionDto> = emptyList(),
-  ): PrisonerContactDto {
-    return PrisonerContactDto(
-      personId = personId,
-      firstName = firstName,
-      lastName = lastName,
-      approvedVisitor = approvedVisitor,
-      dateOfBirth = dateOfBirth,
-      relationshipCode = "OTH",
-      contactType = "S",
-      emergencyContact = true,
-      nextOfKin = true,
-      restrictions = restrictions,
-    )
-  }
+  ): PrisonerContactDto = PrisonerContactDto(
+    personId = personId,
+    firstName = firstName,
+    lastName = lastName,
+    approvedVisitor = approvedVisitor,
+    dateOfBirth = dateOfBirth,
+    relationshipCode = "OTH",
+    contactType = "S",
+    emergencyContact = true,
+    nextOfKin = true,
+    restrictions = restrictions,
+  )
 
-  final fun createContactsList(visitorDetails: List<VisitorDetails>): List<PrisonerContactDto> {
-    return visitorDetails.stream().map {
-      createContactDto(it.personId, it.firstName, it.lastName, it.dateOfBirth, it.approved, it.restrictions)
-    }.collect(Collectors.toList())
-  }
+  final fun createContactsList(visitorDetails: List<VisitorDetails>): List<PrisonerContactDto> = visitorDetails.stream().map {
+    createContactDto(it.personId, it.firstName, it.lastName, it.dateOfBirth, it.approved, it.restrictions)
+  }.collect(Collectors.toList())
 
   final fun createVisitor(
     visitorId: Int = RandomUtils.nextInt(),
@@ -527,19 +499,15 @@ abstract class IntegrationTestBase {
     dateOfBirth: LocalDate?,
     approved: Boolean = true,
     restrictions: List<RestrictionDto> = emptyList(),
-  ): VisitorDetails {
-    return VisitorDetails(visitorId.toLong(), firstName, lastName, dateOfBirth, approved, restrictions = restrictions)
-  }
+  ): VisitorDetails = VisitorDetails(visitorId.toLong(), firstName, lastName, dateOfBirth, approved, restrictions = restrictions)
 
   final fun createVisitorDto(
     contact: PrisonerContactDto,
     visitContact: Boolean = false,
-  ): VisitorDto {
-    return VisitorDto(
-      nomisPersonId = contact.personId!!,
-      visitContact = visitContact,
-    )
-  }
+  ): VisitorDto = VisitorDto(
+    nomisPersonId = contact.personId!!,
+    visitContact = visitContact,
+  )
 
   final fun createPrison(
     prisonCode: String = "HEI",
@@ -554,19 +522,17 @@ abstract class IntegrationTestBase {
       PrisonUserClientDto(STAFF, true),
       PrisonUserClientDto(PUBLIC, true),
     ),
-  ): VisitSchedulerPrisonDto {
-    return VisitSchedulerPrisonDto(
-      prisonCode,
-      active,
-      policyNoticeDaysMin,
-      policyNoticeDaysMax,
-      maxTotalVisitors,
-      maxAdultVisitors,
-      maxChildVisitors,
-      adultAgeYears,
-      clients = clients,
-    )
-  }
+  ): VisitSchedulerPrisonDto = VisitSchedulerPrisonDto(
+    prisonCode,
+    active,
+    policyNoticeDaysMin,
+    policyNoticeDaysMax,
+    maxTotalVisitors,
+    maxAdultVisitors,
+    maxChildVisitors,
+    adultAgeYears,
+    clients = clients,
+  )
 
   private fun getAvailableVisitSessionQueryParams(
     prisonCode: String,

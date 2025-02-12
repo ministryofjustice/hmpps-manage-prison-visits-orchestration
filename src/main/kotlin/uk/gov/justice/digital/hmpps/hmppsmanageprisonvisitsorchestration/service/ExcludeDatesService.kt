@@ -28,10 +28,8 @@ class ExcludeDatesService(
     return IsExcludeDateDto(isExcluded)
   }
 
-  private fun getExcludeDates(excludeDates: List<ExcludeDateDto>, excludeDatesFilter: Predicate<ExcludeDateDto>): List<ExcludeDateDto> {
-    return excludeDates.filter { excludeDatesFilter.test(it) }.also {
-      setActionedByFullName(it)
-    }
+  private fun getExcludeDates(excludeDates: List<ExcludeDateDto>, excludeDatesFilter: Predicate<ExcludeDateDto>): List<ExcludeDateDto> = excludeDates.filter { excludeDatesFilter.test(it) }.also {
+    setActionedByFullName(it)
   }
 
   private fun setActionedByFullName(excludeDates: List<ExcludeDateDto>): List<ExcludeDateDto> {

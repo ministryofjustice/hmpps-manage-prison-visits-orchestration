@@ -41,11 +41,9 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
     webTestClient: WebTestClient,
     reference: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): ResponseSpec {
-    return webTestClient.get().uri("/visits/$reference/history")
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): ResponseSpec = webTestClient.get().uri("/visits/$reference/history")
+    .headers(authHttpHeaders)
+    .exchange()
 
   @Test
   fun `when visit exists the full details search by reference returns the visit full names`() {
@@ -141,8 +139,7 @@ class VisitHistoryByReferenceTest : IntegrationTestBase() {
     assertThat(visitHistoryDetailsDto.eventsAudit[3].userType).isEqualTo(SYSTEM)
   }
 
-  private fun getVisitHistoryDetailsDto(responseSpec: ResponseSpec) =
-    objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, VisitHistoryDetailsDto::class.java)
+  private fun getVisitHistoryDetailsDto(responseSpec: ResponseSpec) = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, VisitHistoryDetailsDto::class.java)
 
   @Test
   fun `when all user details then only call auth once `() {

@@ -5,18 +5,18 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.NonAssociationChangedInfo
 
 @Component(value = PRISONER_NON_ASSOCIATION_DETAIL_CREATED_TYPE)
-class PrisonerNonAssociationNotifierCreatedNotifier() : PrisonerNonAssociationNotifier()
+class PrisonerNonAssociationNotifierCreatedNotifier : PrisonerNonAssociationNotifier()
 
 @Component(value = PRISONER_NON_ASSOCIATION_DETAIL_AMENDED_TYPE)
-class PrisonerNonAssociationNotifierAmendedNotifier() : PrisonerNonAssociationNotifier()
+class PrisonerNonAssociationNotifierAmendedNotifier : PrisonerNonAssociationNotifier()
 
 @Component(value = PRISONER_NON_ASSOCIATION_DETAIL_CLOSED_TYPE)
-class PrisonerNonAssociationNotifierClosedNotifier() : PrisonerNonAssociationNotifier()
+class PrisonerNonAssociationNotifierClosedNotifier : PrisonerNonAssociationNotifier()
 
 @Component(value = PRISONER_NON_ASSOCIATION_DETAIL_DELETED_TYPE)
-class PrisonerNonAssociationNotifierDeletedNotifier() : PrisonerNonAssociationNotifier()
+class PrisonerNonAssociationNotifierDeletedNotifier : PrisonerNonAssociationNotifier()
 
-abstract class PrisonerNonAssociationNotifier() : EventNotifier() {
+abstract class PrisonerNonAssociationNotifier : EventNotifier() {
   override fun processEvent(domainEvent: DomainEvent) {
     val type = NonAssociationDomainEventType.getFromValue(domainEvent.eventType)!!
     val additionalInfo = getAdditionalInfo(domainEvent, NonAssociationChangedInfo::class.java)

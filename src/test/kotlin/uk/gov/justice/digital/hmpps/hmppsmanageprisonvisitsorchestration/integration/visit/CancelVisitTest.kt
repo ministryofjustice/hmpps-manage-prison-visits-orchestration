@@ -19,12 +19,10 @@ class CancelVisitTest : IntegrationTestBase() {
     reference: String,
     cancelVisitOrchestrationDto: CancelVisitOrchestrationDto,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.put().uri("/visits/$reference/cancel")
-      .headers(authHttpHeaders)
-      .body(BodyInserters.fromValue(cancelVisitOrchestrationDto))
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.put().uri("/visits/$reference/cancel")
+    .headers(authHttpHeaders)
+    .body(BodyInserters.fromValue(cancelVisitOrchestrationDto))
+    .exchange()
 
   @Test
   fun `when cancel visit is successful then OK status is returned`() {

@@ -80,9 +80,7 @@ class OrchestrationVisitsController(
       ),
     ],
   )
-  fun getVisitsByReference(@PathVariable reference: String): VisitDto? {
-    return visitSchedulerService.getVisitByReference(reference)
-  }
+  fun getVisitsByReference(@PathVariable reference: String): VisitDto? = visitSchedulerService.getVisitByReference(reference)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/{reference}/history")
@@ -116,9 +114,7 @@ class OrchestrationVisitsController(
       ),
     ],
   )
-  fun getVisitHistoryByReference(@PathVariable reference: String): VisitHistoryDetailsDto? {
-    return visitSchedulerService.getVisitHistoryByReference(reference)
-  }
+  fun getVisitHistoryByReference(@PathVariable reference: String): VisitHistoryDetailsDto? = visitSchedulerService.getVisitHistoryByReference(reference)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(ORCHESTRATION_GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE)
@@ -151,9 +147,7 @@ class OrchestrationVisitsController(
     @Schema(description = "bookerReference", example = "asd-aed-vhj", required = true)
     @PathVariable
     bookerReference: String,
-  ): List<OrchestrationVisitDto> {
-    return visitSchedulerService.getFuturePublicBookedVisitsByBookerReference(bookerReference)
-  }
+  ): List<OrchestrationVisitDto> = visitSchedulerService.getFuturePublicBookedVisitsByBookerReference(bookerReference)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(ORCHESTRATION_GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE)
@@ -186,9 +180,7 @@ class OrchestrationVisitsController(
     @Schema(description = "bookerReference", example = "asd-aed-vhj", required = true)
     @PathVariable
     bookerReference: String,
-  ): List<OrchestrationVisitDto> {
-    return visitSchedulerService.getCancelledPublicVisitsByBookerReference(bookerReference)
-  }
+  ): List<OrchestrationVisitDto> = visitSchedulerService.getCancelledPublicVisitsByBookerReference(bookerReference)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(ORCHESTRATION_GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE)
@@ -221,9 +213,7 @@ class OrchestrationVisitsController(
     @Schema(description = "bookerReference", example = "asd-aed-vhj", required = true)
     @PathVariable
     bookerReference: String,
-  ): List<OrchestrationVisitDto> {
-    return visitSchedulerService.getPastPublicBookedVisitsByBookerReference(bookerReference)
-  }
+  ): List<OrchestrationVisitDto> = visitSchedulerService.getPastPublicBookedVisitsByBookerReference(bookerReference)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(params = ["page", "size"], path = ["$ORCHESTRATION_VISIT_CONTROLLER_PATH/search"])
@@ -353,9 +343,7 @@ class OrchestrationVisitsController(
     applicationReference: String,
     @RequestBody @Valid
     bookingRequestDto: BookingOrchestrationRequestDto,
-  ): VisitDto? {
-    return visitSchedulerService.bookVisit(applicationReference, bookingRequestDto)
-  }
+  ): VisitDto? = visitSchedulerService.bookVisit(applicationReference, bookingRequestDto)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @PutMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/{reference}/cancel")
@@ -397,9 +385,7 @@ class OrchestrationVisitsController(
       ),
     ],
   )
-  fun cancelVisit(@PathVariable reference: String, @RequestBody cancelVisitDto: CancelVisitOrchestrationDto): VisitDto? {
-    return visitSchedulerService.cancelVisit(reference, cancelVisitDto)
-  }
+  fun cancelVisit(@PathVariable reference: String, @RequestBody cancelVisitDto: CancelVisitOrchestrationDto): VisitDto? = visitSchedulerService.cancelVisit(reference, cancelVisitDto)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/session-template")
@@ -450,9 +436,7 @@ class OrchestrationVisitsController(
     @RequestParam
     @NotNull
     prisonCode: String,
-  ): List<VisitPreviewDto> {
-    return visitsByDateService.getVisitsForSessionTemplateAndDate(sessionTemplateReference, sessionDate, visitStatus, visitRestrictions, prisonCode)
-  }
+  ): List<VisitPreviewDto> = visitsByDateService.getVisitsForSessionTemplateAndDate(sessionTemplateReference, sessionDate, visitStatus, visitRestrictions, prisonCode)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/search/future/{prisonerId}")
@@ -486,7 +470,5 @@ class OrchestrationVisitsController(
     @NotBlank
     @Length(min = 3, max = 50)
     prisonerId: String,
-  ): List<VisitDto> {
-    return visitSchedulerService.findFutureVisitsForPrisoner(prisonerId)
-  }
+  ): List<VisitDto> = visitSchedulerService.findFutureVisitsForPrisoner(prisonerId)
 }

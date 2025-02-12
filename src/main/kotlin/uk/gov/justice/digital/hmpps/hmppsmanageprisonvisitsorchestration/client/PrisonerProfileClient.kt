@@ -87,17 +87,15 @@ class PrisonerProfileClient(
     return null
   }
 
-  private fun getPrisonNamesMap(): Map<String, String>? {
-    return try {
-      val prisonNames = prisonRegisterClient.getPrisonNames()
-      prisonNames?.let {
-        prisonNames.associateBy { it.prisonId }.mapValues { it.value.prisonName }
-      }
-    } catch (e: Exception) {
-      // log a message if there is an error but do not terminate the call
-      LOG.warn("Exception thrown on get prisons call - /prisons/names", e)
-      null
+  private fun getPrisonNamesMap(): Map<String, String>? = try {
+    val prisonNames = prisonRegisterClient.getPrisonNames()
+    prisonNames?.let {
+      prisonNames.associateBy { it.prisonId }.mapValues { it.value.prisonName }
     }
+  } catch (e: Exception) {
+    // log a message if there is an error but do not terminate the call
+    LOG.warn("Exception thrown on get prisons call - /prisons/names", e)
+    null
   }
 
   private fun setVisitorNames(visitSummary: VisitSummaryDto, contactsMap: Map<Long?, PrisonerContactDto>) {

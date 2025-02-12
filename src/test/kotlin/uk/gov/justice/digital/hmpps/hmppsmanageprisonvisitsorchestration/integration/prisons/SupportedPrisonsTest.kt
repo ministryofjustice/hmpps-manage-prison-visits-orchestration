@@ -16,11 +16,9 @@ class SupportedPrisonsTest : IntegrationTestBase() {
     type: UserType,
     webTestClient: WebTestClient,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.get().uri("/config/prisons/user-type/${type.name}/supported")
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.get().uri("/config/prisons/user-type/${type.name}/supported")
+    .headers(authHttpHeaders)
+    .exchange()
 
   @Test
   fun `when active prisons exist then all active prisons are returned`() {
@@ -53,7 +51,5 @@ class SupportedPrisonsTest : IntegrationTestBase() {
       .jsonPath("$.size()").isEqualTo(0)
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<String> {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<String>::class.java)
-  }
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<String> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<String>::class.java)
 }

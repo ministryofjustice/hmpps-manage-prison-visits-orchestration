@@ -18,11 +18,9 @@ class VisitSessionTest : IntegrationTestBase() {
     sessionTemplateReference: String,
     visitSessionDto: VisitSessionDto?,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.get().uri("/visit-sessions/session?prisonCode=$prisonCode&sessionDate=$sessionDate&sessionTemplateReference=$sessionTemplateReference")
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.get().uri("/visit-sessions/session?prisonCode=$prisonCode&sessionDate=$sessionDate&sessionTemplateReference=$sessionTemplateReference")
+    .headers(authHttpHeaders)
+    .exchange()
 
   @Test
   fun `when session exists then it is returned`() {

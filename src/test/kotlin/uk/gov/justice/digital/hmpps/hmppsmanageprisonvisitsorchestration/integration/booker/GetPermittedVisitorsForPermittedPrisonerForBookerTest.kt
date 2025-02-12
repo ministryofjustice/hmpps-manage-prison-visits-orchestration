@@ -528,18 +528,14 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
     }
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<VisitorInfoDto> {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<VisitorInfoDto>::class.java).toList()
-  }
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<VisitorInfoDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<VisitorInfoDto>::class.java).toList()
 
   fun callGetVisitorsByBookersPrisoner(
     webTestClient: WebTestClient,
     authHttpHeaders: (HttpHeaders) -> Unit,
     bookerReference: String,
     prisonerId: String,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.get().uri(PUBLIC_BOOKER_GET_VISITORS_CONTROLLER_PATH.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId))
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.get().uri(PUBLIC_BOOKER_GET_VISITORS_CONTROLLER_PATH.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId))
+    .headers(authHttpHeaders)
+    .exchange()
 }
