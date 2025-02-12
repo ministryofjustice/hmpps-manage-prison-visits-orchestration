@@ -19,13 +19,11 @@ class PrisonExcludeDateAddTest : IntegrationTestBase() {
     prisonCode: String,
     excludeDateDto: ExcludeDateDto,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.put()
-      .uri("/config/prisons/prison/$prisonCode/exclude-date/add")
-      .body(BodyInserters.fromValue(excludeDateDto))
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.put()
+    .uri("/config/prisons/prison/$prisonCode/exclude-date/add")
+    .body(BodyInserters.fromValue(excludeDateDto))
+    .headers(authHttpHeaders)
+    .exchange()
 
   @Test
   fun `when add exclude date added and is successful a 201 is returned`() {

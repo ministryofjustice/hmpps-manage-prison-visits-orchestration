@@ -188,7 +188,5 @@ class PublicPastVisitsByBookerReferenceTest : IntegrationTestBase() {
     Assertions.assertThat(visits.size).isEqualTo(0)
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<OrchestrationVisitDto> {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<OrchestrationVisitDto>::class.java)
-  }
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<OrchestrationVisitDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<OrchestrationVisitDto>::class.java)
 }

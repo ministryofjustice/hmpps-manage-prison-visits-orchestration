@@ -35,11 +35,9 @@ class PrisonerContactService(
     return prisonersContactMap.toMap()
   }
 
-  private fun getPrisonerContacts(prisonerId: String): List<PrisonerContactDto> {
-    return prisonerContactRegistryClient.getPrisonersSocialContacts(
-      prisonerId = prisonerId,
-      withAddress = false,
-      approvedVisitorsOnly = false,
-    )
-  }
+  private fun getPrisonerContacts(prisonerId: String): List<PrisonerContactDto> = prisonerContactRegistryClient.getPrisonersSocialContacts(
+    prisonerId = prisonerId,
+    withAddress = false,
+    approvedVisitorsOnly = false,
+  )
 }

@@ -10,22 +10,20 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 class OrchestrationVisitDtoBuilder(
   private val orchestrationVisitorDtoBuilder: OrchestrationVisitorDtoBuilder,
 ) {
-  fun build(visitDto: VisitDto, prisonerContacts: List<PrisonerContactDto>, prisoner: PrisonerDto? = null): OrchestrationVisitDto {
-    return OrchestrationVisitDto(
-      reference = visitDto.reference,
-      prisonerId = visitDto.prisonerId,
-      prisonerFirstName = prisoner?.firstName,
-      prisonerLastName = prisoner?.lastName,
-      prisonCode = visitDto.prisonCode,
-      visitStatus = visitDto.visitStatus,
-      outcomeStatus = visitDto.outcomeStatus,
-      startTimestamp = visitDto.startTimestamp,
-      endTimestamp = visitDto.endTimestamp,
-      visitContact = visitDto.visitContact,
-      visitors = visitDto.visitors?.map {
-        orchestrationVisitorDtoBuilder.build(it, prisonerContacts)
-      }?.toList() ?: emptyList(),
-      visitorSupport = visitDto.visitorSupport,
-    )
-  }
+  fun build(visitDto: VisitDto, prisonerContacts: List<PrisonerContactDto>, prisoner: PrisonerDto? = null): OrchestrationVisitDto = OrchestrationVisitDto(
+    reference = visitDto.reference,
+    prisonerId = visitDto.prisonerId,
+    prisonerFirstName = prisoner?.firstName,
+    prisonerLastName = prisoner?.lastName,
+    prisonCode = visitDto.prisonCode,
+    visitStatus = visitDto.visitStatus,
+    outcomeStatus = visitDto.outcomeStatus,
+    startTimestamp = visitDto.startTimestamp,
+    endTimestamp = visitDto.endTimestamp,
+    visitContact = visitDto.visitContact,
+    visitors = visitDto.visitors?.map {
+      orchestrationVisitorDtoBuilder.build(it, prisonerContacts)
+    }?.toList() ?: emptyList(),
+    visitorSupport = visitDto.visitorSupport,
+  )
 }

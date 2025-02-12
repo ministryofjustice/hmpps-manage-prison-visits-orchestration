@@ -50,8 +50,7 @@ class CountVisitNotificationTest : IntegrationTestBase() {
     Assertions.assertThat(notificationCount.count).isEqualTo(2)
   }
 
-  fun getNotificationCountDto(responseSpec: ResponseSpec): NotificationCountDto =
-    objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, NotificationCountDto::class.java)
+  fun getNotificationCountDto(responseSpec: ResponseSpec): NotificationCountDto = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, NotificationCountDto::class.java)
 
   fun callCountVisitNotificationForAPrison(
     webTestClient: WebTestClient,

@@ -45,9 +45,7 @@ class PrisonerProfileService(
     return prisonerProfile
   }
 
-  fun hasVisitorsGotClosedRestrictions(prisonerId: String, visitors: List<Long>): Boolean {
-    return prisonerContactRegistryClient.doVisitorsHaveClosedRestrictions(prisonerId, visitors)
-  }
+  fun hasVisitorsGotClosedRestrictions(prisonerId: String, visitors: List<Long>): Boolean = prisonerContactRegistryClient.doVisitorsHaveClosedRestrictions(prisonerId, visitors)
 
   fun hasPrisonerGotClosedRestrictions(prisonerId: String): Boolean {
     val offenderRestrictionsDto = prisonApiClient.getPrisonerRestrictions(prisonerId)
@@ -56,9 +54,7 @@ class PrisonerProfileService(
     }
   }
 
-  fun getBannedRestrictionDateRage(prisonerId: String, visitors: List<Long>, dataRange: DateRange): DateRange {
-    return prisonerContactRegistryClient.getBannedRestrictionDateRange(prisonerId, visitors, dataRange)
-  }
+  fun getBannedRestrictionDateRage(prisonerId: String, visitors: List<Long>, dataRange: DateRange): DateRange = prisonerContactRegistryClient.getBannedRestrictionDateRange(prisonerId, visitors, dataRange)
 
   private fun validatePrisonersPrisonId(prisonerProfile: PrisonerProfileDto?, prisonId: String) {
     prisonerProfile?.let {
@@ -68,26 +64,20 @@ class PrisonerProfileService(
     }
   }
 
-  private fun getStartDate(date: LocalDate, period: Period): LocalDate {
-    return date.minus(period).with(TemporalAdjusters.firstDayOfMonth())
-  }
+  private fun getStartDate(date: LocalDate, period: Period): LocalDate = date.minus(period).with(TemporalAdjusters.firstDayOfMonth())
 
-  private fun getEndDate(date: LocalDate, period: Period): LocalDate {
-    return date.plus(period).with(TemporalAdjusters.lastDayOfMonth())
-  }
+  private fun getEndDate(date: LocalDate, period: Period): LocalDate = date.plus(period).with(TemporalAdjusters.lastDayOfMonth())
 
   private fun createVisitSearchFilterForProfile(
     prisonerId: String,
     startDate: LocalDate,
     endDate: LocalDate,
-  ): VisitSearchRequestFilter {
-    return VisitSearchRequestFilter(
-      prisonerId = prisonerId,
-      visitStartDate = startDate,
-      visitEndDate = endDate,
-      visitStatusList = listOf("BOOKED", "CANCELLED"),
-      page = PAGE_NUMBER,
-      size = MAX_VISIT_RECORDS,
-    )
-  }
+  ): VisitSearchRequestFilter = VisitSearchRequestFilter(
+    prisonerId = prisonerId,
+    visitStartDate = startDate,
+    visitEndDate = endDate,
+    visitStatusList = listOf("BOOKED", "CANCELLED"),
+    page = PAGE_NUMBER,
+    size = MAX_VISIT_RECORDS,
+  )
 }

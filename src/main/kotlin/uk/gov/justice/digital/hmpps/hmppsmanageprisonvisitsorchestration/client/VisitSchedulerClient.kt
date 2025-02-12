@@ -83,60 +83,46 @@ class VisitSchedulerClient(
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun getPastPublicBookedVisitsByBookerReference(bookerReference: String): List<VisitDto> {
-    return webClient.get()
-      .uri(GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<List<VisitDto>>()
-      .blockOptional(apiTimeout).orElseGet { listOf<VisitDto>() }
-  }
+  fun getPastPublicBookedVisitsByBookerReference(bookerReference: String): List<VisitDto> = webClient.get()
+    .uri(GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<List<VisitDto>>()
+    .blockOptional(apiTimeout).orElseGet { listOf<VisitDto>() }
 
-  fun getCancelledPublicVisitsByBookerReference(bookerReference: String): List<VisitDto> {
-    return webClient.get()
-      .uri(GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<List<VisitDto>>()
-      .blockOptional(apiTimeout).orElseGet { listOf<VisitDto>() }
-  }
+  fun getCancelledPublicVisitsByBookerReference(bookerReference: String): List<VisitDto> = webClient.get()
+    .uri(GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<List<VisitDto>>()
+    .blockOptional(apiTimeout).orElseGet { listOf<VisitDto>() }
 
-  fun getFuturePublicBookedVisitsByBookerReference(bookerReference: String): List<VisitDto> {
-    return webClient.get()
-      .uri(GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<List<VisitDto>>()
-      .blockOptional(apiTimeout).orElseGet { listOf() }
-  }
+  fun getFuturePublicBookedVisitsByBookerReference(bookerReference: String): List<VisitDto> = webClient.get()
+    .uri(GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<List<VisitDto>>()
+    .blockOptional(apiTimeout).orElseGet { listOf() }
 
-  fun getVisitByReference(reference: String): VisitDto? {
-    return webClient.get()
-      .uri("/visits/$reference")
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<VisitDto>().block(apiTimeout)
-  }
+  fun getVisitByReference(reference: String): VisitDto? = webClient.get()
+    .uri("/visits/$reference")
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<VisitDto>().block(apiTimeout)
 
-  fun getVisitHistoryByReference(reference: String): List<EventAuditDto>? {
-    return webClient.get()
-      .uri(GET_VISIT_HISTORY_CONTROLLER_PATH.replace("{reference}", reference))
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<List<EventAuditDto>>().block(apiTimeout)
-  }
+  fun getVisitHistoryByReference(reference: String): List<EventAuditDto>? = webClient.get()
+    .uri(GET_VISIT_HISTORY_CONTROLLER_PATH.replace("{reference}", reference))
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<List<EventAuditDto>>().block(apiTimeout)
 
-  fun getVisits(visitSearchRequestFilter: VisitSearchRequestFilter): RestPage<VisitDto>? {
-    return getVisitsAsMono(visitSearchRequestFilter).block(apiTimeout)
-  }
+  fun getVisits(visitSearchRequestFilter: VisitSearchRequestFilter): RestPage<VisitDto>? = getVisitsAsMono(visitSearchRequestFilter).block(apiTimeout)
 
-  fun getFutureVisitsForPrisoner(prisonerId: String): List<VisitDto>? {
-    return webClient.get()
-      .uri("/visits/search/future/$prisonerId")
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<List<VisitDto>>().block(apiTimeout)
-  }
+  fun getFutureVisitsForPrisoner(prisonerId: String): List<VisitDto>? = webClient.get()
+    .uri("/visits/search/future/$prisonerId")
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<List<VisitDto>>().block(apiTimeout)
 
   fun getVisitsForSessionTemplateAndDate(
     sessionTemplateReference: String?,
@@ -146,87 +132,74 @@ class VisitSchedulerClient(
     prisonCode: String,
     page: Int,
     size: Int,
-  ): RestPage<VisitDto>? {
-    return webClient.get()
-      .uri("/visits/session-template") {
-        it.queryParamIfPresent("sessionTemplateReference", Optional.ofNullable(sessionTemplateReference))
-          .queryParam("fromDate", sessionDate)
-          .queryParam("toDate", sessionDate)
-          .queryParamIfPresent("visitRestrictions", Optional.ofNullable(visitRestrictions))
-          .queryParam("visitStatus", visitStatusList)
-          .queryParam("prisonCode", prisonCode)
-          .queryParam("page", page)
-          .queryParam("size", size)
-          .build()
+  ): RestPage<VisitDto>? = webClient.get()
+    .uri("/visits/session-template") {
+      it.queryParamIfPresent("sessionTemplateReference", Optional.ofNullable(sessionTemplateReference))
+        .queryParam("fromDate", sessionDate)
+        .queryParam("toDate", sessionDate)
+        .queryParamIfPresent("visitRestrictions", Optional.ofNullable(visitRestrictions))
+        .queryParam("visitStatus", visitStatusList)
+        .queryParam("prisonCode", prisonCode)
+        .queryParam("page", page)
+        .queryParam("size", size)
+        .build()
+    }
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<RestPage<VisitDto>>()
+    .block(apiTimeout)
+
+  fun getVisitsAsMono(visitSearchRequestFilter: VisitSearchRequestFilter): Mono<RestPage<VisitDto>> = webClient.get()
+    .uri("/visits/search") {
+      visitSearchUriBuilder(visitSearchRequestFilter, it).build()
+    }
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono()
+
+  fun bookVisitSlot(applicationReference: String, requestDto: BookingRequestDto): VisitDto? = webClient.put()
+    .uri("/visits/$applicationReference/book")
+    .body(BodyInserters.fromValue(requestDto))
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<VisitDto>().onErrorResume { e ->
+      if (isUnprocessableEntityError(e)) {
+        val exception = getBookVisitApplicationValidationErrorResponse(e)
+        Mono.error(exception)
+      } else {
+        Mono.error(e)
       }
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<RestPage<VisitDto>>()
-      .block(apiTimeout)
-  }
+    }.block(apiTimeout)
 
-  fun getVisitsAsMono(visitSearchRequestFilter: VisitSearchRequestFilter): Mono<RestPage<VisitDto>> {
-    return webClient.get()
-      .uri("/visits/search") {
-        visitSearchUriBuilder(visitSearchRequestFilter, it).build()
+  fun updateBookedVisit(applicationReference: String, requestDto: BookingRequestDto): VisitDto? = webClient.put()
+    .uri("/visits/$applicationReference/visit/update")
+    .body(BodyInserters.fromValue(requestDto))
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<VisitDto>().onErrorResume { e ->
+      if (isUnprocessableEntityError(e)) {
+        val exception = getBookVisitApplicationValidationErrorResponse(e)
+        Mono.error(exception)
+      } else {
+        Mono.error(e)
       }
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono()
-  }
+    }.block(apiTimeout)
 
-  fun bookVisitSlot(applicationReference: String, requestDto: BookingRequestDto): VisitDto? {
-    return webClient.put()
-      .uri("/visits/$applicationReference/book")
-      .body(BodyInserters.fromValue(requestDto))
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<VisitDto>().onErrorResume {
-          e ->
-        if (isUnprocessableEntityError(e)) {
-          val exception = getBookVisitApplicationValidationErrorResponse(e)
-          Mono.error(exception)
-        } else {
-          Mono.error(e)
-        }
-      }.block(apiTimeout)
-  }
-
-  fun updateBookedVisit(applicationReference: String, requestDto: BookingRequestDto): VisitDto? {
-    return webClient.put()
-      .uri("/visits/$applicationReference/visit/update")
-      .body(BodyInserters.fromValue(requestDto))
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<VisitDto>().onErrorResume {
-          e ->
-        if (isUnprocessableEntityError(e)) {
-          val exception = getBookVisitApplicationValidationErrorResponse(e)
-          Mono.error(exception)
-        } else {
-          Mono.error(e)
-        }
-      }.block(apiTimeout)
-  }
-
-  fun getBookedVisitByApplicationReference(applicationReference: String): VisitDto? {
-    return webClient.get()
-      .uri("/visits/$applicationReference/visit")
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<VisitDto>()
-      .onErrorResume {
-          e ->
-        if (!isNotFoundError(e)) {
-          LOG.error("getBookedVisitByApplicationReference Failed to search for existing booking")
-          Mono.error(e)
-        } else {
-          LOG.info("getBookedVisitByApplicationReference NOT FOUND response - no existing booking")
-          Mono.empty()
-        }
+  fun getBookedVisitByApplicationReference(applicationReference: String): VisitDto? = webClient.get()
+    .uri("/visits/$applicationReference/visit")
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<VisitDto>()
+    .onErrorResume { e ->
+      if (!isNotFoundError(e)) {
+        LOG.error("getBookedVisitByApplicationReference Failed to search for existing booking")
+        Mono.error(e)
+      } else {
+        LOG.info("getBookedVisitByApplicationReference NOT FOUND response - no existing booking")
+        Mono.empty()
       }
-      .block(apiTimeout)
-  }
+    }
+    .block(apiTimeout)
 
   private fun getBookVisitApplicationValidationErrorResponse(e: Throwable): Throwable {
     if (e is WebClientResponseException && isUnprocessableEntityError(e)) {
@@ -242,33 +215,27 @@ class VisitSchedulerClient(
     return e
   }
 
-  fun cancelVisit(reference: String, cancelVisitDto: CancelVisitDto): VisitDto? {
-    return webClient.put()
-      .uri("/visits/$reference/cancel")
-      .body(BodyInserters.fromValue(cancelVisitDto))
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<VisitDto>().block(apiTimeout)
-  }
+  fun cancelVisit(reference: String, cancelVisitDto: CancelVisitDto): VisitDto? = webClient.put()
+    .uri("/visits/$reference/cancel")
+    .body(BodyInserters.fromValue(cancelVisitDto))
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<VisitDto>().block(apiTimeout)
 
-  fun ignoreVisitNotification(reference: String, ignoreVisitNotifications: IgnoreVisitNotificationsDto): VisitDto? {
-    return webClient.put()
-      .uri("/visits/notification/visit/$reference/ignore")
-      .body(BodyInserters.fromValue(ignoreVisitNotifications))
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<VisitDto>().block(apiTimeout)
-  }
+  fun ignoreVisitNotification(reference: String, ignoreVisitNotifications: IgnoreVisitNotificationsDto): VisitDto? = webClient.put()
+    .uri("/visits/notification/visit/$reference/ignore")
+    .body(BodyInserters.fromValue(ignoreVisitNotifications))
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<VisitDto>().block(apiTimeout)
 
-  fun getVisitSessions(prisonId: String, prisonerId: String?, min: Int?, max: Int?, username: String?): List<VisitSessionDto>? {
-    return webClient.get()
-      .uri("/visit-sessions") {
-        visitSessionsUriBuilder(prisonId, prisonerId, min, max, username, it).build()
-      }
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<List<VisitSessionDto>>().block(apiTimeout)
-  }
+  fun getVisitSessions(prisonId: String, prisonerId: String?, min: Int?, max: Int?, username: String?): List<VisitSessionDto>? = webClient.get()
+    .uri("/visit-sessions") {
+      visitSessionsUriBuilder(prisonId, prisonerId, min, max, username, it).build()
+    }
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<List<VisitSessionDto>>().block(apiTimeout)
 
   fun getAvailableVisitSessions(
     prisonId: String,
@@ -287,8 +254,7 @@ class VisitSchedulerClient(
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono<List<AvailableVisitSessionDto>>()
-      .onErrorResume {
-          e ->
+      .onErrorResume { e ->
         if (!isNotFoundError(e)) {
           LOG.error("getAvailableVisitSessions Failed for get request $uri")
           Mono.error(e)
@@ -307,8 +273,7 @@ class VisitSchedulerClient(
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono<List<String>>()
-      .onErrorResume {
-          e ->
+      .onErrorResume { e ->
         if (!isNotFoundError(e)) {
           LOG.error("getSupportedPrisons Failed for get request $uri")
           Mono.error(e)
@@ -325,47 +290,41 @@ class VisitSchedulerClient(
     sessionDate: LocalDate,
     sessionStartTime: LocalTime,
     sessionEndTime: LocalTime,
-  ): SessionCapacityDto? {
-    return webClient.get()
-      .uri("/visit-sessions/capacity") {
-        visitSessionsCapacityUriBuilder(prisonCode, sessionDate, sessionStartTime, sessionEndTime, it).build()
-      }
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<SessionCapacityDto>().block(apiTimeout)
-  }
+  ): SessionCapacityDto? = webClient.get()
+    .uri("/visit-sessions/capacity") {
+      visitSessionsCapacityUriBuilder(prisonCode, sessionDate, sessionStartTime, sessionEndTime, it).build()
+    }
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<SessionCapacityDto>().block(apiTimeout)
 
   fun getSession(
     prisonCode: String,
     sessionDate: LocalDate,
     sessionTemplateReference: String,
-  ): VisitSessionDto? {
-    return webClient.get()
-      .uri("/visit-sessions/session") {
-        it.queryParam("prisonCode", prisonCode)
-          .queryParam("sessionDate", sessionDate)
-          .queryParam("sessionTemplateReference", sessionTemplateReference)
-          .build()
-      }
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<VisitSessionDto>().block(apiTimeout)
-  }
+  ): VisitSessionDto? = webClient.get()
+    .uri("/visit-sessions/session") {
+      it.queryParam("prisonCode", prisonCode)
+        .queryParam("sessionDate", sessionDate)
+        .queryParam("sessionTemplateReference", sessionTemplateReference)
+        .build()
+    }
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<VisitSessionDto>().block(apiTimeout)
 
   fun getSessionSchedule(
     prisonCode: String,
     sessionDate: LocalDate,
-  ): List<SessionScheduleDto>? {
-    return webClient.get()
-      .uri("/visit-sessions/schedule") {
-        it.queryParam("prisonId", prisonCode)
-          .queryParam("date", sessionDate)
-          .build()
-      }
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<List<SessionScheduleDto>>().block(apiTimeout)
-  }
+  ): List<SessionScheduleDto>? = webClient.get()
+    .uri("/visit-sessions/schedule") {
+      it.queryParam("prisonId", prisonCode)
+        .queryParam("date", sessionDate)
+        .build()
+    }
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<List<SessionScheduleDto>>().block(apiTimeout)
 
   fun processNonAssociations(sendDto: NonAssociationChangedNotificationDto) {
     webClient.post()
@@ -457,22 +416,18 @@ class VisitSchedulerClient(
       .block(apiTimeout)
   }
 
-  fun getNotificationCountForPrison(prisonCode: String, notificationEventTypes: List<String>?): NotificationCountDto? {
-    return webClient.get()
-      .uri("/visits/notification/$prisonCode/count") {
-        visitNotificationsCountUriBuilder(notificationEventTypes, it).build()
-      }
-      .retrieve()
-      .bodyToMono<NotificationCountDto>().block(apiTimeout)
-  }
+  fun getNotificationCountForPrison(prisonCode: String, notificationEventTypes: List<String>?): NotificationCountDto? = webClient.get()
+    .uri("/visits/notification/$prisonCode/count") {
+      visitNotificationsCountUriBuilder(notificationEventTypes, it).build()
+    }
+    .retrieve()
+    .bodyToMono<NotificationCountDto>().block(apiTimeout)
 
-  fun getFutureNotificationVisitGroups(prisonCode: String): List<NotificationGroupDto>? {
-    return webClient.get()
-      .uri("/visits/notification/$prisonCode/groups")
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<List<NotificationGroupDto>>().block(apiTimeout)
-  }
+  fun getFutureNotificationVisitGroups(prisonCode: String): List<NotificationGroupDto>? = webClient.get()
+    .uri("/visits/notification/$prisonCode/groups")
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<List<NotificationGroupDto>>().block(apiTimeout)
 
   fun getPrison(prisonCode: String): VisitSchedulerPrisonDto {
     val uri = "/admin/prisons/prison/$prisonCode"
@@ -482,8 +437,7 @@ class VisitSchedulerClient(
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono<VisitSchedulerPrisonDto>()
-      .onErrorResume {
-          e ->
+      .onErrorResume { e ->
         if (!isNotFoundError(e)) {
           LOG.error("getPrison Failed for get request $uri")
           Mono.error(e)
@@ -513,62 +467,48 @@ class VisitSchedulerClient(
       }
   }
 
-  fun getNotificationsTypesForBookingReference(reference: String): List<NotificationEventType>? {
-    return webClient.get()
-      .uri("/visits/notification/visit/$reference/types")
-      .retrieve()
-      .bodyToMono<List<NotificationEventType>>().block(apiTimeout)
-  }
+  fun getNotificationsTypesForBookingReference(reference: String): List<NotificationEventType>? = webClient.get()
+    .uri("/visits/notification/visit/$reference/types")
+    .retrieve()
+    .bodyToMono<List<NotificationEventType>>().block(apiTimeout)
 
-  fun getPrisonExcludeDates(prisonCode: String): List<ExcludeDateDto>? {
-    return webClient.get()
-      .uri("/prisons/prison/$prisonCode/exclude-date")
-      .retrieve()
-      .bodyToMono<List<ExcludeDateDto>>().block(apiTimeout)
-  }
+  fun getPrisonExcludeDates(prisonCode: String): List<ExcludeDateDto>? = webClient.get()
+    .uri("/prisons/prison/$prisonCode/exclude-date")
+    .retrieve()
+    .bodyToMono<List<ExcludeDateDto>>().block(apiTimeout)
 
-  fun addPrisonExcludeDate(prisonCode: String, prisonExcludeDate: ExcludeDateDto): List<LocalDate>? {
-    return webClient.put()
-      .uri("/prisons/prison/$prisonCode/exclude-date/add")
-      .body(BodyInserters.fromValue(prisonExcludeDate))
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<List<LocalDate>>().block(apiTimeout)
-  }
+  fun addPrisonExcludeDate(prisonCode: String, prisonExcludeDate: ExcludeDateDto): List<LocalDate>? = webClient.put()
+    .uri("/prisons/prison/$prisonCode/exclude-date/add")
+    .body(BodyInserters.fromValue(prisonExcludeDate))
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<List<LocalDate>>().block(apiTimeout)
 
-  fun removePrisonExcludeDate(prisonCode: String, prisonExcludeDate: ExcludeDateDto): List<LocalDate>? {
-    return webClient.put()
-      .uri("/prisons/prison/$prisonCode/exclude-date/remove")
-      .body(BodyInserters.fromValue(prisonExcludeDate))
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<List<LocalDate>>().block(apiTimeout)
-  }
+  fun removePrisonExcludeDate(prisonCode: String, prisonExcludeDate: ExcludeDateDto): List<LocalDate>? = webClient.put()
+    .uri("/prisons/prison/$prisonCode/exclude-date/remove")
+    .body(BodyInserters.fromValue(prisonExcludeDate))
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<List<LocalDate>>().block(apiTimeout)
 
-  fun getSessionTemplateExcludeDates(sessionTemplateReference: String): List<ExcludeDateDto>? {
-    return webClient.get()
-      .uri("/admin/session-templates/template/$sessionTemplateReference/exclude-date")
-      .retrieve()
-      .bodyToMono<List<ExcludeDateDto>>().block(apiTimeout)
-  }
+  fun getSessionTemplateExcludeDates(sessionTemplateReference: String): List<ExcludeDateDto>? = webClient.get()
+    .uri("/admin/session-templates/template/$sessionTemplateReference/exclude-date")
+    .retrieve()
+    .bodyToMono<List<ExcludeDateDto>>().block(apiTimeout)
 
-  fun addSessionTemplateExcludeDate(sessionTemplateReference: String, sessionExcludeDate: ExcludeDateDto): List<LocalDate>? {
-    return webClient.put()
-      .uri("/admin/session-templates/template/$sessionTemplateReference/exclude-date/add")
-      .body(BodyInserters.fromValue(sessionExcludeDate))
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<List<LocalDate>>().block(apiTimeout)
-  }
+  fun addSessionTemplateExcludeDate(sessionTemplateReference: String, sessionExcludeDate: ExcludeDateDto): List<LocalDate>? = webClient.put()
+    .uri("/admin/session-templates/template/$sessionTemplateReference/exclude-date/add")
+    .body(BodyInserters.fromValue(sessionExcludeDate))
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<List<LocalDate>>().block(apiTimeout)
 
-  fun removeSessionTemplateExcludeDate(sessionTemplateReference: String, sessionExcludeDate: ExcludeDateDto): List<LocalDate>? {
-    return webClient.put()
-      .uri("/admin/session-templates/template/$sessionTemplateReference/exclude-date/remove")
-      .body(BodyInserters.fromValue(sessionExcludeDate))
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<List<LocalDate>>().block(apiTimeout)
-  }
+  fun removeSessionTemplateExcludeDate(sessionTemplateReference: String, sessionExcludeDate: ExcludeDateDto): List<LocalDate>? = webClient.put()
+    .uri("/admin/session-templates/template/$sessionTemplateReference/exclude-date/remove")
+    .body(BodyInserters.fromValue(sessionExcludeDate))
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<List<LocalDate>>().block(apiTimeout)
 
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParamIfPresent("prisonId", Optional.ofNullable(visitSearchRequestFilter.prisonCode))

@@ -67,9 +67,7 @@ class OrchestrationApplicationsController(
   fun createInitialApplication(
     @RequestBody @Valid
     createApplicationDto: CreateApplicationDto,
-  ): ApplicationDto? {
-    return applicationsService.createInitialApplication(createApplicationDto = createApplicationDto)
-  }
+  ): ApplicationDto? = applicationsService.createInitialApplication(createApplicationDto = createApplicationDto)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @PutMapping(APPLICATION_RESERVED_SLOT_CHANGE)
@@ -117,9 +115,7 @@ class OrchestrationApplicationsController(
     reference: String,
     @RequestBody @Valid
     changeApplicationDto: ChangeApplicationDto,
-  ): ApplicationDto? {
-    return applicationsService.changeIncompleteApplication(reference.trim(), changeApplicationDto)
-  }
+  ): ApplicationDto? = applicationsService.changeIncompleteApplication(reference.trim(), changeApplicationDto)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @PutMapping(APPLICATION_CHANGE)
@@ -162,7 +158,5 @@ class OrchestrationApplicationsController(
     bookingReference: String,
     @RequestBody @Valid
     createApplicationDto: CreateApplicationDto,
-  ): ApplicationDto? {
-    return applicationsService.createApplicationForAnExistingVisit(bookingReference.trim(), createApplicationDto)
-  }
+  ): ApplicationDto? = applicationsService.createApplicationForAnExistingVisit(bookingReference.trim(), createApplicationDto)
 }

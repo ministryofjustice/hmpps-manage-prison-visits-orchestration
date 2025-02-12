@@ -14,12 +14,10 @@ class CreateInitialReservedApplicationTest : IntegrationTestBase() {
     webTestClient: WebTestClient,
     createApplicationDto: CreateApplicationDto,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.post().uri("/visits/application/slot/reserve")
-      .headers(authHttpHeaders)
-      .body(BodyInserters.fromValue(createApplicationDto))
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.post().uri("/visits/application/slot/reserve")
+    .headers(authHttpHeaders)
+    .body(BodyInserters.fromValue(createApplicationDto))
+    .exchange()
 
   @Test
   fun `when reserve visit slot is successful then CREATED status is returned`() {

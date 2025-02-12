@@ -15,11 +15,9 @@ class VisitByReferenceTest : IntegrationTestBase() {
     webTestClient: WebTestClient,
     reference: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.get().uri("/visits/$reference")
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.get().uri("/visits/$reference")
+    .headers(authHttpHeaders)
+    .exchange()
 
   @Test
   fun `when visit exists search by reference returns that visit`() {

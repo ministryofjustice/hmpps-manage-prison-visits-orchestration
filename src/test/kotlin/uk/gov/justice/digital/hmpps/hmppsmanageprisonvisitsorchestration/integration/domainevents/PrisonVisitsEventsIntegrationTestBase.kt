@@ -167,29 +167,19 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     client.purgeQueue(PurgeQueueRequest.builder().queueUrl(url).build()).get()
   }
 
-  fun createDomainEvent(eventType: String, additionalInformation: String = "test"): DomainEvent {
-    return DomainEvent(eventType = eventType, additionalInformation)
-  }
+  fun createDomainEvent(eventType: String, additionalInformation: String = "test"): DomainEvent = DomainEvent(eventType = eventType, additionalInformation)
 
-  fun createDomainEventPublishRequest(eventType: String, domainEvent: String): PublishRequest? {
-    return PublishRequest.builder()
-      .topicArn(topicArn)
-      .message(domainEvent).build()
-  }
+  fun createDomainEventPublishRequest(eventType: String, domainEvent: String): PublishRequest? = PublishRequest.builder()
+    .topicArn(topicArn)
+    .message(domainEvent).build()
 
-  fun createDomainEventPublishRequest(eventType: String): PublishRequest? {
-    return PublishRequest.builder()
-      .topicArn(topicArn)
-      .message(objectMapper.writeValueAsString(createDomainEvent(eventType, ""))).build()
-  }
+  fun createDomainEventPublishRequest(eventType: String): PublishRequest? = PublishRequest.builder()
+    .topicArn(topicArn)
+    .message(objectMapper.writeValueAsString(createDomainEvent(eventType, ""))).build()
 
-  fun createDomainEventJson(eventType: String, additionalInformation: String): String {
-    return "{\"eventType\":\"$eventType\",\"additionalInformation\":$additionalInformation}"
-  }
+  fun createDomainEventJson(eventType: String, additionalInformation: String): String = "{\"eventType\":\"$eventType\",\"additionalInformation\":$additionalInformation}"
 
-  fun createDomainEventJson(eventType: String, description: String, additionalInformation: String): String {
-    return "{\"eventType\":\"$eventType\",\"description\":\"$description\",\"additionalInformation\":$additionalInformation}"
-  }
+  fun createDomainEventJson(eventType: String, description: String, additionalInformation: String): String = "{\"eventType\":\"$eventType\",\"description\":\"$description\",\"additionalInformation\":$additionalInformation}"
   fun createNonAssociationAdditionalInformationJson(): String {
     val jsonValues = HashMap<String, String>()
     jsonValues["nsPrisonerNumber1"] = "A8713DY"
@@ -292,19 +282,17 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     return builder.toString()
   }
 
-  private fun getJsonString(entry: Map.Entry<String, Any>): String {
-    return when (entry.value) {
-      is List<*> -> {
-        ("\"${entry.key}\":[${(entry.value as List<*>).joinToString { "\"" + it + "\"" }}]")
-      }
+  private fun getJsonString(entry: Map.Entry<String, Any>): String = when (entry.value) {
+    is List<*> -> {
+      ("\"${entry.key}\":[${(entry.value as List<*>).joinToString { "\"" + it + "\"" }}]")
+    }
 
-      is Number -> {
-        ("\"${entry.key}\":${entry.value}")
-      }
+    is Number -> {
+      ("\"${entry.key}\":${entry.value}")
+    }
 
-      else -> {
-        ("\"${entry.key}\":\"${entry.value}\"")
-      }
+    else -> {
+      ("\"${entry.key}\":\"${entry.value}\"")
     }
   }
 }

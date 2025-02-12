@@ -186,7 +186,5 @@ class PublicFutureVisitsByBookerReferenceTest : IntegrationTestBase() {
     Mockito.verify(prisonerSearchClient, times(1)).getPrisonerById(prisonerId)
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<OrchestrationVisitDto> {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<OrchestrationVisitDto>::class.java)
-  }
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<OrchestrationVisitDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<OrchestrationVisitDto>::class.java)
 }

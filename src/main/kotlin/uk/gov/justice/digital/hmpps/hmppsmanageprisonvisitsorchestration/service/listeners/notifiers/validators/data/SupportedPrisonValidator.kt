@@ -6,11 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 
 @Component
 class SupportedPrisonValidator(private val prisonService: PrisonService) : DataValidator<String> {
-  private fun isSupportedPrison(prisonCode: String): Boolean {
-    return prisonService.getSupportedPrisons(UserType.STAFF).contains(prisonCode.uppercase())
-  }
+  private fun isSupportedPrison(prisonCode: String): Boolean = prisonService.getSupportedPrisons(UserType.STAFF).contains(prisonCode.uppercase())
 
-  override fun isValid(t: String): Boolean {
-    return isSupportedPrison(t)
-  }
+  override fun isValid(t: String): Boolean = isSupportedPrison(t)
 }

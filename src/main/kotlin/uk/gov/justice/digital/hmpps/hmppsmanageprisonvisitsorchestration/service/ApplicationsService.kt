@@ -17,18 +17,12 @@ class ApplicationsService(
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun createInitialApplication(createApplicationDto: CreateApplicationDto): ApplicationDto? {
-    return visitSchedulerApplicationsClient.createInitialApplication(VisitSchedulerCreateApplicationDto(createApplicationDto))
-  }
+  fun createInitialApplication(createApplicationDto: CreateApplicationDto): ApplicationDto? = visitSchedulerApplicationsClient.createInitialApplication(VisitSchedulerCreateApplicationDto(createApplicationDto))
 
-  fun changeIncompleteApplication(applicationReference: String, changeApplicationDto: ChangeApplicationDto): ApplicationDto? {
-    return visitSchedulerApplicationsClient.changeIncompleteApplication(applicationReference, changeApplicationDto)
-  }
+  fun changeIncompleteApplication(applicationReference: String, changeApplicationDto: ChangeApplicationDto): ApplicationDto? = visitSchedulerApplicationsClient.changeIncompleteApplication(applicationReference, changeApplicationDto)
 
   fun createApplicationForAnExistingVisit(
     visitReference: String,
     createApplicationDto: CreateApplicationDto,
-  ): ApplicationDto? {
-    return visitSchedulerApplicationsClient.createApplicationForAnExistingVisit(visitReference, VisitSchedulerCreateApplicationDto(createApplicationDto))
-  }
+  ): ApplicationDto? = visitSchedulerApplicationsClient.createApplicationForAnExistingVisit(visitReference, VisitSchedulerCreateApplicationDto(createApplicationDto))
 }

@@ -51,16 +51,13 @@ class FutureNotificationVisitGroupsTest : IntegrationTestBase() {
     }
   }
 
-  fun getNotificationGroupDtoDto(responseSpec: ResponseSpec): Array<OrchestrationNotificationGroupDto> =
-    objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, Array<OrchestrationNotificationGroupDto>::class.java)
+  fun getNotificationGroupDtoDto(responseSpec: ResponseSpec): Array<OrchestrationNotificationGroupDto> = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, Array<OrchestrationNotificationGroupDto>::class.java)
 
   fun callFutureNotificationVisitGroups(
     webTestClient: WebTestClient,
     prisonCode: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): ResponseSpec {
-    return webTestClient.get().uri("/visits/notification/$prisonCode/groups")
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): ResponseSpec = webTestClient.get().uri("/visits/notification/$prisonCode/groups")
+    .headers(authHttpHeaders)
+    .exchange()
 }

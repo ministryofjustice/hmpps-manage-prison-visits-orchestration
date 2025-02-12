@@ -70,9 +70,7 @@ class VisitNotificationController(
     @Schema(description = "list of notificationEventTypes", required = false)
     @RequestParam(value = "types", required = false)
     notificationEventTypes: List<NotificationEventType>? = null,
-  ): NotificationCountDto? {
-    return visitSchedulerService.getNotificationCountForPrison(prisonCode, notificationEventTypes)
-  }
+  ): NotificationCountDto? = visitSchedulerService.getNotificationCountForPrison(prisonCode, notificationEventTypes)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(FUTURE_NOTIFICATION_VISIT_GROUPS)
@@ -100,9 +98,7 @@ class VisitNotificationController(
     @Schema(description = "prisonCode", example = "CFI", required = true)
     @PathVariable
     prisonCode: String,
-  ): List<OrchestrationNotificationGroupDto>? {
-    return visitSchedulerService.getFutureNotificationVisitGroups(prisonCode)
-  }
+  ): List<OrchestrationNotificationGroupDto>? = visitSchedulerService.getFutureNotificationVisitGroups(prisonCode)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(VISIT_NOTIFICATION_TYPES)
@@ -130,9 +126,7 @@ class VisitNotificationController(
     @Schema(description = "bookingReference", example = "v9*d7*ed*7u", required = true)
     @PathVariable
     reference: String,
-  ): List<NotificationEventType>? {
-    return visitSchedulerService.getNotificationsTypesForBookingReference(reference)
-  }
+  ): List<NotificationEventType>? = visitSchedulerService.getNotificationsTypesForBookingReference(reference)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @PutMapping(VISIT_NOTIFICATION_IGNORE)
@@ -180,7 +174,5 @@ class VisitNotificationController(
     reference: String,
     @RequestBody @Valid
     ignoreVisitNotifications: IgnoreVisitNotificationsOrchestrationDto,
-  ): VisitDto? {
-    return visitSchedulerService.ignoreVisitNotifications(reference.trim(), ignoreVisitNotifications)
-  }
+  ): VisitDto? = visitSchedulerService.ignoreVisitNotifications(reference.trim(), ignoreVisitNotifications)
 }

@@ -27,12 +27,10 @@ class BookerAuthorisationTest : IntegrationTestBase() {
     webTestClient: WebTestClient,
     authDetails: AuthDetailDto,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.put().uri("/public/booker/register/auth")
-      .body(BodyInserters.fromValue(authDetails))
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.put().uri("/public/booker/register/auth")
+    .body(BodyInserters.fromValue(authDetails))
+    .headers(authHttpHeaders)
+    .exchange()
 
   @Test
   fun `when auth is successful a booker reference is returned`() {
@@ -102,7 +100,5 @@ class BookerAuthorisationTest : IntegrationTestBase() {
     verify(prisonVisitBookerRegistryClientSpy, times(0)).bookerAuthorisation(any())
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): BookerReference {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, BookerReference::class.java)
-  }
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): BookerReference = objectMapper.readValue(returnResult.returnResult().responseBody, BookerReference::class.java)
 }

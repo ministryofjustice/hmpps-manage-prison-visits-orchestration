@@ -37,9 +37,7 @@ class VisitSchedulerSessionsService(
       "Visit session for prisonerId - {}, date - {}, start time - {}, end time - {} is unavailable as it clashes with {} medical / legal appointment(s), appointment details - {}"
   }
 
-  fun getVisitSessions(prisonCode: String, prisonerId: String?, min: Int?, max: Int?, username: String?): List<VisitSessionDto>? {
-    return visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max, username)
-  }
+  fun getVisitSessions(prisonCode: String, prisonerId: String?, min: Int?, max: Int?, username: String?): List<VisitSessionDto>? = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max, username)
 
   fun getAvailableVisitSessions(
     prisonCode: String,
@@ -80,34 +78,26 @@ class VisitSchedulerSessionsService(
     sessionDate: LocalDate,
     sessionStartTime: LocalTime,
     sessionEndTime: LocalTime,
-  ): SessionCapacityDto? {
-    return visitSchedulerClient.getSessionCapacity(prisonCode, sessionDate, sessionStartTime, sessionEndTime)
-  }
+  ): SessionCapacityDto? = visitSchedulerClient.getSessionCapacity(prisonCode, sessionDate, sessionStartTime, sessionEndTime)
 
   fun getSession(
     prisonCode: String,
     sessionDate: LocalDate,
     sessionTemplateReference: String,
-  ): VisitSessionDto? {
-    return visitSchedulerClient.getSession(prisonCode, sessionDate, sessionTemplateReference)
-  }
+  ): VisitSessionDto? = visitSchedulerClient.getSession(prisonCode, sessionDate, sessionTemplateReference)
 
-  fun getSessionSchedule(prisonCode: String, sessionDate: LocalDate): List<SessionScheduleDto>? {
-    return visitSchedulerClient.getSessionSchedule(prisonCode, sessionDate)
-  }
+  fun getSessionSchedule(prisonCode: String, sessionDate: LocalDate): List<SessionScheduleDto>? = visitSchedulerClient.getSessionSchedule(prisonCode, sessionDate)
 
   private fun updateRequestedRestriction(
     requestedSessionRestriction: SessionRestriction?,
     prisonerId: String,
     visitors: List<Long>?,
-  ): SessionRestriction {
-    return if (prisonerProfileService.hasPrisonerGotClosedRestrictions(prisonerId) ||
-      (if (visitors != null) prisonerProfileService.hasVisitorsGotClosedRestrictions(prisonerId, visitors) else false)
-    ) {
-      CLOSED
-    } else {
-      requestedSessionRestriction ?: OPEN
-    }
+  ): SessionRestriction = if (prisonerProfileService.hasPrisonerGotClosedRestrictions(prisonerId) ||
+    (if (visitors != null) prisonerProfileService.hasVisitorsGotClosedRestrictions(prisonerId, visitors) else false)
+  ) {
+    CLOSED
+  } else {
+    requestedSessionRestriction ?: OPEN
   }
 
   fun getAvailableVisitSessionsRestriction(
@@ -136,13 +126,9 @@ class VisitSchedulerSessionsService(
     return isExcluded
   }
 
-  fun addExcludeDateForSessionTemplate(sessionTemplateReference: String, sessionExcludeDate: ExcludeDateDto): List<LocalDate> {
-    return visitSchedulerClient.addSessionTemplateExcludeDate(sessionTemplateReference, sessionExcludeDate)?.sortedByDescending { it } ?: emptyList()
-  }
+  fun addExcludeDateForSessionTemplate(sessionTemplateReference: String, sessionExcludeDate: ExcludeDateDto): List<LocalDate> = visitSchedulerClient.addSessionTemplateExcludeDate(sessionTemplateReference, sessionExcludeDate)?.sortedByDescending { it } ?: emptyList()
 
-  fun removeExcludeDateForSessionTemplate(sessionTemplateReference: String, sessionExcludeDate: ExcludeDateDto): List<LocalDate> {
-    return visitSchedulerClient.removeSessionTemplateExcludeDate(sessionTemplateReference, sessionExcludeDate)?.sortedByDescending { it } ?: emptyList()
-  }
+  fun removeExcludeDateForSessionTemplate(sessionTemplateReference: String, sessionExcludeDate: ExcludeDateDto): List<LocalDate> = visitSchedulerClient.removeSessionTemplateExcludeDate(sessionTemplateReference, sessionExcludeDate)?.sortedByDescending { it } ?: emptyList()
 
   private fun filterAvailableVisitsByHigherPriorityAppointments(prisonerId: String, dateRange: DateRange, availableVisitSessions: List<AvailableVisitSessionDto>): List<AvailableVisitSessionDto> {
     val higherPriorityAppointments = appointmentsService.getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
@@ -160,16 +146,12 @@ class VisitSchedulerSessionsService(
   private fun getHigherPriorityAppointmentsForDate(
     higherPriorityAppointments: List<ScheduledEventDto>,
     sessionDate: LocalDate,
-  ): List<ScheduledEventDto> {
-    return higherPriorityAppointments.filter { it.eventDate == sessionDate }
-  }
+  ): List<ScheduledEventDto> = higherPriorityAppointments.filter { it.eventDate == sessionDate }
 
   private fun getOverridingAppointments(
     visitSession: AvailableVisitSessionDto,
     higherPriorityEvents: List<ScheduledEventDto>,
-  ): List<ScheduledEventDto> {
-    return higherPriorityEvents.filter { hasOverridingAppointment(visitSession, it) }
-  }
+  ): List<ScheduledEventDto> = higherPriorityEvents.filter { hasOverridingAppointment(visitSession, it) }
 
   private fun hasOverridingAppointment(
     visitSession: AvailableVisitSessionDto,
@@ -190,21 +172,17 @@ class VisitSchedulerSessionsService(
       )
   }
 
-  private fun getOverridingEventDetails(events: List<ScheduledEventDto>): String {
-    return events.joinToString(" and ")
-  }
+  private fun getOverridingEventDetails(events: List<ScheduledEventDto>): String = events.joinToString(" and ")
 
   private fun hasOverlappingTimes(
     scheduledEventStartTime: LocalTime,
     scheduledEventEndTime: LocalTime,
     visitSessionStartTime: LocalTime,
     visitSessionEndTime: LocalTime,
-  ): Boolean {
-    return (
-      visitSessionStartTime.isBefore(scheduledEventEndTime) &&
-        visitSessionEndTime.isAfter(scheduledEventStartTime)
-      )
-  }
+  ): Boolean = (
+    visitSessionStartTime.isBefore(scheduledEventEndTime) &&
+      visitSessionEndTime.isAfter(scheduledEventStartTime)
+    )
 
   private fun logClashingAppointment(prisonerId: String, availableSession: AvailableVisitSessionDto, overridingAppointments: List<ScheduledEventDto>) {
     LOG.info(
@@ -218,15 +196,11 @@ class VisitSchedulerSessionsService(
     )
   }
 
-  private fun getAvailableVisitSessionsSortOrder(): Comparator<AvailableVisitSessionDto> {
-    return compareBy(
-      { it.sessionDate },
-      { it.sessionTimeSlot.startTime },
-      { it.sessionTimeSlot.endTime },
-    )
-  }
+  private fun getAvailableVisitSessionsSortOrder(): Comparator<AvailableVisitSessionDto> = compareBy(
+    { it.sessionDate },
+    { it.sessionTimeSlot.startTime },
+    { it.sessionTimeSlot.endTime },
+  )
 
-  private fun getExcludeDatesForSessionTemplate(sessionTemplateReference: String): List<ExcludeDateDto> {
-    return visitSchedulerClient.getSessionTemplateExcludeDates(sessionTemplateReference) ?: emptyList()
-  }
+  private fun getExcludeDatesForSessionTemplate(sessionTemplateReference: String): List<ExcludeDateDto> = visitSchedulerClient.getSessionTemplateExcludeDates(sessionTemplateReference) ?: emptyList()
 }

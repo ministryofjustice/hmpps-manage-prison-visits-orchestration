@@ -14,7 +14,10 @@ import org.junit.jupiter.api.extension.ExtensionContext
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.createJsonResponseBuilder
 
-class HmppsAuthExtension : BeforeAllCallback, AfterAllCallback, BeforeEachCallback {
+class HmppsAuthExtension :
+  BeforeAllCallback,
+  AfterAllCallback,
+  BeforeEachCallback {
 
   companion object {
     @JvmField

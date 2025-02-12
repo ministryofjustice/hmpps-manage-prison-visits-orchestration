@@ -6,7 +6,5 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 
 @Component
 class PrisonerReleasedInfoValidator(private val supportedPrisonValidator: SupportedPrisonValidator) : EventInfoValidator<PrisonerReleasedInfo> {
-  override fun isValid(eventInfo: PrisonerReleasedInfo): Boolean {
-    return supportedPrisonValidator.isValid(eventInfo.prisonCode)
-  }
+  override fun isValid(eventInfo: PrisonerReleasedInfo): Boolean = supportedPrisonValidator.isValid(eventInfo.prisonCode)
 }

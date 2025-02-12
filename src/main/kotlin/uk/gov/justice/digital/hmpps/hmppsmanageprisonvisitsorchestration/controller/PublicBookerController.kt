@@ -62,9 +62,7 @@ class PublicBookerController(
       ),
     ],
   )
-  fun bookerAuthorisation(@RequestBody @Valid authDetail: AuthDetailDto): BookerReference {
-    return publicBookerService.bookerAuthorisation(authDetail)
-  }
+  fun bookerAuthorisation(@RequestBody @Valid authDetail: AuthDetailDto): BookerReference = publicBookerService.bookerAuthorisation(authDetail)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH)
@@ -101,9 +99,7 @@ class PublicBookerController(
     )
     @NotBlank
     bookerReference: String,
-  ): List<BookerPrisonerInfoDto> {
-    return publicBookerService.getPermittedPrisonersForBooker(bookerReference)
-  }
+  ): List<BookerPrisonerInfoDto> = publicBookerService.getPermittedPrisonersForBooker(bookerReference)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(PUBLIC_BOOKER_GET_VISITORS_CONTROLLER_PATH)
@@ -143,9 +139,7 @@ class PublicBookerController(
     )
     @NotBlank
     prisonerId: String,
-  ): List<VisitorInfoDto> {
-    return publicBookerService.getPermittedVisitorsForPermittedPrisonerAndBooker(bookerReference, prisonerId)
-  }
+  ): List<VisitorInfoDto> = publicBookerService.getPermittedVisitorsForPermittedPrisonerAndBooker(bookerReference, prisonerId)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(PUBLIC_BOOKER_VALIDATE_PRISONER_CONTROLLER_PATH)
@@ -186,7 +180,5 @@ class PublicBookerController(
     )
     @NotBlank
     prisonerId: String,
-  ) {
-    return publicBookerService.validatePrisoner(bookerReference, prisonerId)
-  }
+  ) = publicBookerService.validatePrisoner(bookerReference, prisonerId)
 }

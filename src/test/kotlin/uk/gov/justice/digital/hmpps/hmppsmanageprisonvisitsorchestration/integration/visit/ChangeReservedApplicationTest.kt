@@ -16,12 +16,10 @@ class ChangeReservedApplicationTest : IntegrationTestBase() {
     applicationReference: String,
     changeApplicationDto: ChangeApplicationDto,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.put().uri("/visits/application/$applicationReference/slot/change")
-      .headers(authHttpHeaders)
-      .body(BodyInserters.fromValue(changeApplicationDto))
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.put().uri("/visits/application/$applicationReference/slot/change")
+    .headers(authHttpHeaders)
+    .body(BodyInserters.fromValue(changeApplicationDto))
+    .exchange()
 
   @Test
   fun `when change a reserved application slot is successful then OK status is returned`() {

@@ -27,30 +27,24 @@ class VisitSchedulerApplicationsClient(
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun createInitialApplication(createApplicationDto: VisitSchedulerCreateApplicationDto): ApplicationDto? {
-    return webClient.post()
-      .uri("$APPLICATION_CONTROLLER_PATH//slot/reserve")
-      .body(BodyInserters.fromValue(createApplicationDto))
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<ApplicationDto>().block(apiTimeout)
-  }
+  fun createInitialApplication(createApplicationDto: VisitSchedulerCreateApplicationDto): ApplicationDto? = webClient.post()
+    .uri("$APPLICATION_CONTROLLER_PATH//slot/reserve")
+    .body(BodyInserters.fromValue(createApplicationDto))
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<ApplicationDto>().block(apiTimeout)
 
-  fun changeIncompleteApplication(reference: String, changeApplicationDto: ChangeApplicationDto): ApplicationDto? {
-    return webClient.put()
-      .uri("$APPLICATION_CONTROLLER_PATH/$reference/slot/change")
-      .body(BodyInserters.fromValue(changeApplicationDto))
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<ApplicationDto>().block(apiTimeout)
-  }
+  fun changeIncompleteApplication(reference: String, changeApplicationDto: ChangeApplicationDto): ApplicationDto? = webClient.put()
+    .uri("$APPLICATION_CONTROLLER_PATH/$reference/slot/change")
+    .body(BodyInserters.fromValue(changeApplicationDto))
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<ApplicationDto>().block(apiTimeout)
 
-  fun createApplicationForAnExistingVisit(bookingReference: String, createApplicationDto: CreateApplicationDto): ApplicationDto? {
-    return webClient.put()
-      .uri("$APPLICATION_CONTROLLER_PATH/$bookingReference/change")
-      .body(BodyInserters.fromValue(createApplicationDto))
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<ApplicationDto>().block(apiTimeout)
-  }
+  fun createApplicationForAnExistingVisit(bookingReference: String, createApplicationDto: CreateApplicationDto): ApplicationDto? = webClient.put()
+    .uri("$APPLICATION_CONTROLLER_PATH/$bookingReference/change")
+    .body(BodyInserters.fromValue(createApplicationDto))
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<ApplicationDto>().block(apiTimeout)
 }

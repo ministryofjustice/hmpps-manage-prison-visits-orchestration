@@ -41,8 +41,7 @@ class PrisonerContactRegistryClient(
     }
       .retrieve()
       .bodyToMono<List<PrisonerContactDto>>()
-      .onErrorResume {
-          e ->
+      .onErrorResume { e ->
         if (!isNotFoundError(e)) {
           LOG.error("getPrisonersSocialContacts Failed for get request $uri")
           Mono.error(e)
@@ -77,8 +76,7 @@ class PrisonerContactRegistryClient(
       }
       .retrieve()
       .bodyToMono<DateRange>()
-      .onErrorResume {
-          e ->
+      .onErrorResume { e ->
         if (!isNotFoundError(e)) {
           LOG.error("getBannedRestrictionDateRage Failed get request $uri")
           Mono.error(e)
@@ -100,8 +98,7 @@ class PrisonerContactRegistryClient(
       }
       .retrieve()
       .bodyToMono<HasClosedRestrictionDto>()
-      .onErrorResume {
-          e ->
+      .onErrorResume { e ->
         if (!isNotFoundError(e)) {
           LOG.error("doVisitorsHaveClosedRestrictions Failed get request $uri")
         } else {

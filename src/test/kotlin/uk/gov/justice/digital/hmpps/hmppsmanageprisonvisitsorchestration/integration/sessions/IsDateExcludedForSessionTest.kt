@@ -33,11 +33,9 @@ class IsDateExcludedForSessionTest : IntegrationTestBase() {
     sessionTemplateReference: String,
     date: LocalDate,
     authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.get().uri("/config/sessions/session/$sessionTemplateReference/exclude-date/$date/isExcluded")
-      .headers(authHttpHeaders)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.get().uri("/config/sessions/session/$sessionTemplateReference/exclude-date/$date/isExcluded")
+    .headers(authHttpHeaders)
+    .exchange()
 
   @BeforeEach
   fun setupMocks() {
@@ -154,7 +152,5 @@ class IsDateExcludedForSessionTest : IntegrationTestBase() {
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): IsExcludeDateDto {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, IsExcludeDateDto::class.java)
-  }
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): IsExcludeDateDto = objectMapper.readValue(returnResult.returnResult().responseBody, IsExcludeDateDto::class.java)
 }

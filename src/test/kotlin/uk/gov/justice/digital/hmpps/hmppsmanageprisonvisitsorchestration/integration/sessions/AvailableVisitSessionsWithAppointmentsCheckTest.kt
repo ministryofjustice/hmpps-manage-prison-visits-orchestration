@@ -402,7 +402,5 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     verify(appointmentsService, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<AvailableVisitSessionDto> {
-    return objectMapper.readValue(returnResult.returnResult().responseBody, Array<AvailableVisitSessionDto>::class.java)
-  }
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<AvailableVisitSessionDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<AvailableVisitSessionDto>::class.java)
 }

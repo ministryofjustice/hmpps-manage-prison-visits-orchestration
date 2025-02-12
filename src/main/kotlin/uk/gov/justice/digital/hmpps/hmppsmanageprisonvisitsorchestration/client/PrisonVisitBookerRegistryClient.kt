@@ -38,14 +38,12 @@ class PrisonVisitBookerRegistryClient(
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun bookerAuthorisation(createBookerAuthDetailDto: AuthDetailDto): BookerReference? {
-    return webClient.put()
-      .uri("/register/auth")
-      .body(BodyInserters.fromValue(createBookerAuthDetailDto))
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<BookerReference>().block(apiTimeout)
-  }
+  fun bookerAuthorisation(createBookerAuthDetailDto: AuthDetailDto): BookerReference? = webClient.put()
+    .uri("/register/auth")
+    .body(BodyInserters.fromValue(createBookerAuthDetailDto))
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<BookerReference>().block(apiTimeout)
 
   fun getPermittedPrisonersForBooker(bookerReference: String): List<PermittedPrisonerForBookerDto> {
     val uri = PERMITTED_PRISONERS.replace("{bookerReference}", bookerReference) + "?active=true"
@@ -53,8 +51,7 @@ class PrisonVisitBookerRegistryClient(
       .uri(uri)
       .retrieve()
       .bodyToMono<List<PermittedPrisonerForBookerDto>>()
-      .onErrorResume {
-          e ->
+      .onErrorResume { e ->
         if (!ClientUtils.isNotFoundError(e)) {
           logger.error("getPermittedPrisonersForBooker Failed for get request $uri")
           Mono.error(e)
@@ -88,8 +85,7 @@ class PrisonVisitBookerRegistryClient(
   fun validatePrisoner(bookerReference: String, prisonerNumber: String) {
     val uri = VALIDATE_PRISONER.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerNumber)
     webClient.get()
-      .uri(uri).retrieve().toBodilessEntity().onErrorResume {
-          e ->
+      .uri(uri).retrieve().toBodilessEntity().onErrorResume { e ->
         if (isUnprocessableEntityError(e)) {
           val exception = getPrisonerValidationErrorResponse(e)
           Mono.error(exception)
