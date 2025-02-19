@@ -110,11 +110,13 @@ class VisitSchedulerClient(
     .retrieve()
     .bodyToMono<VisitDto>().block(apiTimeout)
 
-  fun getVisitHistoryByReference(reference: String): List<EventAuditDto>? = webClient.get()
+  fun getVisitHistoryByReference(reference: String): List<EventAuditDto>? = getVisitHistoryByReferenceAsMono(reference).block(apiTimeout)
+
+  fun getVisitHistoryByReferenceAsMono(reference: String): Mono<List<EventAuditDto>> = webClient.get()
     .uri(GET_VISIT_HISTORY_CONTROLLER_PATH.replace("{reference}", reference))
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
-    .bodyToMono<List<EventAuditDto>>().block(apiTimeout)
+    .bodyToMono<List<EventAuditDto>>()
 
   fun getVisits(visitSearchRequestFilter: VisitSearchRequestFilter): RestPage<VisitDto>? = getVisitsAsMono(visitSearchRequestFilter).block(apiTimeout)
 
