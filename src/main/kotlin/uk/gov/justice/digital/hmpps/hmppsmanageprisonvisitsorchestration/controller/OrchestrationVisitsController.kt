@@ -40,6 +40,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.validat
 import java.time.LocalDate
 
 const val ORCHESTRATION_VISIT_CONTROLLER_PATH: String = "/visits"
+const val GET_VISIT_FULL_DETAILS_BY_VISIT_REFERENCE: String = "$ORCHESTRATION_VISIT_CONTROLLER_PATH/{reference}/detailed"
 const val ORCHESTRATION_GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/booked/future"
 const val ORCHESTRATION_GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/cancelled"
 const val ORCHESTRATION_GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/booked/past"
@@ -474,7 +475,7 @@ class OrchestrationVisitsController(
   ): List<VisitDto> = visitSchedulerService.findFutureVisitsForPrisoner(prisonerId)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
-  @GetMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/{reference}/full-details")
+  @GetMapping(GET_VISIT_FULL_DETAILS_BY_VISIT_REFERENCE)
   @Operation(
     summary = "Get a visit",
     description = "Retrieve a BOOKED or CANCELLED visit by visit reference",

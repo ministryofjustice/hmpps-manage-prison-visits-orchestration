@@ -8,7 +8,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.con
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.RestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.CurrentIncentive
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
@@ -56,8 +55,8 @@ data class VisitBookingDetailsDto internal constructor(
     visit: VisitDto,
     prison: PrisonRegisterPrisonDto,
     prisonerDto: PrisonerDto,
-    prisonerAlerts: List<AlertDto>?,
-    prisonerRestrictions: List<OffenderRestrictionDto>?,
+    prisonerAlerts: List<AlertDto>,
+    prisonerRestrictions: List<OffenderRestrictionDto>,
     visitVisitors: List<PrisonerContactDto>,
     events: List<EventAuditDto>,
     // notifications: List<NotificationEventType>,
@@ -98,23 +97,23 @@ data class PrisonerDetailsDto internal constructor(
   @Schema(description = "In prison cell location", example = "A-1-002")
   val cellLocation: String? = null,
 
-  @Schema(description = "Incentive level")
-  val currentIncentive: CurrentIncentive? = null,
+  @Schema(description = "current prison or outside with last movement information.", example = "Outside - released from Leeds")
+  val locationDescription: String? = null,
 
   @Schema(description = "Prisoner alerts")
-  val prisonerAlerts: List<AlertDto>? = null,
+  val prisonerAlerts: List<AlertDto> = emptyList(),
 
   @Schema(description = "Prisoner restrictions")
-  val prisonerRestrictions: List<OffenderRestrictionDto>? = null,
+  val prisonerRestrictions: List<OffenderRestrictionDto> = emptyList(),
 ) {
-  constructor(prisonerNumber: String, prisonerDto: PrisonerDto, prisonerAlerts: List<AlertDto>?, prisonerRestrictions: List<OffenderRestrictionDto>?) : this(
+  constructor(prisonerNumber: String, prisonerDto: PrisonerDto, prisonerAlerts: List<AlertDto>, prisonerRestrictions: List<OffenderRestrictionDto>) : this(
     prisonerNumber = prisonerNumber,
     firstName = prisonerDto.firstName,
     lastName = prisonerDto.lastName,
     dateOfBirth = prisonerDto.dateOfBirth,
     prisonId = prisonerDto.prisonId,
     cellLocation = prisonerDto.cellLocation,
-    currentIncentive = prisonerDto.currentIncentive,
+    locationDescription = prisonerDto.locationDescription,
     prisonerAlerts = prisonerAlerts,
     prisonerRestrictions = prisonerRestrictions,
   )

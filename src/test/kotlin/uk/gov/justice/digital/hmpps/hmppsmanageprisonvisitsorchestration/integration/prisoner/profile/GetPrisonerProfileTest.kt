@@ -20,9 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.PrisonerProfileDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertCodeSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.InmateDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.PrisonerBookingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.VisitBalancesDto
@@ -711,14 +709,6 @@ class GetPrisonerProfileTest(
     prisonerId: String,
     category: String? = null,
   ): InmateDetailDto = InmateDetailDto(offenderNo = prisonerId, category = category)
-
-  private fun createAlertResponseDto(): AlertResponseDto = AlertResponseDto(
-    AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "C1", description = "Alert Code Desc"),
-    createdAt = LocalDate.now(),
-    activeTo = null,
-    active = true,
-    description = "Alert code comment",
-  )
 
   private fun createVisitBalancesDto(): VisitBalancesDto = VisitBalancesDto(remainingVo = 10, remainingPvo = 10)
 

@@ -6,10 +6,13 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitBookingDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AlertsService.Companion.predicateFilterSupportedCodes
 import java.time.Duration
+import kotlin.jvm.optionals.getOrNull
 
 @Component
 class VisitBookingDetailsClient(
@@ -31,26 +34,34 @@ class VisitBookingDetailsClient(
     LOG.debug("getVisitDetails for visit reference - {}", visitReference)
     val visit = visitSchedulerClient.getVisitByReference(visitReference) ?: throw NotFoundException("Visit with reference - $visitReference not found")
 
-    val prisonDetailsMono = prisonRegisterClient.getPrisonAsMono(visit.prisonCode)
+    val prisonDetailsMono = prisonRegisterClient.getPrisonAsMonoEmptyIfNotFound(visit.prisonCode)
     val prisonerDetailsMono = prisonerSearchClient.getPrisonerByIdAsMono(visit.prisonerId)
     val prisonerAlertsMono = alertsApiClient.getPrisonerAlertsAsMono(visit.prisonerId)
     val prisonerRestrictionsMono = prisonApiClient.getPrisonerRestrictionsAsMono(visit.prisonerId)
-    val visitorsMono = prisonerContactRegistryClient.getPrisonersSocialContactsAsMono(visit.prisonerId, withAddress = true, approvedVisitorsOnly = false)
+    val visitorsMono = prisonerContactRegistryClient.getPrisonersSocialContactsAsMono(
+      prisonerId = visit.prisonerId,
+      withAddress = true,
+      approvedVisitorsOnly = false,
+    )
     val eventsMono = visitSchedulerClient.getVisitHistoryByReferenceAsMono(visitReference)
 
     // TODO - will enable this once we add the new endpoint to get notifications by visit
     // val notificationsMono = null//visitSchedulerClient.getVisitNotificationsAsMono(visitReference)
-    val visitVisitors = visit.visitors?.map { it.nomisPersonId } ?: emptyList()
-
     return Mono.zip(prisonDetailsMono, prisonerDetailsMono, prisonerAlertsMono, prisonerRestrictionsMono, visitorsMono, eventsMono)
       .map { visitBookingDetailsMono ->
-        val prison = visitBookingDetailsMono.t1
+        val prison = visitBookingDetailsMono.t1.getOrNull() ?: PrisonRegisterPrisonDto(prisonId = visit.prisonCode, prisonName = visit.prisonCode, active = true)
         val prisoner = visitBookingDetailsMono.t2
         val prisonerAlerts = visitBookingDetailsMono.t3.content.filter { predicateFilterSupportedCodes.test(it) }.map { alertResponse -> AlertDto(alertResponse) }
-        val prisonerRestrictions = visitBookingDetailsMono.t4.offenderRestrictions
-
-        val visitors = visitBookingDetailsMono.t5
+        val prisonerRestrictions = visitBookingDetailsMono.t4.offenderRestrictions ?: emptyList()
+        val allVisitorsForPrisoner = visitBookingDetailsMono.t5
         val events = visitBookingDetailsMono.t6
+        val visitors = mutableListOf<PrisonerContactDto>()
+
+        visit.visitors?.forEach { visitVisitor ->
+          allVisitorsForPrisoner.firstOrNull { it.personId == visitVisitor.nomisPersonId }?.let {
+            visitors.add(it)
+          }
+        }
 
         // TODO - will enable this once we add the new endpoint to get notifications by visit
         // val notifications = visitBookingDetailsMono.t7
@@ -60,7 +71,7 @@ class VisitBookingDetailsClient(
           prisonerDto = prisoner,
           prisonerAlerts = prisonerAlerts,
           prisonerRestrictions = prisonerRestrictions,
-          visitVisitors = visitors.filter { visitVisitors.contains(it.personId) }.toList(),
+          visitVisitors = visitors,
           events = events,
         )
       }

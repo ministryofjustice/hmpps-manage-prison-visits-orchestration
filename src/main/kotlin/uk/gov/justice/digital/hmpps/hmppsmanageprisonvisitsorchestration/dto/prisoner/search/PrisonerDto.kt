@@ -27,4 +27,7 @@ data class PrisonerDto(
 
   @Schema(description = "Incentive level")
   val currentIncentive: CurrentIncentive? = null,
+
+  @Schema(description = "current prison or outside with last movement information.", example = "Outside - released from Leeds")
+  val locationDescription: String? = null,
 )

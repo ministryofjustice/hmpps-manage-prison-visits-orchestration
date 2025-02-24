@@ -16,6 +16,9 @@ import org.testcontainers.shaded.org.apache.commons.lang3.RandomUtils
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.ORCHESTRATION_GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.ORCHESTRATION_GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.ORCHESTRATION_GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertCodeSummaryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertResponseDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.AddressDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.RestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitorDto
@@ -468,13 +471,14 @@ abstract class IntegrationTestBase {
     currentIncentive = currentIncentive,
   )
 
-  fun createContactDto(
+  final fun createContactDto(
     personId: Long = RandomUtils.nextLong(),
     firstName: String,
     lastName: String,
     dateOfBirth: LocalDate? = null,
     approvedVisitor: Boolean = true,
     restrictions: List<RestrictionDto> = emptyList(),
+    addresses: List<AddressDto> = emptyList(),
   ): PrisonerContactDto = PrisonerContactDto(
     personId = personId,
     firstName = firstName,
@@ -486,6 +490,7 @@ abstract class IntegrationTestBase {
     emergencyContact = true,
     nextOfKin = true,
     restrictions = restrictions,
+    addresses = addresses,
   )
 
   final fun createContactsList(visitorDetails: List<VisitorDetails>): List<PrisonerContactDto> = visitorDetails.stream().map {
@@ -607,4 +612,52 @@ abstract class IntegrationTestBase {
       Assertions.assertThat(visitor.lastName).isEqualTo(contact.lastName)
     }
   }
+
+  final fun createAlertResponseDto(
+    alertCodeSummary: AlertCodeSummaryDto = AlertCodeSummaryDto(
+      alertTypeCode = "T",
+      alertTypeDescription = "Type Description",
+      code = "C1",
+      description = "Alert Code Desc",
+    ),
+    createdAt: LocalDate = LocalDate.now(),
+    activeTo: LocalDate? = null,
+    active: Boolean = true,
+    description: String = "Alert code comment",
+  ): AlertResponseDto = AlertResponseDto(
+    alertCodeSummary,
+    createdAt,
+    activeTo,
+    active,
+    description,
+  )
+
+  final fun createAlertResponseDto(
+    alertTypeCode: String = "T",
+    alertTypeDescription: String = "Type Description",
+    code: String = "C1",
+    alertCodeDescription: String = "Alert Code Desc",
+    createdAt: LocalDate = LocalDate.now(),
+    activeTo: LocalDate? = null,
+    active: Boolean = true,
+    description: String = "Alert code comment",
+  ): AlertResponseDto = AlertResponseDto(
+    AlertCodeSummaryDto(alertTypeCode, alertTypeDescription, code, alertCodeDescription),
+    createdAt,
+    activeTo,
+    active,
+    description,
+  )
+
+  final fun createAddressDto(primary: Boolean, noFixedAddress: Boolean = false, street: String): AddressDto = AddressDto(
+    addressType = "RES",
+    street = street,
+    town = "London",
+    postalCode = "ABC123",
+    county = "London",
+    country = "UK",
+    primary = primary,
+    noFixedAddress = noFixedAddress,
+    startDate = LocalDate.now().minusDays(1),
+  )
 }
