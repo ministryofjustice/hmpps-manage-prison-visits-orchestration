@@ -50,7 +50,7 @@ class OrchestrationVisitsController(
   private val visitSchedulerService: VisitSchedulerService,
   private val visitsByDateService: VisitsByDateService,
 ) {
-  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE', 'VSIP_ORCHESTRATION_SERVICE__HMPPS_INTEGRATION_API')")
   @GetMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/{reference}")
   @Operation(
     summary = "Get a visit",
