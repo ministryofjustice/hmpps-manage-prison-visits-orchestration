@@ -45,9 +45,9 @@ class VisitBookingDetailsClient(
     )
     val eventsMono = visitSchedulerClient.getVisitHistoryByReferenceAsMono(visitReference)
 
-    // TODO - will enable this once we add the new endpoint to get notifications by visit
-    // val notificationsMono = null//visitSchedulerClient.getVisitNotificationsAsMono(visitReference)
-    return Mono.zip(prisonDetailsMono, prisonerDetailsMono, prisonerAlertsMono, prisonerRestrictionsMono, visitorsMono, eventsMono)
+    val notificationsMono = visitSchedulerClient.getNotificationEventsForBookingReferenceAsMono(visitReference)
+
+    return Mono.zip(prisonDetailsMono, prisonerDetailsMono, prisonerAlertsMono, prisonerRestrictionsMono, visitorsMono, eventsMono, notificationsMono)
       .map { visitBookingDetailsMono ->
         val prison = visitBookingDetailsMono.t1.getOrNull() ?: PrisonRegisterPrisonDto(prisonId = visit.prisonCode, prisonName = visit.prisonCode, active = true)
         val prisoner = visitBookingDetailsMono.t2
@@ -55,6 +55,7 @@ class VisitBookingDetailsClient(
         val prisonerRestrictions = visitBookingDetailsMono.t4.offenderRestrictions ?: emptyList()
         val allVisitorsForPrisoner = visitBookingDetailsMono.t5
         val events = visitBookingDetailsMono.t6
+        val notifications = visitBookingDetailsMono.t7
         val visitors = mutableListOf<PrisonerContactDto>()
 
         visit.visitors?.forEach { visitVisitor ->
@@ -63,8 +64,6 @@ class VisitBookingDetailsClient(
           }
         }
 
-        // TODO - will enable this once we add the new endpoint to get notifications by visit
-        // val notifications = visitBookingDetailsMono.t7
         VisitBookingDetailsDto(
           visit = visit,
           prison = prison,
@@ -73,6 +72,7 @@ class VisitBookingDetailsClient(
           prisonerRestrictions = prisonerRestrictions,
           visitVisitors = visitors,
           events = events,
+          notifications = notifications,
         )
       }
       .block(apiTimeout)

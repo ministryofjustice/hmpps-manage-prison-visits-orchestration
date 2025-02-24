@@ -41,6 +41,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventAttributeDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.ScheduledEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.AlertsApiMockServer
@@ -662,6 +665,22 @@ abstract class IntegrationTestBase {
     noFixedAddress = noFixedAddress,
     startDate = LocalDate.now().minusDays(1),
   )
+
+  protected fun createNotificationEvent(
+    type: NotificationEventType,
+    notificationEventReference: String = generateRandomUUID(),
+    createdDateTime: LocalDateTime = LocalDateTime.now(),
+    additionalData: List<VisitNotificationEventAttributeDto> = emptyList(),
+  ) = VisitNotificationEventDto(type, notificationEventReference, createdDateTime, additionalData)
+
+  protected fun assertNotificationEvent(
+    notificationEventDto: VisitNotificationEventDto,
+    notificationEventType: NotificationEventType,
+    additionalData: List<VisitNotificationEventAttributeDto>,
+  ) {
+    Assertions.assertThat(notificationEventDto.type).isEqualTo(notificationEventType)
+    Assertions.assertThat(notificationEventDto.additionalData).isEqualTo(additionalData)
+  }
 
   protected fun generateRandomUUID(length: Int = 8): String = UUID.randomUUID().toString().substring(0, length)
 }

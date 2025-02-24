@@ -17,6 +17,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventAttributeDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventDto
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -59,7 +61,7 @@ data class VisitBookingDetailsDto internal constructor(
     prisonerRestrictions: List<OffenderRestrictionDto>,
     visitVisitors: List<PrisonerContactDto>,
     events: List<EventAuditDto>,
-    // notifications: List<NotificationEventType>,
+    notifications: List<VisitNotificationEventDto>,
   ) : this(
     reference = visit.reference,
     visitRoom = visit.visitRoom,
@@ -74,7 +76,7 @@ data class VisitBookingDetailsDto internal constructor(
     prisoner = PrisonerDetailsDto(visit.prisonerId, prisonerDto, prisonerAlerts, prisonerRestrictions),
     visitors = visitVisitors.map { VisitorDetailsDto(it) }.toList(),
     events = events,
-    notifications = emptyList(),
+    notifications = notifications.map { VisitNotificationDto(it) },
   )
 }
 
@@ -148,13 +150,19 @@ data class VisitorDetailsDto internal constructor(
 }
 
 @Schema(description = "Visit notification details")
-data class VisitNotificationDto(
+data class VisitNotificationDto internal constructor(
   @Schema(description = "notification event type")
   val type: NotificationEventType,
 
   @Schema(description = "notification created at", example = "2018-12-01T13:45:00")
-  val createTimestamp: LocalDateTime,
+  val createdDateTime: LocalDateTime,
 
   @Schema(description = "notification additional data")
-  val additionalData: Map<String, String>,
-)
+  val additionalData: List<VisitNotificationEventAttributeDto>,
+) {
+  constructor(visitNotificationEventDto: VisitNotificationEventDto) : this(
+    type = visitNotificationEventDto.type,
+    createdDateTime = visitNotificationEventDto.createdDateTime,
+    additionalData = visitNotificationEventDto.additionalData,
+  )
+}
