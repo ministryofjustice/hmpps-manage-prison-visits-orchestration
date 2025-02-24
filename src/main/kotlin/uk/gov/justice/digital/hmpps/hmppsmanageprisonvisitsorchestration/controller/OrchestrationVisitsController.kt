@@ -438,7 +438,7 @@ class OrchestrationVisitsController(
     prisonCode: String,
   ): List<VisitPreviewDto> = visitsByDateService.getVisitsForSessionTemplateAndDate(sessionTemplateReference, sessionDate, visitStatus, visitRestrictions, prisonCode)
 
-  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE', 'VSIP_ORCHESTRATION_SERVICE__HMPPS_INTEGRATION_API')")
   @GetMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/search/future/{prisonerId}")
   @Operation(
     summary = "Get future visits for a prisoner",
