@@ -55,7 +55,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.WhereaboutsApiMockServer
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.*
 import java.util.stream.Collectors
+import kotlin.collections.ArrayList
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
@@ -660,4 +662,6 @@ abstract class IntegrationTestBase {
     noFixedAddress = noFixedAddress,
     startDate = LocalDate.now().minusDays(1),
   )
+
+  protected fun generateRandomUUID(length: Int = 8): String = UUID.randomUUID().toString().substring(0, length)
 }
