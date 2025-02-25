@@ -37,6 +37,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationGroupDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerVisitsNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventAttributeDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase.Companion.getVisitsQueryParams
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.createJsonResponseBuilder
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.getJsonString
@@ -527,6 +528,22 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
           createJsonResponseBuilder()
             .withStatus(HttpStatus.OK.value())
             .withBody(getJsonString(type.toList())),
+        ),
+    )
+  }
+
+  fun stubGetVisitNotificationEvents(reference: String, notificationEvents: List<VisitNotificationEventDto>?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
+    stubFor(
+      get("/visits/notification/visit/$reference/events")
+        .willReturn(
+          if (notificationEvents == null) {
+            createJsonResponseBuilder()
+              .withStatus(httpStatus.value())
+          } else {
+            createJsonResponseBuilder()
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(notificationEvents.toList()))
+          },
         ),
     )
   }

@@ -43,6 +43,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerRestrictionChangeNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorApprovedUnapprovedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.ApplicationValidationException
@@ -471,6 +472,13 @@ class VisitSchedulerClient(
     .uri("/visits/notification/visit/$reference/types")
     .retrieve()
     .bodyToMono<List<NotificationEventType>>().block(apiTimeout)
+
+  fun getNotificationEventsForBookingReference(reference: String): List<VisitNotificationEventDto>? = getNotificationEventsForBookingReferenceAsMono(reference).block(apiTimeout)
+
+  fun getNotificationEventsForBookingReferenceAsMono(reference: String): Mono<List<VisitNotificationEventDto>> = webClient.get()
+    .uri("/visits/notification/visit/$reference/events")
+    .retrieve()
+    .bodyToMono<List<VisitNotificationEventDto>>()
 
   fun getPrisonExcludeDates(prisonCode: String): List<ExcludeDateDto>? = webClient.get()
     .uri("/prisons/prison/$prisonCode/exclude-date")

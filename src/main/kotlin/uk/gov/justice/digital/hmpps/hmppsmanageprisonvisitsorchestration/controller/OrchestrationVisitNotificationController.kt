@@ -25,12 +25,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
 
 const val VISIT_NOTIFICATION_CONTROLLER_PATH: String = "/visits/notification"
 const val VISIT_NOTIFICATION_COUNT_FOR_PRISON_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/{prisonCode}/count"
 const val FUTURE_NOTIFICATION_VISIT_GROUPS: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/{prisonCode}/groups"
 const val VISIT_NOTIFICATION_TYPES: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/visit/{reference}/types"
+const val VISIT_NOTIFICATION_EVENTS: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/visit/{reference}/events"
 const val VISIT_NOTIFICATION_IGNORE: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/visit/{reference}/ignore"
 
 @RestController
@@ -127,6 +129,34 @@ class VisitNotificationController(
     @PathVariable
     reference: String,
   ): List<NotificationEventType>? = visitSchedulerService.getNotificationsTypesForBookingReference(reference)
+
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @GetMapping(VISIT_NOTIFICATION_EVENTS)
+  @Operation(
+    summary = "get visit notification events by booking reference",
+    description = "Retrieve visit  notification events by booking reference",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Retrieved visit  notification events by booking reference",
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getNotificationEventsForBookingReference(
+    @Schema(description = "bookingReference", example = "v9*d7*ed*7u", required = true)
+    @PathVariable
+    reference: String,
+  ): List<VisitNotificationEventDto>? = visitSchedulerService.getNotificationEventsForBookingReference(reference)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @PutMapping(VISIT_NOTIFICATION_IGNORE)
