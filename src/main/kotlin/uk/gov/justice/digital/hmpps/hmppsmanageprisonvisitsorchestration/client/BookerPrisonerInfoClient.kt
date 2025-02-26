@@ -30,13 +30,17 @@ class BookerPrisonerInfoClient(
   ): BookerPrisonerInfoDto? {
     val prisonCode = bookerPrisoner.prisonCode
     val prisonerId = bookerPrisoner.prisonerId
+
     val offenderSearchPrisonerDtoMono = prisonerSearchClient.getPrisonerByIdAsMonoEmptyIfNotFound(prisonerId)
     val visitBalancesDtoMono = prisonApiClient.getVisitBalancesAsMono(prisonerId)
     val registeredPrisonMono = prisonRegisterClient.getPrisonAsMonoEmptyIfNotFound(prisonCode)
-    Mono.zip(offenderSearchPrisonerDtoMono, visitBalancesDtoMono, registeredPrisonMono).block(apiTimeout).also {
-      val offenderSearchPrisoner = it?.t1
-      val visitBalancesDto = it?.t2?.getOrNull()
-      val registeredPrison = getRegisteredPrison(prisonCode, it?.t3?.getOrNull())
+    val prisonerBookingSummaryMono = prisonApiClient.getBookingsAsMono(prisonCode, prisonerId)
+
+    Mono.zip(offenderSearchPrisonerDtoMono, visitBalancesDtoMono, registeredPrisonMono, prisonerBookingSummaryMono).block(apiTimeout).also { bookerPrisonerInfoMonos ->
+      val offenderSearchPrisoner = bookerPrisonerInfoMonos?.t1
+      val visitBalancesDto = bookerPrisonerInfoMonos?.t2?.getOrNull()
+      val registeredPrison = getRegisteredPrison(prisonCode, bookerPrisonerInfoMonos?.t3?.getOrNull())
+      val convictedStatus = bookerPrisonerInfoMonos?.t4?.content?.firstOrNull()?.convictedStatus
 
       return if (offenderSearchPrisoner == null) {
         LOG.error("getPermittedPrisonerInfo - prisoner with id - $prisonerId not found on offender search")
@@ -47,6 +51,7 @@ class BookerPrisonerInfoClient(
           visitBalancesUtil.calculateAvailableVos(visitBalancesDto),
           visitBalancesUtil.calculateVoRenewalDate(visitBalancesDto),
           registeredPrison,
+          convictedStatus,
         )
       }
     }
