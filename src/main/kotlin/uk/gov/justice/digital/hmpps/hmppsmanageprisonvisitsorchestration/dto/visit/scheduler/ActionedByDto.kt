@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 
 @Schema(description = "Actioned By")
-class ActionedByDto(
+data class ActionedByDto(
 
   @Schema(description = "booker reference", example = "asd-aed-vhj", required = false)
   val bookerReference: String?,

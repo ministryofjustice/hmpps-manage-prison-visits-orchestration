@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
 @Schema(description = "An address")
-class AddressDto(
+data class AddressDto(
   @Schema(description = "Address Type", example = "BUS", required = false) val addressType: String? = null,
   @Schema(description = "Flat", example = "3B", required = false) val flat: String? = null,
   @Schema(description = "Premise", example = "Liverpool Prison", required = false) val premise: String? = null,

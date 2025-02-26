@@ -85,13 +85,13 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     client.verifyThat(1, builder)
   }
 
-  fun stubGetVisitHistory(reference: String, eventsAudit: List<EventAuditDto>) {
+  fun stubGetVisitHistory(reference: String, eventsAudit: List<EventAuditDto>, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
       get("/visits/$reference/history")
         .willReturn(
           if (eventsAudit.isEmpty()) {
-            responseBuilder.withStatus(HttpStatus.NOT_FOUND.value())
+            responseBuilder.withStatus(httpStatus.value())
           } else {
             responseBuilder.withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(eventsAudit))

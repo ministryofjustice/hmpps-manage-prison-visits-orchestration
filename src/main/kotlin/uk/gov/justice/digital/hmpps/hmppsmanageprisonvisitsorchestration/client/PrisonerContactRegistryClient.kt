@@ -36,11 +36,7 @@ class PrisonerContactRegistryClient(
     hasDateOfBirth: Boolean? = null,
   ): List<PrisonerContactDto> {
     val uri = "/prisoners/$prisonerId/contacts/social"
-    return webClient.get().uri(uri) {
-      getSocialContactsUriBuilder(personId, withAddress, hasDateOfBirth, approvedVisitorsOnly, it).build()
-    }
-      .retrieve()
-      .bodyToMono<List<PrisonerContactDto>>()
+    return getPrisonersSocialContactsAsMono(prisonerId, withAddress, approvedVisitorsOnly, personId, hasDateOfBirth)
       .onErrorResume { e ->
         if (!isNotFoundError(e)) {
           LOG.error("getPrisonersSocialContacts Failed for get request $uri")
@@ -51,6 +47,21 @@ class PrisonerContactRegistryClient(
         }
       }
       .blockOptional(apiTimeout).orElseThrow { NotFoundException("Social Contacts for prisonerId - $prisonerId not found on prisoner-contact-registry") }
+  }
+
+  fun getPrisonersSocialContactsAsMono(
+    prisonerId: String,
+    withAddress: Boolean,
+    approvedVisitorsOnly: Boolean,
+    personId: Long? = null,
+    hasDateOfBirth: Boolean? = null,
+  ): Mono<List<PrisonerContactDto>> {
+    val uri = "/prisoners/$prisonerId/contacts/social"
+    return webClient.get().uri(uri) {
+      getSocialContactsUriBuilder(personId, withAddress, hasDateOfBirth, approvedVisitorsOnly, it).build()
+    }
+      .retrieve()
+      .bodyToMono<List<PrisonerContactDto>>()
   }
 
   private fun getSocialContactsUriBuilder(

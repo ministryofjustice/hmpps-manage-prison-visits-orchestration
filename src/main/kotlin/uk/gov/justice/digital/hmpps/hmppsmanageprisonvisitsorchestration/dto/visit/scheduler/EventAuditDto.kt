@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.validat
 import java.time.LocalDateTime
 
 @Schema(description = "Event Audit")
-class EventAuditDto(
+data class EventAuditDto(
 
   @Schema(description = "The type of event", required = true)
   @field:NotNull
