@@ -351,7 +351,7 @@ class OrchestrationVisitsController(
   @PutMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/{applicationReference}/update")
   @ResponseStatus(HttpStatus.OK)
   @Operation(
-    summary = "Book a visit (end of flow)",
+    summary = "Update an existing visit",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -359,7 +359,7 @@ class OrchestrationVisitsController(
       ),
       ApiResponse(
         responseCode = "400",
-        description = "Incorrect request to book a visit",
+        description = "Incorrect request to update a visit",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
@@ -369,7 +369,7 @@ class OrchestrationVisitsController(
       ),
       ApiResponse(
         responseCode = "403",
-        description = "Incorrect permissions to book a visit",
+        description = "Incorrect permissions to update a visit",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
