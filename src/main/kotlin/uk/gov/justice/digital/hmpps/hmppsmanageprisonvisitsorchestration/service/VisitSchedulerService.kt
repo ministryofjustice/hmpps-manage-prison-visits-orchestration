@@ -136,6 +136,11 @@ class VisitSchedulerService(
     )
   }
 
+  fun updateVisit(applicationReference: String, requestDto: BookingOrchestrationRequestDto): VisitDto? = visitSchedulerClient.updateBookedVisit(
+    applicationReference,
+    BookingRequestDto(requestDto.actionedBy, requestDto.applicationMethodType, requestDto.allowOverBooking, requestDto.userType),
+  )
+
   fun cancelVisit(reference: String, cancelVisitDto: CancelVisitOrchestrationDto): VisitDto? = visitSchedulerClient.cancelVisit(
     reference,
     CancelVisitDto(cancelVisitDto),
