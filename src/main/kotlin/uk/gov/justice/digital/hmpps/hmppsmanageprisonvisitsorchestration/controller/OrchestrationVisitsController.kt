@@ -477,16 +477,16 @@ class OrchestrationVisitsController(
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(GET_VISIT_FULL_DETAILS_BY_VISIT_REFERENCE)
   @Operation(
-    summary = "Get a visit",
-    description = "Retrieve a BOOKED or CANCELLED visit by visit reference",
+    summary = "Get a detailed summary of the visit including prisoner, visitor, event audit and notification event details",
+    description = "Retrieve a detailed summary of the visit given a visit reference",
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "Visit Information Returned",
+        description = "Detailed visit summary returned",
       ),
       ApiResponse(
         responseCode = "500",
-        description = "Incorrect request to Get visits for prisoner",
+        description = "Failed to get a detailed visit summary",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
@@ -496,7 +496,7 @@ class OrchestrationVisitsController(
       ),
       ApiResponse(
         responseCode = "403",
-        description = "Incorrect permissions retrieve a visit",
+        description = "Incorrect permissions retrieve a detailed visit summary",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
