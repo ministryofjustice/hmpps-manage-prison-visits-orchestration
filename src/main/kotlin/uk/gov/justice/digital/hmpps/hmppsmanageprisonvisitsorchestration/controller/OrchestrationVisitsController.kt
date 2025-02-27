@@ -348,6 +348,51 @@ class OrchestrationVisitsController(
   ): VisitDto? = visitSchedulerService.bookVisit(applicationReference, bookingRequestDto)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @PutMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/{applicationReference}/update")
+  @ResponseStatus(HttpStatus.OK)
+  @Operation(
+    summary = "Book a visit (end of flow)",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Visit updated",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to book a visit",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to book a visit",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Visit not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "422",
+        description = "Application validation failed",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ApplicationValidationErrorResponse::class))],
+      ),
+    ],
+  )
+  fun updateAVisit(
+    @Schema(description = "applicationReference", example = "dfs-wjs-eqr", required = true)
+    @PathVariable
+    applicationReference: String,
+    @RequestBody @Valid
+    bookingRequestDto: BookingOrchestrationRequestDto,
+  ): VisitDto? = visitSchedulerService.updateVisit(applicationReference, bookingRequestDto)
+
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @PutMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/{reference}/cancel")
   @ResponseStatus(HttpStatus.OK)
   @Operation(
