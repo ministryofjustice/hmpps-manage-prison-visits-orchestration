@@ -559,7 +559,6 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     assertThat(visitBookingDetailsDto.startTimestamp).isEqualTo(visitDto.startTimestamp)
     assertThat(visitBookingDetailsDto.visitorSupport).isEqualTo(visitDto.visitorSupport)
     assertThat(visitBookingDetailsDto.visitNotes).isEqualTo(visitDto.visitNotes)
-
   }
 
   private fun assertPrisonDetails(
