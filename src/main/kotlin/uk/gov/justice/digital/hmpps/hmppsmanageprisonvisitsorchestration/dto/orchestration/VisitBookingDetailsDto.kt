@@ -12,10 +12,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitNoteDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorSupportDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.OutcomeStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventAttributeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventDto
@@ -28,10 +29,10 @@ data class VisitBookingDetailsDto internal constructor(
   @Schema(description = "Visit Room", example = "Visits Main Hall", required = true)
   @field:NotBlank
   val visitRoom: String,
-  @Schema(description = "Visit Type", example = "SOCIAL", required = true)
-  val visitType: VisitType,
   @Schema(description = "Visit Status", example = "RESERVED", required = true)
   val visitStatus: VisitStatus,
+  @Schema(description = "Outcome Status", example = "VISITOR_CANCELLED", required = false)
+  val outcomeStatus: OutcomeStatus?,
   @Schema(description = "Visit Restriction", example = "OPEN", required = true)
   val visitRestriction: VisitRestriction,
   @Schema(description = "The date and time of the visit", example = "2018-12-01T13:45:00", required = true)
@@ -40,6 +41,8 @@ data class VisitBookingDetailsDto internal constructor(
   @Schema(description = "The finishing date and time of the visit", example = "2018-12-01T13:45:00", required = true)
   @field:NotBlank
   val endTimestamp: LocalDateTime,
+  @Schema(description = "Visit Notes", required = false)
+  val visitNotes: List<VisitNoteDto>? = listOf(),
   @Schema(description = "Contact associated with the visit", required = false)
   val visitContact: ContactDto? = null,
   @Schema(description = "Additional support associated with the visit", required = false)
@@ -65,11 +68,12 @@ data class VisitBookingDetailsDto internal constructor(
   ) : this(
     reference = visit.reference,
     visitRoom = visit.visitRoom,
-    visitType = visit.visitType,
     visitStatus = visit.visitStatus,
+    outcomeStatus = visit.outcomeStatus,
     visitRestriction = visit.visitRestriction,
     startTimestamp = visit.startTimestamp,
     endTimestamp = visit.endTimestamp,
+    visitNotes = visit.visitNotes,
     visitContact = visit.visitContact,
     visitorSupport = visit.visitorSupport,
     prison = prison,
