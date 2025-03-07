@@ -551,12 +551,15 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
   ) {
     assertThat(visitBookingDetailsDto.reference).isEqualTo(visitDto.reference)
     assertThat(visitBookingDetailsDto.visitRoom).isEqualTo(visitDto.visitRoom)
-    assertThat(visitBookingDetailsDto.visitType).isEqualTo(visitDto.visitType)
+    assertThat(visitBookingDetailsDto.visitStatus).isEqualTo(visitDto.visitStatus)
+    assertThat(visitBookingDetailsDto.outcomeStatus).isEqualTo(visitDto.outcomeStatus)
     assertThat(visitBookingDetailsDto.visitRestriction).isEqualTo(visitDto.visitRestriction)
     assertThat(visitBookingDetailsDto.visitContact).isEqualTo(visitDto.visitContact)
     assertThat(visitBookingDetailsDto.endTimestamp).isEqualTo(visitDto.endTimestamp)
     assertThat(visitBookingDetailsDto.startTimestamp).isEqualTo(visitDto.startTimestamp)
     assertThat(visitBookingDetailsDto.visitorSupport).isEqualTo(visitDto.visitorSupport)
+    assertThat(visitBookingDetailsDto.visitNotes).isEqualTo(visitDto.visitNotes)
+
   }
 
   private fun assertPrisonDetails(
