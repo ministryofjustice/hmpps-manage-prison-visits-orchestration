@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitNoteDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorSupportDto
@@ -53,7 +52,7 @@ data class VisitBookingDetailsDto internal constructor(
   val prisoner: PrisonerDetailsDto,
   @Schema(description = "Prisoner details", required = true)
   val visitors: List<VisitorDetailsDto>,
-  val events: List<EventAuditDto>,
+  val events: List<EventAuditOrchestrationDto>,
   val notifications: List<VisitNotificationDto>,
 ) {
   constructor(
@@ -63,7 +62,7 @@ data class VisitBookingDetailsDto internal constructor(
     prisonerAlerts: List<AlertDto>,
     prisonerRestrictions: List<OffenderRestrictionDto>,
     visitVisitors: List<PrisonerContactDto>,
-    events: List<EventAuditDto>,
+    events: List<EventAuditOrchestrationDto>,
     notifications: List<VisitNotificationEventDto>,
   ) : this(
     reference = visit.reference,
@@ -100,6 +99,9 @@ data class PrisonerDetailsDto internal constructor(
   @Schema(description = "Prison ID", example = "MDI")
   val prisonId: String?,
 
+  @Schema(description = "Prison Name", example = "HMP Leeds")
+  val prisonName: String?,
+
   @Schema(description = "In prison cell location", example = "A-1-002")
   val cellLocation: String? = null,
 
@@ -118,6 +120,7 @@ data class PrisonerDetailsDto internal constructor(
     lastName = prisonerDto.lastName,
     dateOfBirth = prisonerDto.dateOfBirth,
     prisonId = prisonerDto.prisonId,
+    prisonName = prisonerDto.prisonName,
     cellLocation = prisonerDto.cellLocation,
     locationDescription = prisonerDto.locationDescription,
     prisonerAlerts = prisonerAlerts,

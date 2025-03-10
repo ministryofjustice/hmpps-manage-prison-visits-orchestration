@@ -7,11 +7,15 @@ import reactor.util.function.Tuple2
 import reactor.util.function.Tuple3
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ManageUsersApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.manage.users.UserDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.EventAuditOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ActionedByDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.SYSTEM
 import java.time.Duration
+import java.util.function.BiPredicate
 
 @Service
 class ManageUsersService(
@@ -20,13 +24,30 @@ class ManageUsersService(
 ) {
   companion object {
     const val NOT_KNOWN = "NOT_KNOWN"
+
+    // this predicate determines when a call needs to be made to the manage-users API
+    val userFullNameFilterPredicate: BiPredicate<UserType, String?> = BiPredicate { userType, userName -> (userType == STAFF) && !userName.isNullOrBlank() }
   }
 
   fun getFullNamesFromVisitHistory(eventAuditList: List<EventAuditDto>): Map<String, String> {
-    val userNames = eventAuditList.filter { STAFF == it.actionedBy.userType && !it.actionedBy.userName.isNullOrBlank() }
-      .map { it.actionedBy.userName!! }.toSet()
+    val userDetails = eventAuditList.map { Pair(it.actionedBy.userType, it.actionedBy.userName) }
+    return getUserFullNames(userDetails)
+  }
 
-    val monoCallsList = createUserMonoCalls(userNames)
+  fun getFullNamesFromEventAuditOrchestrationDetails(eventAuditList: List<EventAuditOrchestrationDto>): Map<String, String> {
+    val userDetails = eventAuditList.map { Pair(it.userType, it.actionedByFullName) }
+    return getUserFullNames(userDetails)
+  }
+
+  private fun getUserFullNames(userDetails: List<Pair<UserType, String?>>): Map<String, String> {
+    // converting to userIds as only STAFF user-ids need to be fetched
+    val userIds = userDetails.asSequence().filter { userFullNameFilterPredicate.test(it.first, it.second) }
+      .map { it.second }.toSet().filterNotNull().toSet()
+    return getUsersFullNamesFromUserIds(userIds)
+  }
+
+  private fun getUsersFullNamesFromUserIds(userIds: Set<String>): Map<String, String> {
+    val monoCallsList = createUserMonoCalls(userIds)
     return executeMonoCalls(monoCallsList)
   }
 
@@ -88,8 +109,8 @@ class ManageUsersService(
   }
 
   fun getFullNameFromActionedBy(actionedByDto: ActionedByDto): String = when (actionedByDto.userType) {
-    UserType.STAFF -> manageUsersApiClient.getUserDetails(actionedByDto.userName!!).block(apiTimeout)?.fullName ?: NOT_KNOWN
-    UserType.PUBLIC -> "GOV.UK"
-    UserType.SYSTEM -> NOT_KNOWN
+    STAFF -> manageUsersApiClient.getUserDetails(actionedByDto.userName!!).block(apiTimeout)?.fullName ?: NOT_KNOWN
+    PUBLIC -> "GOV.UK"
+    SYSTEM -> NOT_KNOWN
   }
 }
