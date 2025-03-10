@@ -77,6 +77,19 @@ abstract class IntegrationTestBase {
     val prisonVisitBookerRegistryMockServer = PrisonVisitBookerRegistryMockServer()
     val whereaboutsApiMockServer = WhereaboutsApiMockServer()
 
+    @BeforeEach
+    fun resetStubs() {
+      visitSchedulerMockServer.resetAll()
+      prisonApiMockServer.resetAll()
+      alertApiMockServer.resetAll()
+      prisonOffenderSearchMockServer.resetAll()
+      prisonerContactRegistryMockServer.resetAll()
+      prisonRegisterMockServer.resetAll()
+      manageUsersApiMockServer.resetAll()
+      prisonVisitBookerRegistryMockServer.resetAll()
+      whereaboutsApiMockServer.resetAll()
+    }
+
     @BeforeAll
     @JvmStatic
     fun startMocks() {

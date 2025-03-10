@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.builder.OrchestrationVisitDtoBuilder
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.BookingOrchestrationRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.EventAuditOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.IgnoreVisitNotificationsOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationNotificationGroupDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationPrisonerVisitsNotificationDto
@@ -55,6 +54,7 @@ class VisitSchedulerService(
   private val orchestrationVisitDtoBuilder: OrchestrationVisitDtoBuilder,
   private val prisonerSearchService: PrisonerSearchService,
   private val visitBookingDetailsClient: VisitBookingDetailsClient,
+  private val eventAuditDetailsService: EventAuditDetailsService,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -78,18 +78,8 @@ class VisitSchedulerService(
     visit?.let {
       val eventAuditList = visitSchedulerClient.getVisitHistoryByReference(reference)
       if (!eventAuditList.isNullOrEmpty()) {
-        val names = manageUsersService.getFullNamesFromVisitHistory(eventAuditList)
-        val eventAuditListWithNames = eventAuditList.map {
-          EventAuditOrchestrationDto(
-            type = it.type,
-            applicationMethodType = it.applicationMethodType,
-            actionedByFullName = names[it.actionedBy.userName] ?: it.actionedBy.userName,
-            userType = it.actionedBy.userType,
-            sessionTemplateReference = it.sessionTemplateReference,
-            createTimestamp = it.createTimestamp,
-            text = it.text,
-          )
-        }
+        val eventAuditListWithNames = eventAuditDetailsService.getEventAuditDetailsWithActionedByUserNames(eventAuditList)
+
         return VisitHistoryDetailsDto(
           eventsAudit = eventAuditListWithNames,
           visit = visit,

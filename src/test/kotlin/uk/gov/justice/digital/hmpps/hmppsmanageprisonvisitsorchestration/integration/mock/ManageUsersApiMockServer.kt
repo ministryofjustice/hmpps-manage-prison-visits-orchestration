@@ -25,4 +25,16 @@ class ManageUsersApiMockServer : WireMockServer(8097) {
         ),
     )
   }
+
+  fun stubGetUserDetailsFailure(userId: String, status: HttpStatus = HttpStatus.NOT_FOUND) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      get("/users/$userId")
+        .willReturn(
+          responseBuilder
+            .withStatus(status.value()),
+        ),
+    )
+  }
 }

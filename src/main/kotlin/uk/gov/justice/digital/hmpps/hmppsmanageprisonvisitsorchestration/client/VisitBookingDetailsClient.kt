@@ -7,10 +7,13 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.EventAuditOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitBookingDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AlertsService.Companion.predicateFilterSupportedCodes
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.ManageUsersService
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.ManageUsersService.Companion.userFullNameFilterPredicate
 import java.time.Duration
 import kotlin.jvm.optionals.getOrNull
 
@@ -23,6 +26,7 @@ class VisitBookingDetailsClient(
   private val prisonerContactRegistryClient: PrisonerContactRegistryClient,
   private val prisonRegisterClient: PrisonRegisterClient,
   @Value("\${prisoner.profile.timeout:10s}") private val apiTimeout: Duration,
+  private val manageUsersService: ManageUsersService,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -47,7 +51,7 @@ class VisitBookingDetailsClient(
 
     val notificationsMono = visitSchedulerClient.getNotificationEventsForBookingReferenceAsMono(visitReference)
 
-    return Mono.zip(prisonDetailsMono, prisonerDetailsMono, prisonerAlertsMono, prisonerRestrictionsMono, visitorsMono, eventsMono, notificationsMono)
+    val visitBookingDetails = Mono.zip(prisonDetailsMono, prisonerDetailsMono, prisonerAlertsMono, prisonerRestrictionsMono, visitorsMono, eventsMono, notificationsMono)
       .map { visitBookingDetailsMono ->
         val prison = visitBookingDetailsMono.t1.getOrNull() ?: PrisonRegisterPrisonDto(prisonId = visit.prisonCode, prisonName = visit.prisonCode, active = true)
         val prisoner = visitBookingDetailsMono.t2
@@ -64,6 +68,13 @@ class VisitBookingDetailsClient(
           }
         }
 
+        val eventAuditDetails = events.map {
+          EventAuditOrchestrationDto(
+            eventAuditDto = it,
+            actionedByFullName = it.actionedBy.userName,
+          )
+        }
+
         VisitBookingDetailsDto(
           visit = visit,
           prison = prison,
@@ -71,10 +82,26 @@ class VisitBookingDetailsClient(
           prisonerAlerts = prisonerAlerts,
           prisonerRestrictions = prisonerRestrictions,
           visitVisitors = visitors,
-          events = events,
+          events = eventAuditDetails,
           notifications = notifications,
         )
       }
       .block(apiTimeout)
+
+    return visitBookingDetails?.let {
+      // update the full names for event audit entries
+      updateEventUserNames(visitBookingDetails)
+    }
+  }
+
+  private fun updateEventUserNames(visitBookingDetailsDto: VisitBookingDetailsDto): VisitBookingDetailsDto {
+    val userNameMap = manageUsersService.getFullNamesFromEventAuditOrchestrationDetails(visitBookingDetailsDto.events)
+    visitBookingDetailsDto.events
+      .filter { userFullNameFilterPredicate.test(it.userType, it.actionedByFullName) }
+      .forEach { event ->
+        event.actionedByFullName = userNameMap[event.actionedByFullName] ?: event.actionedByFullName
+      }
+
+    return visitBookingDetailsDto
   }
 }
