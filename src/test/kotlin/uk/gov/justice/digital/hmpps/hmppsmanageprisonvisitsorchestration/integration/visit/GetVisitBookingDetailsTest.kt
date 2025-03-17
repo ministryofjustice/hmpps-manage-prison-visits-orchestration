@@ -142,7 +142,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
   fun `when visit exists search by reference returns the full booking details for that visit`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val visitors = listOf(createVisitorDto(visitor1, true), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
     val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors)
     val contactsList = listOf(visitor1, visitor2, visitor3)
     val eventList = listOf(eventAudit1, eventAudit2, eventAudit3, eventAudit4, eventAudit5)
@@ -166,7 +166,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isOk
     val visitBookingResponse = getResult(responseSpec.expectBody())
-    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, eventList, expectedEventActionedByFullNames, notifications)
+    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, visitor3.personId, eventList, expectedEventActionedByFullNames, notifications)
   }
 
   @Test
@@ -174,7 +174,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // Given
     val reference = "aa-bb-cc-dd"
     val prisonerId = "prisoner-id"
-    val visitors = listOf(createVisitorDto(visitor1, true), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
     val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors)
     // contacts returned does not have visitor 3
     val contactsList = listOf(visitor1, visitor2)
@@ -200,7 +200,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isOk
     val visitBookingResponse = getResult(responseSpec.expectBody())
-    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, eventList, expectedEventActionedByFullNames, notifications)
+    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, visitor3.personId, eventList, expectedEventActionedByFullNames, notifications)
   }
 
   @Test
@@ -208,7 +208,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // Given
     val reference = "aa-bb-cc-dd"
     val prisonerId = "prisoner-id"
-    val visitors = listOf(createVisitorDto(visitor1, true), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
     val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors)
     val contactsList = listOf(visitor1, visitor2, visitor3)
     val eventList = mutableListOf(eventAudit3)
@@ -237,7 +237,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // Given
     val reference = "aa-bb-cc-dd"
     val prisonerId = "prisoner-id"
-    val visitors = listOf(createVisitorDto(visitor1, true), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
     val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors)
     val contactsList = listOf(visitor1, visitor2, visitor3)
     val eventList = mutableListOf(eventAudit1)
@@ -265,7 +265,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // Given
     val reference = "aa-bb-cc-dd"
     val prisonerId = "prisoner-id"
-    val visitors = listOf(createVisitorDto(visitor1, true), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
     val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors)
     val contactsList = listOf(visitor1, visitor2, visitor3)
     val eventList = mutableListOf(eventAudit1)
@@ -291,14 +291,14 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
 
     // as prison register search returned a 404 we expect both prison code and name to have the same value of prison code
     val expectedPrison = PrisonRegisterPrisonDto(prisonCode, prisonCode, true)
-    assertVisitBookingDetails(visitBookingResponse, visit, expectedPrison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, eventList, expectedEventActionedByFullNames, notifications)
+    assertVisitBookingDetails(visitBookingResponse, visit, expectedPrison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, visitor3.personId, eventList, expectedEventActionedByFullNames, notifications)
   }
 
   @Test
   fun `when prison register search returns a 500 an exception is thrown and a 500 is returned as response`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val visitors = listOf(createVisitorDto(visitor1, true), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
     val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors)
     val contactsList = listOf(visitor1, visitor2, visitor3)
     val eventList = mutableListOf(eventAudit1)
@@ -324,7 +324,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
   fun `when alert API returns returns a 500 an exception is thrown and a 500 is returned as response`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val visitors = listOf(createVisitorDto(visitor1, true), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
     val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors)
     val contactsList = listOf(visitor1, visitor2, visitor3)
     val eventList = mutableListOf(eventAudit1)
@@ -351,7 +351,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
   fun `when prison API get restrictions call returns returns a 404 an exception is thrown and a 404 is returned as response`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val visitors = listOf(createVisitorDto(visitor1, true), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
     val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors)
     val contactsList = listOf(visitor1, visitor2, visitor3)
     val eventList = mutableListOf(eventAudit1)
@@ -378,7 +378,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
   fun `when prison API get restrictions call returns returns a 500 an exception is thrown and a 500 is returned as response`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val visitors = listOf(createVisitorDto(visitor1, true), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
     val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors)
     val contactsList = listOf(visitor1, visitor2, visitor3)
     val eventList = mutableListOf(eventAudit1)
@@ -405,7 +405,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
   fun `when prisoner contact registry API call returns returns a 404 an exception is thrown and a 404 is returned as response`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val visitors = listOf(createVisitorDto(visitor1, true), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
     val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors)
     val eventList = mutableListOf(eventAudit1)
     val notifications = listOf(notification1, notification2)
@@ -431,7 +431,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
   fun `when prisoner contact registry API call returns returns a 500 an exception is thrown and a 500 is returned as response`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val visitors = listOf(createVisitorDto(visitor1, true), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
     val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors)
     val eventList = mutableListOf(eventAudit1)
     val notifications = listOf(notification1, notification2)
@@ -457,7 +457,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
   fun `when visit history API call returns returns a 404 an exception is thrown and a 404 is returned as response`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val visitors = listOf(createVisitorDto(visitor1, true), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
     val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors)
     val contactsList = listOf(visitor1, visitor2, visitor3)
     val notifications = listOf(notification1, notification2)
@@ -483,7 +483,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
   fun `when visit history API call returns returns a 500 an exception is thrown and a 500 is returned as response`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val visitors = listOf(createVisitorDto(visitor1, true), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
     val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors)
     val contactsList = listOf(visitor1, visitor2, visitor3)
     val notifications = listOf(notification1, notification2)
@@ -509,7 +509,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
   fun `when visit notifications API call returns returns a 404 an exception is thrown and a 404 is returned as response`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val visitors = listOf(createVisitorDto(visitor1, true), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
     val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors)
     val contactsList = listOf(visitor1, visitor2, visitor3)
     val eventList = mutableListOf(eventAudit1)
@@ -535,7 +535,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
   fun `when visit notifications API call returns returns a 500 an exception is thrown and a 500 is returned as response`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val visitors = listOf(createVisitorDto(visitor1, true), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
     val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors)
     val contactsList = listOf(visitor1, visitor2, visitor3)
     val eventList = mutableListOf(eventAudit1)
@@ -561,7 +561,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
   fun `when visit exists by reference but manage user search returns a 404 the full booking details for that visit is still returned`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val visitors = listOf(createVisitorDto(visitor1, true), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
     val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors)
     val contactsList = listOf(visitor1, visitor2, visitor3)
     val eventList = listOf(eventAudit1, eventAudit2, eventAudit3, eventAudit4, eventAudit5)
@@ -587,14 +587,14 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isOk
     val visitBookingResponse = getResult(responseSpec.expectBody())
-    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, eventList, expectedEventActionedByFullNames, notifications)
+    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, visitor3.personId, eventList, expectedEventActionedByFullNames, notifications)
   }
 
   @Test
   fun `when visit exists by reference but manage user search returns a 500 the full booking details for that visit is still returned`() {
     // Given
     val reference = "aa-bb-cc-dd"
-    val visitors = listOf(createVisitorDto(visitor1, true), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
     val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors)
     val contactsList = listOf(visitor1, visitor2, visitor3)
     val eventList = listOf(eventAudit1, eventAudit2, eventAudit3, eventAudit4, eventAudit5)
@@ -620,7 +620,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isOk
     val visitBookingResponse = getResult(responseSpec.expectBody())
-    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, eventList, expectedEventActionedByFullNames, notifications)
+    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, visitor3.personId, eventList, expectedEventActionedByFullNames, notifications)
   }
 
   private fun getResult(bodyContentSpec: WebTestClient.BodyContentSpec): VisitBookingDetailsDto = objectMapper.readValue(bodyContentSpec.returnResult().responseBody, VisitBookingDetailsDto::class.java)
@@ -633,11 +633,12 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     relevantPrisonerAlerts: List<AlertResponseDto>,
     prisonerRestrictions: OffenderRestrictionsDto,
     visitors: List<PrisonerContactDto>,
+    visitContactId: Long?,
     events: List<EventAuditDto>,
     expectedEventActionedByFullNames: List<String?>,
     notifications: List<VisitNotificationEventDto>,
   ) {
-    assertVisitDetails(visitBookingDetailsDto, visitDto)
+    assertVisitDetails(visitBookingDetailsDto, visitDto, visitContactId)
     assertPrisonDetails(visitBookingDetailsDto, prisonDto)
     assertPrisonerDetails(visitBookingDetailsDto, visitDto, prisonerDto, relevantPrisonerAlerts, prisonerRestrictions.offenderRestrictions)
     assertVisitors(visitBookingDetailsDto, visitors)
@@ -648,6 +649,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
   private fun assertVisitDetails(
     visitBookingDetailsDto: VisitBookingDetailsDto,
     visitDto: VisitDto,
+    visitContactId: Long?,
   ) {
     assertThat(visitBookingDetailsDto.reference).isEqualTo(visitDto.reference)
     assertThat(visitBookingDetailsDto.visitRoom).isEqualTo(visitDto.visitRoom)
@@ -655,6 +657,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     assertThat(visitBookingDetailsDto.outcomeStatus).isEqualTo(visitDto.outcomeStatus)
     assertThat(visitBookingDetailsDto.visitRestriction).isEqualTo(visitDto.visitRestriction)
     assertThat(visitBookingDetailsDto.visitContact).isEqualTo(visitDto.visitContact)
+    assertThat(visitBookingDetailsDto.visitContactId).isEqualTo(visitContactId)
     assertThat(visitBookingDetailsDto.endTimestamp).isEqualTo(visitDto.endTimestamp)
     assertThat(visitBookingDetailsDto.startTimestamp).isEqualTo(visitDto.startTimestamp)
     assertThat(visitBookingDetailsDto.visitorSupport).isEqualTo(visitDto.visitorSupport)

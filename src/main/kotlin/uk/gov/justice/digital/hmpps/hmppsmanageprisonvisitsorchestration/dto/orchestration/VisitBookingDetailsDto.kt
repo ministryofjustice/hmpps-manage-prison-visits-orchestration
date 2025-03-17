@@ -44,6 +44,8 @@ data class VisitBookingDetailsDto internal constructor(
   val visitNotes: List<VisitNoteDto>? = listOf(),
   @Schema(description = "Contact associated with the visit", required = false)
   val visitContact: ContactDto? = null,
+  @Schema(description = "Main contact ID associated with the visit", example = "1234", required = false)
+  val visitContactId: Long?,
   @Schema(description = "Additional support associated with the visit", required = false)
   val visitorSupport: VisitorSupportDto? = null,
   @Schema(description = "Prison code and name", required = true)
@@ -74,6 +76,7 @@ data class VisitBookingDetailsDto internal constructor(
     endTimestamp = visit.endTimestamp,
     visitNotes = visit.visitNotes,
     visitContact = visit.visitContact,
+    visitContactId = visit.visitors?.firstOrNull { it.visitContact == true }?.nomisPersonId,
     visitorSupport = visit.visitorSupport,
     prison = prison,
     prisoner = PrisonerDetailsDto(visit.prisonerId, prisonerDto, prisonerAlerts, prisonerRestrictions),
