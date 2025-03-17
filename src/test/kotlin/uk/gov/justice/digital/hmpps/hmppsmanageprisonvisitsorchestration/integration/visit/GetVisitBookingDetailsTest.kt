@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.con
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.EventAuditOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.PrisonerDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitBookingDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitorDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionDto
@@ -22,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ActionedByDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType.EMAIL
@@ -166,7 +168,11 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isOk
     val visitBookingResponse = getResult(responseSpec.expectBody())
-    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, visitor3.personId, eventList, expectedEventActionedByFullNames, notifications)
+    val expectedVisitContact = VisitContactDto(
+      contactDto = visit.visitContact!!,
+      visitContactId = visitor3.personId,
+    )
+    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
   }
 
   @Test
@@ -200,7 +206,90 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isOk
     val visitBookingResponse = getResult(responseSpec.expectBody())
-    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, visitor3.personId, eventList, expectedEventActionedByFullNames, notifications)
+    val expectedVisitContact = VisitContactDto(
+      contactDto = visit.visitContact!!,
+      visitContactId = visitor3.personId,
+    )
+
+    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
+  }
+
+  @Test
+  fun `when a visit's contact details are null then visitContactDetails are also returned as null for that visit`() {
+    // Given
+    val reference = "aa-bb-cc-dd"
+    val prisonerId = "prisoner-id"
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
+
+    // contact for the visit is null
+    val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors, contact = null)
+    val contactsList = listOf(visitor1, visitor2, visitor3)
+    val eventList = mutableListOf(eventAudit1, eventAudit2, eventAudit3)
+    val expectedEventActionedByFullNames = listOf("abcd", null, "Test User A")
+
+    val notifications = emptyList<VisitNotificationEventDto>()
+
+    visitSchedulerMockServer.stubGetVisit(reference, visit)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
+    // alert 3's alert code is not relevant for visits so should be ignored
+    alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
+    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = true, approvedVisitorsOnly = false, personId = null, hasDateOfBirth = null, contactsList = contactsList)
+    visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
+    visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
+    manageUsersApiMockServer.stubGetUserDetails("test-user", "Test User A")
+
+    // When
+    val responseSpec = callGetVisitFullDetailsByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isOk
+    val visitBookingResponse = getResult(responseSpec.expectBody())
+    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, expectedVisitContact = null, eventList, expectedEventActionedByFullNames, notifications)
+  }
+
+  @Test
+  fun `when a visit's contact is not from the contact list then visitContactDetails are populated without contactId for that visit`() {
+    // Given
+    val reference = "aa-bb-cc-dd"
+    val prisonerId = "prisoner-id"
+
+    // none of the 3 visitors are main contacts
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, false))
+
+    // main contact details
+    val contact = ContactDto("Johnny Doe", "01234567890", "email@example.com")
+    val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors, contact = contact)
+    // contacts returned does not have visitor 3
+    val contactsList = listOf(visitor1, visitor2)
+    val eventList = mutableListOf(eventAudit1, eventAudit2, eventAudit3)
+    val expectedEventActionedByFullNames = listOf("abcd", null, "Test User A")
+
+    val notifications = emptyList<VisitNotificationEventDto>()
+
+    visitSchedulerMockServer.stubGetVisit(reference, visit)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
+    // alert 3's alert code is not relevant for visits so should be ignored
+    alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
+    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = true, approvedVisitorsOnly = false, personId = null, hasDateOfBirth = null, contactsList = contactsList)
+    visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
+    visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
+    manageUsersApiMockServer.stubGetUserDetails("test-user", "Test User A")
+
+    // When
+    val responseSpec = callGetVisitFullDetailsByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isOk
+    val visitBookingResponse = getResult(responseSpec.expectBody())
+    val expectedVisitContact = VisitContactDto(
+      contactDto = visit.visitContact!!,
+      visitContactId = null,
+    )
+    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
   }
 
   @Test
@@ -291,7 +380,12 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
 
     // as prison register search returned a 404 we expect both prison code and name to have the same value of prison code
     val expectedPrison = PrisonRegisterPrisonDto(prisonCode, prisonCode, true)
-    assertVisitBookingDetails(visitBookingResponse, visit, expectedPrison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, visitor3.personId, eventList, expectedEventActionedByFullNames, notifications)
+    val expectedVisitContact = VisitContactDto(
+      contactDto = visit.visitContact!!,
+      visitContactId = visitor3.personId,
+    )
+
+    assertVisitBookingDetails(visitBookingResponse, visit, expectedPrison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
   }
 
   @Test
@@ -587,7 +681,12 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isOk
     val visitBookingResponse = getResult(responseSpec.expectBody())
-    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, visitor3.personId, eventList, expectedEventActionedByFullNames, notifications)
+    val expectedVisitContact = VisitContactDto(
+      contactDto = visit.visitContact!!,
+      visitContactId = visitor3.personId,
+    )
+
+    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
   }
 
   @Test
@@ -620,7 +719,12 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isOk
     val visitBookingResponse = getResult(responseSpec.expectBody())
-    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, visitor3.personId, eventList, expectedEventActionedByFullNames, notifications)
+    val expectedVisitContact = VisitContactDto(
+      contactDto = visit.visitContact!!,
+      visitContactId = visitor3.personId,
+    )
+
+    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
   }
 
   private fun getResult(bodyContentSpec: WebTestClient.BodyContentSpec): VisitBookingDetailsDto = objectMapper.readValue(bodyContentSpec.returnResult().responseBody, VisitBookingDetailsDto::class.java)
@@ -633,12 +737,12 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     relevantPrisonerAlerts: List<AlertResponseDto>,
     prisonerRestrictions: OffenderRestrictionsDto,
     visitors: List<PrisonerContactDto>,
-    visitContactId: Long?,
+    expectedVisitContact: VisitContactDto?,
     events: List<EventAuditDto>,
     expectedEventActionedByFullNames: List<String?>,
     notifications: List<VisitNotificationEventDto>,
   ) {
-    assertVisitDetails(visitBookingDetailsDto, visitDto, visitContactId)
+    assertVisitDetails(visitBookingDetailsDto, visitDto, expectedVisitContact)
     assertPrisonDetails(visitBookingDetailsDto, prisonDto)
     assertPrisonerDetails(visitBookingDetailsDto, visitDto, prisonerDto, relevantPrisonerAlerts, prisonerRestrictions.offenderRestrictions)
     assertVisitors(visitBookingDetailsDto, visitors)
@@ -649,19 +753,18 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
   private fun assertVisitDetails(
     visitBookingDetailsDto: VisitBookingDetailsDto,
     visitDto: VisitDto,
-    visitContactId: Long?,
+    visitContact: VisitContactDto?,
   ) {
     assertThat(visitBookingDetailsDto.reference).isEqualTo(visitDto.reference)
     assertThat(visitBookingDetailsDto.visitRoom).isEqualTo(visitDto.visitRoom)
     assertThat(visitBookingDetailsDto.visitStatus).isEqualTo(visitDto.visitStatus)
     assertThat(visitBookingDetailsDto.outcomeStatus).isEqualTo(visitDto.outcomeStatus)
     assertThat(visitBookingDetailsDto.visitRestriction).isEqualTo(visitDto.visitRestriction)
-    assertThat(visitBookingDetailsDto.visitContact).isEqualTo(visitDto.visitContact)
-    assertThat(visitBookingDetailsDto.visitContactId).isEqualTo(visitContactId)
     assertThat(visitBookingDetailsDto.endTimestamp).isEqualTo(visitDto.endTimestamp)
     assertThat(visitBookingDetailsDto.startTimestamp).isEqualTo(visitDto.startTimestamp)
     assertThat(visitBookingDetailsDto.visitorSupport).isEqualTo(visitDto.visitorSupport)
     assertThat(visitBookingDetailsDto.visitNotes).isEqualTo(visitDto.visitNotes)
+    assertThat(visitBookingDetailsDto.visitContact).isEqualTo(visitContact)
   }
 
   private fun assertPrisonDetails(
