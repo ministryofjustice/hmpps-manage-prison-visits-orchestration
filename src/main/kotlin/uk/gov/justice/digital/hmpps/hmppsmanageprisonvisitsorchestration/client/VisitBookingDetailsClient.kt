@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.ale
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.EventAuditOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitBookingDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AlertsService.Companion.predicateFilterSupportedCodes
@@ -75,6 +76,11 @@ class VisitBookingDetailsClient(
           )
         }
 
+        val visitContact = visit.visitContact?.let { contact ->
+          val contactId = visit.visitors?.firstOrNull { it.visitContact == true }?.nomisPersonId
+          VisitContactDto(contact, contactId)
+        }
+
         VisitBookingDetailsDto(
           visit = visit,
           prison = prison,
@@ -82,6 +88,7 @@ class VisitBookingDetailsClient(
           prisonerAlerts = prisonerAlerts,
           prisonerRestrictions = prisonerRestrictions,
           visitVisitors = visitors,
+          visitContact = visitContact,
           events = eventAuditDetails,
           notifications = notifications,
         )
