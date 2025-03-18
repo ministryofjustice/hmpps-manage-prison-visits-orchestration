@@ -77,6 +77,19 @@ abstract class IntegrationTestBase {
     val prisonVisitBookerRegistryMockServer = PrisonVisitBookerRegistryMockServer()
     val whereaboutsApiMockServer = WhereaboutsApiMockServer()
 
+    @BeforeEach
+    fun resetStubs() {
+      visitSchedulerMockServer.resetAll()
+      prisonApiMockServer.resetAll()
+      alertApiMockServer.resetAll()
+      prisonOffenderSearchMockServer.resetAll()
+      prisonerContactRegistryMockServer.resetAll()
+      prisonRegisterMockServer.resetAll()
+      manageUsersApiMockServer.resetAll()
+      prisonVisitBookerRegistryMockServer.resetAll()
+      whereaboutsApiMockServer.resetAll()
+    }
+
     @BeforeAll
     @JvmStatic
     fun startMocks() {
@@ -210,7 +223,7 @@ abstract class IntegrationTestBase {
     modifiedTimestamp: LocalDateTime = LocalDateTime.now(),
     sessionTemplateReference: String? = "ref.ref.ref",
     visitors: List<VisitorDto>? = null,
-    contact: ContactDto = ContactDto("Jane Doe", "01234567890", "email@example.com"),
+    contact: ContactDto? = ContactDto("Jane Doe", "01234567890", "email@example.com"),
     firstBookedDate: LocalDateTime? = null,
   ): VisitDto = VisitDto(
     applicationReference = applicationReference,

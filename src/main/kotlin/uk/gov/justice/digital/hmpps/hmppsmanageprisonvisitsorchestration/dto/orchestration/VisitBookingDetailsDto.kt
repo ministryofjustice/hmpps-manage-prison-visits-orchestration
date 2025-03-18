@@ -10,12 +10,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitNoteDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorSupportDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.OutcomeStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventAttributeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventDto
@@ -28,10 +28,10 @@ data class VisitBookingDetailsDto internal constructor(
   @Schema(description = "Visit Room", example = "Visits Main Hall", required = true)
   @field:NotBlank
   val visitRoom: String,
-  @Schema(description = "Visit Type", example = "SOCIAL", required = true)
-  val visitType: VisitType,
   @Schema(description = "Visit Status", example = "RESERVED", required = true)
   val visitStatus: VisitStatus,
+  @Schema(description = "Outcome Status", example = "VISITOR_CANCELLED", required = false)
+  val outcomeStatus: OutcomeStatus?,
   @Schema(description = "Visit Restriction", example = "OPEN", required = true)
   val visitRestriction: VisitRestriction,
   @Schema(description = "The date and time of the visit", example = "2018-12-01T13:45:00", required = true)
@@ -40,8 +40,10 @@ data class VisitBookingDetailsDto internal constructor(
   @Schema(description = "The finishing date and time of the visit", example = "2018-12-01T13:45:00", required = true)
   @field:NotBlank
   val endTimestamp: LocalDateTime,
+  @Schema(description = "Visit Notes", required = false)
+  val visitNotes: List<VisitNoteDto>? = listOf(),
   @Schema(description = "Contact associated with the visit", required = false)
-  val visitContact: ContactDto? = null,
+  val visitContact: VisitContactDto? = null,
   @Schema(description = "Additional support associated with the visit", required = false)
   val visitorSupport: VisitorSupportDto? = null,
   @Schema(description = "Prison code and name", required = true)
@@ -50,7 +52,7 @@ data class VisitBookingDetailsDto internal constructor(
   val prisoner: PrisonerDetailsDto,
   @Schema(description = "Prisoner details", required = true)
   val visitors: List<VisitorDetailsDto>,
-  val events: List<EventAuditDto>,
+  val events: List<EventAuditOrchestrationDto>,
   val notifications: List<VisitNotificationDto>,
 ) {
   constructor(
@@ -60,17 +62,19 @@ data class VisitBookingDetailsDto internal constructor(
     prisonerAlerts: List<AlertDto>,
     prisonerRestrictions: List<OffenderRestrictionDto>,
     visitVisitors: List<PrisonerContactDto>,
-    events: List<EventAuditDto>,
+    visitContact: VisitContactDto?,
+    events: List<EventAuditOrchestrationDto>,
     notifications: List<VisitNotificationEventDto>,
   ) : this(
     reference = visit.reference,
     visitRoom = visit.visitRoom,
-    visitType = visit.visitType,
     visitStatus = visit.visitStatus,
+    outcomeStatus = visit.outcomeStatus,
     visitRestriction = visit.visitRestriction,
     startTimestamp = visit.startTimestamp,
     endTimestamp = visit.endTimestamp,
-    visitContact = visit.visitContact,
+    visitNotes = visit.visitNotes,
+    visitContact = visitContact,
     visitorSupport = visit.visitorSupport,
     prison = prison,
     prisoner = PrisonerDetailsDto(visit.prisonerId, prisonerDto, prisonerAlerts, prisonerRestrictions),
@@ -96,6 +100,9 @@ data class PrisonerDetailsDto internal constructor(
   @Schema(description = "Prison ID", example = "MDI")
   val prisonId: String?,
 
+  @Schema(description = "Prison Name", example = "HMP Leeds")
+  val prisonName: String?,
+
   @Schema(description = "In prison cell location", example = "A-1-002")
   val cellLocation: String? = null,
 
@@ -114,6 +121,7 @@ data class PrisonerDetailsDto internal constructor(
     lastName = prisonerDto.lastName,
     dateOfBirth = prisonerDto.dateOfBirth,
     prisonId = prisonerDto.prisonId,
+    prisonName = prisonerDto.prisonName,
     cellLocation = prisonerDto.cellLocation,
     locationDescription = prisonerDto.locationDescription,
     prisonerAlerts = prisonerAlerts,
@@ -164,5 +172,24 @@ data class VisitNotificationDto internal constructor(
     type = visitNotificationEventDto.type,
     createdDateTime = visitNotificationEventDto.createdDateTime,
     additionalData = visitNotificationEventDto.additionalData,
+  )
+}
+
+@Schema(description = "Visit notification details")
+data class VisitContactDto internal constructor(
+  @Schema(description = "Main contact ID associated with the visit", example = "1234", required = false)
+  val visitContactId: Long?,
+  @Schema(description = "Contact Name", example = "John Smith", required = true)
+  override val name: String,
+  @Schema(description = "Contact Phone Number", example = "01234 567890", required = false)
+  override val telephone: String? = null,
+  @Schema(description = "Contact Email Address", example = "email@example.com", required = false)
+  override val email: String? = null,
+) : ContactDto(name = name, telephone = telephone, email = email) {
+  constructor(contactDto: ContactDto, visitContactId: Long?) : this(
+    visitContactId = visitContactId,
+    name = contactDto.name,
+    telephone = contactDto.telephone,
+    email = contactDto.email,
   )
 }
