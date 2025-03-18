@@ -43,7 +43,7 @@ data class VisitBookingDetailsDto internal constructor(
   @Schema(description = "Visit Notes", required = false)
   val visitNotes: List<VisitNoteDto>? = listOf(),
   @Schema(description = "Contact associated with the visit", required = false)
-  val visitContact: ContactDto? = null,
+  val visitContact: VisitContactDto? = null,
   @Schema(description = "Additional support associated with the visit", required = false)
   val visitorSupport: VisitorSupportDto? = null,
   @Schema(description = "Prison code and name", required = true)
@@ -62,6 +62,7 @@ data class VisitBookingDetailsDto internal constructor(
     prisonerAlerts: List<AlertDto>,
     prisonerRestrictions: List<OffenderRestrictionDto>,
     visitVisitors: List<PrisonerContactDto>,
+    visitContact: VisitContactDto?,
     events: List<EventAuditOrchestrationDto>,
     notifications: List<VisitNotificationEventDto>,
   ) : this(
@@ -73,7 +74,7 @@ data class VisitBookingDetailsDto internal constructor(
     startTimestamp = visit.startTimestamp,
     endTimestamp = visit.endTimestamp,
     visitNotes = visit.visitNotes,
-    visitContact = visit.visitContact,
+    visitContact = visitContact,
     visitorSupport = visit.visitorSupport,
     prison = prison,
     prisoner = PrisonerDetailsDto(visit.prisonerId, prisonerDto, prisonerAlerts, prisonerRestrictions),
@@ -171,5 +172,24 @@ data class VisitNotificationDto internal constructor(
     type = visitNotificationEventDto.type,
     createdDateTime = visitNotificationEventDto.createdDateTime,
     additionalData = visitNotificationEventDto.additionalData,
+  )
+}
+
+@Schema(description = "Visit notification details")
+data class VisitContactDto internal constructor(
+  @Schema(description = "Main contact ID associated with the visit", example = "1234", required = false)
+  val visitContactId: Long?,
+  @Schema(description = "Contact Name", example = "John Smith", required = true)
+  override val name: String,
+  @Schema(description = "Contact Phone Number", example = "01234 567890", required = false)
+  override val telephone: String? = null,
+  @Schema(description = "Contact Email Address", example = "email@example.com", required = false)
+  override val email: String? = null,
+) : ContactDto(name = name, telephone = telephone, email = email) {
+  constructor(contactDto: ContactDto, visitContactId: Long?) : this(
+    visitContactId = visitContactId,
+    name = contactDto.name,
+    telephone = contactDto.telephone,
+    email = contactDto.email,
   )
 }
