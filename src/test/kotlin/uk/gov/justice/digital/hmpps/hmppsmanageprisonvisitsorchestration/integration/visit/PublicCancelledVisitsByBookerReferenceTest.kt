@@ -39,7 +39,7 @@ class PublicCancelledVisitsByBookerReferenceTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setup() {
-    prisoner = createPrisoner(prisonerId, "james", "smith", LocalDate.of(1965, 12, 12), prisonId)
+    prisoner = createPrisoner(prisonerId, "james", "smith", LocalDate.of(1965, 12, 12), prisonId, convictedStatus = "Convicted")
 
     contact1 = createContactDto(firstName = "First", lastName = "Smith", dateOfBirth = LocalDate.of(2000, 1, 1))
     contact2 = createContactDto(firstName = "Second", lastName = "Smith", dateOfBirth = LocalDate.of(2000, 1, 1))

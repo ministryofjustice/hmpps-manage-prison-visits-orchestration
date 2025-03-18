@@ -30,6 +30,7 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
       firstName = "John",
       lastName = "Smith",
       dateOfBirth = LocalDate.of(2000, 1, 1),
+      convictedStatus = "Convicted",
     )
 
     prisonerDto2 = createPrisoner(
@@ -37,6 +38,7 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
       firstName = "Johnny",
       lastName = "Bravo",
       dateOfBirth = LocalDate.of(2000, 1, 1),
+      convictedStatus = "Convicted",
     )
   }
 

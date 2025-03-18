@@ -11,10 +11,8 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isNotFoundError
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.InmateDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.PrisonerBookingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.VisitBalancesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import java.time.Duration
@@ -35,18 +33,6 @@ class PrisonApiClient(
 
   fun getInmateDetailsAsMono(prisonerId: String): Mono<InmateDetailDto> = webClient.get()
     .uri("/api/offenders/$prisonerId")
-    .retrieve()
-    .bodyToMono()
-
-  fun getBookings(prisonId: String, prisonerId: String): RestPage<PrisonerBookingSummaryDto>? = getBookingsAsMono(prisonId, prisonerId)
-    .block(apiTimeout)
-
-  fun getBookingsAsMono(prisonId: String, prisonerId: String): Mono<RestPage<PrisonerBookingSummaryDto>> = webClient.get()
-    .uri("/api/bookings/v2") {
-      it.queryParam("prisonId", prisonId)
-        .queryParam("offenderNo", prisonerId)
-        .queryParam("legalInfo", true).build()
-    }
     .retrieve()
     .bodyToMono()
 
