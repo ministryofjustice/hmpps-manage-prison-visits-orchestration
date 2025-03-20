@@ -6,15 +6,16 @@ import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitBookingDetailsClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.builder.OrchestrationVisitDtoBuilder
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.BookingOrchestrationRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.EventAuditOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.IgnoreVisitNotificationsOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationNotificationGroupDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationPrisonerVisitsNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitBookingDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ActionedByDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
@@ -52,12 +53,19 @@ class VisitSchedulerService(
   private val alertService: AlertsService,
   private val orchestrationVisitDtoBuilder: OrchestrationVisitDtoBuilder,
   private val prisonerSearchService: PrisonerSearchService,
+  private val visitBookingDetailsClient: VisitBookingDetailsClient,
+  private val eventAuditDetailsService: EventAuditDetailsService,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
   fun getVisitByReference(reference: String): VisitDto? = visitSchedulerClient.getVisitByReference(reference)
+
+  fun getFullVisitBookingDetailsByReference(reference: String): VisitBookingDetailsDto? {
+    LOG.info("Retrieving visit booking details for visit reference: $reference")
+    return visitBookingDetailsClient.getFullVisitBookingDetails(reference)
+  }
 
   /**
    * Gets further visit details like usernames, contact details etc. for a given visit reference.
@@ -70,18 +78,8 @@ class VisitSchedulerService(
     visit?.let {
       val eventAuditList = visitSchedulerClient.getVisitHistoryByReference(reference)
       if (!eventAuditList.isNullOrEmpty()) {
-        val names = manageUsersService.getFullNamesFromVisitHistory(eventAuditList)
-        val eventAuditListWithNames = eventAuditList.map {
-          EventAuditOrchestrationDto(
-            type = it.type,
-            applicationMethodType = it.applicationMethodType,
-            actionedByFullName = names[it.actionedBy.userName] ?: it.actionedBy.userName,
-            userType = it.actionedBy.userType,
-            sessionTemplateReference = it.sessionTemplateReference,
-            createTimestamp = it.createTimestamp,
-            text = it.text,
-          )
-        }
+        val eventAuditListWithNames = eventAuditDetailsService.getEventAuditDetailsWithActionedByUserNames(eventAuditList)
+
         return VisitHistoryDetailsDto(
           eventsAudit = eventAuditListWithNames,
           visit = visit,
@@ -127,6 +125,11 @@ class VisitSchedulerService(
       BookingRequestDto(requestDto.actionedBy, requestDto.applicationMethodType, requestDto.allowOverBooking, requestDto.userType),
     )
   }
+
+  fun updateVisit(applicationReference: String, requestDto: BookingOrchestrationRequestDto): VisitDto? = visitSchedulerClient.updateBookedVisit(
+    applicationReference,
+    BookingRequestDto(requestDto.actionedBy, requestDto.applicationMethodType, requestDto.allowOverBooking, requestDto.userType),
+  )
 
   fun cancelVisit(reference: String, cancelVisitDto: CancelVisitOrchestrationDto): VisitDto? = visitSchedulerClient.cancelVisit(
     reference,

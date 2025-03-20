@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.BookingOrchestrationRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitBookingDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
@@ -39,6 +40,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.validat
 import java.time.LocalDate
 
 const val ORCHESTRATION_VISIT_CONTROLLER_PATH: String = "/visits"
+const val GET_VISIT_FULL_DETAILS_BY_VISIT_REFERENCE: String = "$ORCHESTRATION_VISIT_CONTROLLER_PATH/{reference}/detailed"
 const val ORCHESTRATION_GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/booked/future"
 const val ORCHESTRATION_GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/cancelled"
 const val ORCHESTRATION_GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/booked/past"
@@ -346,6 +348,51 @@ class OrchestrationVisitsController(
   ): VisitDto? = visitSchedulerService.bookVisit(applicationReference, bookingRequestDto)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @PutMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/{applicationReference}/update")
+  @ResponseStatus(HttpStatus.OK)
+  @Operation(
+    summary = "Update an existing visit",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Visit updated",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to update a visit",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to update a visit",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Visit not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "422",
+        description = "Application validation failed",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ApplicationValidationErrorResponse::class))],
+      ),
+    ],
+  )
+  fun updateAVisit(
+    @Schema(description = "applicationReference", example = "dfs-wjs-eqr", required = true)
+    @PathVariable
+    applicationReference: String,
+    @RequestBody @Valid
+    bookingRequestDto: BookingOrchestrationRequestDto,
+  ): VisitDto? = visitSchedulerService.updateVisit(applicationReference, bookingRequestDto)
+
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @PutMapping("$ORCHESTRATION_VISIT_CONTROLLER_PATH/{reference}/cancel")
   @ResponseStatus(HttpStatus.OK)
   @Operation(
@@ -471,4 +518,38 @@ class OrchestrationVisitsController(
     @Length(min = 3, max = 50)
     prisonerId: String,
   ): List<VisitDto> = visitSchedulerService.findFutureVisitsForPrisoner(prisonerId)
+
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @GetMapping(GET_VISIT_FULL_DETAILS_BY_VISIT_REFERENCE)
+  @Operation(
+    summary = "Get a detailed summary of the visit including prisoner, visitor, event audit and notification event details",
+    description = "Retrieve a detailed summary of the visit given a visit reference",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Detailed visit summary returned",
+      ),
+      ApiResponse(
+        responseCode = "500",
+        description = "Failed to get a detailed visit summary",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions retrieve a detailed visit summary",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Visit not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getVisitFullDetailsByReference(@PathVariable reference: String): VisitBookingDetailsDto? = visitSchedulerService.getFullVisitBookingDetailsByReference(reference)
 }

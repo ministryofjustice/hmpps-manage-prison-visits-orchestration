@@ -9,14 +9,12 @@ import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.VISIT_NOTIFICATION_EVENTS
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.NotificationEventAttributeType.VISITOR_ID
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.NotificationEventAttributeType.VISITOR_RESTRICTION
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType.NON_ASSOCIATION_EVENT
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType.PRISONER_RELEASED_EVENT
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType.PRISONER_RESTRICTION_CHANGE_EVENT
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventAttributeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
-import java.time.LocalDateTime
 import java.util.*
 
 @DisplayName("GET visits/notification/CFI/count and /visits/notification/count")
@@ -60,20 +58,4 @@ class GetVisitNotificationEventsTest : IntegrationTestBase() {
   ): ResponseSpec = webTestClient.get().uri(VISIT_NOTIFICATION_EVENTS.replace("{reference}", bookingReference))
     .headers(authHttpHeaders)
     .exchange()
-
-  private fun createNotificationEvent(
-    type: NotificationEventType,
-    notificationEventReference: String = generateRandomUUID(),
-    createdDateTime: LocalDateTime = LocalDateTime.now(),
-    additionalData: List<VisitNotificationEventAttributeDto> = emptyList(),
-  ) = VisitNotificationEventDto(type, notificationEventReference, createdDateTime, additionalData)
-
-  private fun assertNotificationEvent(
-    notificationEventDto: VisitNotificationEventDto,
-    notificationEventType: NotificationEventType,
-    additionalData: List<VisitNotificationEventAttributeDto>,
-  ) {
-    Assertions.assertThat(notificationEventDto.type).isEqualTo(notificationEventType)
-    Assertions.assertThat(notificationEventDto.additionalData).isEqualTo(additionalData)
-  }
 }

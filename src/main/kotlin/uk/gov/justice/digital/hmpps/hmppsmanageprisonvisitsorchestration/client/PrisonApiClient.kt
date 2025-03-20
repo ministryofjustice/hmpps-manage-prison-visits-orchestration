@@ -69,12 +69,8 @@ class PrisonApiClient(
 
   fun getPrisonerRestrictions(prisonerId: String): OffenderRestrictionsDto {
     val uri = "/api/offenders/$prisonerId/offender-restrictions"
-    return webClient.get()
-      .uri(uri) {
-        it.queryParam("activeRestrictionsOnly", true).build()
-      }
-      .retrieve()
-      .bodyToMono<OffenderRestrictionsDto>()
+
+    return getPrisonerRestrictionsAsMono(prisonerId)
       .onErrorResume { e ->
         if (!isNotFoundError(e)) {
           LOG.error("getOffenderRestrictions Failed get request $uri")
@@ -85,5 +81,15 @@ class PrisonApiClient(
         }
       }
       .blockOptional(apiTimeout).orElseThrow { NotFoundException("No Offender restrictions found for prisoner - $prisonerId on prison-api") }
+  }
+
+  fun getPrisonerRestrictionsAsMono(prisonerId: String): Mono<OffenderRestrictionsDto> {
+    val uri = "/api/offenders/$prisonerId/offender-restrictions"
+    return webClient.get()
+      .uri(uri) {
+        it.queryParam("activeRestrictionsOnly", true).build()
+      }
+      .retrieve()
+      .bodyToMono<OffenderRestrictionsDto>()
   }
 }

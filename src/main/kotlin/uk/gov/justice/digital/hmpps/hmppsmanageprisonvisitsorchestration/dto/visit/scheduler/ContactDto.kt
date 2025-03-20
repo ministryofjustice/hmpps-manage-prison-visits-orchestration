@@ -5,11 +5,33 @@ import io.swagger.v3.oas.annotations.media.Schema
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "Contact")
-class ContactDto(
+open class ContactDto(
   @Schema(description = "Contact Name", example = "John Smith", required = true)
-  val name: String,
+  open val name: String,
   @Schema(description = "Contact Phone Number", example = "01234 567890", required = false)
-  val telephone: String? = null,
+  open val telephone: String? = null,
   @Schema(description = "Contact Email Address", example = "email@example.com", required = false)
-  val email: String? = null,
-)
+  open val email: String? = null,
+) {
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (javaClass != other?.javaClass) return false
+
+    other as ContactDto
+
+    if (name != other.name) return false
+    if (telephone != other.telephone) return false
+    if (email != other.email) return false
+
+    return true
+  }
+
+  override fun hashCode(): Int {
+    var result = name.hashCode()
+    result = 31 * result + (telephone?.hashCode() ?: 0)
+    result = 31 * result + (email?.hashCode() ?: 0)
+    return result
+  }
+
+  override fun toString(): String = "ContactDto(name='$name', telephone=$telephone, email=$email)"
+}
