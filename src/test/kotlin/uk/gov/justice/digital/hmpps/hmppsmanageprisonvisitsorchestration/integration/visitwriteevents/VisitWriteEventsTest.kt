@@ -40,12 +40,86 @@ class VisitWriteEventsTest: IntegrationTestBase() {
   }
 
   @Test
-  fun `will consume a visit write event message`() {
+  fun `will consume a visit write create event`() {
     val messageId = UUID.randomUUID().toString()
     val message = """
     {
       "messageId" : "$messageId",
       "eventType" : "VisitCreated",
+      "description" : null,
+      "messageAttributes" : {
+        "prisonerId" : "A1234AB",
+        "prisonId" : "MDI",
+        "clientVisitReference" : "123456",
+        "visitRoom" : "A1",
+        "visitType" : "SOCIAL",
+        "visitStatus" : "BOOKED",
+        "visitRestriction" : "OPEN",
+        "startTimestamp" : "2020-12-04T10:42:43",
+        "endTimestamp" : "2020-12-04T10:42:43",
+        "createDateTime" : "2020-12-04T10:42:43",
+        "visitors" : [ {
+          "nomisPersonId" : 3,
+          "visitContact" : true
+        } ],
+        "actionedBy" : "automated-test-client"
+      },
+      "who" : "automated-test-client"
+    }
+    """
+
+    vweQueueSqsClient.sendMessage(
+      SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
+    )
+
+    await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 1 }
+    await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
+  }
+
+  @Test
+  fun `will consume a visit write update event`() {
+    val messageId = UUID.randomUUID().toString()
+    val message = """
+    {
+      "messageId" : "$messageId",
+      "eventType" : "VisitUpdated",
+      "description" : null,
+      "messageAttributes" : {
+        "prisonerId" : "A1234AB",
+        "prisonId" : "MDI",
+        "clientVisitReference" : "123456",
+        "visitRoom" : "A1",
+        "visitType" : "SOCIAL",
+        "visitStatus" : "BOOKED",
+        "visitRestriction" : "OPEN",
+        "startTimestamp" : "2020-12-04T10:42:43",
+        "endTimestamp" : "2020-12-04T10:42:43",
+        "createDateTime" : "2020-12-04T10:42:43",
+        "visitors" : [ {
+          "nomisPersonId" : 3,
+          "visitContact" : true
+        } ],
+        "actionedBy" : "automated-test-client"
+      },
+      "who" : "automated-test-client"
+    }
+    """
+
+    vweQueueSqsClient.sendMessage(
+      SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
+    )
+
+    await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 1 }
+    await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
+  }
+
+  @Test
+  fun `will consume a visit write cancelled event`() {
+    val messageId = UUID.randomUUID().toString()
+    val message = """
+    {
+      "messageId" : "$messageId",
+      "eventType" : "VisitCancelled",
       "description" : null,
       "messageAttributes" : {
         "prisonerId" : "A1234AB",
