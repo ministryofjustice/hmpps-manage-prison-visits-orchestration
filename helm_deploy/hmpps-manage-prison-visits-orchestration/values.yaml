@@ -39,6 +39,10 @@ generic-service:
       HMPPS_SQS_QUEUES_PRISONVISITSEVENTS_QUEUE_NAME: "sqs_queue_name"
     sqs-hmpps-prison-visits-event-dlq-secret:
       HMPPS_SQS_QUEUES_PRISONVISITSEVENTS_DLQ_NAME: "sqs_queue_name"
+    sqs-hmpps-prison-visits-write-events-secret:
+      HMPPS_SQS_QUEUES_PRISONVISITSWRITEEVENTS_QUEUE_NAME: "sqs_queue_name"
+    sqs-hmpps-prison-visits-write-events-dlq-secret:
+      HMPPS_SQS_QUEUES_PRISONVISITSWRITEEVENTS_DLQ_NAME: "sqs_queue_name"
 
   allowlist:
     groups:
