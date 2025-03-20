@@ -293,6 +293,212 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `when a visit's visitor has one primary address and multiple non primary addresses primary address is populated on the visit booking details`() {
+    // Given
+    val reference = "aa-bb-cc-dd"
+    val prisonerId = "prisoner-id"
+
+    // visitor has 3 addresses but only 1 primary address
+    val address1 = createAddressDto(street = "ABC Street", primary = true)
+    val address2 = createAddressDto(street = "XYZ Street", primary = false)
+    val address3 = createAddressDto(street = "ABC Street", primary = false)
+
+    val visitorWithMultipleAddresses = createContactDto(21, "Visitor", "TwentyOne", addresses = listOf(address1, address2, address3))
+    val visitors = listOf(createVisitorDto(visitorWithMultipleAddresses, true))
+
+    // main contact details
+    val contact = ContactDto("Johnny Doe", "01234567890", "email@example.com")
+    val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors, contact = contact)
+    // contacts returned does not have visitor 3
+    val contactsList = listOf(visitorWithMultipleAddresses)
+    val eventList = mutableListOf(eventAudit1, eventAudit2, eventAudit3)
+    val expectedEventActionedByFullNames = listOf("abcd", null, "Test User A")
+
+    val notifications = emptyList<VisitNotificationEventDto>()
+
+    visitSchedulerMockServer.stubGetVisit(reference, visit)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
+    // alert 3's alert code is not relevant for visits so should be ignored
+    alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
+    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = true, approvedVisitorsOnly = false, personId = null, hasDateOfBirth = null, contactsList = contactsList)
+    visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
+    visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
+    manageUsersApiMockServer.stubGetUserDetails("test-user", "Test User A")
+
+    // When
+    val responseSpec = callGetVisitFullDetailsByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isOk
+    val visitBookingResponse = getResult(responseSpec.expectBody())
+    val expectedVisitContact = VisitContactDto(
+      contactDto = visit.visitContact!!,
+      visitContactId = visitorWithMultipleAddresses.personId,
+    )
+    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
+    assertThat(visitBookingResponse.visitors[0].primaryAddress).isEqualTo(address1)
+  }
+
+  @Test
+  fun `when a visit's visitor has multiple primary address the first primary address is populated on the visit booking details`() {
+    // Given
+    val reference = "aa-bb-cc-dd"
+    val prisonerId = "prisoner-id"
+
+    // visitor has 3 primary addresses but first is address 2 - so address2 should be returned
+    val address1 = createAddressDto(street = "ABC Street", primary = true)
+    val address2 = createAddressDto(street = "XYZ Street", primary = true)
+    val address3 = createAddressDto(street = "ABC Street", primary = true)
+
+    // address2 is the first address on the list
+    val visitorWithMultipleAddresses = createContactDto(21, "Visitor", "TwentyOne", addresses = listOf(address2, address1, address3))
+    val visitors = listOf(createVisitorDto(visitorWithMultipleAddresses, true))
+
+    // main contact details
+    val contact = ContactDto("Johnny Doe", "01234567890", "email@example.com")
+    val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors, contact = contact)
+    // contacts returned does not have visitor 3
+    val contactsList = listOf(visitorWithMultipleAddresses)
+    val eventList = mutableListOf(eventAudit1, eventAudit2, eventAudit3)
+    val expectedEventActionedByFullNames = listOf("abcd", null, "Test User A")
+
+    val notifications = emptyList<VisitNotificationEventDto>()
+
+    visitSchedulerMockServer.stubGetVisit(reference, visit)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
+    // alert 3's alert code is not relevant for visits so should be ignored
+    alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
+    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = true, approvedVisitorsOnly = false, personId = null, hasDateOfBirth = null, contactsList = contactsList)
+    visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
+    visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
+    manageUsersApiMockServer.stubGetUserDetails("test-user", "Test User A")
+
+    // When
+    val responseSpec = callGetVisitFullDetailsByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isOk
+    val visitBookingResponse = getResult(responseSpec.expectBody())
+    val expectedVisitContact = VisitContactDto(
+      contactDto = visit.visitContact!!,
+      visitContactId = visitorWithMultipleAddresses.personId,
+    )
+    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
+    assertThat(visitBookingResponse.visitors[0].primaryAddress).isEqualTo(address2)
+  }
+
+  @Test
+  fun `when a visit's visitor has no primary addresses then the first address is populated on the visit booking details`() {
+    // Given
+    val reference = "aa-bb-cc-dd"
+    val prisonerId = "prisoner-id"
+
+    // visitor has 3 addresses but none of them are primary
+    val address1 = createAddressDto(street = "ABC Street", primary = false)
+    val address2 = createAddressDto(street = "XYZ Street", primary = false)
+    val address3 = createAddressDto(street = "ABC Street", primary = false)
+
+    // address3 is the first address on the list
+    val visitorWithMultipleAddresses = createContactDto(
+      21,
+      "Visitor",
+      "TwentyOne",
+      addresses = listOf(address3, address2, address1),
+    )
+    val visitors = listOf(createVisitorDto(visitorWithMultipleAddresses, true))
+
+    // main contact details
+    val contact = ContactDto("Johnny Doe", "01234567890", "email@example.com")
+    val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors, contact = contact)
+    // contacts returned does not have visitor 3
+    val contactsList = listOf(visitorWithMultipleAddresses)
+    val eventList = mutableListOf(eventAudit1, eventAudit2, eventAudit3)
+    val expectedEventActionedByFullNames = listOf("abcd", null, "Test User A")
+
+    val notifications = emptyList<VisitNotificationEventDto>()
+
+    visitSchedulerMockServer.stubGetVisit(reference, visit)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
+    // alert 3's alert code is not relevant for visits so should be ignored
+    alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
+    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = true, approvedVisitorsOnly = false, personId = null, hasDateOfBirth = null, contactsList = contactsList)
+    visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
+    visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
+    manageUsersApiMockServer.stubGetUserDetails("test-user", "Test User A")
+
+    // When
+    val responseSpec = callGetVisitFullDetailsByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isOk
+    val visitBookingResponse = getResult(responseSpec.expectBody())
+    val expectedVisitContact = VisitContactDto(
+      contactDto = visit.visitContact!!,
+      visitContactId = visitorWithMultipleAddresses.personId,
+    )
+    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
+    assertThat(visitBookingResponse.visitors[0].primaryAddress).isEqualTo(address3)
+  }
+
+  @Test
+  fun `when a visit's visitor has no addresses then address is populated as null on the visit booking details`() {
+    // Given
+    val reference = "aa-bb-cc-dd"
+    val prisonerId = "prisoner-id"
+
+    // visitor has no address
+    val addresses = emptyList<AddressDto>()
+    // address3 is the first address on the list
+    val visitorWithNoAddress = createContactDto(
+      21,
+      "Visitor",
+      "TwentyOne",
+      addresses = addresses,
+    )
+    val visitors = listOf(createVisitorDto(visitorWithNoAddress, true))
+
+    // main contact details
+    val contact = ContactDto("Johnny Doe", "01234567890", "email@example.com")
+    val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors, contact = contact)
+    // contacts returned does not have visitor 3
+    val contactsList = listOf(visitorWithNoAddress)
+    val eventList = mutableListOf(eventAudit1, eventAudit2, eventAudit3)
+    val expectedEventActionedByFullNames = listOf("abcd", null, "Test User A")
+
+    val notifications = emptyList<VisitNotificationEventDto>()
+
+    visitSchedulerMockServer.stubGetVisit(reference, visit)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
+    // alert 3's alert code is not relevant for visits so should be ignored
+    alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
+    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = true, approvedVisitorsOnly = false, personId = null, hasDateOfBirth = null, contactsList = contactsList)
+    visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
+    visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
+    manageUsersApiMockServer.stubGetUserDetails("test-user", "Test User A")
+
+    // When
+    val responseSpec = callGetVisitFullDetailsByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isOk
+    val visitBookingResponse = getResult(responseSpec.expectBody())
+    val expectedVisitContact = VisitContactDto(
+      contactDto = visit.visitContact!!,
+      visitContactId = visitorWithNoAddress.personId,
+    )
+    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
+    assertThat(visitBookingResponse.visitors[0].primaryAddress).isNull()
+  }
+
+  @Test
   fun `when prisoner search returns a 404 then an exception is thrown and a 404 is returned as response `() {
     // Given
     val reference = "aa-bb-cc-dd"
@@ -829,8 +1035,24 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     contacts: List<PrisonerContactDto>,
   ) {
     for (i in visitBookingDetailsDto.visitors.indices) {
-      assertVisitor(visitBookingDetailsDto.visitors[i], contacts[i], contacts[i].addresses.firstOrNull { it.primary })
+      val primaryAddress = getPrimaryAddress(contacts[i])
+      assertVisitor(visitBookingDetailsDto.visitors[i], contacts[i], primaryAddress)
     }
+  }
+
+  private fun getPrimaryAddress(contact: PrisonerContactDto): AddressDto? {
+    val address: AddressDto? = if (contact.addresses.isEmpty()) {
+      null
+    } else {
+      val primaryAddresses = contact.addresses.filter { it.primary }
+      if (primaryAddresses.isNotEmpty()) {
+        primaryAddresses.first()
+      } else {
+        contact.addresses.first()
+      }
+    }
+
+    return address
   }
 
   private fun assertVisitor(
