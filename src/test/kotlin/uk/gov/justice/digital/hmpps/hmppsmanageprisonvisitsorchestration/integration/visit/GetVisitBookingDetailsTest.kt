@@ -88,6 +88,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
       lastName = "LastName",
       dateOfBirth = LocalDate.of(2000, 1, 31),
       prisonId = prisonCode,
+      convictedStatus = "Convicted",
     )
 
     visitor1PrimaryAddress = createAddressDto(street = "ABC Street", primary = true)

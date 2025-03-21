@@ -42,6 +42,7 @@ class BookerPrisonerValidateTest : IntegrationTestBase() {
       lastName = "LastName",
       dateOfBirth = LocalDate.of(2000, 1, 31),
       prisonId = prisonId,
+      convictedStatus = "Convicted",
     )
     prisonVisitBookerRegistryMockServer.stubValidateBookerPrisoner(bookerReference, prisonerId, HttpStatus.OK)
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisoner1Dto)
@@ -68,6 +69,7 @@ class BookerPrisonerValidateTest : IntegrationTestBase() {
       lastName = "LastName",
       dateOfBirth = LocalDate.of(2000, 1, 31),
       prisonId = prisonId,
+      convictedStatus = "Convicted",
     )
 
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisoner1Dto)
@@ -95,6 +97,7 @@ class BookerPrisonerValidateTest : IntegrationTestBase() {
       lastName = "LastName",
       dateOfBirth = LocalDate.of(2000, 1, 31),
       prisonId = prisonId,
+      convictedStatus = "Remand",
     )
 
     prisonVisitBookerRegistryMockServer.stubValidateBookerPrisoner(bookerReference, prisonerId, HttpStatus.OK)
@@ -158,6 +161,7 @@ class BookerPrisonerValidateTest : IntegrationTestBase() {
       lastName = "LastName",
       dateOfBirth = LocalDate.of(2000, 1, 31),
       prisonId = prisonId,
+      convictedStatus = "Remand",
     )
     prisonVisitBookerRegistryMockServer.stubValidateBookerPrisoner(bookerReference, prisonerId, HttpStatus.OK)
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisoner1Dto)
@@ -182,6 +186,7 @@ class BookerPrisonerValidateTest : IntegrationTestBase() {
       lastName = "LastName",
       dateOfBirth = LocalDate.of(2000, 1, 31),
       prisonId = prisonId,
+      convictedStatus = "Remand",
     )
     prisonVisitBookerRegistryMockServer.stubValidateBookerPrisoner(bookerReference, prisonerId, HttpStatus.OK)
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisoner1Dto)
