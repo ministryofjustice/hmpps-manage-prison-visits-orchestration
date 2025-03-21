@@ -37,24 +37,21 @@ class PrisonerProfileClient(
     val prisonerMono = prisonerSearchClient.getPrisonerByIdAsMono(prisonerId)
     val inmateDetailMono = prisonApiClient.getInmateDetailsAsMono(prisonerId)
     val visitBalancesMono = prisonApiClient.getVisitBalancesAsMono(prisonerId)
-    val prisonerBookingSummaryMono = prisonApiClient.getBookingsAsMono(prisonId, prisonerId)
     val visitSchedulerMono = visitSchedulerClient.getVisitsAsMono(visitSearchRequestFilter)
     val alertsMono = alertsApiClient.getPrisonerAlertsAsMono(prisonerId)
 
-    return Mono.zip(prisonerMono, inmateDetailMono, visitBalancesMono, prisonerBookingSummaryMono, visitSchedulerMono, alertsMono)
+    return Mono.zip(prisonerMono, inmateDetailMono, visitBalancesMono, visitSchedulerMono, alertsMono)
       .map { prisonerProfileMonos ->
         val prisoner = prisonerProfileMonos.t1 ?: throw InvalidPrisonerProfileException("Unable to retrieve offender details from Prisoner Search API")
         val inmateDetails = prisonerProfileMonos.t2 ?: throw InvalidPrisonerProfileException("Unable to retrieve inmate details from Prison API")
         val visitBalances = if (prisonerProfileMonos.t3.isEmpty) null else prisonerProfileMonos.t3.get()
-        val prisonerBookingSummary = prisonerProfileMonos.t4.content.firstOrNull()
-        val visits = prisonerProfileMonos.t5.content.map { visitDto -> VisitSummaryDto(visitDto = visitDto) }
-        val prisonerAlerts = prisonerProfileMonos.t6.content.filter { predicateFilterSupportedCodes.test(it) }.map { alertResponse -> AlertDto(alertResponse) }
+        val visits = prisonerProfileMonos.t4.content.map { visitDto -> VisitSummaryDto(visitDto = visitDto) }
+        val prisonerAlerts = prisonerProfileMonos.t5.content.filter { predicateFilterSupportedCodes.test(it) }.map { alertResponse -> AlertDto(alertResponse) }
 
         PrisonerProfileDto(
           prisoner,
           inmateDetails,
           visitBalances,
-          prisonerBookingSummary,
           visits,
           prisonerAlerts,
         )

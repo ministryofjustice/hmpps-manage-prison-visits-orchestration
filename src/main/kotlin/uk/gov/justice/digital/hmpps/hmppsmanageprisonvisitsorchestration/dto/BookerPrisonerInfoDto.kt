@@ -17,7 +17,4 @@ data class BookerPrisonerInfoDto(
 
   @Schema(description = "Current prison code for the prison that the booker registered the prisoner with", required = true)
   val registeredPrison: RegisteredPrisonDto,
-
-  @Schema(description = "Convicted status of prisoner", allowableValues = ["Convicted", "Remand"], required = false)
-  val convictedStatus: String?,
 )

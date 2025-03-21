@@ -40,6 +40,8 @@ data class VisitBookingDetailsDto internal constructor(
   @Schema(description = "The finishing date and time of the visit", example = "2018-12-01T13:45:00", required = true)
   @field:NotBlank
   val endTimestamp: LocalDateTime,
+  @Schema(description = "Session Template Reference", example = "v9d.7ed.7u", required = false)
+  val sessionTemplateReference: String? = null,
   @Schema(description = "Visit Notes", required = false)
   val visitNotes: List<VisitNoteDto>? = listOf(),
   @Schema(description = "Contact associated with the visit", required = false)
@@ -73,6 +75,7 @@ data class VisitBookingDetailsDto internal constructor(
     visitRestriction = visit.visitRestriction,
     startTimestamp = visit.startTimestamp,
     endTimestamp = visit.endTimestamp,
+    sessionTemplateReference = visit.sessionTemplateReference,
     visitNotes = visit.visitNotes,
     visitContact = visitContact,
     visitorSupport = visit.visitorSupport,
@@ -143,7 +146,7 @@ data class VisitorDetailsDto internal constructor(
   val relationshipDescription: String? = null,
   @Schema(description = "List of restrictions associated with the contact", required = false)
   val restrictions: List<RestrictionDto> = listOf(),
-  @Schema(description = "List of addresses associated with the contact", required = false)
+  @Schema(description = "Primary address for the contact or the first address if no primary address available, null if address list is empty", required = false)
   val primaryAddress: AddressDto?,
 ) {
   constructor(prisonerContactDto: PrisonerContactDto) : this(
@@ -153,7 +156,8 @@ data class VisitorDetailsDto internal constructor(
     dateOfBirth = prisonerContactDto.dateOfBirth,
     relationshipDescription = prisonerContactDto.relationshipDescription,
     restrictions = prisonerContactDto.restrictions,
-    primaryAddress = prisonerContactDto.addresses.firstOrNull { it.primary },
+    // first primary address or first address in the list or null
+    primaryAddress = prisonerContactDto.addresses.firstOrNull { it.primary } ?: prisonerContactDto.addresses.firstOrNull(),
   )
 }
 

@@ -478,6 +478,7 @@ abstract class IntegrationTestBase {
     prisonName: String = "HMP Leeds",
     cellLocation: String? = null,
     currentIncentive: CurrentIncentive? = null,
+    convictedStatus: String?,
   ): PrisonerDto = PrisonerDto(
     prisonerNumber = prisonerId,
     firstName = firstName,
@@ -487,6 +488,7 @@ abstract class IntegrationTestBase {
     prisonName = prisonName,
     cellLocation = cellLocation,
     currentIncentive = currentIncentive,
+    convictedStatus = convictedStatus,
   )
 
   final fun createContactDto(
