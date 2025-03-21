@@ -143,7 +143,7 @@ data class VisitorDetailsDto internal constructor(
   val relationshipDescription: String? = null,
   @Schema(description = "List of restrictions associated with the contact", required = false)
   val restrictions: List<RestrictionDto> = listOf(),
-  @Schema(description = "List of addresses associated with the contact", required = false)
+  @Schema(description = "Primary address for the contact or the first address if no primary address available, null if address list is empty", required = false)
   val primaryAddress: AddressDto?,
 ) {
   constructor(prisonerContactDto: PrisonerContactDto) : this(
@@ -153,7 +153,8 @@ data class VisitorDetailsDto internal constructor(
     dateOfBirth = prisonerContactDto.dateOfBirth,
     relationshipDescription = prisonerContactDto.relationshipDescription,
     restrictions = prisonerContactDto.restrictions,
-    primaryAddress = prisonerContactDto.addresses.firstOrNull { it.primary },
+    // first primary address or first address in the list or null
+    primaryAddress = prisonerContactDto.addresses.firstOrNull { it.primary } ?: prisonerContactDto.addresses.firstOrNull(),
   )
 }
 
