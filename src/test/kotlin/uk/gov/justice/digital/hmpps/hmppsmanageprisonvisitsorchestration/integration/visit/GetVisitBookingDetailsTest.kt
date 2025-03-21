@@ -969,6 +969,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     assertThat(visitBookingDetailsDto.visitRestriction).isEqualTo(visitDto.visitRestriction)
     assertThat(visitBookingDetailsDto.endTimestamp).isEqualTo(visitDto.endTimestamp)
     assertThat(visitBookingDetailsDto.startTimestamp).isEqualTo(visitDto.startTimestamp)
+    assertThat(visitBookingDetailsDto.sessionTemplateReference).isEqualTo(visitDto.sessionTemplateReference)
     assertThat(visitBookingDetailsDto.visitorSupport).isEqualTo(visitDto.visitorSupport)
     assertThat(visitBookingDetailsDto.visitNotes).isEqualTo(visitDto.visitNotes)
     assertThat(visitBookingDetailsDto.visitContact).isEqualTo(visitContact)
