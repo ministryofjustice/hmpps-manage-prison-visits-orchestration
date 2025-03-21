@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.InmateDetailDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.PrisonerBookingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.VisitBalancesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSummaryDto
@@ -58,7 +57,6 @@ data class PrisonerProfileDto(
     prisoner: PrisonerDto,
     inmateDetail: InmateDetailDto,
     visitBalances: VisitBalancesDto?,
-    prisonerBookingSummary: PrisonerBookingSummaryDto?,
     visits: List<VisitSummaryDto>,
     prisonerAlerts: List<AlertDto>,
   ) : this(
@@ -70,7 +68,7 @@ data class PrisonerProfileDto(
     cellLocation = prisoner.cellLocation,
     prisonName = prisoner.prisonName,
     category = inmateDetail.category,
-    convictedStatus = prisonerBookingSummary?.convictedStatus,
+    convictedStatus = prisoner.convictedStatus,
     incentiveLevel = prisoner.currentIncentive?.level?.description,
     alerts = prisonerAlerts,
     visitBalances = visitBalances,

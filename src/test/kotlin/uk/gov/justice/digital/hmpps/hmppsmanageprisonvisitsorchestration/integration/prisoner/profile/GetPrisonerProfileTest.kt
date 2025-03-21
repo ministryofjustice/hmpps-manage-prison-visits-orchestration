@@ -22,7 +22,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.PrisonerProfileDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.InmateDetailDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.PrisonerBookingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.VisitBalancesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.CurrentIncentive
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.IncentiveLevel
@@ -60,6 +59,7 @@ class GetPrisonerProfileTest(
     lastName = LAST_NAME,
     dateOfBirth = DATE_OF_BIRTH,
     currentIncentive = currentIncentive,
+    convictedStatus = "Convicted",
   )
 
   private val visitor1 = VisitorDetails(1, "First", "VisitorA")
@@ -75,7 +75,6 @@ class GetPrisonerProfileTest(
   private final val alertResponseDto = createAlertResponseDto()
   private final val visitBalancesDto = createVisitBalancesDto()
   private val contactsDto = createContactsList(listOf(visitor1, visitor2, visitor3))
-  private final val prisonerBookingSummaryDto = createPrisonerBookingSummary(PRISONER_ID, "Convicted")
   private val visit1Visitors = listOf(
     VisitorDto(nomisPersonId = visitor1.personId, visitContact = true),
     VisitorDto(nomisPersonId = visitor2.personId, visitContact = false),
@@ -124,7 +123,6 @@ class GetPrisonerProfileTest(
     // Given
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
-    prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, contactsDto)
@@ -141,7 +139,6 @@ class GetPrisonerProfileTest(
     assertPrisonerDtoDetails(prisonerProfile, prisonerDto)
     Assertions.assertThat(prisonerProfile.incentiveLevel).isEqualTo(prisonerDto.currentIncentive!!.level.description)
     assertInmateDetails(prisonerProfile, inmateDetailDto)
-    Assertions.assertThat(prisonerProfile.convictedStatus).isEqualTo(prisonerBookingSummaryDto.convictedStatus)
     Assertions.assertThat(prisonerProfile.visitBalances).isEqualTo(visitBalancesDto)
     Assertions.assertThat(prisonerProfile.visits.size).isEqualTo(2)
     Assertions.assertThat(prisonerProfile.alerts).isEqualTo(listOf(alert))
@@ -155,7 +152,6 @@ class GetPrisonerProfileTest(
     // Given
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, null)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
-    prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, contactsDto)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
@@ -176,7 +172,6 @@ class GetPrisonerProfileTest(
     // Given
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, null)
-    prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, contactsDto, HttpStatus.NOT_FOUND)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
@@ -202,11 +197,11 @@ class GetPrisonerProfileTest(
       lastName = LAST_NAME,
       dateOfBirth = DATE_OF_BIRTH,
       currentIncentive = currentIncentive,
+      convictedStatus = null,
     )
 
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
-    prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, contactsDto, HttpStatus.NOT_FOUND)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
@@ -227,7 +222,6 @@ class GetPrisonerProfileTest(
     // Given
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
-    prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, null)
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, contactsDto, HttpStatus.NOT_FOUND)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
@@ -244,72 +238,8 @@ class GetPrisonerProfileTest(
     assertPrisonerDtoDetails(prisonerProfile, prisonerDto)
     Assertions.assertThat(prisonerProfile.incentiveLevel).isEqualTo(prisonerDto.currentIncentive!!.level.description)
     assertInmateDetails(prisonerProfile, inmateDetailDto)
-    Assertions.assertThat(prisonerProfile.convictedStatus).isEqualTo(prisonerBookingSummaryDto.convictedStatus)
     Assertions.assertThat(prisonerProfile.visitBalances).isNull()
     Assertions.assertThat(prisonerProfile.visits.size).isEqualTo(2)
-    Assertions.assertThat(prisonerProfile.alerts).isEqualTo(listOf(alert))
-    assertVisits(prisonerProfile, listOf(visit1, visit2))
-
-    verifyExternalAPIClientCalls()
-  }
-
-  @Test
-  fun `when prison API get bookings returns no records some prisoner profile details are blank`() {
-    // Given
-    prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
-    prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
-    // get bookings will return empty contents
-    prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, mutableListOf())
-    prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
-    stubGetVisits(listOf(visit1, visit2))
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, contactsDto, HttpStatus.NOT_FOUND)
-    alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
-    prisonRegisterMockServer.stubGetPrisons(prisons)
-
-    // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
-
-    // Then
-    val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val prisonerProfile = getResults(returnResult)
-
-    assertPrisonerDtoDetails(prisonerProfile, prisonerDto)
-    Assertions.assertThat(prisonerProfile.incentiveLevel).isEqualTo(prisonerDto.currentIncentive!!.level.description)
-    assertInmateDetails(prisonerProfile, inmateDetailDto)
-    Assertions.assertThat(prisonerProfile.convictedStatus).isNull()
-    Assertions.assertThat(prisonerProfile.visitBalances).isEqualTo(visitBalancesDto)
-    Assertions.assertThat(prisonerProfile.alerts).isEqualTo(listOf(alert))
-    assertVisits(prisonerProfile, listOf(visit1, visit2))
-
-    verifyExternalAPIClientCalls()
-  }
-
-  @Test
-  fun `when prison API get bookings returns multiple records only 1st one is populated on prisoner profile`() {
-    // Given
-
-    prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
-    prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
-    val prisonerBookingSummaryDto1 = createPrisonerBookingSummary(PRISONER_ID, "Remand")
-    prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto, prisonerBookingSummaryDto1))
-    prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, contactsDto, HttpStatus.NOT_FOUND)
-    alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
-    prisonRegisterMockServer.stubGetPrisons(prisons)
-    stubGetVisits(listOf(visit1, visit2))
-
-    // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
-
-    // Then
-    val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val prisonerProfile = getResults(returnResult)
-
-    assertPrisonerDtoDetails(prisonerProfile, prisonerDto)
-    Assertions.assertThat(prisonerProfile.incentiveLevel).isEqualTo(prisonerDto.currentIncentive!!.level.description)
-    assertInmateDetails(prisonerProfile, inmateDetailDto)
-    Assertions.assertThat(prisonerProfile.convictedStatus).isEqualTo(prisonerBookingSummaryDto.convictedStatus)
-    Assertions.assertThat(prisonerProfile.visitBalances).isEqualTo(visitBalancesDto)
     Assertions.assertThat(prisonerProfile.alerts).isEqualTo(listOf(alert))
     assertVisits(prisonerProfile, listOf(visit1, visit2))
 
@@ -325,10 +255,10 @@ class GetPrisonerProfileTest(
       lastName = LAST_NAME,
       dateOfBirth = DATE_OF_BIRTH,
       currentIncentive = null,
+      convictedStatus = "Remand",
     )
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
-    prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, contactsDto, HttpStatus.NOT_FOUND)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
@@ -345,7 +275,6 @@ class GetPrisonerProfileTest(
     assertPrisonerDtoDetails(prisonerProfile, prisonerDto)
     Assertions.assertThat(prisonerProfile.incentiveLevel).isNull()
     assertInmateDetails(prisonerProfile, inmateDetailDto)
-    Assertions.assertThat(prisonerProfile.convictedStatus).isEqualTo(prisonerBookingSummaryDto.convictedStatus)
     Assertions.assertThat(prisonerProfile.visitBalances).isEqualTo(visitBalancesDto)
     Assertions.assertThat(prisonerProfile.alerts).isEqualTo(listOf(alert))
     assertVisits(prisonerProfile, listOf(visit1, visit2))
@@ -358,7 +287,6 @@ class GetPrisonerProfileTest(
     // Given
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
-    prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, contactsDto, HttpStatus.NOT_FOUND)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
@@ -375,7 +303,6 @@ class GetPrisonerProfileTest(
     assertPrisonerDtoDetails(prisonerProfile, prisonerDto)
     Assertions.assertThat(prisonerProfile.incentiveLevel).isEqualTo(prisonerDto.currentIncentive!!.level.description)
     assertInmateDetails(prisonerProfile, inmateDetailDto)
-    Assertions.assertThat(prisonerProfile.convictedStatus).isEqualTo(prisonerBookingSummaryDto.convictedStatus)
     Assertions.assertThat(prisonerProfile.visitBalances).isEqualTo(visitBalancesDto)
     Assertions.assertThat(prisonerProfile.alerts).isEqualTo(listOf(alert))
     Assertions.assertThat(prisonerProfile.visits).isEmpty()
@@ -388,7 +315,6 @@ class GetPrisonerProfileTest(
     // Given
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
-    prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, contactsDto)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
@@ -434,7 +360,6 @@ class GetPrisonerProfileTest(
     )
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
-    prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, contactsDto)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
@@ -470,7 +395,6 @@ class GetPrisonerProfileTest(
     // Given
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
-    prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
     prisonRegisterMockServer.stubGetPrisons(prisons)
@@ -508,7 +432,6 @@ class GetPrisonerProfileTest(
     // Given
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
-    prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
     prisonRegisterMockServer.stubGetPrisons(prisons)
@@ -546,7 +469,6 @@ class GetPrisonerProfileTest(
     // Given
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
-    prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, contactsDto)
@@ -579,7 +501,6 @@ class GetPrisonerProfileTest(
 
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
-    prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, contactsDto)
     prisonRegisterMockServer.stubGetPrisons(prisons)
@@ -609,7 +530,6 @@ class GetPrisonerProfileTest(
     // Given
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
-    prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, contactsDto)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
@@ -641,7 +561,6 @@ class GetPrisonerProfileTest(
     // Given
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
-    prisonApiMockServer.stubGetBookings(PRISON_CODE, PRISONER_ID, listOf(prisonerBookingSummaryDto))
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, contactsDto)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
@@ -678,6 +597,7 @@ class GetPrisonerProfileTest(
     Assertions.assertThat(prisonerProfile.prisonId).isEqualTo(prisonerDto.prisonId)
     Assertions.assertThat(prisonerProfile.prisonName).isEqualTo(prisonerDto.prisonName)
     Assertions.assertThat(prisonerProfile.cellLocation).isEqualTo(prisonerDto.cellLocation)
+    Assertions.assertThat(prisonerProfile.convictedStatus).isEqualTo(prisonerDto.convictedStatus)
   }
 
   private fun assertInmateDetails(prisonerProfile: PrisonerProfileDto, inmateDetails: InmateDetailDto) {
@@ -717,8 +637,6 @@ class GetPrisonerProfileTest(
     return CurrentIncentive(incentiveLevel, LocalDateTime.now())
   }
 
-  private fun createPrisonerBookingSummary(prisonerId: String, convictedStatus: String): PrisonerBookingSummaryDto = PrisonerBookingSummaryDto(prisonerId, convictedStatus)
-
   private fun stubGetVisits(visits: List<VisitDto>) {
     visitSchedulerMockServer.stubGetVisits(
       prisonerId = PRISONER_ID,
@@ -736,7 +654,6 @@ class GetPrisonerProfileTest(
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(any())
     verify(prisonAPiClientSpy, times(1)).getInmateDetailsAsMono(any())
     verify(prisonAPiClientSpy, times(1)).getVisitBalancesAsMono(any())
-    verify(prisonAPiClientSpy, times(1)).getBookingsAsMono(any(), any())
     verify(alertsApiClient, times(1)).getPrisonerAlertsAsMono(any())
   }
 }
