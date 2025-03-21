@@ -65,6 +65,11 @@ hmpps:
         subscribeTopicId: domainevents
         dlqMaxReceiveCount: 1
         visibilityTimeout: 1
+      prisonvisitswriteevents:
+        queueName: ${random.uuid}
+        dlqName: ${random.uuid}
+        dlqMaxReceiveCount: 1
+        visibilityTimeout: 1
     topics:
       domainevents:
         arn: arn:aws:sns:eu-west-2:000000000000:${random.uuid}
