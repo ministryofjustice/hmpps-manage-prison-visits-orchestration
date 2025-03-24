@@ -40,6 +40,8 @@ data class VisitBookingDetailsDto internal constructor(
   @Schema(description = "The finishing date and time of the visit", example = "2018-12-01T13:45:00", required = true)
   @field:NotBlank
   val endTimestamp: LocalDateTime,
+  @Schema(description = "Session Template Reference", example = "v9d.7ed.7u", required = false)
+  val sessionTemplateReference: String? = null,
   @Schema(description = "Visit Notes", required = false)
   val visitNotes: List<VisitNoteDto>? = listOf(),
   @Schema(description = "Contact associated with the visit", required = false)
@@ -73,6 +75,7 @@ data class VisitBookingDetailsDto internal constructor(
     visitRestriction = visit.visitRestriction,
     startTimestamp = visit.startTimestamp,
     endTimestamp = visit.endTimestamp,
+    sessionTemplateReference = visit.sessionTemplateReference,
     visitNotes = visit.visitNotes,
     visitContact = visitContact,
     visitorSupport = visit.visitorSupport,
