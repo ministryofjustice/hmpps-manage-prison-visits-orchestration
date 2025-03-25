@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integr
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.post
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonNameDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterContactDetailsDto
@@ -64,11 +65,11 @@ class PrisonRegisterMockServer : WireMockServer(8096) {
     )
   }
 
-  fun stubGetPrisons(prisons: List<PrisonRegisterPrisonDto>?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
+  fun stubPrisonsByIds(prisons: List<PrisonRegisterPrisonDto>?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
     val responseBuilder = createJsonResponseBuilder()
 
     stubFor(
-      get("/prisons/prisonsByIds")
+      post("/prisons/prisonsByIds")
         .willReturn(
           if (prisons == null) {
             responseBuilder

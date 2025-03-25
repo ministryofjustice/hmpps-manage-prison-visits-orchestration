@@ -59,7 +59,7 @@ class OrchestrationPrisonsConfigController(
     type: UserType,
   ): List<String>? = prisonService.getSupportedPrisons(type)
 
-  @PreAuthorize("hasAnyRole('VSIP_ORCHESTRATION_SERVICE')")
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("$ORCHESTRATION_PRISONS_CONFIG_CONTROLLER_PATH/user-type/{type}/supported/detailed")
   @Operation(
     summary = "Get supported prisons with detailed prison details by user type",

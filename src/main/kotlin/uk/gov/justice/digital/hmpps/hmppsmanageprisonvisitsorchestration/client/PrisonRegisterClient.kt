@@ -4,7 +4,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
@@ -66,12 +65,12 @@ class PrisonRegisterClient(
   fun getPrison(prisonCode: String): PrisonRegisterPrisonDto = getPrisonAsMono(prisonCode)
     .blockOptional(apiTimeout).orElseThrow { NotFoundException("Prison with code - $prisonCode not found on prison-register") }
 
-  fun getPrisons(prisonCodes: List<String>): List<PrisonRegisterPrisonDto>? {
+  fun prisonsByIds(prisonCodes: List<String>): List<PrisonRegisterPrisonDto>? {
     val uri = "/prisons/prisonsByIds"
     val prisonRequestDto = PrisonRequestDto(prisonIds = prisonCodes)
 
     return webClient
-      .method(HttpMethod.GET)
+      .post()
       .uri(uri)
       .body(BodyInserters.fromValue(prisonRequestDto))
       .retrieve()

@@ -78,7 +78,7 @@ class SupportedPrisonsTest : IntegrationTestBase() {
     val prisons = listOf("BLI", "HEI")
 
     visitSchedulerMockServer.stubGetSupportedPrisons(STAFF, prisons.toMutableList())
-    prisonRegisterMockServer.stubGetPrisons(listOf(prison1Dto, prison2Dto))
+    prisonRegisterMockServer.stubPrisonsByIds(listOf(prison1Dto, prison2Dto))
 
     // When
     val responseSpec = callGetSupportedPrisonsDetails(STAFF, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
@@ -90,7 +90,7 @@ class SupportedPrisonsTest : IntegrationTestBase() {
     Assertions.assertThat(results.size).isEqualTo(2)
     Assertions.assertThat(results).contains(prison1Dto)
     Assertions.assertThat(results).contains(prison2Dto)
-    verify(prisonRegisterClientSpy, times(1)).getPrisons(prisons)
+    verify(prisonRegisterClientSpy, times(1)).prisonsByIds(prisons)
   }
 
   @Test
@@ -99,7 +99,7 @@ class SupportedPrisonsTest : IntegrationTestBase() {
     val prisons = emptyList<String>()
 
     visitSchedulerMockServer.stubGetSupportedPrisons(STAFF, prisons.toMutableList())
-    prisonRegisterMockServer.stubGetPrisons(emptyList())
+    prisonRegisterMockServer.stubPrisonsByIds(emptyList())
 
     // When
     val responseSpec = callGetSupportedPrisonsDetails(STAFF, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
@@ -108,7 +108,7 @@ class SupportedPrisonsTest : IntegrationTestBase() {
     responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(0)
-    verify(prisonRegisterClientSpy, times(0)).getPrison(any())
+    verify(prisonRegisterClientSpy, times(0)).prisonsByIds(any())
   }
 
   @Test
@@ -117,7 +117,7 @@ class SupportedPrisonsTest : IntegrationTestBase() {
     val prisons = listOf("BLI", "HEI")
 
     visitSchedulerMockServer.stubGetSupportedPrisons(STAFF, prisons.toMutableList())
-    prisonRegisterMockServer.stubGetPrisons(listOf(prison1Dto))
+    prisonRegisterMockServer.stubPrisonsByIds(listOf(prison1Dto))
 
     // When
     val responseSpec = callGetSupportedPrisonsDetails(STAFF, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
@@ -130,34 +130,34 @@ class SupportedPrisonsTest : IntegrationTestBase() {
     val results = getPrisonDetailsResults(returnResult)
     Assertions.assertThat(results.size).isEqualTo(1)
     Assertions.assertThat(results).contains(prison1Dto)
-    verify(prisonRegisterClientSpy, times(1)).getPrisons(prisons)
+    verify(prisonRegisterClientSpy, times(1)).prisonsByIds(prisons)
   }
 
   @Test
   fun `when get detailed view of supported prisons called and prison register returns NOT_FOUND then NOT_FOUND is returned`() {
     // Given
     val prisons = listOf("BLI", "HEI")
-    prisonRegisterMockServer.stubGetPrisons(listOf(prison1Dto, prison1Dto))
+    prisonRegisterMockServer.stubPrisonsByIds(listOf(prison1Dto, prison1Dto))
 
     visitSchedulerMockServer.stubGetSupportedPrisons(STAFF, prisons.toMutableList())
-    prisonRegisterMockServer.stubGetPrisons(null, HttpStatus.NOT_FOUND)
+    prisonRegisterMockServer.stubPrisonsByIds(null, HttpStatus.NOT_FOUND)
 
     // When
     val responseSpec = callGetSupportedPrisonsDetails(STAFF, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
-    verify(prisonRegisterClientSpy, times(1)).getPrisons(prisons)
+    verify(prisonRegisterClientSpy, times(1)).prisonsByIds(prisons)
   }
 
   @Test
   fun `when get detailed view of supported prisons called and prison register returns a INTERNAL_SERVER_ERROR then empty list is returned`() {
     // Given
     val prisons = listOf("BLI", "HEI")
-    prisonRegisterMockServer.stubGetPrisons(listOf(prison1Dto, prison1Dto))
+    prisonRegisterMockServer.stubPrisonsByIds(listOf(prison1Dto, prison1Dto))
 
     visitSchedulerMockServer.stubGetSupportedPrisons(STAFF, prisons.toMutableList())
-    prisonRegisterMockServer.stubGetPrisons(null, HttpStatus.INTERNAL_SERVER_ERROR)
+    prisonRegisterMockServer.stubPrisonsByIds(null, HttpStatus.INTERNAL_SERVER_ERROR)
 
     // When
     val responseSpec = callGetSupportedPrisonsDetails(STAFF, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
@@ -172,21 +172,21 @@ class SupportedPrisonsTest : IntegrationTestBase() {
     val prisons = listOf("BLI", "HEI")
 
     visitSchedulerMockServer.stubGetSupportedPrisons(STAFF, null, HttpStatus.NOT_FOUND)
-    prisonRegisterMockServer.stubGetPrisons(emptyList())
+    prisonRegisterMockServer.stubPrisonsByIds(emptyList())
 
     // When
     val responseSpec = callGetSupportedPrisonsDetails(STAFF, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
-    verify(prisonRegisterClientSpy, times(0)).getPrisons(prisons)
+    verify(prisonRegisterClientSpy, times(0)).prisonsByIds(prisons)
   }
 
   @Test
   fun `when get detailed view of supported prisons called and visit scheduler returns an INTERNAL_SERVER_ERROR then empty list is returned`() {
     // Given
     visitSchedulerMockServer.stubGetSupportedPrisons(STAFF, null, HttpStatus.INTERNAL_SERVER_ERROR)
-    prisonRegisterMockServer.stubGetPrisons(emptyList())
+    prisonRegisterMockServer.stubPrisonsByIds(emptyList())
 
     // When
     val responseSpec = callGetSupportedPrisonsDetails(STAFF, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)

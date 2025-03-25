@@ -42,7 +42,11 @@ class PrisonService(
 
   fun getSupportedPrisonsDetails(type: UserType): List<PrisonRegisterPrisonDto> {
     val supportedPrisonIds = visitSchedulerClient.getSupportedPrisons(type)
-    return prisonRegisterClient.getPrisons(supportedPrisonIds) ?: emptyList()
+    return if (supportedPrisonIds.isNotEmpty()) {
+      prisonRegisterClient.prisonsByIds(supportedPrisonIds) ?: emptyList()
+    } else {
+      emptyList()
+    }
   }
 
   fun getFutureExcludeDatesForPrison(prisonCode: String): List<ExcludeDateDto> {
