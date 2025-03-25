@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integr
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.post
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonNameDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterContactDetailsDto
@@ -10,7 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.getJsonString
 
 class PrisonRegisterMockServer : WireMockServer(8096) {
-  fun stubGetPrisons(prisons: List<PrisonNameDto>?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
+  fun stubGetPrisonNames(prisons: List<PrisonNameDto>?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
     val responseBuilder = createJsonResponseBuilder()
 
     stubFor(
@@ -59,6 +60,24 @@ class PrisonRegisterMockServer : WireMockServer(8096) {
             responseBuilder
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(prisonRegisterContactDetailsDto))
+          },
+        ),
+    )
+  }
+
+  fun stubPrisonsByIds(prisons: List<PrisonRegisterPrisonDto>?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      post("/prisons/prisonsByIds")
+        .willReturn(
+          if (prisons == null) {
+            responseBuilder
+              .withStatus(httpStatus.value())
+          } else {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(prisons))
           },
         ),
     )
