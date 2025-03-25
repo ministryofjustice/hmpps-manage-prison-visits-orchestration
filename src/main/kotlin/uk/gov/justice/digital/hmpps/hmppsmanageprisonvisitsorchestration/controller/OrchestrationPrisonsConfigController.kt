@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.PrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonService
 
@@ -57,6 +58,34 @@ class OrchestrationPrisonsConfigController(
     @PathVariable
     type: UserType,
   ): List<String>? = prisonService.getSupportedPrisons(type)
+
+  @PreAuthorize("hasAnyRole('VSIP_ORCHESTRATION_SERVICE')")
+  @GetMapping("$ORCHESTRATION_PRISONS_CONFIG_CONTROLLER_PATH/user-type/{type}/supported/detailed")
+  @Operation(
+    summary = "Get supported prisons with detailed prison details by user type",
+    description = "Get all supported prisons with detailed prison details by user type",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Supported prisons returned",
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to get supported prison details",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getSupportedPrisonDetails(
+    @Schema(description = "type", example = "STAFF", required = true)
+    @PathVariable
+    type: UserType,
+  ): List<PrisonRegisterPrisonDto> = prisonService.getSupportedPrisonsDetails(type)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping("$ORCHESTRATION_PRISONS_CONFIG_CONTROLLER_PATH/prison/{prisonCode}")

@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.getJsonString
 
 class PrisonRegisterMockServer : WireMockServer(8096) {
-  fun stubGetPrisons(prisons: List<PrisonNameDto>?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
+  fun stubGetPrisonNames(prisons: List<PrisonNameDto>?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
     val responseBuilder = createJsonResponseBuilder()
 
     stubFor(
@@ -59,6 +59,24 @@ class PrisonRegisterMockServer : WireMockServer(8096) {
             responseBuilder
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(prisonRegisterContactDetailsDto))
+          },
+        ),
+    )
+  }
+
+  fun stubGetPrisons(prisons: List<PrisonRegisterPrisonDto>?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      get("/prisons/prisonsByIds")
+        .willReturn(
+          if (prisons == null) {
+            responseBuilder
+              .withStatus(httpStatus.value())
+          } else {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(prisons))
           },
         ),
     )

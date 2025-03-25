@@ -4,7 +4,9 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Component
+import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
@@ -64,6 +66,19 @@ class PrisonRegisterClient(
   fun getPrison(prisonCode: String): PrisonRegisterPrisonDto = getPrisonAsMono(prisonCode)
     .blockOptional(apiTimeout).orElseThrow { NotFoundException("Prison with code - $prisonCode not found on prison-register") }
 
+  fun getPrisons(prisonCodes: List<String>): List<PrisonRegisterPrisonDto>? {
+    val uri = "/prisons/prisonsByIds"
+    val prisonRequestDto = PrisonRequestDto(prisonIds = prisonCodes)
+
+    return webClient
+      .method(HttpMethod.GET)
+      .uri(uri)
+      .body(BodyInserters.fromValue(prisonRequestDto))
+      .retrieve()
+      .bodyToMono<List<PrisonRegisterPrisonDto>>()
+      .block(apiTimeout)
+  }
+
   fun getPrisonContactDetails(prisonCode: String): Optional<PrisonRegisterContactDetailsDto> {
     val uri = "/secure/prisons/id/$prisonCode/department/contact-details?departmentType=SOCIAL_VISIT"
     return webClient.get()
@@ -81,4 +96,8 @@ class PrisonRegisterClient(
       }
       .blockOptional(apiTimeout)
   }
+
+  data class PrisonRequestDto(
+    val prisonIds: List<String>,
+  )
 }
