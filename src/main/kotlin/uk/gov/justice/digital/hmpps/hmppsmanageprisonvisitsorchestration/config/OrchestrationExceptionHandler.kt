@@ -12,9 +12,11 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 import org.springframework.web.reactive.function.client.WebClientException
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationValidationErrorCodes
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.BookerPrisonerRegistrationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.BookerPrisonerValidationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.ApplicationValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerAuthFailureException
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerPrisonerRegistrationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerPrisonerValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
@@ -148,6 +150,20 @@ class OrchestrationExceptionHandler {
     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error)
   }
 
+  @ExceptionHandler(BookerPrisonerRegistrationException::class)
+  fun handleBookerPrisonerRegistrationException(e: BookerPrisonerRegistrationException): ResponseEntity<ValidationErrorResponse> {
+    log.debug("Prisoner failed registration with exception: {}, {}", e.message, e.errorCode)
+    val message = e.localizedMessage
+    val error = BookerPrisonerRegistrationErrorResponse(
+      status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+      userMessage = "Prisoner registration failed",
+      developerMessage = message,
+      validationError = e.errorCode,
+    )
+
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error)
+  }
+
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
@@ -189,4 +205,12 @@ data class BookerPrisonerValidationErrorResponse(
   override val userMessage: String? = null,
   override val developerMessage: String? = null,
   val validationError: BookerPrisonerValidationErrorCodes,
+) : ValidationErrorResponse(status, errorCode, userMessage, developerMessage)
+
+data class BookerPrisonerRegistrationErrorResponse(
+  override val status: Int,
+  override val errorCode: Int? = null,
+  override val userMessage: String? = null,
+  override val developerMessage: String? = null,
+  val validationError: BookerPrisonerRegistrationErrorCodes,
 ) : ValidationErrorResponse(status, errorCode, userMessage, developerMessage)
