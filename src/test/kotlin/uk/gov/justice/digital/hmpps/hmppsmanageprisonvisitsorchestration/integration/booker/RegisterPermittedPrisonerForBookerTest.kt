@@ -37,7 +37,7 @@ class RegisterPermittedPrisonerForBookerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when validate booker prisoner is unsuccessful an error response is returned`() {
+  fun `when register booker prisoner is unsuccessful an error response is returned`() {
     // Given
     val bookerReference = "booker-reference"
     val registerPrisonerForBookerDto = RegisterPrisonerForBookerDto(
@@ -59,6 +59,26 @@ class RegisterPermittedPrisonerForBookerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
     val errorResponse = getValidationErrorResponse(responseSpec)
     assertThat(errorResponse.validationError).isEqualTo(BookerPrisonerRegistrationErrorCodes.FAILED_REGISTRATION)
+  }
+
+  @Test
+  fun `when register booker prisoner is called with no auth, request is rejected`() {
+    // Given
+    val invalidRoleHttpHeaders = setAuthorisation(roles = listOf("ROLE_INVALID"))
+    val bookerReference = "booker-reference"
+    val registerPrisonerForBookerDto = RegisterPrisonerForBookerDto(
+      prisonerId = "AA12345",
+      prisonerFirstName = "James",
+      prisonerLastName = "Smith",
+      prisonerDateOfBirth = LocalDate.now(),
+      prisonCode = "HEI",
+    )
+
+    // When
+    val responseSpec = callRegisterPrisoner(bookerReference, registerPrisonerForBookerDto, webTestClient, invalidRoleHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isForbidden
   }
 
   fun getValidationErrorResponse(responseSpec: WebTestClient.ResponseSpec): BookerPrisonerRegistrationErrorResponse = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerPrisonerRegistrationErrorResponse::class.java)
