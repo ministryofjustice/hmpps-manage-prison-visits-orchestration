@@ -13,15 +13,18 @@ data class RegisterPrisonerForBookerDto(
   val prisonerId: String,
 
   @Schema(description = "Prisoner first name", example = "James", required = true)
+  @field:NotBlank
   val prisonerFirstName: String,
 
   @Schema(description = "Prisoner last name", example = "Smith", required = true)
+  @field:NotBlank
   val prisonerLastName: String,
 
   @Schema(description = "Prisoner date of birth", example = "1960-01-30", required = true)
   val prisonerDateOfBirth: LocalDate,
 
   @JsonProperty("prisonId")
+  @field:NotBlank
   @Schema(description = "Prison Id", example = "MDI", required = true)
   val prisonCode: String,
 )
