@@ -14,12 +14,12 @@ import java.util.concurrent.CompletableFuture
 const val PRISON_VISITS_WRITES_QUEUE_CONFIG_KEY = "prisonvisitswriteevents"
 
 @Service
-class VisitWriteEventListenerService(
-  val objectMapper: ObjectMapper,
-) {
+class VisitWriteEventListenerService {
   private companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
+
+  private val objectMapper = ObjectMapper()
 
   @SqsListener(PRISON_VISITS_WRITES_QUEUE_CONFIG_KEY, factory = "hmppsQueueContainerFactoryProxy")
   fun onEventReceived(
