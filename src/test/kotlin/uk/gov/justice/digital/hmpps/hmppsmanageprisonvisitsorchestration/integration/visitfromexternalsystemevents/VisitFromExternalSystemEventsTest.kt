@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.visitwriteevents
+package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.visitfromexternalsystemevents
 
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
@@ -7,18 +7,22 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import org.springframework.test.context.ActiveProfiles
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.PurgeQueueRequest
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PRISON_VISITS_WRITES_QUEUE_CONFIG_KEY
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
 import uk.gov.justice.hmpps.sqs.countAllMessagesOnQueue
 import java.util.UUID
 
-@DisplayName("Visit write events")
-class VisitFromExternalSystemEventsTest : IntegrationTestBase() {
+@SpringBootTest(webEnvironment = RANDOM_PORT)
+@ActiveProfiles("test")
+@DisplayName("Visit from external system events")
+class VisitFromExternalSystemEventsTest {
   @Autowired
   protected lateinit var hmppsQueueService: HmppsQueueService
 
