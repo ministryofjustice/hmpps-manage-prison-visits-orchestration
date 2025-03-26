@@ -8,13 +8,13 @@ import kotlinx.coroutines.future.future
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.VisitWriteEvent
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.VisitFromExternalSystemEvent
 import java.util.concurrent.CompletableFuture
 
 const val PRISON_VISITS_WRITES_QUEUE_CONFIG_KEY = "prisonvisitswriteevents"
 
 @Service
-class VisitWriteEventListenerService(
+class VisitFromExternalSystemEventListenerService(
   private val objectMapper: ObjectMapper,
 ) {
   private companion object {
@@ -27,7 +27,7 @@ class VisitWriteEventListenerService(
   ): CompletableFuture<Void> = asCompletableFuture {
     try {
       LOG.debug("Received visit write event: $rawMessage")
-      val sqsMessage = objectMapper.readValue(rawMessage, VisitWriteEvent::class.java)
+      val sqsMessage = objectMapper.readValue(rawMessage, VisitFromExternalSystemEvent::class.java)
       when (sqsMessage.eventType) {
         "VisitCreated" -> {}
         "VisitUpdated" -> {}

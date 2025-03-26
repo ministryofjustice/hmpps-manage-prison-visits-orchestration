@@ -10,9 +10,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import java.util.*
 
 @ExtendWith(SpringExtension::class)
-internal class VisitWriteEventListenerServiceTest {
+internal class VisitFromExternalSystemEventListenerServiceTest {
   private val objectMapper = jacksonObjectMapper()
-  private val visitWriteEventListenerService = VisitWriteEventListenerService(objectMapper)
+  private val visitFromExternalSystemEventListenerService = VisitFromExternalSystemEventListenerService(objectMapper)
 
   @Test
   fun `will process a visit write create event`() {
@@ -44,7 +44,7 @@ internal class VisitWriteEventListenerServiceTest {
     """
 
     assertDoesNotThrow {
-      visitWriteEventListenerService.onEventReceived(message).get()
+      visitFromExternalSystemEventListenerService.onEventReceived(message).get()
     }
   }
 
@@ -78,7 +78,7 @@ internal class VisitWriteEventListenerServiceTest {
     """
 
     assertDoesNotThrow {
-      visitWriteEventListenerService.onEventReceived(message).get()
+      visitFromExternalSystemEventListenerService.onEventReceived(message).get()
     }
   }
 
@@ -112,7 +112,7 @@ internal class VisitWriteEventListenerServiceTest {
     """
 
     assertDoesNotThrow {
-      visitWriteEventListenerService.onEventReceived(message).get()
+      visitFromExternalSystemEventListenerService.onEventReceived(message).get()
     }
   }
 
@@ -146,7 +146,7 @@ internal class VisitWriteEventListenerServiceTest {
     """
 
     val exception = assertThrows<Exception> {
-      visitWriteEventListenerService.onEventReceived(message).get()
+      visitFromExternalSystemEventListenerService.onEventReceived(message).get()
     }
     assertThat(exception.message).contains("Cannot process event of type InvalidEventType")
   }
