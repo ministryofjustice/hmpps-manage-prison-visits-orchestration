@@ -18,7 +18,7 @@ import uk.gov.justice.hmpps.sqs.countAllMessagesOnQueue
 import java.util.UUID
 
 @DisplayName("Visit write events")
-class VisitWriteEventsTest: IntegrationTestBase() {
+class VisitWriteEventsTest : IntegrationTestBase() {
   @Autowired
   protected lateinit var hmppsQueueService: HmppsQueueService
 

@@ -145,8 +145,8 @@ internal class VisitWriteEventListenerServiceTest {
     }
     """
 
-    val exception = assertThrows<Exception>{
-        visitWriteEventListenerService.onEventReceived(message).get()
+    val exception = assertThrows<Exception> {
+      visitWriteEventListenerService.onEventReceived(message).get()
     }
     assertThat(exception.message).contains("Cannot process event of type InvalidEventType")
   }

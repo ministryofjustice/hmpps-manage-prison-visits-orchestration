@@ -28,7 +28,7 @@ class VisitWriteEventListenerService(
     try {
       LOG.debug("Received visit write event: $rawMessage")
       val sqsMessage = objectMapper.readValue(rawMessage, VisitWriteEvent::class.java)
-      when(sqsMessage.eventType) {
+      when (sqsMessage.eventType) {
         "VisitCreated" -> {}
         "VisitUpdated" -> {}
         "VisitCancelled" -> {}
