@@ -126,23 +126,13 @@ class VisitFromExternalSystemEventsTest {
       "eventType" : "VisitCancelled",
       "description" : null,
       "messageAttributes" : {
-        "prisonerId" : "A1234AB",
-        "prisonId" : "MDI",
-        "clientVisitReference" : "123456",
-        "visitRoom" : "A1",
-        "visitType" : "SOCIAL",
-        "visitStatus" : "BOOKED",
-        "visitRestriction" : "OPEN",
-        "startTimestamp" : "2020-12-04T10:42:43",
-        "endTimestamp" : "2020-12-04T10:42:43",
-        "createDateTime" : "2020-12-04T10:42:43",
-        "visitors" : [ {
-          "nomisPersonId" : 3,
-          "visitContact" : true
-        } ],
-        "actionedBy" : "automated-test-client"
-      },
-      "who" : "automated-test-client"
+        "visitReference" : "v9-d7-ed-7u",
+        "cancelOutcome": {
+          "outcomeStatus": "VISIT_ORDER_CANCELLED",
+          "text": "visit order cancelled"
+        },
+        "actionedBy": "test-consumer"
+      }
     }
     """
 
