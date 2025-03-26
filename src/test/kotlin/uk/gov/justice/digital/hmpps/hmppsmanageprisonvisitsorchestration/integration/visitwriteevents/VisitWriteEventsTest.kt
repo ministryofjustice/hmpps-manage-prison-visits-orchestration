@@ -40,7 +40,7 @@ class VisitWriteEventsTest: IntegrationTestBase() {
   }
 
   @Test
-  fun `will consume a visit write create event`() {
+  fun `will process a visit write create event`() {
     val messageId = UUID.randomUUID().toString()
     val message = """
     {
@@ -77,7 +77,7 @@ class VisitWriteEventsTest: IntegrationTestBase() {
   }
 
   @Test
-  fun `will consume a visit write update event`() {
+  fun `will process a visit write update event`() {
     val messageId = UUID.randomUUID().toString()
     val message = """
     {
@@ -114,7 +114,7 @@ class VisitWriteEventsTest: IntegrationTestBase() {
   }
 
   @Test
-  fun `will consume a visit write cancelled event`() {
+  fun `will process a visit write cancelled event`() {
     val messageId = UUID.randomUUID().toString()
     val message = """
     {
