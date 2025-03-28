@@ -14,13 +14,13 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isUnprocessableEntityError
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient.Companion.LOG
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerRegistrationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterPrisonerForBookerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.BookerPrisonerRegistrationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerPrisonerRegistrationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerPrisonerValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
@@ -101,7 +101,7 @@ class PrisonVisitBookerRegistryClient(
 
   fun registerPrisoner(bookerReference: String, registerPrisonerForBookerDto: RegisterPrisonerForBookerDto) {
     val uri = REGISTER_PRISONER.replace("{bookerReference}", bookerReference)
-    webClient.post()
+    webClient.put()
       .uri(uri)
       .body(BodyInserters.fromValue(registerPrisonerForBookerDto))
       .retrieve()
@@ -134,8 +134,7 @@ class PrisonVisitBookerRegistryClient(
   private fun getPrisonerRegistrationErrorResponse(e: Throwable): Throwable {
     if (e is WebClientResponseException && isUnprocessableEntityError(e)) {
       try {
-        val errorResponse = objectMapper.readValue(e.responseBodyAsString, BookerPrisonerRegistrationErrorResponse::class.java)
-        return BookerPrisonerRegistrationException(errorResponse.validationError)
+        return BookerPrisonerRegistrationException(BookerPrisonerRegistrationErrorCodes.FAILED_REGISTRATION)
       } catch (jsonProcessingException: Exception) {
         LOG.error("An error occurred processing the booker prisoner registration error response - ${e.stackTraceToString()}")
         throw jsonProcessingException
