@@ -4,4 +4,5 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 enum class NotificationEventAttributeType {
   VISITOR_RESTRICTION,
   VISITOR_ID,
+  PAIRED_VISIT,
 }
