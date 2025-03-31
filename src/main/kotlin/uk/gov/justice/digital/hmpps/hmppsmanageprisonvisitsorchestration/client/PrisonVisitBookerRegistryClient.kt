@@ -19,6 +19,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterPrisonerForBookerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.BookerPrisonerRegistrationErrorCodes
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerPrisonerRegistrationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerPrisonerValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import java.time.Duration
@@ -27,6 +30,7 @@ const val PUBLIC_BOOKER_CONTROLLER_PATH: String = "/public/booker/{bookerReferen
 const val PERMITTED_PRISONERS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/permitted/prisoners"
 const val PERMITTED_VISITORS: String = "$PERMITTED_PRISONERS/{prisonerId}/permitted/visitors"
 const val VALIDATE_PRISONER: String = "$PERMITTED_PRISONERS/{prisonerId}/validate"
+const val REGISTER_PRISONER: String = "$PERMITTED_PRISONERS/register"
 
 @Component
 class PrisonVisitBookerRegistryClient(
@@ -95,6 +99,24 @@ class PrisonVisitBookerRegistryClient(
       }.block(apiTimeout)
   }
 
+  fun registerPrisoner(bookerReference: String, registerPrisonerForBookerDto: RegisterPrisonerForBookerDto) {
+    val uri = REGISTER_PRISONER.replace("{bookerReference}", bookerReference)
+    webClient.put()
+      .uri(uri)
+      .body(BodyInserters.fromValue(registerPrisonerForBookerDto))
+      .retrieve()
+      .toBodilessEntity()
+      .onErrorResume { e ->
+        if (isUnprocessableEntityError(e)) {
+          val exception = getPrisonerRegistrationErrorResponse(e)
+          Mono.error(exception)
+        } else {
+          Mono.error(e)
+        }
+      }
+      .block(apiTimeout)
+  }
+
   private fun getPrisonerValidationErrorResponse(e: Throwable): Throwable {
     if (e is WebClientResponseException && isUnprocessableEntityError(e)) {
       try {
@@ -102,6 +124,19 @@ class PrisonVisitBookerRegistryClient(
         return BookerPrisonerValidationException(errorResponse.validationError)
       } catch (jsonProcessingException: Exception) {
         LOG.error("An error occurred processing the booker prisoner validation error response - ${e.stackTraceToString()}")
+        throw jsonProcessingException
+      }
+    }
+
+    return e
+  }
+
+  private fun getPrisonerRegistrationErrorResponse(e: Throwable): Throwable {
+    if (e is WebClientResponseException && isUnprocessableEntityError(e)) {
+      try {
+        return BookerPrisonerRegistrationException(BookerPrisonerRegistrationErrorCodes.FAILED_REGISTRATION)
+      } catch (jsonProcessingException: Exception) {
+        LOG.error("An error occurred processing the booker prisoner registration error response - ${e.stackTraceToString()}")
         throw jsonProcessingException
       }
     }
