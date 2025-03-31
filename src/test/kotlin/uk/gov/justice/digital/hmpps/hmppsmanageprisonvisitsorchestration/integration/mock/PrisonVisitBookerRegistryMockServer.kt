@@ -94,7 +94,7 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
     }
 
     stubFor(
-      WireMock.post(REGISTER_PRISONER.replace("{bookerReference}", bookerReference))
+      WireMock.put(REGISTER_PRISONER.replace("{bookerReference}", bookerReference))
         .willReturn(responseBuilder),
     )
   }
