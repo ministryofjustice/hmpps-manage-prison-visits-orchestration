@@ -1,9 +1,19 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CreateVisitFromExternalSystemDto
+
 data class VisitFromExternalSystemEvent(
   val messageId: String,
   val eventType: String,
   val description: String? = null,
   val messageAttributes: Map<String, Any?> = emptyMap(),
   val who: String? = null,
-)
+) {
+  fun toCreateVisitFromExternalSystemDto(): CreateVisitFromExternalSystemDto {
+    val mapper = ObjectMapper().registerModule(KotlinModule.Builder().build()).registerModule(JavaTimeModule())
+    return mapper.convertValue(this.messageAttributes, CreateVisitFromExternalSystemDto::class.java)
+  }
+}
