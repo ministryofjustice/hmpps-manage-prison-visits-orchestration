@@ -60,6 +60,21 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     )
   }
 
+  fun stubGetVisitByClientRef(clientReference: String, referenceResponse: List<String?>?) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      get("/visits/external-system/$clientReference")
+        .willReturn(
+          if (referenceResponse.isNullOrEmpty()) {
+            responseBuilder.withStatus(HttpStatus.NOT_FOUND.value())
+          } else {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(referenceResponse))
+          },
+        ),
+    )
+  }
+
   fun stubPostNotification(notificationEndPoint: String) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
