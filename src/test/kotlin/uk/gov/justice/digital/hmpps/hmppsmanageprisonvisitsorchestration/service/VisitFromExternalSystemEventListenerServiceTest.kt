@@ -6,13 +6,16 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.kotlin.mock
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import java.util.*
 
 @ExtendWith(SpringExtension::class)
 internal class VisitFromExternalSystemEventListenerServiceTest {
   private val objectMapper = jacksonObjectMapper()
-  private val visitFromExternalSystemEventListenerService = VisitFromExternalSystemEventListenerService(objectMapper)
+    private val visitSchedulerClient = mock<VisitSchedulerClient>()
+  private val visitFromExternalSystemEventListenerService = VisitFromExternalSystemEventListenerService(objectMapper, visitSchedulerClient)
 
   @Test
   fun `will process a visit write create event`() {
@@ -78,7 +81,7 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
     """
 
     assertDoesNotThrow {
-      visitFromExternalSystemEventListenerService.onEventReceived(message).get()
+       visitFromExternalSystemEventListenerService.onEventReceived(message).get()
     }
   }
 

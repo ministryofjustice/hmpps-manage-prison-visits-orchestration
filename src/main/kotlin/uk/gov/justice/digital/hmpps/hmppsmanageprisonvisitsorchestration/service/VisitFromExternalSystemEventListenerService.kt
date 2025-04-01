@@ -8,6 +8,8 @@ import kotlinx.coroutines.future.future
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.VisitFromExternalSystemEvent
 import java.util.concurrent.CompletableFuture
 
@@ -16,6 +18,7 @@ const val PRISON_VISITS_WRITES_QUEUE_CONFIG_KEY = "prisonvisitswriteevents"
 @Service
 class VisitFromExternalSystemEventListenerService(
   private val objectMapper: ObjectMapper,
+  private val visitSchedulerClient: VisitSchedulerClient,
 ) {
   private companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -29,10 +32,13 @@ class VisitFromExternalSystemEventListenerService(
       LOG.debug("Received visit write event: $rawMessage")
       val sqsMessage = objectMapper.readValue(rawMessage, VisitFromExternalSystemEvent::class.java)
       when (sqsMessage.eventType) {
-        "VisitCreated" -> {}
-        "VisitUpdated" -> {}
-        "VisitCancelled" -> {}
-        else -> throw Exception("Cannot process event of type ${sqsMessage.eventType}")
+          "VisitCreated" -> {
+              val createVisitFromExternalSystemDto = sqsMessage.toCreateVisitFromExternalSystemDto()
+              visitSchedulerClient.createVisitFromExternalSystem(createVisitFromExternalSystemDto)
+          }
+          "VisitUpdated" -> null
+          "VisitCancelled" -> null
+          else -> throw Exception("Cannot process event of type ${sqsMessage.eventType}")
       }
     } catch (e: Exception) {
       LOG.error("Error processing visit write event", e)
@@ -42,7 +48,7 @@ class VisitFromExternalSystemEventListenerService(
 }
 
 private fun asCompletableFuture(
-  process: suspend () -> Unit,
+    process: suspend () -> Unit,
 ): CompletableFuture<Void> = CoroutineScope(Dispatchers.Default).future {
-  process()
+    process()
 }.thenAccept { }

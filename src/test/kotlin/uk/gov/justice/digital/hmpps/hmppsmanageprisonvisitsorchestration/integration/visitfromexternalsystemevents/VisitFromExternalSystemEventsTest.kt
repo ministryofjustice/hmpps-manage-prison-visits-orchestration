@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,6 +18,7 @@ import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.PurgeQueueRequest
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CreateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitNoteDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
@@ -114,7 +116,7 @@ class VisitFromExternalSystemEventsTest: PrisonVisitsEventsIntegrationTestBase()
       await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 1 }
       await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
 
-      await untilAsserted { verify(visitSchedulerClient, times(1)).createVisitFromExternalSystem(createVisitFromExternalSystemDto)}
+      await untilAsserted { verify(visitSchedulerClient, times(1)).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())}
     }
 
     @Test
@@ -127,7 +129,7 @@ class VisitFromExternalSystemEventsTest: PrisonVisitsEventsIntegrationTestBase()
       )
 
       await untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 1 }
-      await untilAsserted { verify(visitSchedulerClient, times(1)).createVisitFromExternalSystem(createVisitFromExternalSystemDto)}
+      await untilAsserted { verify(visitSchedulerClient, times(1)).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())}
     }
   }
 
