@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.domainevents.PrisonVisitsEventsIntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PRISON_VISITS_WRITES_QUEUE_CONFIG_KEY
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.VisitFromExternalSystemEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerIncentivesInsertedNotifier
@@ -40,15 +41,10 @@ import uk.gov.justice.hmpps.sqs.countAllMessagesOnQueue
 import java.time.LocalDateTime
 import java.util.UUID
 
-@SpringBootTest(webEnvironment = RANDOM_PORT)
-@ActiveProfiles("test")
 @DisplayName("Visit from external system events")
-class VisitFromExternalSystemEventsTest: IntegrationTestBase() {
+class VisitFromExternalSystemEventsTest: PrisonVisitsEventsIntegrationTestBase() {
   @Autowired
   protected lateinit var hmppsQueueService: HmppsQueueService
-
-  @MockitoSpyBean
-  lateinit var visitSchedulerClient: VisitSchedulerClient
 
   protected val vweQueueConfig by lazy {
     hmppsQueueService.findByQueueId(PRISON_VISITS_WRITES_QUEUE_CONFIG_KEY) ?: throw MissingQueueException("HmppsQueue $PRISON_VISITS_WRITES_QUEUE_CONFIG_KEY not found")
