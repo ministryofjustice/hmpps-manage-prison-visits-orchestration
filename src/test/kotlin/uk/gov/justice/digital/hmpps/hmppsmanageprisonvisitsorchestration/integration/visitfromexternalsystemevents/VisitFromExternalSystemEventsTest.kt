@@ -6,35 +6,28 @@ import org.awaitility.kotlin.untilAsserted
 import org.awaitility.kotlin.untilCallTo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
-import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
+import org.springframework.http.HttpStatus
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.PurgeQueueRequest
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitNoteDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorSupportDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.OutcomeStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitNoteType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.domainevents.PrisonVisitsEventsIntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PRISON_VISITS_WRITES_QUEUE_CONFIG_KEY
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.VisitFromExternalSystemEvent
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerIncentivesInsertedNotifier
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
 import uk.gov.justice.hmpps.sqs.countAllMessagesOnQueue
@@ -63,10 +56,11 @@ class VisitFromExternalSystemEventsTest: PrisonVisitsEventsIntegrationTestBase()
     vweSqsDlqClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(vweDlqUrl).build())
   }
 
-  @Test
-  fun `will process a visit write create event`() {
-    val messageId = UUID.randomUUID().toString()
-    val visitFromExternalSystemEvent = VisitFromExternalSystemEvent(
+  @Nested
+  @DisplayName("create visit from external system")
+  inner class CreateVisit {
+    private val messageId = UUID.randomUUID().toString()
+    private val visitFromExternalSystemEvent = VisitFromExternalSystemEvent(
       messageId = messageId,
       eventType = "VisitCreated",
       messageAttributes = mapOf(
@@ -87,8 +81,8 @@ class VisitFromExternalSystemEventsTest: PrisonVisitsEventsIntegrationTestBase()
       )
     )
 
-    val createVisitFromExternalSystemDto = visitFromExternalSystemEvent.toCreateVisitFromExternalSystemDto()
-    val visitDto = VisitDto(
+    private val createVisitFromExternalSystemDto = visitFromExternalSystemEvent.toCreateVisitFromExternalSystemDto()
+    private val visitDto = VisitDto(
       reference = "v9-d7-ed-7u",
       prisonerId = "A1243B",
       prisonCode = "MKI",
@@ -107,18 +101,34 @@ class VisitFromExternalSystemEventsTest: PrisonVisitsEventsIntegrationTestBase()
       visitors = listOf(VisitorDto(nomisPersonId = 1234L, visitContact = true)),
       visitorSupport = VisitorSupportDto(description = "Visual impairement"),
     )
-    visitSchedulerMockServer.stubPostVisitFromExternalSystem(createVisitFromExternalSystemDto, visitDto)
 
-    val message = ObjectMapper().writeValueAsString(visitFromExternalSystemEvent)
+    @Test
+    fun `will process a visit write create event`() {
+      visitSchedulerMockServer.stubPostVisitFromExternalSystem(createVisitFromExternalSystemDto, visitDto)
 
-    vweQueueSqsClient.sendMessage(
-      SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
-    )
+      val message = ObjectMapper().writeValueAsString(visitFromExternalSystemEvent)
+      vweQueueSqsClient.sendMessage(
+        SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
+      )
 
-    await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 1 }
-    await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
+      await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 1 }
+      await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
 
-    await untilAsserted { verify(visitSchedulerClient, times(1)).createVisitFromExternalSystem(createVisitFromExternalSystemDto)}
+      await untilAsserted { verify(visitSchedulerClient, times(1)).createVisitFromExternalSystem(createVisitFromExternalSystemDto)}
+    }
+
+    @Test
+    fun `if visit scheduler returns error, expect event to be added to the dlq`() {
+      visitSchedulerMockServer.stubPostVisitFromExternalSystem(createVisitFromExternalSystemDto, visitDto, status = HttpStatus.BAD_REQUEST)
+
+      val message = ObjectMapper().writeValueAsString(visitFromExternalSystemEvent)
+      vweQueueSqsClient.sendMessage(
+        SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
+      )
+
+      await untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 1 }
+      await untilAsserted { verify(visitSchedulerClient, times(1)).createVisitFromExternalSystem(createVisitFromExternalSystemDto)}
+    }
   }
 
   @Test

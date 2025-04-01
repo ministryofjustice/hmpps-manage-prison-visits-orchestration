@@ -565,14 +565,14 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     )
   }
 
-  fun stubPostVisitFromExternalSystem(createVisitFromExternalSystemDto: CreateVisitFromExternalSystemDto, responseVisitDto: VisitDto) {
+  fun stubPostVisitFromExternalSystem(createVisitFromExternalSystemDto: CreateVisitFromExternalSystemDto, responseVisitDto: VisitDto, status: HttpStatus = HttpStatus.OK) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
       post(POST_VISIT_FROM_EXTERNAL_SYSTEM)
         .withRequestBody(equalToJson(getJsonString(createVisitFromExternalSystemDto)))
         .willReturn(
           responseBuilder
-            .withStatus(HttpStatus.OK.value())
+            .withStatus(status.value())
             .withBody(getJsonString(responseVisitDto)),
         ),
     )
