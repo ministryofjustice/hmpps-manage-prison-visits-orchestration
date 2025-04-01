@@ -520,7 +520,7 @@ class OrchestrationVisitsController(
     prisonerId: String,
   ): List<VisitDto> = visitSchedulerService.findFutureVisitsForPrisoner(prisonerId)
 
-  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE', 'VSIP_ORCHESTRATION_SERVICE__HMPPS_INTEGRATION_API')")
   @GetMapping(GET_VISIT_FULL_DETAILS_BY_VISIT_REFERENCE)
   @Operation(
     summary = "Get a detailed summary of the visit including prisoner, visitor, event audit and notification event details",
