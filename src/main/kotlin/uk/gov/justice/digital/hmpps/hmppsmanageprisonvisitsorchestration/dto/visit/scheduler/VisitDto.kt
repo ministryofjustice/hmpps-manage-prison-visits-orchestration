@@ -61,4 +61,13 @@ class VisitDto(
   val modifiedTimestamp: LocalDateTime,
   @Schema(description = "Date the visit was first booked or migrated", example = "2018-12-01T13:45:00", required = false)
   val firstBookedDateTime: LocalDateTime? = null,
+  @Schema(description = "External system details associated with the visit")
+  val visitExternalSystemDetails: VisitExternalSystemDetails?,
+)
+
+data class VisitExternalSystemDetails(
+  @Schema(description = "Client name", example = "client_name")
+  val clientName: String?,
+  @Schema(description = "Client visit reference", example = "Reference ID in the client system")
+  val clientVisitReference: String?,
 )

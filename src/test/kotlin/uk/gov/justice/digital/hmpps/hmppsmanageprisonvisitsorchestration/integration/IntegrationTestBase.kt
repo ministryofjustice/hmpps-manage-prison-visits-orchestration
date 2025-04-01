@@ -29,6 +29,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitExternalSystemDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
@@ -226,6 +227,7 @@ abstract class IntegrationTestBase {
     visitors: List<VisitorDto>? = null,
     contact: ContactDto? = ContactDto("Jane Doe", "01234567890", "email@example.com"),
     firstBookedDate: LocalDateTime? = null,
+    visitExternalSystemDetails: VisitExternalSystemDetails? = null,
   ): VisitDto = VisitDto(
     applicationReference = applicationReference,
     sessionTemplateReference = sessionTemplateReference,
@@ -244,6 +246,7 @@ abstract class IntegrationTestBase {
     visitors = visitors,
     visitContact = contact,
     firstBookedDateTime = firstBookedDate,
+    visitExternalSystemDetails = visitExternalSystemDetails
   )
 
   fun createCreateApplicationDto(prisonerId: String, sessionTemplateReference: String = "ref.ref.ref", sessionDate: LocalDate? = LocalDate.now()): CreateApplicationDto {
