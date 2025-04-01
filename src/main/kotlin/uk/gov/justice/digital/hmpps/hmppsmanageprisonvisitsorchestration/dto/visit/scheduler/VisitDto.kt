@@ -15,7 +15,7 @@ import java.time.LocalDateTime
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class VisitDto(
   @Schema(description = "Application Reference", example = "dfs-wjs-eqr", required = true)
-  val applicationReference: String,
+  val applicationReference: String? = null,
   @Schema(description = "Visit Reference", example = "v9-d7-ed-7u", required = true)
   val reference: String,
   @Schema(description = "Prisoner Id", example = "AF34567G", required = true)
