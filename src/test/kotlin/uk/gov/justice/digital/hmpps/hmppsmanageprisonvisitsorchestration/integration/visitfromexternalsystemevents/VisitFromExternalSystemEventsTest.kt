@@ -37,7 +37,7 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 @DisplayName("Visit from external system events")
-class VisitFromExternalSystemEventsTest: PrisonVisitsEventsIntegrationTestBase() {
+class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase() {
   @Autowired
   protected lateinit var hmppsQueueService: HmppsQueueService
 
@@ -80,7 +80,7 @@ class VisitFromExternalSystemEventsTest: PrisonVisitsEventsIntegrationTestBase()
         "createDateTime" to LocalDateTime.now().toString(),
         "visitors" to listOf(mapOf("nomisPersonId" to 1234, "visitContact" to true)),
         "visitorSupport" to mapOf("description" to "Visual impairement"),
-      )
+      ),
     )
 
     private val createVisitFromExternalSystemDto = visitFromExternalSystemEvent.toCreateVisitFromExternalSystemDto()
@@ -116,7 +116,7 @@ class VisitFromExternalSystemEventsTest: PrisonVisitsEventsIntegrationTestBase()
       await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 1 }
       await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
 
-      await untilAsserted { verify(visitSchedulerClient, times(1)).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())}
+      await untilAsserted { verify(visitSchedulerClient, times(1)).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>()) }
     }
 
     @Test
@@ -129,7 +129,7 @@ class VisitFromExternalSystemEventsTest: PrisonVisitsEventsIntegrationTestBase()
       )
 
       await untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 1 }
-      await untilAsserted { verify(visitSchedulerClient, times(1)).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())}
+      await untilAsserted { verify(visitSchedulerClient, times(1)).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>()) }
     }
   }
 

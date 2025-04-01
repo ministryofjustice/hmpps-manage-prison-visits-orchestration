@@ -529,14 +529,13 @@ class VisitSchedulerClient(
     .retrieve()
     .bodyToMono<List<LocalDate>>().block(apiTimeout)
 
-  fun createVisitFromExternalSystem(createVisitFromExternalSystemDto: CreateVisitFromExternalSystemDto): VisitDto? =
-    webClient.post()
-      .uri(POST_VISIT_FROM_EXTERNAL_SYSTEM)
-      .body(BodyInserters.fromValue(createVisitFromExternalSystemDto))
-      .retrieve()
-      .bodyToMono<VisitDto>()
-      .doOnError { e -> LOG.error("Could not create visit from external system :", e) }
-      .block(apiTimeout)
+  fun createVisitFromExternalSystem(createVisitFromExternalSystemDto: CreateVisitFromExternalSystemDto): VisitDto? = webClient.post()
+    .uri(POST_VISIT_FROM_EXTERNAL_SYSTEM)
+    .body(BodyInserters.fromValue(createVisitFromExternalSystemDto))
+    .retrieve()
+    .bodyToMono<VisitDto>()
+    .doOnError { e -> LOG.error("Could not create visit from external system :", e) }
+    .block(apiTimeout)
 
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParamIfPresent("prisonId", Optional.ofNullable(visitSearchRequestFilter.prisonCode))

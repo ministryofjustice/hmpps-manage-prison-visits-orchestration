@@ -65,7 +65,7 @@ class VisitSchedulerService(
 
   fun getVisitReferenceByClientReference(clientReference: String): List<String?>? {
     val visitReferences = visitSchedulerClient.getVisitReferenceByClientReference(clientReference)
-    if(visitReferences.isNullOrEmpty()) {
+    if (visitReferences.isNullOrEmpty()) {
       LOG.info("No visit found for client reference: $clientReference")
       throw NotFoundException("No visit found for client reference: $clientReference")
     }

@@ -7,8 +7,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
-
-class VisitByClientReference : IntegrationTestBase(){
+class VisitByClientReference : IntegrationTestBase() {
   fun callVisitByClientReference(
     webTestClient: WebTestClient,
     clientReference: String,
