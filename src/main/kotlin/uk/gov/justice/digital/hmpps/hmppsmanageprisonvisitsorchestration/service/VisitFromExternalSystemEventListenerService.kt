@@ -36,8 +36,8 @@ class VisitFromExternalSystemEventListenerService(
               val createVisitFromExternalSystemDto = sqsMessage.toCreateVisitFromExternalSystemDto()
               visitSchedulerClient.createVisitFromExternalSystem(createVisitFromExternalSystemDto)
           }
-          "VisitUpdated" -> null
-          "VisitCancelled" -> null
+          "VisitUpdated" -> {}
+          "VisitCancelled" -> {}
           else -> throw Exception("Cannot process event of type ${sqsMessage.eventType}")
       }
     } catch (e: Exception) {
