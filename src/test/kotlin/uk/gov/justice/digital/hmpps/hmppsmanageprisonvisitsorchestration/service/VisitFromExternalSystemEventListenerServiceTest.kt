@@ -19,8 +19,10 @@ import org.mockito.kotlin.whenever
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CreateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitExternalSystemDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitNoteDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorSupportDto
@@ -37,6 +39,37 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
   private val objectMapper = jacksonObjectMapper()
   private val visitSchedulerClient = mock<VisitSchedulerClient>()
   private val visitFromExternalSystemEventListenerService = VisitFromExternalSystemEventListenerService(objectMapper, visitSchedulerClient)
+    private val visitDto = VisitDto(
+      reference = "v9-d7-ed-7u",
+      prisonerId = "A1243B",
+      prisonCode = "MKI",
+      prisonName = "Milsike",
+      visitRoom = "A1",
+      visitType = VisitType.SOCIAL,
+      visitStatus = VisitStatus.BOOKED,
+      outcomeStatus = null,
+      visitRestriction = VisitRestriction.OPEN,
+      startTimestamp = LocalDateTime.now(),
+      endTimestamp = LocalDateTime.now().plusHours(1),
+      visitNotes = listOf(VisitNoteDto(type = VisitNoteType.VISITOR_CONCERN, text = "Visitor concern")),
+      visitContact = VisitContactDto(
+        visitContactId = 1234L,
+        name = "John Smith",
+        telephone = "01234567890",
+        email = "john.smith@example.com"
+      ),
+      createdTimestamp = LocalDateTime.now(),
+      modifiedTimestamp = LocalDateTime.now(),
+      visitors = listOf(VisitorDto(nomisPersonId = 1234L, visitContact = true)),
+      visitorSupport = VisitorSupportDto(description = "Visual impairement"),
+      applicationReference = "abc-123-acd",
+      sessionTemplateReference = "abc-123-acd",
+      firstBookedDateTime = LocalDateTime.now(),
+      visitExternalSystemDetails = VisitExternalSystemDetails(
+        clientName = "MLK",
+        clientVisitReference = "abc-123-ace",
+      ),
+    )
 
   @Nested
   @DisplayName("Create visit from external system")
@@ -66,25 +99,6 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
         "visitors" to listOf(mapOf("nomisPersonId" to 1234, "visitContact" to true)),
         "visitorSupport" to mapOf("description" to "Visual impairement"),
       ),
-    )
-    private val visitDto = VisitDto(
-      reference = "v9-d7-ed-7u",
-      prisonerId = "A1243B",
-      prisonCode = "MKI",
-      prisonName = "Milsike",
-      visitRoom = "A1",
-      visitType = VisitType.SOCIAL,
-      visitStatus = VisitStatus.BOOKED,
-      outcomeStatus = null,
-      visitRestriction = VisitRestriction.OPEN,
-      startTimestamp = LocalDateTime.now(),
-      endTimestamp = LocalDateTime.now().plusHours(1),
-      visitNotes = listOf(VisitNoteDto(type = VisitNoteType.VISITOR_CONCERN, text = "Visitor concern")),
-      visitContact = VisitContactDto(visitContactId = 1234L, name = "John Smith", telephone = "01234567890", email = "john.smith@example.com"),
-      createdTimestamp = LocalDateTime.now(),
-      modifiedTimestamp = LocalDateTime.now(),
-      visitors = listOf(VisitorDto(nomisPersonId = 1234L, visitContact = true)),
-      visitorSupport = VisitorSupportDto(description = "Visual impairement"),
     )
 
     @Test
@@ -215,5 +229,49 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
       visitFromExternalSystemEventListenerService.onEventReceived(message).get()
     }
     assertThat(exception.message).contains("Cannot process event of type InvalidEventType")
+  }
+
+  @Nested
+  @DisplayName("Cancel visit from external system")
+  inner class CancelVisit() {
+    private val visitFromExternalSystemEvent = VisitFromExternalSystemEvent(
+      messageId = UUID.randomUUID().toString(),
+      eventType = "VisitCancelled",
+      messageAttributes = mapOf(
+        "visitReference" to "v9-d7-ed-7u",
+        "cancelOutcome" to mapOf("outcomeStatus" to "CANCELLATION", "text" to "Whatever"),
+        "actionedBy" to "BY_PRISONER",
+      ),
+    )
+  @BeforeEach
+  internal fun setUp() {
+    Mockito.reset(visitSchedulerClient)
+  }
+    @Test
+    fun `will process a visit cancel event`() {
+      whenever(visitSchedulerClient.cancelVisit(any(),any<CancelVisitDto>())).thenReturn(visitDto)
+
+      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+
+      assertDoesNotThrow {
+        visitFromExternalSystemEventListenerService.onEventReceived(message).get()
+      }
+      verify(visitSchedulerClient, times(1)).cancelVisit(any(),any<CancelVisitDto>())
+    }
+
+    @Test
+    fun `will throw an exception if visit scheduler client returns an error on cancel event recieved`() {
+      val exceptionMessage = "Failed to cancel visit from external system"
+      whenever(visitSchedulerClient.cancelVisit(any(),any<CancelVisitDto>())).thenThrow(MockitoException(exceptionMessage))
+
+      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+
+      val exception = assertThrows<Exception> {
+        visitFromExternalSystemEventListenerService.onEventReceived(message).get()
+      }
+      assertThat(exception.message).contains(exceptionMessage)
+      verify(visitSchedulerClient, times(1)).cancelVisit(any(),any<CancelVisitDto>())
+    }
+
   }
 }

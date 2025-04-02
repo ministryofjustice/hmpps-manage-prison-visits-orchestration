@@ -97,11 +97,20 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
       startTimestamp = LocalDateTime.now(),
       endTimestamp = LocalDateTime.now().plusHours(1),
       visitNotes = listOf(VisitNoteDto(type = VisitNoteType.VISITOR_CONCERN, text = "Visitor concern")),
-      visitContact = VisitContactDto(visitContactId = 1234L, name = "John Smith", telephone = "01234567890", email = "john.smith@example.com"),
+      visitContact = VisitContactDto(
+        visitContactId = 1234L,
+        name = "John Smith",
+        telephone = "01234567890",
+        email = "john.smith@example.com"
+      ),
       createdTimestamp = LocalDateTime.now(),
       modifiedTimestamp = LocalDateTime.now(),
       visitors = listOf(VisitorDto(nomisPersonId = 1234L, visitContact = true)),
       visitorSupport = VisitorSupportDto(description = "Visual impairement"),
+      applicationReference = TODO(),
+      sessionTemplateReference = TODO(),
+      firstBookedDateTime = TODO(),
+      visitExternalSystemDetails = TODO(),
     )
 
     @Test
