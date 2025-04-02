@@ -102,18 +102,6 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
     )
 
     @Test
-    fun `will process a visit write create event`() {
-      whenever(visitSchedulerClient.createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())).thenReturn(visitDto)
-
-      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
-
-      assertDoesNotThrow {
-        visitFromExternalSystemEventListenerService.onEventReceived(message).get()
-      }
-      verify(visitSchedulerClient, times(1)).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())
-    }
-
-    @Test
     fun `will throw an exception if visit scheduler client returns an error`() {
       val exceptionMessage = "Failed to create visit from external system"
       whenever(visitSchedulerClient.createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())).thenThrow(MockitoException(exceptionMessage))
