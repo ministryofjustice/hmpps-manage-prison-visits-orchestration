@@ -229,6 +229,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
       messageAttributes = mapOf(
         "visitReference" to "v9-d7-ed-7u",
         "cancelOutcome" to mapOf("outcomeStatus" to "CANCELLATION", "text" to "Whatever"),
+        "userType" to "PRISONER",
         "actionedBy" to "AF34567G",
       ),
     )
