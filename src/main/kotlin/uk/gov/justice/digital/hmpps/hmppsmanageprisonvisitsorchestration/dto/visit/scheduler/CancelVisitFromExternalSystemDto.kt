@@ -3,5 +3,5 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 data class CancelVisitFromExternalSystemDto(
   val visitReference: String,
   val cancelOutcome: OutcomeDto,
-  val actionedBy: String = "EXTERNAL_SYSTEM",
+  val actionedBy: String,
 )
