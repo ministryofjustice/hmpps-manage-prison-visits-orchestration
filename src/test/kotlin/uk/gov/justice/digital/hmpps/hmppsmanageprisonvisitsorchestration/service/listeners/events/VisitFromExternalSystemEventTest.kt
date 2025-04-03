@@ -107,7 +107,7 @@ class VisitFromExternalSystemEventTest {
     assertInstanceOf<CancelVisitFromExternalSystemDto>(cancelVisitFromExternalSystemDto)
     cancelVisitFromExternalSystemDto?.let {
       assertThat(it.visitReference).isEqualTo(visitFromExternalSystemEvent.messageAttributes["visitReference"])
-      assertThat(it.userType).isEqualTo(visitFromExternalSystemEvent.messageAttributes["userType"])
+      assertThat(it.userType.toString()).isEqualTo(visitFromExternalSystemEvent.messageAttributes["userType"])
       assertThat(it.actionedBy).isEqualTo(visitFromExternalSystemEvent.messageAttributes["actionedBy"])
 
       (visitFromExternalSystemEvent.messageAttributes["cancelOutcome"] as Map<*, *>).let { cancelOutcome ->
