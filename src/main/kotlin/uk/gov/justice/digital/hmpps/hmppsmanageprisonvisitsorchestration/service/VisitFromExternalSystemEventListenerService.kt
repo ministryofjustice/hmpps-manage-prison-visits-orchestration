@@ -9,6 +9,9 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.VisitFromExternalSystemEvent
 import java.util.concurrent.CompletableFuture
 
@@ -36,7 +39,16 @@ class VisitFromExternalSystemEventListenerService(
           visitSchedulerClient.createVisitFromExternalSystem(createVisitFromExternalSystemDto)
         }
         "VisitUpdated" -> {}
-        "VisitCancelled" -> {}
+        "VisitCancelled" -> {
+          val cancelVisitFromExternalSystemDto = sqsMessage.toCancelVisitFromExternalSystemDto()
+          val cancelVisitDto = CancelVisitDto(
+            cancelOutcome = cancelVisitFromExternalSystemDto.cancelOutcome,
+            applicationMethodType = ApplicationMethodType.BY_PRISONER,
+            actionedBy = cancelVisitFromExternalSystemDto.actionedBy,
+            userType = UserType.SYSTEM,
+          )
+          visitSchedulerClient.cancelVisit(cancelVisitFromExternalSystemDto.visitReference, cancelVisitDto)
+        }
         else -> throw Exception("Cannot process event of type ${sqsMessage.eventType}")
       }
     } catch (e: Exception) {

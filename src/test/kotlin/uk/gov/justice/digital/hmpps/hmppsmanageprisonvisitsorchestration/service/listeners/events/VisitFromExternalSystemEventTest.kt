@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertInstanceOf
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CreateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitNoteType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
@@ -81,6 +82,35 @@ class VisitFromExternalSystemEventTest {
 
       (visitFromExternalSystemEvent.messageAttributes["visitorSupport"] as Map<*, *>).let { visitSupport ->
         assertThat(it.visitorSupport?.description).isEqualTo(visitSupport["description"])
+      }
+    }
+  }
+
+  @Test
+  fun `get a CancelVisitFromExternalSystemDto from message attributes`() {
+    val visitFromExternalSystemEvent = VisitFromExternalSystemEvent(
+      messageId = "message-id",
+      eventType = "VisitCancelled",
+      messageAttributes = mapOf(
+        "visitReference" to "v9-d7-ed-7u",
+        "cancelOutcome" to mapOf("outcomeStatus" to "CANCELLATION", "text" to "Whatever"),
+        "actionedBy" to "BY_PRISONER",
+      ),
+    )
+
+    var cancelVisitFromExternalSystemDto: CancelVisitFromExternalSystemDto? = null
+    assertDoesNotThrow {
+      cancelVisitFromExternalSystemDto = visitFromExternalSystemEvent.toCancelVisitFromExternalSystemDto()
+    }
+
+    assertInstanceOf<CancelVisitFromExternalSystemDto>(cancelVisitFromExternalSystemDto)
+    cancelVisitFromExternalSystemDto?.let {
+      assertThat(it.visitReference).isEqualTo(visitFromExternalSystemEvent.messageAttributes["visitReference"])
+      assertThat(it.actionedBy).isEqualTo(visitFromExternalSystemEvent.messageAttributes["actionedBy"])
+
+      (visitFromExternalSystemEvent.messageAttributes["cancelOutcome"] as Map<*, *>).let { cancelOutcome ->
+        assertThat(it.cancelOutcome.outcomeStatus.toString()).isEqualTo(cancelOutcome["outcomeStatus"])
+        assertThat(it.cancelOutcome.text).isEqualTo(cancelOutcome["text"])
       }
     }
   }
