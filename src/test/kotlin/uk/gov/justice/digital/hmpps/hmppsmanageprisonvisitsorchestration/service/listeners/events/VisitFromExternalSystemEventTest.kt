@@ -85,6 +85,7 @@ class VisitFromExternalSystemEventTest {
       }
     }
   }
+
   @Test
   fun `get a CancelVisitFromExternalSystemDto from message attributes`() {
     val visitFromExternalSystemEvent = VisitFromExternalSystemEvent(
@@ -107,10 +108,10 @@ class VisitFromExternalSystemEventTest {
       assertThat(it.visitReference).isEqualTo(visitFromExternalSystemEvent.messageAttributes["visitReference"])
       assertThat(it.actionedBy).isEqualTo(visitFromExternalSystemEvent.messageAttributes["actionedBy"])
 
-    (visitFromExternalSystemEvent.messageAttributes["cancelOutcome"] as Map<*, *>).let { cancelOutcome ->
-      assertThat(it.cancelOutcome.outcomeStatus.toString()).isEqualTo(cancelOutcome["outcomeStatus"])
-      assertThat(it.cancelOutcome.text).isEqualTo(cancelOutcome["text"])
-    }
+      (visitFromExternalSystemEvent.messageAttributes["cancelOutcome"] as Map<*, *>).let { cancelOutcome ->
+        assertThat(it.cancelOutcome.outcomeStatus.toString()).isEqualTo(cancelOutcome["outcomeStatus"])
+        assertThat(it.cancelOutcome.text).isEqualTo(cancelOutcome["text"])
+      }
     }
   }
 }

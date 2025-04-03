@@ -246,7 +246,7 @@ abstract class IntegrationTestBase {
     visitors = visitors,
     visitContact = contact,
     firstBookedDateTime = firstBookedDate,
-    visitExternalSystemDetails = visitExternalSystemDetails
+    visitExternalSystemDetails = visitExternalSystemDetails,
   )
 
   fun createCreateApplicationDto(prisonerId: String, sessionTemplateReference: String = "ref.ref.ref", sessionDate: LocalDate? = LocalDate.now()): CreateApplicationDto {
