@@ -43,7 +43,12 @@ class VisitFromExternalSystemEventListenerService(
         "VisitUpdated" -> {}
         "VisitCancelled" -> {
           val cancelVisitFromExternalSystemDto = sqsMessage.toCancelVisitFromExternalSystemDto()
-          val cancelVisitDto = buildCancelVisitDto(cancelVisitFromExternalSystemDto)
+          val cancelVisitDto = CancelVisitDto(
+            cancelOutcome = cancelVisitFromExternalSystemDto.cancelOutcome,
+            applicationMethodType = ApplicationMethodType.BY_PRISONER,
+            actionedBy = cancelVisitFromExternalSystemDto.actionedBy,
+            userType = UserType.SYSTEM,
+          )
           visitSchedulerClient.cancelVisit(cancelVisitFromExternalSystemDto.visitReference, cancelVisitDto)
         }
         else -> throw Exception("Cannot process event of type ${sqsMessage.eventType}")
@@ -60,13 +65,3 @@ private fun asCompletableFuture(
 ): CompletableFuture<Void> = CoroutineScope(Dispatchers.Default).future {
   process()
 }.thenAccept { }
-
-private fun buildCancelVisitDto(cancelVisitEventDto: CancelVisitFromExternalSystemDto): CancelVisitDto {
-  val canceledVisitOrchestrationDto =  CancelVisitOrchestrationDto(
-    cancelOutcome = cancelVisitEventDto.cancelOutcome,
-    applicationMethodType = ApplicationMethodType.BY_PRISONER,
-    actionedBy = cancelVisitEventDto.actionedBy,
-    userType = UserType.SYSTEM,
-  )
-  return CancelVisitDto(canceledVisitOrchestrationDto)
-}
