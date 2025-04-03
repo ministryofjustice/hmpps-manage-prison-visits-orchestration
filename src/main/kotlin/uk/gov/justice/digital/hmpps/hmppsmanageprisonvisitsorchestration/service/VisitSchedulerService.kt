@@ -235,5 +235,6 @@ class VisitSchedulerService(
     UserType.STAFF -> actionedByDto.userName!!
     UserType.PUBLIC -> actionedByDto.bookerReference!!
     UserType.SYSTEM -> ""
+    UserType.PRISONER -> actionedByDto.userName!!
   }
 }
