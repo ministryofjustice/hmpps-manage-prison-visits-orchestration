@@ -34,6 +34,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorApprovedUnapprovedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionUpsertedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.NonAssociationChangedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PersonRestrictionUpsertedInfo
@@ -61,6 +62,15 @@ class VisitSchedulerService(
   }
 
   fun getVisitByReference(reference: String): VisitDto? = visitSchedulerClient.getVisitByReference(reference)
+
+  fun getVisitReferenceByClientReference(clientReference: String): List<String?>? {
+    val visitReferences = visitSchedulerClient.getVisitReferenceByClientReference(clientReference)
+    if (visitReferences.isNullOrEmpty()) {
+      LOG.info("No visit found for client reference: $clientReference")
+      throw NotFoundException("No visit found for client reference: $clientReference")
+    }
+    return visitReferences
+  }
 
   fun getFullVisitBookingDetailsByReference(reference: String): VisitBookingDetailsDto? {
     LOG.info("Retrieving visit booking details for visit reference: $reference")
@@ -225,5 +235,6 @@ class VisitSchedulerService(
     UserType.STAFF -> actionedByDto.userName!!
     UserType.PUBLIC -> actionedByDto.bookerReference!!
     UserType.SYSTEM -> ""
+    UserType.PRISONER -> actionedByDto.userName!!
   }
 }

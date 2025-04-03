@@ -13,10 +13,12 @@ import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.POST_VISIT_FROM_EXTERNAL_SYSTEM
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ApplicationValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ActionedByDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CreateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
@@ -55,6 +57,21 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
           } else {
             responseBuilder.withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(visitDto))
+          },
+        ),
+    )
+  }
+
+  fun stubGetVisitByClientRef(clientReference: String, referenceResponse: List<String?>?) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      get("/visits/external-system/$clientReference")
+        .willReturn(
+          if (referenceResponse.isNullOrEmpty()) {
+            responseBuilder.withStatus(HttpStatus.NOT_FOUND.value())
+          } else {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(referenceResponse))
           },
         ),
     )
@@ -544,6 +561,19 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(notificationEvents.toList()))
           },
+        ),
+    )
+  }
+
+  fun stubPostVisitFromExternalSystem(createVisitFromExternalSystemDto: CreateVisitFromExternalSystemDto, responseVisitDto: VisitDto, status: HttpStatus = HttpStatus.OK) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      post(POST_VISIT_FROM_EXTERNAL_SYSTEM)
+        .withRequestBody(equalToJson(getJsonString(createVisitFromExternalSystemDto)))
+        .willReturn(
+          responseBuilder
+            .withStatus(status.value())
+            .withBody(getJsonString(responseVisitDto)),
         ),
     )
   }
