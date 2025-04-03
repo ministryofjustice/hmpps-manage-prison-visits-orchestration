@@ -43,7 +43,7 @@ class VisitFromExternalSystemEventListenerService(
           val cancelVisitFromExternalSystemDto = sqsMessage.toCancelVisitFromExternalSystemDto()
           val cancelVisitDto = CancelVisitDto(
             cancelOutcome = cancelVisitFromExternalSystemDto.cancelOutcome,
-            applicationMethodType = ApplicationMethodType.BY_PRISONER,
+            applicationMethodType = if (cancelVisitFromExternalSystemDto.userType == UserType.PRISONER) ApplicationMethodType.BY_PRISONER else ApplicationMethodType.NOT_KNOWN,
             actionedBy = cancelVisitFromExternalSystemDto.actionedBy,
             userType = cancelVisitFromExternalSystemDto.userType
           )
