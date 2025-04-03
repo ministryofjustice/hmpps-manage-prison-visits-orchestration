@@ -94,7 +94,8 @@ class VisitFromExternalSystemEventTest {
       messageAttributes = mapOf(
         "visitReference" to "v9-d7-ed-7u",
         "cancelOutcome" to mapOf("outcomeStatus" to "CANCELLATION", "text" to "Whatever"),
-        "actionedBy" to "BY_PRISONER",
+        "userType" to "PRISONER",
+        "actionedBy" to "A1243B",
       ),
     )
 
@@ -106,6 +107,7 @@ class VisitFromExternalSystemEventTest {
     assertInstanceOf<CancelVisitFromExternalSystemDto>(cancelVisitFromExternalSystemDto)
     cancelVisitFromExternalSystemDto?.let {
       assertThat(it.visitReference).isEqualTo(visitFromExternalSystemEvent.messageAttributes["visitReference"])
+      assertThat(it.userType).isEqualTo(visitFromExternalSystemEvent.messageAttributes["userType"])
       assertThat(it.actionedBy).isEqualTo(visitFromExternalSystemEvent.messageAttributes["actionedBy"])
 
       (visitFromExternalSystemEvent.messageAttributes["cancelOutcome"] as Map<*, *>).let { cancelOutcome ->
