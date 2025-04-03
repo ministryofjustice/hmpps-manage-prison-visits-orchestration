@@ -45,7 +45,7 @@ class VisitFromExternalSystemEventListenerService(
             cancelOutcome = cancelVisitFromExternalSystemDto.cancelOutcome,
             applicationMethodType = ApplicationMethodType.BY_PRISONER,
             actionedBy = cancelVisitFromExternalSystemDto.actionedBy,
-            userType = UserType.SYSTEM,
+            userType = cancelVisitFromExternalSystemDto.userType
           )
           visitSchedulerClient.cancelVisit(cancelVisitFromExternalSystemDto.visitReference, cancelVisitDto)
         }
