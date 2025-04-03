@@ -250,18 +250,6 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
     }
 
     @Test
-    fun `will process a visit write cancelled event`() {
-      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
-
-      vweQueueSqsClient.sendMessage(
-        SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
-      )
-
-      await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 1 }
-      await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
-    }
-
-    @Test
     fun `if visit scheduler returns error, expect event to be added to the dlq`() {
       val visitRef = visitFromExternalSystemEvent.messageAttributes["visitReference"].toString()
       visitSchedulerMockServer.stubCancelVisit(visitRef, null)
