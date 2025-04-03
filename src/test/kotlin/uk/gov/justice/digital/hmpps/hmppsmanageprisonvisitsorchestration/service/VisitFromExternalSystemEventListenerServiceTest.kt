@@ -43,7 +43,7 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
     reference = "v9-d7-ed-7u",
     prisonerId = "A1243B",
     prisonCode = "MKI",
-    prisonName = "Milsike",
+    prisonName = "Millsike",
     visitRoom = "A1",
     visitType = VisitType.SOCIAL,
     visitStatus = VisitStatus.BOOKED,
@@ -71,14 +71,14 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
     ),
   )
 
+  @BeforeEach
+  internal fun setUp() {
+    Mockito.reset(visitSchedulerClient)
+  }
+
   @Nested
   @DisplayName("Create visit from external system")
   inner class CreateVisit {
-    @BeforeEach
-    internal fun setUp() {
-      Mockito.reset(visitSchedulerClient)
-    }
-
     private val messageId = UUID.randomUUID().toString()
     private val visitFromExternalSystemEvent = VisitFromExternalSystemEvent(
       messageId = messageId,
@@ -150,37 +150,43 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
     }
   }
 
-  @Test
-  fun `will process a visit write cancelled event`() {
-    val messageId = UUID.randomUUID().toString()
-    val message = """
-    {
-      "messageId" : "$messageId",
-      "eventType" : "VisitCancelled",
-      "description" : null,
-      "messageAttributes" : {
-        "prisonerId" : "A1234AB",
-        "prisonId" : "MDI",
-        "clientVisitReference" : "123456",
-        "visitRoom" : "A1",
-        "visitType" : "SOCIAL",
-        "visitStatus" : "BOOKED",
-        "visitRestriction" : "OPEN",
-        "startTimestamp" : "2020-12-04T10:42:43",
-        "endTimestamp" : "2020-12-04T10:42:43",
-        "createDateTime" : "2020-12-04T10:42:43",
-        "visitors" : [ {
-          "nomisPersonId" : 3,
-          "visitContact" : true
-        } ],
-        "actionedBy" : "automated-test-client"
-      },
-      "who" : "automated-test-client"
-    }
-    """
+  @Nested
+  @DisplayName("Cancel visit from external system")
+  inner class CancelVisit {
+    private val visitFromExternalSystemEvent = VisitFromExternalSystemEvent(
+      messageId = UUID.randomUUID().toString(),
+      eventType = "VisitCancelled",
+      messageAttributes = mapOf(
+        "visitReference" to "v9-d7-ed-7u",
+        "cancelOutcome" to mapOf("outcomeStatus" to "CANCELLATION", "text" to "Whatever"),
+        "actionedBy" to "AF34567G",
+      ),
+    )
 
-    assertDoesNotThrow {
-      visitFromExternalSystemEventListenerService.onEventReceived(message).get()
+    @Test
+    fun `will process a visit cancel event`() {
+      whenever(visitSchedulerClient.cancelVisit(any(), any<CancelVisitDto>())).thenReturn(visitDto)
+
+      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+
+      assertDoesNotThrow {
+        visitFromExternalSystemEventListenerService.onEventReceived(message).get()
+      }
+      verify(visitSchedulerClient, times(1)).cancelVisit(any(), any<CancelVisitDto>())
+    }
+
+    @Test
+    fun `will throw an exception if visit scheduler client returns an error on cancel event recieved`() {
+      val exceptionMessage = "Failed to cancel visit from external system"
+      whenever(visitSchedulerClient.cancelVisit(any(), any<CancelVisitDto>())).thenThrow(MockitoException(exceptionMessage))
+
+      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+
+      val exception = assertThrows<Exception> {
+        visitFromExternalSystemEventListenerService.onEventReceived(message).get()
+      }
+      assertThat(exception.message).contains(exceptionMessage)
+      verify(visitSchedulerClient, times(1)).cancelVisit(any(), any<CancelVisitDto>())
     }
   }
 
@@ -217,50 +223,5 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
       visitFromExternalSystemEventListenerService.onEventReceived(message).get()
     }
     assertThat(exception.message).contains("Cannot process event of type InvalidEventType")
-  }
-
-  @Nested
-  @DisplayName("Cancel visit from external system")
-  inner class CancelVisit {
-    private val visitFromExternalSystemEvent = VisitFromExternalSystemEvent(
-      messageId = UUID.randomUUID().toString(),
-      eventType = "VisitCancelled",
-      messageAttributes = mapOf(
-        "visitReference" to "v9-d7-ed-7u",
-        "cancelOutcome" to mapOf("outcomeStatus" to "CANCELLATION", "text" to "Whatever"),
-        "actionedBy" to "BY_PRISONER",
-      ),
-    )
-
-    @BeforeEach
-    internal fun setUp() {
-      Mockito.reset(visitSchedulerClient)
-    }
-
-    @Test
-    fun `will process a visit cancel event`() {
-      whenever(visitSchedulerClient.cancelVisit(any(), any<CancelVisitDto>())).thenReturn(visitDto)
-
-      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
-
-      assertDoesNotThrow {
-        visitFromExternalSystemEventListenerService.onEventReceived(message).get()
-      }
-      verify(visitSchedulerClient, times(1)).cancelVisit(any(), any<CancelVisitDto>())
-    }
-
-    @Test
-    fun `will throw an exception if visit scheduler client returns an error on cancel event recieved`() {
-      val exceptionMessage = "Failed to cancel visit from external system"
-      whenever(visitSchedulerClient.cancelVisit(any(), any<CancelVisitDto>())).thenThrow(MockitoException(exceptionMessage))
-
-      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
-
-      val exception = assertThrows<Exception> {
-        visitFromExternalSystemEventListenerService.onEventReceived(message).get()
-      }
-      assertThat(exception.message).contains(exceptionMessage)
-      verify(visitSchedulerClient, times(1)).cancelVisit(any(), any<CancelVisitDto>())
-    }
   }
 }

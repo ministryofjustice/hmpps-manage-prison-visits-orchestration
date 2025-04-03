@@ -57,7 +57,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
     reference = "v9-d7-ed-7u",
     prisonerId = "A1243B",
     prisonCode = "MKI",
-    prisonName = "Milsike",
+    prisonName = "Millsike",
     visitRoom = "A1",
     visitType = VisitType.SOCIAL,
     visitStatus = VisitStatus.BOOKED,
@@ -229,7 +229,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
       messageAttributes = mapOf(
         "visitReference" to "v9-d7-ed-7u",
         "cancelOutcome" to mapOf("outcomeStatus" to "CANCELLATION", "text" to "Whatever"),
-        "actionedBy" to "BY_PRISONER",
+        "actionedBy" to "AF34567G",
       ),
     )
 
