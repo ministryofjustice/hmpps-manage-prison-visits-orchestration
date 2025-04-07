@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -20,6 +21,7 @@ import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CreateVisitFromExternalSystemDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.UpdateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitExternalSystemDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitNoteDto
@@ -116,6 +118,14 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
       ),
     )
 
+    private val invalidVisitFromExternalSystemEvent = VisitFromExternalSystemEvent(
+      messageId = UUID.randomUUID().toString(),
+      eventType = "VisitCreated",
+      messageAttributes = mapOf(
+        "invalidField" to "OPEN",
+      ),
+    )
+
     private val createVisitFromExternalSystemDto = visitFromExternalSystemEvent.toCreateVisitFromExternalSystemDto()
 
     @Test
@@ -145,79 +155,98 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
       await untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 1 }
       await untilAsserted { verify(visitSchedulerClient, times(1)).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>()) }
     }
+
+    @Test
+    fun `will throw an exception if message attributes are invalid`() {
+      val message = ObjectMapper().writeValueAsString(invalidVisitFromExternalSystemEvent)
+      vweQueueSqsClient.sendMessage(
+        SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
+      )
+
+      await untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 1 }
+      await untilAsserted {
+        verify(
+          visitSchedulerClient,
+          times(0)
+        ).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())
+      }
+    }
   }
 
-  @Test
-  fun `will process a visit write update event`() {
-    val messageId = UUID.randomUUID().toString()
-    val message = """
-    {
-      "messageId" : "$messageId",
-      "eventType" : "VisitUpdated",
-      "description" : null,
-      "messageAttributes" : {
-        "prisonerId" : "A1234AB",
-        "prisonId" : "MDI",
-        "clientVisitReference" : "123456",
-        "visitRoom" : "A1",
-        "visitType" : "SOCIAL",
-        "visitStatus" : "BOOKED",
-        "visitRestriction" : "OPEN",
-        "startTimestamp" : "2020-12-04T10:42:43",
-        "endTimestamp" : "2020-12-04T10:42:43",
-        "createDateTime" : "2020-12-04T10:42:43",
-        "visitors" : [ {
-          "nomisPersonId" : 3,
-          "visitContact" : true
-        } ],
-        "actionedBy" : "automated-test-client"
-      },
-      "who" : "automated-test-client"
-    }
-    """
-
-    vweQueueSqsClient.sendMessage(
-      SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
+  @Nested
+  @DisplayName("Update visit from external system")
+  inner class UpdateVisit {
+    private val messageId = UUID.randomUUID().toString()
+    val visitFromExternalSystemEvent = VisitFromExternalSystemEvent(
+      messageId = messageId,
+      eventType = "VisitUpdated",
+      messageAttributes = mapOf(
+        "visitReference" to "v9-d7-ed-7u",
+        "visitRoom" to "A1",
+        "visitType" to VisitType.SOCIAL,
+        "visitRestriction" to VisitRestriction.OPEN,
+        "startTimestamp" to LocalDateTime.now().toString(),
+        "endTimestamp" to LocalDateTime.now().plusHours(1).toString(),
+        "visitNotes" to listOf(mapOf("type" to VisitNoteType.VISITOR_CONCERN, "text" to "Visitor concern")),
+        "visitContact" to mapOf("name" to "John Smith", "telephone" to "01234567890", "email" to "john.smith@example.com"),
+        "visitors" to listOf(mapOf("nomisPersonId" to 1234, "visitContact" to true)),
+        "visitorSupport" to mapOf("description" to "Visual impairment"),
+      ),
     )
 
-    await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 1 }
-    await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
-  }
-
-  @Test
-  fun `will write an invalid visit write event to the dlq`() {
-    val messageId = UUID.randomUUID().toString()
-    val message = """
-    {
-      "messageId" : "$messageId",
-      "eventType" : "InvalidEventType",
-      "description" : null,
-      "messageAttributes" : {
-        "prisonerId" : "A1234AB",
-        "prisonId" : "MDI",
-        "clientVisitReference" : "123456",
-        "visitRoom" : "A1",
-        "visitType" : "SOCIAL",
-        "visitStatus" : "BOOKED",
-        "visitRestriction" : "OPEN",
-        "startTimestamp" : "2020-12-04T10:42:43",
-        "endTimestamp" : "2020-12-04T10:42:43",
-        "createDateTime" : "2020-12-04T10:42:43",
-        "visitors" : [ {
-          "nomisPersonId" : 3,
-          "visitContact" : true
-        } ],
-        "actionedBy" : "automated-test-client"
-      },
-      "who" : "automated-test-client"
-    }
-    """
-
-    vweQueueSqsClient.sendMessage(
-      SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
+    private val invalidVisitFromExternalSystemEvent = VisitFromExternalSystemEvent(
+      messageId = UUID.randomUUID().toString(),
+      eventType = "VisitUpdated",
+      messageAttributes = mapOf(
+        "invalidField" to "OPEN",
+      ),
     )
 
-    await untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 1 }
+    private val updateVisitFromExternalSystemDto = visitFromExternalSystemEvent.toUpdateVisitFromExternalSystemDto()
+
+    @Test
+    fun `will process a visit write update event`() {
+      visitSchedulerMockServer.stubPutVisitFromExternalSystem(updateVisitFromExternalSystemDto, visitDto)
+
+      val message = ObjectMapper().writeValueAsString(visitFromExternalSystemEvent)
+      vweQueueSqsClient.sendMessage(
+        SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
+      )
+
+      await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 1 }
+      await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
+
+      await untilAsserted { verify(visitSchedulerClient, times(1)).updateVisitFromExternalSystem(any<UpdateVisitFromExternalSystemDto>()) }
+    }
+
+    @Test
+    fun `if visit scheduler returns error, expect event to be added to the dlq`() {
+      visitSchedulerMockServer.stubPutVisitFromExternalSystem(updateVisitFromExternalSystemDto, visitDto, status = HttpStatus.BAD_REQUEST)
+
+      val message = ObjectMapper().writeValueAsString(visitFromExternalSystemEvent)
+      vweQueueSqsClient.sendMessage(
+        SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
+      )
+
+      await untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 1 }
+      await untilAsserted { verify(visitSchedulerClient, times(1)).updateVisitFromExternalSystem(any<UpdateVisitFromExternalSystemDto>()) }
+    }
+
+    @Test
+    fun `will throw an exception if message attributes are invalid`() {
+      val message = ObjectMapper().writeValueAsString(invalidVisitFromExternalSystemEvent)
+      vweQueueSqsClient.sendMessage(
+        SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
+      )
+
+      await untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 1 }
+      await untilAsserted {
+        verify(
+          visitSchedulerClient,
+          times(0)
+        ).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())
+      }
+    }
   }
 
   @Nested
@@ -262,5 +291,41 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
 
       await untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 1 }
     }
+  }
+
+  @Test
+  fun `will write an invalid visit write event to the dlq`() {
+    val messageId = UUID.randomUUID().toString()
+    val message = """
+    {
+      "messageId" : "$messageId",
+      "eventType" : "InvalidEventType",
+      "description" : null,
+      "messageAttributes" : {
+        "prisonerId" : "A1234AB",
+        "prisonId" : "MDI",
+        "clientVisitReference" : "123456",
+        "visitRoom" : "A1",
+        "visitType" : "SOCIAL",
+        "visitStatus" : "BOOKED",
+        "visitRestriction" : "OPEN",
+        "startTimestamp" : "2020-12-04T10:42:43",
+        "endTimestamp" : "2020-12-04T10:42:43",
+        "createDateTime" : "2020-12-04T10:42:43",
+        "visitors" : [ {
+          "nomisPersonId" : 3,
+          "visitContact" : true
+        } ],
+        "actionedBy" : "automated-test-client"
+      },
+      "who" : "automated-test-client"
+    }
+    """
+
+    vweQueueSqsClient.sendMessage(
+      SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
+    )
+
+    await untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 1 }
   }
 }
