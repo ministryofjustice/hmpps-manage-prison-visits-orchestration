@@ -147,7 +147,6 @@ class VisitFromExternalSystemEventTest {
     }
   }
 
-
   @Test
   fun `get a CancelVisitFromExternalSystemDto from message attributes`() {
     val visitFromExternalSystemEvent = VisitFromExternalSystemEvent(

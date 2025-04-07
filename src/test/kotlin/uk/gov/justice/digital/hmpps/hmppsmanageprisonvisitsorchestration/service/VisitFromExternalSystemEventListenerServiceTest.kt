@@ -163,7 +163,7 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
         "visitNotes" to listOf(mapOf("type" to VisitNoteType.VISITOR_CONCERN, "text" to "Visitor concern")),
         "visitContact" to mapOf("name" to "John Smith", "telephone" to "01234567890", "email" to "john.smith@example.com"),
         "visitors" to listOf(mapOf("nomisPersonId" to 1234, "visitContact" to true)),
-        "visitorSupport" to mapOf("description" to "Visual impairment")
+        "visitorSupport" to mapOf("description" to "Visual impairment"),
       ),
     )
 

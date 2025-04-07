@@ -166,7 +166,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
       await untilAsserted {
         verify(
           visitSchedulerClient,
-          times(0)
+          times(0),
         ).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())
       }
     }
@@ -242,7 +242,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
       await untilAsserted {
         verify(
           visitSchedulerClient,
-          times(0)
+          times(0),
         ).updateVisitFromExternalSystem(any<UpdateVisitFromExternalSystemDto>())
       }
     }
@@ -310,7 +310,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
       await untilAsserted {
         verify(
           visitSchedulerClient,
-          times(0)
+          times(0),
         ).cancelVisit(any(), any<CancelVisitDto>())
       }
     }
