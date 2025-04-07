@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CreateVisitFromExternalSystemDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.UpdateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitExternalSystemDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitNoteDto
@@ -97,7 +98,7 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
         "visitContact" to mapOf("name" to "John Smith", "telephone" to "01234567890", "email" to "john.smith@example.com"),
         "createDateTime" to LocalDateTime.now().toString(),
         "visitors" to listOf(mapOf("nomisPersonId" to 1234, "visitContact" to true)),
-        "visitorSupport" to mapOf("description" to "Visual impairement"),
+        "visitorSupport" to mapOf("description" to "Visual impairment"),
       ),
     )
 
@@ -116,37 +117,50 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
     }
   }
 
-  @Test
-  fun `will process a visit write update event`() {
-    val messageId = UUID.randomUUID().toString()
-    val message = """
-    {
-      "messageId" : "$messageId",
-      "eventType" : "VisitUpdated",
-      "description" : null,
-      "messageAttributes" : {
-        "prisonerId" : "A1234AB",
-        "prisonId" : "MDI",
-        "clientVisitReference" : "123456",
-        "visitRoom" : "A1",
-        "visitType" : "SOCIAL",
-        "visitStatus" : "BOOKED",
-        "visitRestriction" : "OPEN",
-        "startTimestamp" : "2020-12-04T10:42:43",
-        "endTimestamp" : "2020-12-04T10:42:43",
-        "createDateTime" : "2020-12-04T10:42:43",
-        "visitors" : [ {
-          "nomisPersonId" : 3,
-          "visitContact" : true
-        } ],
-        "actionedBy" : "automated-test-client"
-      },
-      "who" : "automated-test-client"
-    }
-    """
+  @Nested
+  @DisplayName("Update visit from external system")
+  inner class UpdateVisit {
+    private val visitFromExternalSystemEvent = VisitFromExternalSystemEvent(
+      messageId = UUID.randomUUID().toString(),
+      eventType = "VisitUpdated",
+      messageAttributes = mapOf(
+        "visitReference" to "v9-d7-ed-7u",
+        "visitRoom" to "A1",
+        "visitType" to "SOCIAL",
+        "visitRestriction" to "OPEN",
+        "startTimestamp" to LocalDateTime.now().toString(),
+        "endTimestamp" to LocalDateTime.now().plusHours(1).toString(),
+        "visitNotes" to listOf(mapOf("type" to VisitNoteType.VISITOR_CONCERN, "text" to "Visitor concern")),
+        "visitContact" to mapOf("name" to "John Smith", "telephone" to "01234567890", "email" to "john.smith@example.com"),
+        "visitors" to listOf(mapOf("nomisPersonId" to 1234, "visitContact" to true)),
+        "visitorSupport" to mapOf("description" to "Visual impairment")
+      ),
+    )
 
-    assertDoesNotThrow {
-      visitFromExternalSystemEventListenerService.onEventReceived(message).get()
+    @Test
+    fun `will process a visit update event`() {
+      whenever(visitSchedulerClient.updateVisitFromExternalSystem(any<UpdateVisitFromExternalSystemDto>())).thenReturn(visitDto)
+
+      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+
+      assertDoesNotThrow {
+        visitFromExternalSystemEventListenerService.onEventReceived(message).get()
+      }
+      verify(visitSchedulerClient, times(1)).updateVisitFromExternalSystem(any<UpdateVisitFromExternalSystemDto>())
+    }
+
+    @Test
+    fun `will throw an exception if visit scheduler client returns an error on update event received`() {
+      val exceptionMessage = "Could not update visit from external system"
+      whenever(visitSchedulerClient.updateVisitFromExternalSystem(any<UpdateVisitFromExternalSystemDto>())).thenThrow(MockitoException(exceptionMessage))
+
+      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+
+      val exception = assertThrows<Exception> {
+        visitFromExternalSystemEventListenerService.onEventReceived(message).get()
+      }
+      assertThat(exception.message).contains(exceptionMessage)
+      verify(visitSchedulerClient, times(1)).updateVisitFromExternalSystem(any<UpdateVisitFromExternalSystemDto>())
     }
   }
 
@@ -177,7 +191,7 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
     }
 
     @Test
-    fun `will throw an exception if visit scheduler client returns an error on cancel event recieved`() {
+    fun `will throw an exception if visit scheduler client returns an error on cancel event received`() {
       val exceptionMessage = "Failed to cancel visit from external system"
       whenever(visitSchedulerClient.cancelVisit(any(), any<CancelVisitDto>())).thenThrow(MockitoException(exceptionMessage))
 

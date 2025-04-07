@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.IgnoreVisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.UpdateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
@@ -196,6 +197,15 @@ class VisitSchedulerClient(
         Mono.error(e)
       }
     }.block(apiTimeout)
+
+  fun updateVisitFromExternalSystem(requestDto: UpdateVisitFromExternalSystemDto): VisitDto? = webClient.put()
+    .uri("/visits/external-system/${requestDto.visitReference}")
+    .body(BodyInserters.fromValue(requestDto))
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<VisitDto>()
+    .doOnError { e -> LOG.error("Could not update visit from external system :", e) }
+    .block(apiTimeout)
 
   fun getBookedVisitByApplicationReference(applicationReference: String): VisitDto? = webClient.get()
     .uri("/visits/$applicationReference/visit")
