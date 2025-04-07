@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -177,7 +176,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
   @DisplayName("Update visit from external system")
   inner class UpdateVisit {
     private val messageId = UUID.randomUUID().toString()
-    val visitFromExternalSystemEvent = VisitFromExternalSystemEvent(
+    private val visitFromExternalSystemEvent = VisitFromExternalSystemEvent(
       messageId = messageId,
       eventType = "VisitUpdated",
       messageAttributes = mapOf(
@@ -244,7 +243,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
         verify(
           visitSchedulerClient,
           times(0)
-        ).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())
+        ).updateVisitFromExternalSystem(any<UpdateVisitFromExternalSystemDto>())
       }
     }
   }
@@ -260,6 +259,14 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
         "cancelOutcome" to mapOf("outcomeStatus" to "CANCELLATION", "text" to "Whatever"),
         "userType" to "PRISONER",
         "actionedBy" to "AF34567G",
+      ),
+    )
+
+    private val invalidVisitFromExternalSystemEvent = VisitFromExternalSystemEvent(
+      messageId = UUID.randomUUID().toString(),
+      eventType = "VisitCancelled",
+      messageAttributes = mapOf(
+        "invalidField" to "OPEN",
       ),
     )
 
@@ -290,6 +297,22 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
       )
 
       await untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 1 }
+    }
+
+    @Test
+    fun `will throw an exception if message attributes are invalid`() {
+      val message = ObjectMapper().writeValueAsString(invalidVisitFromExternalSystemEvent)
+      vweQueueSqsClient.sendMessage(
+        SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
+      )
+
+      await untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 1 }
+      await untilAsserted {
+        verify(
+          visitSchedulerClient,
+          times(0)
+        ).cancelVisit(any(), any<CancelVisitDto>())
+      }
     }
   }
 
