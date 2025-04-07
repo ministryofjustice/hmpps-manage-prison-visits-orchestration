@@ -18,12 +18,12 @@ data class VisitFromExternalSystemEvent(
     val mapper = ObjectMapper().registerModule(KotlinModule.Builder().build()).registerModule(JavaTimeModule())
     return mapper.convertValue(this.messageAttributes, CreateVisitFromExternalSystemDto::class.java)
   }
+  fun toUpdateVisitFromExternalSystemDto(): UpdateVisitFromExternalSystemDto {
+    val mapper = ObjectMapper().registerModule(KotlinModule.Builder().build()).registerModule(JavaTimeModule())
+    return mapper.convertValue(this.messageAttributes, UpdateVisitFromExternalSystemDto::class.java)
+  }
   fun toCancelVisitFromExternalSystemDto(): CancelVisitFromExternalSystemDto {
     val mapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
     return mapper.convertValue(this.messageAttributes, CancelVisitFromExternalSystemDto::class.java)
-  }
-  fun toUpdateVisitFromExternalSystemDto(): UpdateVisitFromExternalSystemDto {
-    val mapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
-    return mapper.convertValue(this.messageAttributes, UpdateVisitFromExternalSystemDto::class.java)
   }
 }

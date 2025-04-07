@@ -102,6 +102,14 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
       ),
     )
 
+    private val invalidVisitFromExternalSystemEvent = VisitFromExternalSystemEvent(
+      messageId = UUID.randomUUID().toString(),
+      eventType = "VisitCreated",
+      messageAttributes = mapOf(
+        "invalidField" to "OPEN",
+      ),
+    )
+
     @Test
     fun `will throw an exception if visit scheduler client returns an error`() {
       val exceptionMessage = "Failed to create visit from external system"
@@ -114,6 +122,16 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
       }
       assertThat(exception.message).contains(exceptionMessage)
       verify(visitSchedulerClient, times(1)).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())
+    }
+
+    @Test
+    fun `will throw an exception if message attributes are invalid`() {
+      val message = objectMapper.writeValueAsString(invalidVisitFromExternalSystemEvent)
+
+      assertThrows<Exception> {
+        visitFromExternalSystemEventListenerService.onEventReceived(message).get()
+      }
+      verify(visitSchedulerClient, times(0)).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())
     }
   }
 
@@ -134,6 +152,14 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
         "visitContact" to mapOf("name" to "John Smith", "telephone" to "01234567890", "email" to "john.smith@example.com"),
         "visitors" to listOf(mapOf("nomisPersonId" to 1234, "visitContact" to true)),
         "visitorSupport" to mapOf("description" to "Visual impairment")
+      ),
+    )
+
+    private val invalidVisitFromExternalSystemEvent = VisitFromExternalSystemEvent(
+      messageId = UUID.randomUUID().toString(),
+      eventType = "VisitUpdated",
+      messageAttributes = mapOf(
+        "invalidField" to "OPEN",
       ),
     )
 
@@ -162,6 +188,16 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
       assertThat(exception.message).contains(exceptionMessage)
       verify(visitSchedulerClient, times(1)).updateVisitFromExternalSystem(any<UpdateVisitFromExternalSystemDto>())
     }
+
+    @Test
+    fun `will throw an exception if message attributes are invalid`() {
+      val message = objectMapper.writeValueAsString(invalidVisitFromExternalSystemEvent)
+
+      assertThrows<Exception> {
+        visitFromExternalSystemEventListenerService.onEventReceived(message).get()
+      }
+      verify(visitSchedulerClient, times(0)).updateVisitFromExternalSystem(any<UpdateVisitFromExternalSystemDto>())
+    }
   }
 
   @Nested
@@ -175,6 +211,14 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
         "cancelOutcome" to mapOf("outcomeStatus" to "CANCELLATION", "text" to "Whatever"),
         "userType" to "PRISONER",
         "actionedBy" to "AF34567G",
+      ),
+    )
+
+    private val invalidVisitFromExternalSystemEvent = VisitFromExternalSystemEvent(
+      messageId = UUID.randomUUID().toString(),
+      eventType = "VisitCancelled",
+      messageAttributes = mapOf(
+        "invalidField" to "OPEN",
       ),
     )
 
@@ -202,6 +246,16 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
       }
       assertThat(exception.message).contains(exceptionMessage)
       verify(visitSchedulerClient, times(1)).cancelVisit(any(), any<CancelVisitDto>())
+    }
+
+    @Test
+    fun `will throw an exception if message attributes are invalid`() {
+      val message = objectMapper.writeValueAsString(invalidVisitFromExternalSystemEvent)
+
+      assertThrows<Exception> {
+        visitFromExternalSystemEventListenerService.onEventReceived(message).get()
+      }
+      verify(visitSchedulerClient, times(0)).cancelVisit(any(), any<CancelVisitDto>())
     }
   }
 
