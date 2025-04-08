@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.UpdateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
@@ -570,6 +571,19 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     stubFor(
       post(POST_VISIT_FROM_EXTERNAL_SYSTEM)
         .withRequestBody(equalToJson(getJsonString(createVisitFromExternalSystemDto)))
+        .willReturn(
+          responseBuilder
+            .withStatus(status.value())
+            .withBody(getJsonString(responseVisitDto)),
+        ),
+    )
+  }
+
+  fun stubPutVisitFromExternalSystem(updateVisitFromExternalSystemDto: UpdateVisitFromExternalSystemDto, responseVisitDto: VisitDto, status: HttpStatus = HttpStatus.OK) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      put("/visits/external-system/${updateVisitFromExternalSystemDto.visitReference}")
+        .withRequestBody(equalToJson(getJsonString(updateVisitFromExternalSystemDto)))
         .willReturn(
           responseBuilder
             .withStatus(status.value())
