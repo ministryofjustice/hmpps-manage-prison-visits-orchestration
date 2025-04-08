@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.visitfromexternalsystemevents
+package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.visit.external.system
 
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
