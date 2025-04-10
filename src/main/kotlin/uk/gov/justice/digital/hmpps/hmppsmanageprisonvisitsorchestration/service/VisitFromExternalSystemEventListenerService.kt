@@ -31,18 +31,18 @@ class VisitFromExternalSystemEventListenerService(
     rawMessage: String,
   ): CompletableFuture<Void> = asCompletableFuture {
     try {
-      LOG.debug("Received visit write event: $rawMessage")
+      LOG.info("Received visit write event: $rawMessage")
       val sqsMessage = objectMapper.readValue(rawMessage, VisitFromExternalSystemEvent::class.java)
       when (sqsMessage.eventType) {
         "VisitCreated" -> {
           val createVisitFromExternalSystemDto = sqsMessage.toCreateVisitFromExternalSystemDto()
           visitSchedulerClient.createVisitFromExternalSystem(createVisitFromExternalSystemDto)
-          LOG.debug("Visit created")
+          LOG.info("Visit created: {}", createVisitFromExternalSystemDto.clientVisitReference)
         }
         "VisitUpdated" -> {
           val updateVisitFromExternalSystemDto = sqsMessage.toUpdateVisitFromExternalSystemDto()
           visitSchedulerClient.updateVisitFromExternalSystem(updateVisitFromExternalSystemDto)
-          LOG.debug("Visit updated")
+          LOG.info("Visit updated: {}", updateVisitFromExternalSystemDto.visitReference)
         }
         "VisitCancelled" -> {
           val cancelVisitFromExternalSystemDto = sqsMessage.toCancelVisitFromExternalSystemDto()
@@ -53,7 +53,7 @@ class VisitFromExternalSystemEventListenerService(
             userType = cancelVisitFromExternalSystemDto.userType,
           )
           visitSchedulerClient.cancelVisit(cancelVisitFromExternalSystemDto.visitReference, cancelVisitDto)
-          LOG.debug("Visit cancelled")
+          LOG.info("Visit cancelled: {}", cancelVisitFromExternalSystemDto.visitReference)
         }
         else -> throw Exception("Cannot process event of type ${sqsMessage.eventType}")
       }
