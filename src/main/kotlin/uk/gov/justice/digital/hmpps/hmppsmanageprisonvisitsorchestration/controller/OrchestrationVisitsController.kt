@@ -554,7 +554,7 @@ class OrchestrationVisitsController(
   )
   fun getVisitFullDetailsByReference(@PathVariable reference: String): VisitBookingDetailsDto? = visitSchedulerService.getFullVisitBookingDetailsByReference(reference)
 
-  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE', 'VSIP_ORCHESTRATION_SERVICE__HMPPS_INTEGRATION_API')")
   @GetMapping(GET_VISIT_REFERENCE_BY_CLIENT_REFERENCE)
   @Operation(
     summary = "Get visit reference from given client reference",
