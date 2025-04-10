@@ -44,6 +44,7 @@ const val GET_VISIT_FULL_DETAILS_BY_VISIT_REFERENCE: String = "$ORCHESTRATION_VI
 const val ORCHESTRATION_GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/booked/future"
 const val ORCHESTRATION_GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/cancelled"
 const val ORCHESTRATION_GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/booked/past"
+const val GET_VISIT_REFERENCE_BY_CLIENT_REFERENCE: String = "$ORCHESTRATION_VISIT_CONTROLLER_PATH/external-system/{clientReference}"
 
 @RestController
 class OrchestrationVisitsController(
@@ -519,7 +520,7 @@ class OrchestrationVisitsController(
     prisonerId: String,
   ): List<VisitDto> = visitSchedulerService.findFutureVisitsForPrisoner(prisonerId)
 
-  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE', 'VSIP_ORCHESTRATION_SERVICE__HMPPS_INTEGRATION_API')")
   @GetMapping(GET_VISIT_FULL_DETAILS_BY_VISIT_REFERENCE)
   @Operation(
     summary = "Get a detailed summary of the visit including prisoner, visitor, event audit and notification event details",
@@ -552,4 +553,44 @@ class OrchestrationVisitsController(
     ],
   )
   fun getVisitFullDetailsByReference(@PathVariable reference: String): VisitBookingDetailsDto? = visitSchedulerService.getFullVisitBookingDetailsByReference(reference)
+
+  // TODO: Make this return a single reference, not a list of references
+  // TODO: Make this accept a client name and referece not just reference
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE', 'VSIP_ORCHESTRATION_SERVICE__HMPPS_INTEGRATION_API')")
+  @GetMapping(GET_VISIT_REFERENCE_BY_CLIENT_REFERENCE)
+  @Operation(
+    summary = "Get visit reference from given client reference",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Visit reference returned",
+      ),
+      ApiResponse(
+        responseCode = "500",
+        description = "Failed to get a visit reference by client reference",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions retrieve a visit reference by client reference",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Failed to get a visit reference by client reference",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getVisitReferenceByClientReference(
+    @Schema(description = "clientReference", example = "AABDC234", required = true)
+    @PathVariable(value = "clientReference")
+    @NotBlank
+    clientReference: String,
+  ): List<String?>? = visitSchedulerService.getVisitReferenceByClientReference(clientReference.trim())
 }

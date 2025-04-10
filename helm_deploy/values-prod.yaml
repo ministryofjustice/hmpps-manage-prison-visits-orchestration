@@ -25,6 +25,8 @@ generic-prometheus-alerts:
   sqsAlertsQueueNames:
     - "book-a-prison-visit-prod-hmpps_prison_visits_event_queue"
     - "book-a-prison-visit-prod-hmpps_prison_visits_event_dlq"
+    - "book-a-prison-visit-prod-hmpps_prison_visits_write_events_queue"
+    - "book-a-prison-visit-prod-hmpps_prison_visits_write_events_dlq"
   sqsAlertsOldestThreshold: 1
   sqsAlertsTotalMessagesThreshold: 1
 
