@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationPrisonerVisitsNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitBookingDetailsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ActionedByDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
@@ -31,7 +30,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerRestrictionChangeNotificationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorApprovedUnapprovedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
@@ -75,31 +73,6 @@ class VisitSchedulerService(
   fun getFullVisitBookingDetailsByReference(reference: String): VisitBookingDetailsDto? {
     LOG.info("Retrieving visit booking details for visit reference: $reference")
     return visitBookingDetailsClient.getFullVisitBookingDetails(reference)
-  }
-
-  /**
-   * Gets further visit details like usernames, contact details etc. for a given visit reference.
-   */
-  fun getVisitHistoryByReference(
-    reference: String,
-  ): VisitHistoryDetailsDto? {
-    val visit = visitSchedulerClient.getVisitByReference(reference)
-
-    visit?.let {
-      val eventAuditList = visitSchedulerClient.getVisitHistoryByReference(reference)
-      if (!eventAuditList.isNullOrEmpty()) {
-        val eventAuditListWithNames = eventAuditDetailsService.getEventAuditDetailsWithActionedByUserNames(eventAuditList)
-
-        return VisitHistoryDetailsDto(
-          eventsAudit = eventAuditListWithNames,
-          visit = visit,
-        )
-      }
-      return VisitHistoryDetailsDto(
-        visit = visit,
-      )
-    }
-    return null
   }
 
   fun visitsSearch(visitSearchRequestFilter: VisitSearchRequestFilter): Page<VisitDto>? {
@@ -212,10 +185,6 @@ class VisitSchedulerService(
       OrchestrationNotificationGroupDto(group.reference, group.type, affectedVisits)
     }
   }
-
-  fun getNotificationsTypesForBookingReference(reference: String): List<NotificationEventType>? = visitSchedulerClient.getNotificationsTypesForBookingReference(reference)
-
-  fun getNotificationEventsForBookingReference(reference: String): List<VisitNotificationEventDto>? = visitSchedulerClient.getNotificationEventsForBookingReference(reference)
 
   private fun mapVisitDtoToOrchestrationVisitDto(visits: List<VisitDto>?): List<OrchestrationVisitDto> {
     val prisonerIds = visits?.map { it.prisonerId }?.toSet() ?: emptySet()
