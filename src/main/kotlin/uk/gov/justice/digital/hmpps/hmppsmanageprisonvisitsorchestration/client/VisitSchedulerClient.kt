@@ -200,7 +200,10 @@ class VisitSchedulerClient(
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono<VisitDto>()
-    .doOnError { e -> LOG.error("Could not update visit from external system :", e) }
+    .onErrorResume { e ->
+      LOG.error("Could not update visit from external system :", e)
+      Mono.error(e)
+    }
     .block(apiTimeout)
 
   fun getBookedVisitByApplicationReference(applicationReference: String): VisitDto? = webClient.get()
@@ -515,7 +518,10 @@ class VisitSchedulerClient(
     .body(BodyInserters.fromValue(createVisitFromExternalSystemDto))
     .retrieve()
     .bodyToMono<VisitDto>()
-    .doOnError { e -> LOG.error("Could not create visit from external system :", e) }
+    .onErrorResume { e ->
+      LOG.error("Could not create visit from external system :", e)
+      Mono.error(e)
+    }
     .block(apiTimeout)
 
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {
