@@ -8,6 +8,8 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
 @DisplayName("Get visit sessions")
@@ -19,6 +21,7 @@ class VisitSessionsTest : IntegrationTestBase() {
     prisonCode: String,
     prisonerId: String,
     username: String? = null,
+    userType: UserType,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     val uri = "/visit-sessions"
@@ -26,6 +29,7 @@ class VisitSessionsTest : IntegrationTestBase() {
       username?.let {
         queryParams.add("username=$username")
       }
+      queryParams.add("userType=${userType.name}")
     }.joinToString("&")
 
     return webTestClient.get().uri("$uri?$uriQueryParams")
@@ -44,10 +48,10 @@ class VisitSessionsTest : IntegrationTestBase() {
     val visitSessionDto4 = createVisitSessionDto(prisonCode, "4")
     val visitSessionDto5 = createVisitSessionDto(prisonCode, "5")
 
-    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2, visitSessionDto3, visitSessionDto4, visitSessionDto5))
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2, visitSessionDto3, visitSessionDto4, visitSessionDto5), userType = STAFF)
 
     // When
-    val responseSpec = callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = null, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = null, userType = STAFF, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -61,10 +65,10 @@ class VisitSessionsTest : IntegrationTestBase() {
     val prisonCode = "MDI"
     val prisonerId = "ABC"
 
-    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf())
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(), userType = STAFF)
 
     // When
-    val responseSpec = callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = null, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = null, userType = STAFF, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -80,10 +84,10 @@ class VisitSessionsTest : IntegrationTestBase() {
     val username = null
 
     // When
-    callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = username, roleVSIPOrchestrationServiceHttpHeaders)
+    callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = username, userType = STAFF, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    verify(visitSchedulerClient, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, username)
+    verify(visitSchedulerClient, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, username, userType = STAFF)
   }
 
   @Test
@@ -94,9 +98,9 @@ class VisitSessionsTest : IntegrationTestBase() {
     val username = "test-user"
 
     // When
-    callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = username, roleVSIPOrchestrationServiceHttpHeaders)
+    callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = username, userType = STAFF, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    verify(visitSchedulerClient, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, username)
+    verify(visitSchedulerClient, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, username, userType = STAFF)
   }
 }
