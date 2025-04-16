@@ -5,7 +5,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
@@ -38,7 +37,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationGroupDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertsAddedNotificationDto
@@ -121,8 +119,6 @@ class VisitSchedulerClient(
     .retrieve()
     .bodyToMono<List<String?>>().block(apiTimeout)
 
-  fun getVisitHistoryByReference(reference: String): List<EventAuditDto>? = getVisitHistoryByReferenceAsMono(reference).block(apiTimeout)
-
   fun getVisitHistoryByReferenceAsMono(reference: String): Mono<List<EventAuditDto>> = webClient.get()
     .uri(GET_VISIT_HISTORY_CONTROLLER_PATH.replace("{reference}", reference))
     .accept(MediaType.APPLICATION_JSON)
@@ -204,7 +200,10 @@ class VisitSchedulerClient(
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono<VisitDto>()
-    .doOnError { e -> LOG.error("Could not update visit from external system :", e) }
+    .onErrorResume { e ->
+      LOG.error("Could not update visit from external system :", e)
+      Mono.error(e)
+    }
     .block(apiTimeout)
 
   fun getBookedVisitByApplicationReference(applicationReference: String): VisitDto? = webClient.get()
@@ -471,31 +470,6 @@ class VisitSchedulerClient(
       .blockOptional(apiTimeout).orElseThrow { NotFoundException("Prison with prison code - $prisonCode not found on visit-scheduler") }
   }
 
-  fun getPrisonAsMono(prisonCode: String): Mono<Optional<VisitSchedulerPrisonDto>> {
-    val uri = "/admin/prisons/prison/$prisonCode"
-
-    return webClient.get()
-      .uri(uri)
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<Optional<VisitSchedulerPrisonDto>>()
-      .onErrorResume { e ->
-        if (e is WebClientResponseException && e.statusCode == HttpStatus.NOT_FOUND) {
-          // return an Optional.empty element if 404 is thrown
-          return@onErrorResume Mono.just(Optional.empty())
-        } else {
-          Mono.error(e)
-        }
-      }
-  }
-
-  fun getNotificationsTypesForBookingReference(reference: String): List<NotificationEventType>? = webClient.get()
-    .uri("/visits/notification/visit/$reference/types")
-    .retrieve()
-    .bodyToMono<List<NotificationEventType>>().block(apiTimeout)
-
-  fun getNotificationEventsForBookingReference(reference: String): List<VisitNotificationEventDto>? = getNotificationEventsForBookingReferenceAsMono(reference).block(apiTimeout)
-
   fun getNotificationEventsForBookingReferenceAsMono(reference: String): Mono<List<VisitNotificationEventDto>> = webClient.get()
     .uri("/visits/notification/visit/$reference/events")
     .retrieve()
@@ -544,7 +518,10 @@ class VisitSchedulerClient(
     .body(BodyInserters.fromValue(createVisitFromExternalSystemDto))
     .retrieve()
     .bodyToMono<VisitDto>()
-    .doOnError { e -> LOG.error("Could not create visit from external system :", e) }
+    .onErrorResume { e ->
+      LOG.error("Could not create visit from external system :", e)
+      Mono.error(e)
+    }
     .block(apiTimeout)
 
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {
