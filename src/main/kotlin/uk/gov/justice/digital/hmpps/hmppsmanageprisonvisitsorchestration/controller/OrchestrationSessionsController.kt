@@ -95,8 +95,8 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     )
     username: String? = null,
     @RequestParam
-    @Parameter(description = "type", example = "STAFF", required = true)
-    userType: UserType,
+    @Parameter(description = "user type for the session", example = "STAFF", required = false)
+    userType: UserType = UserType.STAFF,
   ): List<VisitSessionDto>? = visitSchedulerSessionsService.getVisitSessions(prisonCode, prisonerId, min, max, username, userType)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
@@ -165,8 +165,8 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     )
     username: String? = null,
     @RequestParam
-    @Parameter(description = "type", example = "STAFF", required = true)
-    userType: UserType,
+    @Parameter(description = "user type for the session", example = "PUBLIC", required = false)
+    userType: UserType = UserType.PUBLIC,
   ): List<AvailableVisitSessionDto> = visitSchedulerSessionsService.getAvailableVisitSessions(
     prisonCode = prisonCode,
     prisonerId = prisonerId,
