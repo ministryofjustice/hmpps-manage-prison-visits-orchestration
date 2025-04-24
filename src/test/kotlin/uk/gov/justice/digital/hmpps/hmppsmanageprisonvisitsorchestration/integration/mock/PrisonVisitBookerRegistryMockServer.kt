@@ -5,7 +5,9 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PERMITTED_PRISONERS
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PERMITTED_VISITORS
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.REGISTER_PRISONER
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VALIDATE_PRISONER
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerRegistrationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
@@ -81,6 +83,19 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
             .withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
             .withBody(getJsonString(errorResponse)),
         ),
+    )
+  }
+
+  fun stubRegisterPrisonerForBooker(bookerReference: String, httpStatus: HttpStatus, errorResponse: BookerPrisonerRegistrationErrorResponse? = null) {
+    val responseBuilder = createJsonResponseBuilder().withStatus(httpStatus.value())
+
+    errorResponse?.let {
+      responseBuilder.withBody(getJsonString(it))
+    }
+
+    stubFor(
+      WireMock.put(REGISTER_PRISONER.replace("{bookerReference}", bookerReference))
+        .willReturn(responseBuilder),
     )
   }
 }

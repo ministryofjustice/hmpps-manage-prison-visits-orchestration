@@ -22,12 +22,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.con
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.RestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitorDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonNameDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.CurrentIncentive
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitExternalSystemDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
@@ -225,6 +227,7 @@ abstract class IntegrationTestBase {
     visitors: List<VisitorDto>? = null,
     contact: ContactDto? = ContactDto("Jane Doe", "01234567890", "email@example.com"),
     firstBookedDate: LocalDateTime? = null,
+    visitExternalSystemDetails: VisitExternalSystemDetails? = null,
   ): VisitDto = VisitDto(
     applicationReference = applicationReference,
     sessionTemplateReference = sessionTemplateReference,
@@ -243,6 +246,7 @@ abstract class IntegrationTestBase {
     visitors = visitors,
     visitContact = contact,
     firstBookedDateTime = firstBookedDate,
+    visitExternalSystemDetails = visitExternalSystemDetails,
   )
 
   fun createCreateApplicationDto(prisonerId: String, sessionTemplateReference: String = "ref.ref.ref", sessionDate: LocalDate? = LocalDate.now()): CreateApplicationDto {
@@ -667,6 +671,15 @@ abstract class IntegrationTestBase {
     activeTo,
     active,
     description,
+  )
+
+  final fun createOffenderRestrictionDto() = OffenderRestrictionDto(
+    restrictionId = 1,
+    restrictionType = "CLOSED",
+    restrictionTypeDescription = "",
+    startDate = LocalDate.now(),
+    expiryDate = LocalDate.now(),
+    active = true,
   )
 
   final fun createAddressDto(primary: Boolean, noFixedAddress: Boolean = false, street: String): AddressDto = AddressDto(

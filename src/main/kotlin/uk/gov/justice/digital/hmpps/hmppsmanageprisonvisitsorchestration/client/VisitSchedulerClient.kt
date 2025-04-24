@@ -5,7 +5,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
@@ -21,11 +20,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.Res
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CreateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.IgnoreVisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.UpdateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
@@ -36,7 +37,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationGroupDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertsAddedNotificationDto
@@ -72,6 +72,8 @@ const val GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/boo
 const val GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/booked/past"
 
 const val VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alerts/updated"
+
+const val POST_VISIT_FROM_EXTERNAL_SYSTEM: String = "$VISIT_CONTROLLER_PATH/external-system"
 
 @Component
 class VisitSchedulerClient(
@@ -111,7 +113,11 @@ class VisitSchedulerClient(
     .retrieve()
     .bodyToMono<VisitDto>().block(apiTimeout)
 
-  fun getVisitHistoryByReference(reference: String): List<EventAuditDto>? = getVisitHistoryByReferenceAsMono(reference).block(apiTimeout)
+  fun getVisitReferenceByClientReference(clientReference: String): List<String?>? = webClient.get()
+    .uri("/visits/external-system/$clientReference")
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<List<String?>>().block(apiTimeout)
 
   fun getVisitHistoryByReferenceAsMono(reference: String): Mono<List<EventAuditDto>> = webClient.get()
     .uri(GET_VISIT_HISTORY_CONTROLLER_PATH.replace("{reference}", reference))
@@ -187,6 +193,18 @@ class VisitSchedulerClient(
         Mono.error(e)
       }
     }.block(apiTimeout)
+
+  fun updateVisitFromExternalSystem(requestDto: UpdateVisitFromExternalSystemDto): VisitDto? = webClient.put()
+    .uri("/visits/external-system/${requestDto.visitReference}")
+    .body(BodyInserters.fromValue(requestDto))
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<VisitDto>()
+    .onErrorResume { e ->
+      LOG.error("Could not update visit from external system :", e)
+      Mono.error(e)
+    }
+    .block(apiTimeout)
 
   fun getBookedVisitByApplicationReference(applicationReference: String): VisitDto? = webClient.get()
     .uri("/visits/$applicationReference/visit")
@@ -452,31 +470,6 @@ class VisitSchedulerClient(
       .blockOptional(apiTimeout).orElseThrow { NotFoundException("Prison with prison code - $prisonCode not found on visit-scheduler") }
   }
 
-  fun getPrisonAsMono(prisonCode: String): Mono<Optional<VisitSchedulerPrisonDto>> {
-    val uri = "/admin/prisons/prison/$prisonCode"
-
-    return webClient.get()
-      .uri(uri)
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono<Optional<VisitSchedulerPrisonDto>>()
-      .onErrorResume { e ->
-        if (e is WebClientResponseException && e.statusCode == HttpStatus.NOT_FOUND) {
-          // return an Optional.empty element if 404 is thrown
-          return@onErrorResume Mono.just(Optional.empty())
-        } else {
-          Mono.error(e)
-        }
-      }
-  }
-
-  fun getNotificationsTypesForBookingReference(reference: String): List<NotificationEventType>? = webClient.get()
-    .uri("/visits/notification/visit/$reference/types")
-    .retrieve()
-    .bodyToMono<List<NotificationEventType>>().block(apiTimeout)
-
-  fun getNotificationEventsForBookingReference(reference: String): List<VisitNotificationEventDto>? = getNotificationEventsForBookingReferenceAsMono(reference).block(apiTimeout)
-
   fun getNotificationEventsForBookingReferenceAsMono(reference: String): Mono<List<VisitNotificationEventDto>> = webClient.get()
     .uri("/visits/notification/visit/$reference/events")
     .retrieve()
@@ -519,6 +512,17 @@ class VisitSchedulerClient(
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono<List<LocalDate>>().block(apiTimeout)
+
+  fun createVisitFromExternalSystem(createVisitFromExternalSystemDto: CreateVisitFromExternalSystemDto): VisitDto? = webClient.post()
+    .uri(POST_VISIT_FROM_EXTERNAL_SYSTEM)
+    .body(BodyInserters.fromValue(createVisitFromExternalSystemDto))
+    .retrieve()
+    .bodyToMono<VisitDto>()
+    .onErrorResume { e ->
+      LOG.error("Could not create visit from external system :", e)
+      Mono.error(e)
+    }
+    .block(apiTimeout)
 
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParamIfPresent("prisonId", Optional.ofNullable(visitSearchRequestFilter.prisonCode))
