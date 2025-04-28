@@ -96,18 +96,10 @@ class VisitSchedulerService(
 
   fun findFutureVisitsForPrisoner(prisonerId: String): List<VisitDto> = visitSchedulerClient.getFutureVisitsForPrisoner(prisonerId) ?: emptyList()
 
-  fun bookVisit(applicationReference: String, requestDto: BookingOrchestrationRequestDto): VisitDto? {
-    val existingBooking = visitSchedulerClient.getBookedVisitByApplicationReference(applicationReference)
-    return existingBooking?.let {
-      visitSchedulerClient.updateBookedVisit(
-        applicationReference,
-        BookingRequestDto(requestDto.actionedBy, requestDto.applicationMethodType, requestDto.allowOverBooking, requestDto.userType),
-      )
-    } ?: visitSchedulerClient.bookVisitSlot(
-      applicationReference,
-      BookingRequestDto(requestDto.actionedBy, requestDto.applicationMethodType, requestDto.allowOverBooking, requestDto.userType),
-    )
-  }
+  fun bookVisit(applicationReference: String, requestDto: BookingOrchestrationRequestDto): VisitDto? = visitSchedulerClient.bookVisitSlot(
+    applicationReference,
+    BookingRequestDto(requestDto.actionedBy, requestDto.applicationMethodType, requestDto.allowOverBooking, requestDto.userType),
+  )
 
   fun updateVisit(applicationReference: String, requestDto: BookingOrchestrationRequestDto): VisitDto? = visitSchedulerClient.updateBookedVisit(
     applicationReference,
