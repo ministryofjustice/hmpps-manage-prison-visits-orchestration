@@ -134,6 +134,39 @@ class SupportedPrisonsTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `when get detailed view of supported prisons called and active prisons exist then all active prisons details are returned sorted by prison name`() {
+    // Given
+    val prisons = listOf("BLI", "HEI")
+    val prisonZDto = PrisonRegisterPrisonDto("BLI", "Z Prison", true)
+    val prisonBDto = PrisonRegisterPrisonDto("BLI", "B Prison", true)
+    val prisonHDto = PrisonRegisterPrisonDto("HEI", "H Prison", true)
+    val prisonGDto = PrisonRegisterPrisonDto("HEI", "G Prison", true)
+
+    // lower case prison names
+    val prisonADto = PrisonRegisterPrisonDto("HEI", "a Prison", true)
+    val prisonCDto = PrisonRegisterPrisonDto("HEI", "c Prison", true)
+
+    visitSchedulerMockServer.stubGetSupportedPrisons(STAFF, prisons.toMutableList())
+    prisonRegisterMockServer.stubPrisonsByIds(listOf(prisonZDto, prisonBDto, prisonHDto, prisonGDto, prisonADto, prisonCDto))
+
+    // When
+    val responseSpec = callGetSupportedPrisonsDetails(STAFF, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val results = getPrisonDetailsResults(returnResult)
+
+    Assertions.assertThat(results.size).isEqualTo(6)
+    Assertions.assertThat(results).contains(prisonADto)
+    Assertions.assertThat(results).contains(prisonBDto)
+    Assertions.assertThat(results).contains(prisonCDto)
+    Assertions.assertThat(results).contains(prisonGDto)
+    Assertions.assertThat(results).contains(prisonHDto)
+    Assertions.assertThat(results).contains(prisonZDto)
+    verify(prisonRegisterClientSpy, times(1)).prisonsByIds(prisons)
+  }
+
+  @Test
   fun `when get detailed view of supported prisons called and prison register returns NOT_FOUND then NOT_FOUND is returned`() {
     // Given
     val prisons = listOf("BLI", "HEI")
