@@ -21,7 +21,7 @@ class VisitSessionsTest : IntegrationTestBase() {
     prisonCode: String,
     prisonerId: String,
     username: String? = null,
-    userType: UserType,
+    userType: UserType? = null,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     val uri = "/visit-sessions"
@@ -29,7 +29,9 @@ class VisitSessionsTest : IntegrationTestBase() {
       username?.let {
         queryParams.add("username=$username")
       }
-      queryParams.add("userType=${userType.name}")
+      userType?.let {
+        queryParams.add("userType=${userType.name}")
+      }
     }.joinToString("&")
 
     return webTestClient.get().uri("$uri?$uriQueryParams")
@@ -102,5 +104,26 @@ class VisitSessionsTest : IntegrationTestBase() {
 
     // Then
     verify(visitSchedulerClient, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, username, userType = STAFF)
+  }
+
+  @Test
+  fun `when usertype not passed to get visit sessions usertype defaults to STAFF when visit scheduler client is called`() {
+    // Given
+    val prisonCode = "MDI"
+    val prisonerId = "ABC"
+
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(), userType = STAFF)
+
+    // When
+    val responseSpec = callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = null, userType = STAFF, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.size()").isEqualTo(0)
+
+    // Then
+    // verify getVisitSessions on visit-scheduler is called with userType = STAFF
+    verify(visitSchedulerClient, times(1)).getVisitSessions(prisonCode, prisonerId, min = null, max = null, username = null, userType = STAFF)
   }
 }
