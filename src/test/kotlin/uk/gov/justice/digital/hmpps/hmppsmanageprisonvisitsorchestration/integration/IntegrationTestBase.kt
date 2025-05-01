@@ -645,15 +645,17 @@ abstract class IntegrationTestBase {
       description = "Alert Code Desc",
     ),
     createdAt: LocalDate = LocalDate.now(),
+    lastModifiedAt: LocalDate? = null,
     activeTo: LocalDate? = null,
     active: Boolean = true,
     description: String = "Alert code comment",
   ): AlertResponseDto = AlertResponseDto(
-    alertCodeSummary,
-    createdAt,
-    activeTo,
-    active,
-    description,
+    alertCode = alertCodeSummary,
+    createdAt = createdAt,
+    lastModifiedAt = lastModifiedAt,
+    activeTo = activeTo,
+    active = active,
+    description = description,
   )
 
   final fun createAlertResponseDto(
@@ -663,14 +665,16 @@ abstract class IntegrationTestBase {
     alertCodeDescription: String = "Alert Code Desc",
     createdAt: LocalDate = LocalDate.now(),
     activeTo: LocalDate? = null,
+    lastModifiedAt: LocalDate? = null,
     active: Boolean = true,
     description: String = "Alert code comment",
   ): AlertResponseDto = AlertResponseDto(
     AlertCodeSummaryDto(alertTypeCode, alertTypeDescription, code, alertCodeDescription),
-    createdAt,
-    activeTo,
-    active,
-    description,
+    createdAt = createdAt,
+    lastModifiedAt = lastModifiedAt,
+    activeTo = activeTo,
+    active = active,
+    description = description,
   )
 
   final fun createOffenderRestrictionDto() = OffenderRestrictionDto(

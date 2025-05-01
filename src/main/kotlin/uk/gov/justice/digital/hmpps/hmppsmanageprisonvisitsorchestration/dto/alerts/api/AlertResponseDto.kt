@@ -10,7 +10,11 @@ data class AlertResponseDto(
   val alertCode: AlertCodeSummaryDto,
 
   @Schema(description = "Date of the alert, which might differ to the date it was created", required = true, example = "2019-08-20")
+  @JsonProperty("activeFrom")
   val createdAt: LocalDate,
+
+  @Schema(description = "The date and time the alert was last modified", required = false, example = "2019-08-20")
+  val lastModifiedAt: LocalDate? = null,
 
   @Schema(description = "Date the alert expires", example = "2020-08-20")
   val activeTo: LocalDate? = null,

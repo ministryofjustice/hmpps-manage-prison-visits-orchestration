@@ -30,6 +30,9 @@ data class AlertDto(
   @Schema(description = "Date the alert expires", example = "2020-08-20")
   val dateExpires: LocalDate? = null,
 
+  @Schema(description = "Date the alert was last updated.", example = "2020-08-20")
+  val dateUpdated: LocalDate? = null,
+
   @Schema(required = true, description = "True / False based on alert status", example = "false")
   val active: Boolean = false,
 ) {
@@ -43,5 +46,6 @@ data class AlertDto(
     dateCreated = alertResponseDto.createdAt,
     dateExpires = alertResponseDto.activeTo,
     active = alertResponseDto.active,
+    dateUpdated = alertResponseDto.lastModifiedAt,
   )
 }

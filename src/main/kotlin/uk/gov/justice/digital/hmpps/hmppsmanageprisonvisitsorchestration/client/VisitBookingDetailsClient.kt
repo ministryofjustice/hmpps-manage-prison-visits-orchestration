@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.excepti
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AlertsService.Companion.predicateFilterSupportedCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.ManageUsersService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.ManageUsersService.Companion.userFullNameFilterPredicate
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.Comparators.Companion.alertsComparatorDateUpdatedDescThenByDateCreatedDesc
 import java.time.Duration
 import kotlin.jvm.optionals.getOrNull
 
@@ -56,7 +57,10 @@ class VisitBookingDetailsClient(
       .map { visitBookingDetailsMono ->
         val prison = visitBookingDetailsMono.t1.getOrNull() ?: PrisonRegisterPrisonDto(prisonId = visit.prisonCode, prisonName = visit.prisonCode, active = true)
         val prisoner = visitBookingDetailsMono.t2
-        val prisonerAlerts = visitBookingDetailsMono.t3.content.filter { predicateFilterSupportedCodes.test(it) }.map { alertResponse -> AlertDto(alertResponse) }
+        val prisonerAlerts = visitBookingDetailsMono.t3.content.filter {
+          predicateFilterSupportedCodes.test(it)
+        }.map { alertResponse -> AlertDto(alertResponse) }
+          .sortedWith(alertsComparatorDateUpdatedDescThenByDateCreatedDesc)
         val prisonerRestrictions = visitBookingDetailsMono.t4.offenderRestrictions ?: emptyList()
         val allVisitorsForPrisoner = visitBookingDetailsMono.t5
         val events = visitBookingDetailsMono.t6
