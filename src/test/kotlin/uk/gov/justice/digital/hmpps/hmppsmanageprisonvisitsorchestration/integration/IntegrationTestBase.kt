@@ -433,7 +433,7 @@ abstract class IntegrationTestBase {
     fromDateOverride: Int? = null,
     toDateOverride: Int? = null,
     currentUser: String? = null,
-    userType: UserType,
+    userType: UserType? = null,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     val uri = "/visit-sessions/available"
@@ -577,7 +577,7 @@ abstract class IntegrationTestBase {
     fromDateOverride: Int? = null,
     toDateOverride: Int? = null,
     currentUser: String? = null,
-    userType: UserType,
+    userType: UserType? = null,
   ): List<String> {
     val queryParams = java.util.ArrayList<String>()
     queryParams.add("prisonId=$prisonCode")
@@ -603,7 +603,9 @@ abstract class IntegrationTestBase {
     currentUser?.let {
       queryParams.add("currentUser=$currentUser")
     }
-    queryParams.add("userType=${userType.name}")
+    userType?.let {
+      queryParams.add("userType=${userType.name}")
+    }
 
     return queryParams
   }

@@ -297,4 +297,38 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
 
     verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
   }
+
+  @Test
+  fun `when usertype not passed to get visit sessions usertype defaults to PUBLIC when visit scheduler client is called`() {
+    // Given
+    visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
+
+    val dateRange = DateRange(
+      fromDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMin.toLong()),
+      toDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMax.toLong()),
+    )
+
+    // When
+    val responseSpec = callGetAvailableVisitSessions(
+      webTestClient,
+      prisonCode = prisonCode,
+      prisonerId = prisonerId,
+      sessionRestriction = OPEN,
+      withAppointmentsCheck = true,
+      excludedApplicationReference = null,
+      pvbAdvanceFromDateByDays = null,
+      // userType passed as NULL
+      userType = null,
+      authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
+    )
+
+    // Then
+    responseSpec.expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.size()").isEqualTo(3)
+
+    // Then
+    // verify getVisitSessions on visit-scheduler is called with userType = PUBLIC
+    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
+  }
 }
