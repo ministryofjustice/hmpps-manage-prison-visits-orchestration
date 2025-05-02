@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.excepti
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AlertsService.Companion.predicateFilterSupportedCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.Comparators.Companion.alertsComparatorDateUpdatedOrCreatedDateDesc
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.Comparators.Companion.restrictionsComparatorDatCreatedDesc
 import java.time.Duration
 
 @Component
@@ -53,7 +54,7 @@ class PrisonerProfileClient(
         }.map { alertResponse -> AlertDto(alertResponse) }
           .sortedWith(alertsComparatorDateUpdatedOrCreatedDateDesc)
 
-        val prisonerRestrictions = prisonerProfileMonos.t6.offenderRestrictions ?: emptyList()
+        val prisonerRestrictions = (prisonerProfileMonos.t6.offenderRestrictions ?: emptyList()).sortedWith(restrictionsComparatorDatCreatedDesc)
 
         PrisonerProfileDto(
           prisoner,

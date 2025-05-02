@@ -983,6 +983,48 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     assertThat(visitBookingResponse.prisoner.prisonerAlerts).isEqualTo(expectedAlerts)
   }
 
+  @Test
+  fun `when prisoner has restrictions on call to get visit booking details these alerts are sorted by startDate descending`() {
+    // Given
+    val reference = "aa-bb-cc-dd"
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
+    val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors)
+    val contactsList = listOf(visitor1, visitor2, visitor3)
+    val eventList = listOf(eventAudit1, eventAudit2, eventAudit3, eventAudit4, eventAudit5)
+    val notifications = listOf(notification1, notification2)
+
+    visitSchedulerMockServer.stubGetVisit(reference, visit)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
+
+    // Given
+    // restriction 1 - start date today
+    val restriction1 = createOffenderRestrictionDto(restrictionId = 1, startDate = LocalDate.now(), expiryDate = null)
+    // restriction 2 - start date tomorrow
+    val restriction2 = createOffenderRestrictionDto(restrictionId = 2, startDate = LocalDate.now().plusDays(1), expiryDate = null)
+    // restriction 3 - start date 1 month back, expiry date tomorrow
+    val restriction3 = createOffenderRestrictionDto(restrictionId = 3, startDate = LocalDate.now().minusMonths(1), expiryDate = null)
+    // restriction 4 - start date 5 days back, expiry date 3 months ahead
+    val restriction4 = createOffenderRestrictionDto(restrictionId = 4, startDate = LocalDate.now().minusDays(5), expiryDate = null)
+
+    // expected sort order is restriction2, restriction1, restriction4 and restriction3
+    val expectedRestrictions = listOf(restriction2, restriction1, restriction4, restriction3)
+    alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
+    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(1, listOf(restriction1, restriction2, restriction3, restriction4)))
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, approvedVisitorsOnly = false, null, null, contactsList)
+    visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
+    visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
+    manageUsersApiMockServer.stubGetUserDetails("test-user", "Test User")
+
+    // When
+    val responseSpec = callGetVisitFullDetailsByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isOk
+    val visitBookingResponse = getResult(responseSpec.expectBody())
+    assertThat(visitBookingResponse.prisoner.prisonerRestrictions).isEqualTo(expectedRestrictions)
+  }
+
   private fun getResult(bodyContentSpec: WebTestClient.BodyContentSpec): VisitBookingDetailsDto = objectMapper.readValue(bodyContentSpec.returnResult().responseBody, VisitBookingDetailsDto::class.java)
 
   private fun assertVisitBookingDetails(

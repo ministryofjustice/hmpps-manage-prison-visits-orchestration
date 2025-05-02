@@ -677,13 +677,20 @@ abstract class IntegrationTestBase {
     description = description,
   )
 
-  final fun createOffenderRestrictionDto() = OffenderRestrictionDto(
-    restrictionId = 1,
-    restrictionType = "CLOSED",
-    restrictionTypeDescription = "",
-    startDate = LocalDate.now(),
-    expiryDate = LocalDate.now(),
-    active = true,
+  final fun createOffenderRestrictionDto(
+    restrictionId: Long = 1,
+    restrictionType: String = "CLOSED",
+    restrictionTypeDescription: String = "",
+    startDate: LocalDate = LocalDate.now(),
+    expiryDate: LocalDate? = null,
+    active: Boolean = true,
+  ) = OffenderRestrictionDto(
+    restrictionId = restrictionId,
+    restrictionType = restrictionType,
+    restrictionTypeDescription = restrictionTypeDescription,
+    startDate = startDate,
+    expiryDate = expiryDate,
+    active = active,
   )
 
   final fun createAddressDto(primary: Boolean, noFixedAddress: Boolean = false, street: String): AddressDto = AddressDto(
