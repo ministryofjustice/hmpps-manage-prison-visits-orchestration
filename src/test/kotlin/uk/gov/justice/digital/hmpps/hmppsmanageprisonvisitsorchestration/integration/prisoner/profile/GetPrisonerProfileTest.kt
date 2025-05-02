@@ -49,7 +49,7 @@ class GetPrisonerProfileTest(
     private val DATE_OF_BIRTH = LocalDate.of(2000, 1, 31)
     private const val PRISONER_CATEGORY = "Category - C"
     private const val PRISON_CODE = "MDI"
-    private val alert = AlertDto(comment = "Alert code comment", alertCode = "C1", alertCodeDescription = "Alert Code Desc", alertType = "T", alertTypeDescription = "Type Description", dateCreated = LocalDate.now(), active = true)
+    private val alert = AlertDto(comment = "Alert code comment", alertCode = "C1", alertCodeDescription = "Alert Code Desc", alertType = "T", alertTypeDescription = "Type Description", startDate = LocalDate.now(), active = true)
   }
 
   private final val currentIncentive = createCurrentIncentive()

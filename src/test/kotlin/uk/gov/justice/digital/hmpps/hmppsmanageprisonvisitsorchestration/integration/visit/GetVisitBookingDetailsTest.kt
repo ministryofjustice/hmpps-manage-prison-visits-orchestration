@@ -1077,8 +1077,8 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     assertThat(alertDto.active).isEqualTo(alertResponseDto.active)
     assertThat(alertDto.alertCodeDescription).isEqualTo(alertResponseDto.alertCode.description)
     assertThat(alertDto.comment).isEqualTo(alertResponseDto.description)
-    assertThat(alertDto.dateCreated).isEqualTo(alertResponseDto.createdAt)
-    assertThat(alertDto.dateExpires).isEqualTo(alertResponseDto.activeTo)
+    assertThat(alertDto.startDate).isEqualTo(alertResponseDto.createdAt)
+    assertThat(alertDto.expiryDate).isEqualTo(alertResponseDto.activeTo)
   }
 
   private fun assertVisitors(

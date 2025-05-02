@@ -1,14 +1,14 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils
 
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertResponseDto
 import java.util.Comparator
 
 class Comparators {
   companion object {
-    val alertsComparatorDateUpdatedOrCreatedDateDesc: Comparator<AlertDto> =
-      Comparator { alert1: AlertDto, alert2: AlertDto ->
-        val alert1LastUpdatedOrCreatedDate = alert1.dateUpdated ?: alert1.dateCreated
-        val alert2LastUpdatedOrCreatedDate = alert2.dateUpdated ?: alert2.dateCreated
+    val alertsComparatorDateUpdatedOrCreatedDateDesc: Comparator<AlertResponseDto> =
+      Comparator { alert1: AlertResponseDto, alert2: AlertResponseDto ->
+        val alert1LastUpdatedOrCreatedDate = alert1.lastModifiedAt ?: alert1.createdAt
+        val alert2LastUpdatedOrCreatedDate = alert2.lastModifiedAt ?: alert2.createdAt
         if (alert1 == alert2) {
           0
         } else if (alert1LastUpdatedOrCreatedDate > alert2LastUpdatedOrCreatedDate) {

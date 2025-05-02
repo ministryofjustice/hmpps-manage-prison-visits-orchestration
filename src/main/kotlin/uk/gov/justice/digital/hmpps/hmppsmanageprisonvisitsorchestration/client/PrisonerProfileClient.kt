@@ -50,8 +50,7 @@ class PrisonerProfileClient(
         val visits = prisonerProfileMonos.t4.content.map { visitDto -> VisitSummaryDto(visitDto = visitDto) }
         val prisonerAlerts = prisonerProfileMonos.t5.content.filter {
           predicateFilterSupportedCodes.test(it)
-        }.map { alertResponse -> AlertDto(alertResponse) }
-          .sortedWith(alertsComparatorDateUpdatedOrCreatedDateDesc)
+        }.sortedWith(alertsComparatorDateUpdatedOrCreatedDateDesc).map { alertResponse -> AlertDto(alertResponse) }
 
         val prisonerRestrictions = prisonerProfileMonos.t6.offenderRestrictions ?: emptyList()
 
