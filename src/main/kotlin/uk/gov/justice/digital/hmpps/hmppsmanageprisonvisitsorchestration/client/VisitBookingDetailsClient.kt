@@ -59,8 +59,9 @@ class VisitBookingDetailsClient(
         val prisoner = visitBookingDetailsMono.t2
         val prisonerAlerts = visitBookingDetailsMono.t3.content.filter {
           predicateFilterSupportedCodes.test(it)
-        }.map { alertResponse -> AlertDto(alertResponse) }
-          .sortedWith(alertsComparatorDateUpdatedOrCreatedDateDesc)
+        }.sortedWith(alertsComparatorDateUpdatedOrCreatedDateDesc)
+          .map { alertResponse -> AlertDto(alertResponse) }
+
         val prisonerRestrictions = visitBookingDetailsMono.t4.offenderRestrictions ?: emptyList()
         val allVisitorsForPrisoner = visitBookingDetailsMono.t5
         val events = visitBookingDetailsMono.t6

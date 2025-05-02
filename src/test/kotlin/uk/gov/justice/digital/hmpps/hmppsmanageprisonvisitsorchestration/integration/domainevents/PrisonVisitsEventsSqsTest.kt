@@ -47,6 +47,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.VISITOR_UNAPPROVED_EVENT_TYPE
 import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 private const val TEST_TYPE = "incentives.iep-review.test"
 
@@ -263,10 +264,11 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     val activeAlert = listOf(
       AlertResponseDto(
         AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "SC", description = "Alert Code Desc"),
-        createdAt = LocalDate.of(1995, 12, 3),
+        activeFrom = LocalDate.of(1995, 12, 3),
         activeTo = null,
         active = true,
         description = "Alert code comment",
+        createdAt = LocalDateTime.now(),
       ),
     )
 
@@ -313,10 +315,11 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     val activeAlert = listOf(
       AlertResponseDto(
         AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "SC", description = "Alert Code Desc"),
-        createdAt = LocalDate.of(1995, 12, 3),
+        activeFrom = LocalDate.of(1995, 12, 3),
         activeTo = null,
         active = true,
         description = "Alert code comment",
+        createdAt = LocalDateTime.now(),
       ),
     )
 
@@ -363,10 +366,11 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     val activeAlert = listOf(
       AlertResponseDto(
         AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "C1", description = "Alert Code Desc"),
-        createdAt = LocalDate.of(1995, 12, 3),
+        activeFrom = LocalDate.of(1995, 12, 3),
         activeTo = null,
         active = true,
         description = "Alert code comment",
+        createdAt = LocalDateTime.now(),
       ),
     )
 
@@ -483,17 +487,19 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     val activeAlert = listOf(
       AlertResponseDto(
         AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "SC", description = "Alert Code Desc"),
-        createdAt = LocalDate.of(1995, 12, 3),
+        activeFrom = LocalDate.of(1995, 12, 3),
         activeTo = null,
         active = true,
         description = "Alert code comment",
+        createdAt = LocalDateTime.now(),
       ),
       AlertResponseDto(
         AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "BAD_CODE", description = "Alert Code Desc"),
-        createdAt = LocalDate.of(1995, 12, 3),
+        activeFrom = LocalDate.of(1995, 12, 3),
         activeTo = null,
         active = true,
         description = "Alert code comment",
+        createdAt = LocalDateTime.now(),
       ),
     )
 
