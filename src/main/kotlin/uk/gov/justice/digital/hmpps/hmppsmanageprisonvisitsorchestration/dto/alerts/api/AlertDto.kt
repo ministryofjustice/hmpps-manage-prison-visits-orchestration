@@ -43,9 +43,9 @@ data class AlertDto(
     alertCode = alertResponseDto.alertCode.code,
     alertCodeDescription = alertResponseDto.alertCode.description,
     comment = alertResponseDto.description,
-    startDate = alertResponseDto.createdAt,
+    startDate = alertResponseDto.activeFrom,
     expiryDate = alertResponseDto.activeTo,
     active = alertResponseDto.active,
-    updatedDate = alertResponseDto.lastModifiedAt,
+    updatedDate = alertResponseDto.lastModifiedAt?.toLocalDate(),
   )
 }

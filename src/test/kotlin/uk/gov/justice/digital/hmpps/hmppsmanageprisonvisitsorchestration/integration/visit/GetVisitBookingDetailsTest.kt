@@ -41,6 +41,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @DisplayName("Test for $GET_VISIT_FULL_DETAILS_BY_VISIT_REFERENCE")
 class GetVisitBookingDetailsTest : IntegrationTestBase() {
@@ -106,8 +107,8 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
 
     prison = PrisonRegisterPrisonDto(prisonCode, "Prison-MDI", true)
 
-    alert1 = createAlertResponseDto(alertTypeCode = "T", code = "C1")
-    alert2 = createAlertResponseDto(alertTypeCode = "T1", code = "C2")
+    alert1 = createAlertResponseDto(alertTypeCode = "T", code = "C1", createdAt = LocalDateTime.now(), lastModifiedAt = LocalDateTime.now())
+    alert2 = createAlertResponseDto(alertTypeCode = "T1", code = "C2", createdAt = LocalDateTime.now().minusHours(1), lastModifiedAt = LocalDateTime.now().minusHours(1))
     // this alert code is not relevant for visits
     alert3 = createAlertResponseDto(alertTypeCode = "T1", code = "TEST")
 
@@ -949,21 +950,21 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
 
     // alert 1 - created 11 years back, updated 21 days back
-    val alert1 = createAlertResponseDto(alertTypeCode = "A", lastModifiedAt = LocalDate.now().minusDays(21), createdAt = LocalDate.now().minusYears(10))
+    val alert1 = createAlertResponseDto(alertTypeCode = "A", lastModifiedAt = LocalDateTime.now().minusDays(21), createdAt = LocalDateTime.now().minusYears(10))
     // alert 2 - created 1 year back, updated 1 days back
-    val alert2 = createAlertResponseDto(alertTypeCode = "B", lastModifiedAt = LocalDate.now().minusDays(1), createdAt = LocalDate.now().minusYears(1))
+    val alert2 = createAlertResponseDto(alertTypeCode = "B", lastModifiedAt = LocalDateTime.now().minusDays(1), createdAt = LocalDateTime.now().minusYears(1))
     // alert 3 - created 1 year back, not updated
-    val alert3 = createAlertResponseDto(alertTypeCode = "C", lastModifiedAt = null, createdAt = LocalDate.now().minusYears(1))
+    val alert3 = createAlertResponseDto(alertTypeCode = "C", lastModifiedAt = null, createdAt = LocalDateTime.now().minusYears(1))
     // alert 4 - created 2 year back, not updated
-    val alert4 = createAlertResponseDto(alertTypeCode = "D", lastModifiedAt = null, createdAt = LocalDate.now().minusYears(2))
+    val alert4 = createAlertResponseDto(alertTypeCode = "D", lastModifiedAt = null, createdAt = LocalDateTime.now().minusYears(2))
     // alert 5 - created 1 day back
-    val alert5 = createAlertResponseDto(alertTypeCode = "E", lastModifiedAt = null, createdAt = LocalDate.now().minusDays(1))
+    val alert5 = createAlertResponseDto(alertTypeCode = "E", lastModifiedAt = null, createdAt = LocalDateTime.now().minusDays(1).minusMinutes(1))
     // alert 6 - created 1 year back
-    val alert6 = createAlertResponseDto(alertTypeCode = "F", lastModifiedAt = null, createdAt = LocalDate.now().minusYears(1))
+    val alert6 = createAlertResponseDto(alertTypeCode = "F", lastModifiedAt = null, createdAt = LocalDateTime.now().minusYears(1).minusMinutes(1))
     // alert 7 - updated today, created last month
-    val alert7 = createAlertResponseDto(alertTypeCode = "G", lastModifiedAt = LocalDate.now(), createdAt = LocalDate.now().minusMonths(1))
+    val alert7 = createAlertResponseDto(alertTypeCode = "G", lastModifiedAt = LocalDateTime.now(), createdAt = LocalDateTime.now().minusMonths(1))
     // alert 7 - updated today, created today
-    val alert8 = createAlertResponseDto(alertTypeCode = "H", lastModifiedAt = LocalDate.now(), createdAt = LocalDate.now())
+    val alert8 = createAlertResponseDto(alertTypeCode = "H", lastModifiedAt = LocalDateTime.now().minusMinutes(1), createdAt = LocalDateTime.now().minusMinutes(1))
 
     // expected sort order is alert7, alert8, alert2, alert5,  alert1, alert3, alert6, alert4 - G,H,B,E,A,C,F,D
     val expectedAlerts = listOf(AlertDto(alert7), AlertDto(alert8), AlertDto(alert2), AlertDto(alert5), AlertDto(alert1), AlertDto(alert3), AlertDto(alert6), AlertDto(alert4))
@@ -1077,7 +1078,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     assertThat(alertDto.active).isEqualTo(alertResponseDto.active)
     assertThat(alertDto.alertCodeDescription).isEqualTo(alertResponseDto.alertCode.description)
     assertThat(alertDto.comment).isEqualTo(alertResponseDto.description)
-    assertThat(alertDto.startDate).isEqualTo(alertResponseDto.createdAt)
+    assertThat(alertDto.startDate).isEqualTo(alertResponseDto.activeFrom)
     assertThat(alertDto.expiryDate).isEqualTo(alertResponseDto.activeTo)
   }
 
