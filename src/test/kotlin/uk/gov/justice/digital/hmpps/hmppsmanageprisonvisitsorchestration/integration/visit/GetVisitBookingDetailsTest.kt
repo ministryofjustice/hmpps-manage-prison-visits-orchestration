@@ -41,6 +41,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @DisplayName("Test for $GET_VISIT_FULL_DETAILS_BY_VISIT_REFERENCE")
 class GetVisitBookingDetailsTest : IntegrationTestBase() {
@@ -106,8 +107,8 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
 
     prison = PrisonRegisterPrisonDto(prisonCode, "Prison-MDI", true)
 
-    alert1 = createAlertResponseDto(alertTypeCode = "T", code = "C1")
-    alert2 = createAlertResponseDto(alertTypeCode = "T1", code = "C2")
+    alert1 = createAlertResponseDto(alertTypeCode = "T", code = "C1", createdAt = LocalDateTime.now(), lastModifiedAt = LocalDateTime.now())
+    alert2 = createAlertResponseDto(alertTypeCode = "T1", code = "C2", createdAt = LocalDateTime.now().minusHours(1), lastModifiedAt = LocalDateTime.now().minusHours(1))
     // this alert code is not relevant for visits
     alert3 = createAlertResponseDto(alertTypeCode = "T1", code = "TEST")
 
@@ -934,6 +935,55 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
   }
 
+  @Test
+  fun `when prisoner has alerts on call to get visit booking details these alerts are sorted by updatedDate and then by createdDate`() {
+    // Given
+    val reference = "aa-bb-cc-dd"
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
+    val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors)
+    val contactsList = listOf(visitor1, visitor2, visitor3)
+    val eventList = listOf(eventAudit1, eventAudit2, eventAudit3, eventAudit4, eventAudit5)
+    val notifications = listOf(notification1, notification2)
+
+    visitSchedulerMockServer.stubGetVisit(reference, visit)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
+
+    // alert 1 - created 11 years back, updated 21 days back
+    val alert1 = createAlertResponseDto(alertTypeCode = "A", lastModifiedAt = LocalDateTime.now().minusDays(21), createdAt = LocalDateTime.now().minusYears(10))
+    // alert 2 - created 1 year back, updated 1 days back
+    val alert2 = createAlertResponseDto(alertTypeCode = "B", lastModifiedAt = LocalDateTime.now().minusDays(1), createdAt = LocalDateTime.now().minusYears(1))
+    // alert 3 - created 1 year back, not updated
+    val alert3 = createAlertResponseDto(alertTypeCode = "C", lastModifiedAt = null, createdAt = LocalDateTime.now().minusYears(1))
+    // alert 4 - created 2 year back, not updated
+    val alert4 = createAlertResponseDto(alertTypeCode = "D", lastModifiedAt = null, createdAt = LocalDateTime.now().minusYears(2))
+    // alert 5 - created 1 day back
+    val alert5 = createAlertResponseDto(alertTypeCode = "E", lastModifiedAt = null, createdAt = LocalDateTime.now().minusDays(1).minusMinutes(1))
+    // alert 6 - created 1 year back
+    val alert6 = createAlertResponseDto(alertTypeCode = "F", lastModifiedAt = null, createdAt = LocalDateTime.now().minusYears(1).minusMinutes(1))
+    // alert 7 - updated today, created last month
+    val alert7 = createAlertResponseDto(alertTypeCode = "G", lastModifiedAt = LocalDateTime.now(), createdAt = LocalDateTime.now().minusMonths(1))
+    // alert 7 - updated today, created today
+    val alert8 = createAlertResponseDto(alertTypeCode = "H", lastModifiedAt = LocalDateTime.now().minusMinutes(1), createdAt = LocalDateTime.now().minusMinutes(1))
+
+    // expected sort order is alert7, alert8, alert2, alert5,  alert1, alert3, alert6, alert4 - G,H,B,E,A,C,F,D
+    val expectedAlerts = listOf(AlertDto(alert7), AlertDto(alert8), AlertDto(alert2), AlertDto(alert5), AlertDto(alert1), AlertDto(alert3), AlertDto(alert6), AlertDto(alert4))
+    alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3, alert4, alert5, alert6, alert7, alert8))
+    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, approvedVisitorsOnly = false, null, null, contactsList)
+    visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
+    visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
+    manageUsersApiMockServer.stubGetUserDetails("test-user", "Test User")
+
+    // When
+    val responseSpec = callGetVisitFullDetailsByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isOk
+    val visitBookingResponse = getResult(responseSpec.expectBody())
+    assertThat(visitBookingResponse.prisoner.prisonerAlerts).isEqualTo(expectedAlerts)
+  }
+
   private fun getResult(bodyContentSpec: WebTestClient.BodyContentSpec): VisitBookingDetailsDto = objectMapper.readValue(bodyContentSpec.returnResult().responseBody, VisitBookingDetailsDto::class.java)
 
   private fun assertVisitBookingDetails(
@@ -1028,8 +1078,8 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     assertThat(alertDto.active).isEqualTo(alertResponseDto.active)
     assertThat(alertDto.alertCodeDescription).isEqualTo(alertResponseDto.alertCode.description)
     assertThat(alertDto.comment).isEqualTo(alertResponseDto.description)
-    assertThat(alertDto.dateCreated).isEqualTo(alertResponseDto.createdAt)
-    assertThat(alertDto.dateExpires).isEqualTo(alertResponseDto.activeTo)
+    assertThat(alertDto.startDate).isEqualTo(alertResponseDto.activeFrom)
+    assertThat(alertDto.expiryDate).isEqualTo(alertResponseDto.activeTo)
   }
 
   private fun assertVisitors(

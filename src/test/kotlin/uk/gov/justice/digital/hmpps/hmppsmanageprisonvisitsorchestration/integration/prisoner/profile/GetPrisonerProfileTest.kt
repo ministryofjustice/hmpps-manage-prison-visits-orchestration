@@ -49,7 +49,7 @@ class GetPrisonerProfileTest(
     private val DATE_OF_BIRTH = LocalDate.of(2000, 1, 31)
     private const val PRISONER_CATEGORY = "Category - C"
     private const val PRISON_CODE = "MDI"
-    private val alert = AlertDto(comment = "Alert code comment", alertCode = "C1", alertCodeDescription = "Alert Code Desc", alertType = "T", alertTypeDescription = "Type Description", dateCreated = LocalDate.now(), active = true)
+    private val alert = AlertDto(comment = "Alert code comment", alertCode = "C1", alertCodeDescription = "Alert Code Desc", alertType = "T", alertTypeDescription = "Type Description", startDate = LocalDate.now(), active = true)
   }
 
   private final val currentIncentive = createCurrentIncentive()
@@ -687,6 +687,58 @@ class GetPrisonerProfileTest(
 
     // Then
     responseSpec.expectStatus().is5xxServerError
+
+    verifyExternalAPIClientCalls()
+  }
+
+  @Test
+  fun `when prisoner has alerts these alerts are sorted by updatedDate and then by createdDate`() {
+    // Given
+
+    // alert 1 - created 11 years back, updated 21 days back
+    val alert1 = createAlertResponseDto(alertTypeCode = "A", lastModifiedAt = LocalDateTime.now().minusDays(21), createdAt = LocalDateTime.now().minusYears(10))
+    // alert 2 - created 1 year back, updated 1 days back
+    val alert2 = createAlertResponseDto(alertTypeCode = "B", lastModifiedAt = LocalDateTime.now().minusDays(1), createdAt = LocalDateTime.now().minusYears(1))
+    // alert 3 - created 1 year back, not updated
+    val alert3 = createAlertResponseDto(alertTypeCode = "C", lastModifiedAt = null, createdAt = LocalDateTime.now().minusYears(1))
+    // alert 4 - created 2 year back, not updated
+    val alert4 = createAlertResponseDto(alertTypeCode = "D", lastModifiedAt = null, createdAt = LocalDateTime.now().minusYears(2))
+    // alert 5 - created 1 day back
+    val alert5 = createAlertResponseDto(alertTypeCode = "E", lastModifiedAt = null, createdAt = LocalDateTime.now().minusDays(1).minusMinutes(1))
+    // alert 6 - created 1 year back
+    val alert6 = createAlertResponseDto(alertTypeCode = "F", lastModifiedAt = null, createdAt = LocalDateTime.now().minusYears(1).minusMinutes(1))
+    // alert 7 - updated today, created last month
+    val alert7 = createAlertResponseDto(alertTypeCode = "G", lastModifiedAt = LocalDateTime.now(), createdAt = LocalDateTime.now().minusMonths(1))
+    // alert 7 - updated today, created today
+    val alert8 = createAlertResponseDto(alertTypeCode = "H", lastModifiedAt = LocalDateTime.now().minusMinutes(1), createdAt = LocalDateTime.now().minusMinutes(1))
+
+    // expected sort order is alert7, alert8, alert2, alert5,  alert1, alert3, alert6, alert4 - G,H,B,E,A,C,F,D
+    val expectedAlerts = listOf(AlertDto(alert7), AlertDto(alert8), AlertDto(alert2), AlertDto(alert5), AlertDto(alert1), AlertDto(alert3), AlertDto(alert6), AlertDto(alert4))
+
+    prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
+    prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
+    prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
+    alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alert1, alert2, alert3, alert4, alert5, alert6, alert7, alert8))
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, contactsDto)
+    prisonRegisterMockServer.stubGetPrisonNames(prisons)
+    prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, listOf(prisonerRestrictionDto)))
+    stubGetVisits(listOf(visit1, visit2))
+
+    // When
+    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val prisonerProfile = getResults(returnResult)
+
+    assertPrisonerDtoDetails(prisonerProfile, prisonerDto)
+    Assertions.assertThat(prisonerProfile.incentiveLevel).isEqualTo(prisonerDto.currentIncentive!!.level.description)
+    assertInmateDetails(prisonerProfile, inmateDetailDto)
+    Assertions.assertThat(prisonerProfile.visitBalances).isEqualTo(visitBalancesDto)
+    Assertions.assertThat(prisonerProfile.visits.size).isEqualTo(2)
+    Assertions.assertThat(prisonerProfile.alerts).isEqualTo(expectedAlerts)
+    Assertions.assertThat(prisonerProfile.prisonerRestrictions).isEqualTo(listOf(prisonerRestrictionDto))
+    assertVisits(prisonerProfile, listOf(visit1, visit2))
 
     verifyExternalAPIClientCalls()
   }
