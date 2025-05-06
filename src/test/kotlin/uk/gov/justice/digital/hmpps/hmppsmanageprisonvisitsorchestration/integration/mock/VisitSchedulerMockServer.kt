@@ -483,6 +483,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     dateRange: DateRange? = null,
     excludedApplicationReference: String? = null,
     username: String? = null,
+    userType: UserType,
   ): DateRange {
     val dateRangeToUse = dateRange ?: run {
       val today = LocalDate.now()
@@ -501,6 +502,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
             toDate = dateRangeToUse.toDate,
             excludedApplicationReference = excludedApplicationReference,
             username = username,
+            userType = userType,
           ).joinToString("&")
         }",
       ).willReturn(
@@ -513,9 +515,9 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     return dateRangeToUse
   }
 
-  fun stubGetVisitSessions(prisonId: String, prisonerId: String, visitSessions: List<VisitSessionDto>) {
+  fun stubGetVisitSessions(prisonId: String, prisonerId: String, visitSessions: List<VisitSessionDto>, userType: UserType) {
     stubFor(
-      get("/visit-sessions?prisonId=$prisonId&prisonerId=$prisonerId")
+      get("/visit-sessions?prisonId=$prisonId&prisonerId=$prisonerId&userType=${userType.name}")
         .willReturn(
           createJsonResponseBuilder()
             .withStatus(HttpStatus.OK.value())
@@ -815,6 +817,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     toDate: LocalDate,
     excludedApplicationReference: String?,
     username: String?,
+    userType: UserType,
   ): List<String> {
     val queryParams = ArrayList<String>()
     queryParams.add("prisonId=$prisonCode")
@@ -828,6 +831,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     username?.let {
       queryParams.add("username=$username")
     }
+    queryParams.add("userType=${userType.name}")
     return queryParams
   }
 }
