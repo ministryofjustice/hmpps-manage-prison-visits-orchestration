@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitNoteDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorSupportDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
@@ -52,9 +53,9 @@ data class ApplicationDto(
   @Schema(description = "Is the application reserved", example = "true", required = true)
   @field:NotNull
   val reserved: Boolean,
-  @Schema(description = "Is the application complete", example = "true", required = true)
+  @Schema(description = "Status of the application", example = "IN_PROGRESS", required = true)
   @field:NotNull
-  val completed: Boolean,
+  val applicationStatus: ApplicationStatus,
   @Schema(description = "User type", example = "STAFF", required = true)
   @field:NotNull
   val userType: UserType,
