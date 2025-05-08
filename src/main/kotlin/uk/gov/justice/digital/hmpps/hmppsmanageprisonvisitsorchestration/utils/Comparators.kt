@@ -16,7 +16,8 @@ class Comparators {
         } else {
           1
         }
-      }
+      }.thenByDescending { it.activeFrom }
+        .thenComparing(AlertResponseDto::activeTo, nullsFirst(reverseOrder()))
 
     val restrictionsComparatorDatCreatedDesc: Comparator<OffenderRestrictionDto> = compareByDescending<OffenderRestrictionDto> { it.startDate }.thenByDescending { it.expiryDate }
   }

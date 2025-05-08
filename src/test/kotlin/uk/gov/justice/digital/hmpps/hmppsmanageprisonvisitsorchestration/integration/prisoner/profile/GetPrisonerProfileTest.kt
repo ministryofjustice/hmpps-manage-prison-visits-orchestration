@@ -711,14 +711,20 @@ class GetPrisonerProfileTest(
     val alert7 = createAlertResponseDto(alertTypeCode = "G", lastModifiedAt = LocalDateTime.now(), createdAt = LocalDateTime.now().minusMonths(1))
     // alert 7 - updated today, created today
     val alert8 = createAlertResponseDto(alertTypeCode = "H", lastModifiedAt = LocalDateTime.now().minusMinutes(1), createdAt = LocalDateTime.now().minusMinutes(1))
+    // alert 9 - created 3 years back, not updated, active to is 2 months from today
+    val alert9 = createAlertResponseDto(alertTypeCode = "I", lastModifiedAt = null, createdAt = LocalDateTime.now().minusYears(3), activeFrom = LocalDate.now().minusYears(3), activeTo = LocalDate.now().plusMonths(2))
+    // alert 10 - created 3 years back, not updated, active to is 3 months from today
+    val alert10 = createAlertResponseDto(alertTypeCode = "J", lastModifiedAt = null, createdAt = LocalDateTime.now().minusYears(3), activeFrom = LocalDate.now().minusYears(3), activeTo = LocalDate.now().plusMonths(3))
+    // alert 11 - created 3 years back, not updated, active from is 2 years back
+    val alert11 = createAlertResponseDto(alertTypeCode = "K", lastModifiedAt = null, createdAt = LocalDateTime.now().minusYears(3), activeFrom = LocalDate.now().minusYears(2), activeTo = null)
 
-    // expected sort order is alert7, alert8, alert2, alert5,  alert1, alert3, alert6, alert4 - G,H,B,E,A,C,F,D
-    val expectedAlerts = listOf(AlertDto(alert7), AlertDto(alert8), AlertDto(alert2), AlertDto(alert5), AlertDto(alert1), AlertDto(alert3), AlertDto(alert6), AlertDto(alert4))
+    // expected sort order is alert7, alert8, alert2, alert5,  alert1, alert3, alert6, alert4, alert11, alert10, alert9 - G,H,B,E,A,C,F,D,K,J,I
+    val expectedAlerts = listOf(AlertDto(alert7), AlertDto(alert8), AlertDto(alert2), AlertDto(alert5), AlertDto(alert1), AlertDto(alert3), AlertDto(alert6), AlertDto(alert4), AlertDto(alert11), AlertDto(alert10), AlertDto(alert9))
 
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     prisonApiMockServer.stubGetVisitBalances(PRISONER_ID, visitBalancesDto)
-    alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alert1, alert2, alert3, alert4, alert5, alert6, alert7, alert8))
+    alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alert1, alert2, alert3, alert4, alert5, alert6, alert7, alert8, alert9, alert10, alert11))
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, approvedVisitorsOnly = false, null, null, contactsDto)
     prisonRegisterMockServer.stubGetPrisonNames(prisons)
     prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, listOf(prisonerRestrictionDto)))
