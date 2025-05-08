@@ -25,13 +25,13 @@ data class AlertDto(
     description = "Date of the alert, which might differ to the date it was created",
     example = "2019-08-20",
   )
-  val dateCreated: LocalDate,
+  val startDate: LocalDate,
 
   @Schema(description = "Date the alert expires", example = "2020-08-20")
-  val dateExpires: LocalDate? = null,
+  val expiryDate: LocalDate? = null,
 
   @Schema(description = "Date the alert was last updated.", example = "2020-08-20")
-  val dateUpdated: LocalDate? = null,
+  val updatedDate: LocalDate? = null,
 
   @Schema(required = true, description = "True / False based on alert status", example = "false")
   val active: Boolean = false,
@@ -43,9 +43,9 @@ data class AlertDto(
     alertCode = alertResponseDto.alertCode.code,
     alertCodeDescription = alertResponseDto.alertCode.description,
     comment = alertResponseDto.description,
-    dateCreated = alertResponseDto.createdAt,
-    dateExpires = alertResponseDto.activeTo,
+    startDate = alertResponseDto.activeFrom,
+    expiryDate = alertResponseDto.activeTo,
     active = alertResponseDto.active,
-    dateUpdated = alertResponseDto.lastModifiedAt,
+    updatedDate = alertResponseDto.lastModifiedAt?.toLocalDate(),
   )
 }
