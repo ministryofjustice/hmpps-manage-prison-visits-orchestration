@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.ManageUsersService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.ManageUsersService.Companion.userFullNameFilterPredicate
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.Comparators.Companion.alertsComparatorDateUpdatedOrCreatedDateDesc
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.Comparators.Companion.restrictionsComparatorDatCreatedDesc
 import java.time.Duration
 import kotlin.jvm.optionals.getOrNull
 
@@ -62,7 +63,9 @@ class VisitBookingDetailsClient(
         }.sortedWith(alertsComparatorDateUpdatedOrCreatedDateDesc)
           .map { alertResponse -> AlertDto(alertResponse) }
 
-        val prisonerRestrictions = visitBookingDetailsMono.t4.offenderRestrictions ?: emptyList()
+        val prisonerRestrictions = (visitBookingDetailsMono.t4.offenderRestrictions ?: emptyList()).sortedWith(
+          restrictionsComparatorDatCreatedDesc,
+        )
         val allVisitorsForPrisoner = visitBookingDetailsMono.t5
         val events = visitBookingDetailsMono.t6
         val notifications = visitBookingDetailsMono.t7
