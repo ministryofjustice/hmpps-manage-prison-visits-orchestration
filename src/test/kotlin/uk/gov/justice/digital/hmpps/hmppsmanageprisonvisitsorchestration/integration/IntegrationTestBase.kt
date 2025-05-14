@@ -22,12 +22,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.con
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.RestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitorDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonNameDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.CurrentIncentive
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitExternalSystemDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
@@ -36,6 +38,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.CreateApplicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.OutcomeStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
@@ -225,6 +228,7 @@ abstract class IntegrationTestBase {
     visitors: List<VisitorDto>? = null,
     contact: ContactDto? = ContactDto("Jane Doe", "01234567890", "email@example.com"),
     firstBookedDate: LocalDateTime? = null,
+    visitExternalSystemDetails: VisitExternalSystemDetails? = null,
   ): VisitDto = VisitDto(
     applicationReference = applicationReference,
     sessionTemplateReference = sessionTemplateReference,
@@ -243,6 +247,7 @@ abstract class IntegrationTestBase {
     visitors = visitors,
     visitContact = contact,
     firstBookedDateTime = firstBookedDate,
+    visitExternalSystemDetails = visitExternalSystemDetails,
   )
 
   fun createCreateApplicationDto(prisonerId: String, sessionTemplateReference: String = "ref.ref.ref", sessionDate: LocalDate? = LocalDate.now()): CreateApplicationDto {
@@ -423,12 +428,13 @@ abstract class IntegrationTestBase {
     sessionRestriction: SessionRestriction,
     visitorIds: List<Long>? = null,
     withAppointmentsCheck: Boolean,
-    authHttpHeaders: (HttpHeaders) -> Unit,
     excludedApplicationReference: String? = null,
     pvbAdvanceFromDateByDays: Int? = null,
     fromDateOverride: Int? = null,
     toDateOverride: Int? = null,
     currentUser: String? = null,
+    userType: UserType? = null,
+    authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     val uri = "/visit-sessions/available"
 
@@ -443,6 +449,7 @@ abstract class IntegrationTestBase {
         fromDateOverride = fromDateOverride,
         toDateOverride = toDateOverride,
         pvbAdvanceFromDateByDays = pvbAdvanceFromDateByDays,
+        userType = userType,
       ).joinToString("&")
 
     return webTestClient.get().uri("$uri?$uriParams")
@@ -570,6 +577,7 @@ abstract class IntegrationTestBase {
     fromDateOverride: Int? = null,
     toDateOverride: Int? = null,
     currentUser: String? = null,
+    userType: UserType? = null,
   ): List<String> {
     val queryParams = java.util.ArrayList<String>()
     queryParams.add("prisonId=$prisonCode")
@@ -594,6 +602,9 @@ abstract class IntegrationTestBase {
     }
     currentUser?.let {
       queryParams.add("currentUser=$currentUser")
+    }
+    userType?.let {
+      queryParams.add("userType=${userType.name}")
     }
 
     return queryParams
@@ -640,16 +651,20 @@ abstract class IntegrationTestBase {
       code = "C1",
       description = "Alert Code Desc",
     ),
-    createdAt: LocalDate = LocalDate.now(),
+    activeFrom: LocalDate = LocalDate.now(),
+    createdAt: LocalDateTime = LocalDateTime.now(),
+    lastModifiedAt: LocalDateTime? = null,
     activeTo: LocalDate? = null,
     active: Boolean = true,
     description: String = "Alert code comment",
   ): AlertResponseDto = AlertResponseDto(
-    alertCodeSummary,
-    createdAt,
-    activeTo,
-    active,
-    description,
+    alertCode = alertCodeSummary,
+    activeFrom = activeFrom,
+    createdAt = createdAt,
+    lastModifiedAt = lastModifiedAt,
+    activeTo = activeTo,
+    active = active,
+    description = description,
   )
 
   final fun createAlertResponseDto(
@@ -657,16 +672,30 @@ abstract class IntegrationTestBase {
     alertTypeDescription: String = "Type Description",
     code: String = "C1",
     alertCodeDescription: String = "Alert Code Desc",
-    createdAt: LocalDate = LocalDate.now(),
+    createdAt: LocalDateTime = LocalDateTime.now(),
+    activeFrom: LocalDate = LocalDate.now(),
     activeTo: LocalDate? = null,
+    lastModifiedAt: LocalDateTime? = null,
     active: Boolean = true,
     description: String = "Alert code comment",
   ): AlertResponseDto = AlertResponseDto(
     AlertCodeSummaryDto(alertTypeCode, alertTypeDescription, code, alertCodeDescription),
-    createdAt,
-    activeTo,
-    active,
-    description,
+    activeFrom = activeFrom,
+    createdAt = createdAt,
+    lastModifiedAt = lastModifiedAt,
+    activeTo = activeTo,
+    active = active,
+    description = description,
+
+  )
+
+  final fun createOffenderRestrictionDto() = OffenderRestrictionDto(
+    restrictionId = 1,
+    restrictionType = "CLOSED",
+    restrictionTypeDescription = "",
+    startDate = LocalDate.now(),
+    expiryDate = LocalDate.now(),
+    active = true,
   )
 
   final fun createAddressDto(primary: Boolean, noFixedAddress: Boolean = false, street: String): AddressDto = AddressDto(

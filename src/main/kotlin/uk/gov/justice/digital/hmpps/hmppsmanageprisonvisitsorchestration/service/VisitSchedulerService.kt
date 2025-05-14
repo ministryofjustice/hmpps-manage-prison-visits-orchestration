@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationPrisonerVisitsNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitBookingDetailsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ActionedByDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
@@ -31,9 +30,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerRestrictionChangeNotificationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorApprovedUnapprovedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionUpsertedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.NonAssociationChangedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PersonRestrictionUpsertedInfo
@@ -62,34 +61,18 @@ class VisitSchedulerService(
 
   fun getVisitByReference(reference: String): VisitDto? = visitSchedulerClient.getVisitByReference(reference)
 
+  fun getVisitReferenceByClientReference(clientReference: String): List<String?>? {
+    val visitReferences = visitSchedulerClient.getVisitReferenceByClientReference(clientReference)
+    if (visitReferences.isNullOrEmpty()) {
+      LOG.info("No visit found for client reference: $clientReference")
+      throw NotFoundException("No visit found for client reference: $clientReference")
+    }
+    return visitReferences
+  }
+
   fun getFullVisitBookingDetailsByReference(reference: String): VisitBookingDetailsDto? {
     LOG.info("Retrieving visit booking details for visit reference: $reference")
     return visitBookingDetailsClient.getFullVisitBookingDetails(reference)
-  }
-
-  /**
-   * Gets further visit details like usernames, contact details etc. for a given visit reference.
-   */
-  fun getVisitHistoryByReference(
-    reference: String,
-  ): VisitHistoryDetailsDto? {
-    val visit = visitSchedulerClient.getVisitByReference(reference)
-
-    visit?.let {
-      val eventAuditList = visitSchedulerClient.getVisitHistoryByReference(reference)
-      if (!eventAuditList.isNullOrEmpty()) {
-        val eventAuditListWithNames = eventAuditDetailsService.getEventAuditDetailsWithActionedByUserNames(eventAuditList)
-
-        return VisitHistoryDetailsDto(
-          eventsAudit = eventAuditListWithNames,
-          visit = visit,
-        )
-      }
-      return VisitHistoryDetailsDto(
-        visit = visit,
-      )
-    }
-    return null
   }
 
   fun visitsSearch(visitSearchRequestFilter: VisitSearchRequestFilter): Page<VisitDto>? {
@@ -113,18 +96,10 @@ class VisitSchedulerService(
 
   fun findFutureVisitsForPrisoner(prisonerId: String): List<VisitDto> = visitSchedulerClient.getFutureVisitsForPrisoner(prisonerId) ?: emptyList()
 
-  fun bookVisit(applicationReference: String, requestDto: BookingOrchestrationRequestDto): VisitDto? {
-    val existingBooking = visitSchedulerClient.getBookedVisitByApplicationReference(applicationReference)
-    return existingBooking?.let {
-      visitSchedulerClient.updateBookedVisit(
-        applicationReference,
-        BookingRequestDto(requestDto.actionedBy, requestDto.applicationMethodType, requestDto.allowOverBooking, requestDto.userType),
-      )
-    } ?: visitSchedulerClient.bookVisitSlot(
-      applicationReference,
-      BookingRequestDto(requestDto.actionedBy, requestDto.applicationMethodType, requestDto.allowOverBooking, requestDto.userType),
-    )
-  }
+  fun bookVisit(applicationReference: String, requestDto: BookingOrchestrationRequestDto): VisitDto? = visitSchedulerClient.bookVisitSlot(
+    applicationReference,
+    BookingRequestDto(requestDto.actionedBy, requestDto.applicationMethodType, requestDto.allowOverBooking, requestDto.userType),
+  )
 
   fun updateVisit(applicationReference: String, requestDto: BookingOrchestrationRequestDto): VisitDto? = visitSchedulerClient.updateBookedVisit(
     applicationReference,
@@ -203,10 +178,6 @@ class VisitSchedulerService(
     }
   }
 
-  fun getNotificationsTypesForBookingReference(reference: String): List<NotificationEventType>? = visitSchedulerClient.getNotificationsTypesForBookingReference(reference)
-
-  fun getNotificationEventsForBookingReference(reference: String): List<VisitNotificationEventDto>? = visitSchedulerClient.getNotificationEventsForBookingReference(reference)
-
   private fun mapVisitDtoToOrchestrationVisitDto(visits: List<VisitDto>?): List<OrchestrationVisitDto> {
     val prisonerIds = visits?.map { it.prisonerId }?.toSet() ?: emptySet()
 
@@ -225,5 +196,6 @@ class VisitSchedulerService(
     UserType.STAFF -> actionedByDto.userName!!
     UserType.PUBLIC -> actionedByDto.bookerReference!!
     UserType.SYSTEM -> ""
+    UserType.PRISONER -> actionedByDto.userName!!
   }
 }

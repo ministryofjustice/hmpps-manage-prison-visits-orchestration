@@ -7,8 +7,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterContactDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.IsExcludeDateDto
@@ -38,13 +38,18 @@ class PrisonService(
     return PrisonDto(visitSchedulerPrison, prisonRegisterPrison, prisonRegisterPrisonContractDetails)
   }
 
-  fun getVSIPPrison(prisonCode: String): VisitSchedulerPrisonDto = visitSchedulerClient.getPrison(prisonCode)
-
-  fun isActive(prison: VisitSchedulerPrisonDto): Boolean = prison.active
-
-  fun isActive(prison: VisitSchedulerPrisonDto, userType: UserType): Boolean = prison.clients.firstOrNull { it.userType == userType }?.active ?: false
-
   fun getSupportedPrisons(type: UserType): List<String> = visitSchedulerClient.getSupportedPrisons(type)
+
+  fun getSupportedPrisonsDetails(type: UserType): List<PrisonRegisterPrisonDto> {
+    val supportedPrisonIds = visitSchedulerClient.getSupportedPrisons(type)
+    val supportedPrisons = if (supportedPrisonIds.isNotEmpty()) {
+      prisonRegisterClient.prisonsByIds(supportedPrisonIds) ?: emptyList()
+    } else {
+      emptyList()
+    }
+
+    return supportedPrisons.sortedBy { it.prisonName.uppercase() }
+  }
 
   fun getFutureExcludeDatesForPrison(prisonCode: String): List<ExcludeDateDto> {
     val excludeDates = getExcludeDatesForPrison(prisonCode)

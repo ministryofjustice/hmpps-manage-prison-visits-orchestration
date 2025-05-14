@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AlertsService.Companion.predicateFilterSupportedCodes
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.Comparators.Companion.alertsComparatorDateUpdatedOrCreatedDateDesc
 import java.time.Duration
 
 @Component
@@ -39,14 +40,19 @@ class PrisonerProfileClient(
     val visitBalancesMono = prisonApiClient.getVisitBalancesAsMono(prisonerId)
     val visitSchedulerMono = visitSchedulerClient.getVisitsAsMono(visitSearchRequestFilter)
     val alertsMono = alertsApiClient.getPrisonerAlertsAsMono(prisonerId)
+    val prisonerRestrictionsMono = prisonApiClient.getPrisonerRestrictionsAsMono(prisonerId)
 
-    return Mono.zip(prisonerMono, inmateDetailMono, visitBalancesMono, visitSchedulerMono, alertsMono)
+    return Mono.zip(prisonerMono, inmateDetailMono, visitBalancesMono, visitSchedulerMono, alertsMono, prisonerRestrictionsMono)
       .map { prisonerProfileMonos ->
         val prisoner = prisonerProfileMonos.t1 ?: throw InvalidPrisonerProfileException("Unable to retrieve offender details from Prisoner Search API")
         val inmateDetails = prisonerProfileMonos.t2 ?: throw InvalidPrisonerProfileException("Unable to retrieve inmate details from Prison API")
         val visitBalances = if (prisonerProfileMonos.t3.isEmpty) null else prisonerProfileMonos.t3.get()
         val visits = prisonerProfileMonos.t4.content.map { visitDto -> VisitSummaryDto(visitDto = visitDto) }
-        val prisonerAlerts = prisonerProfileMonos.t5.content.filter { predicateFilterSupportedCodes.test(it) }.map { alertResponse -> AlertDto(alertResponse) }
+        val prisonerAlerts = prisonerProfileMonos.t5.content.filter {
+          predicateFilterSupportedCodes.test(it)
+        }.sortedWith(alertsComparatorDateUpdatedOrCreatedDateDesc).map { alertResponse -> AlertDto(alertResponse) }
+
+        val prisonerRestrictions = prisonerProfileMonos.t6.offenderRestrictions ?: emptyList()
 
         PrisonerProfileDto(
           prisoner,
@@ -54,6 +60,7 @@ class PrisonerProfileClient(
           visitBalances,
           visits,
           prisonerAlerts,
+          prisonerRestrictions,
         )
       }
       .block(apiTimeout)?.also { prisonerProfile ->

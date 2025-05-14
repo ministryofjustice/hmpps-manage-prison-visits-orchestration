@@ -1,8 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums
 
-enum class UserType {
-  STAFF,
-  PUBLIC,
-  SYSTEM,
-  PRISONER,
+enum class BookerPrisonerRegistrationErrorCodes : ValidationErrorCodes {
+  FAILED_REGISTRATION,
 }
