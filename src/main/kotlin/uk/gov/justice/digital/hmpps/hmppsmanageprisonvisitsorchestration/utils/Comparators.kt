@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils
 
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertResponseDto
-import java.util.Comparator
 
 class Comparators {
   companion object {
@@ -16,6 +15,7 @@ class Comparators {
         } else {
           1
         }
-      }
+      }.thenByDescending { it.activeFrom }
+        .thenComparing(AlertResponseDto::activeTo, nullsFirst(reverseOrder()))
   }
 }
