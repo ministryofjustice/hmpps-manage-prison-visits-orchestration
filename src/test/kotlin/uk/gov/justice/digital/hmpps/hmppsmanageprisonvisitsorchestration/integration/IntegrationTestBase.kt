@@ -39,6 +39,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.OutcomeStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
@@ -429,12 +430,13 @@ abstract class IntegrationTestBase {
     sessionRestriction: SessionRestriction,
     visitorIds: List<Long>? = null,
     withAppointmentsCheck: Boolean,
-    authHttpHeaders: (HttpHeaders) -> Unit,
     excludedApplicationReference: String? = null,
     pvbAdvanceFromDateByDays: Int? = null,
     fromDateOverride: Int? = null,
     toDateOverride: Int? = null,
     currentUser: String? = null,
+    userType: UserType? = null,
+    authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     val uri = "/visit-sessions/available"
 
@@ -449,6 +451,7 @@ abstract class IntegrationTestBase {
         fromDateOverride = fromDateOverride,
         toDateOverride = toDateOverride,
         pvbAdvanceFromDateByDays = pvbAdvanceFromDateByDays,
+        userType = userType,
       ).joinToString("&")
 
     return webTestClient.get().uri("$uri?$uriParams")
@@ -576,6 +579,7 @@ abstract class IntegrationTestBase {
     fromDateOverride: Int? = null,
     toDateOverride: Int? = null,
     currentUser: String? = null,
+    userType: UserType? = null,
   ): List<String> {
     val queryParams = java.util.ArrayList<String>()
     queryParams.add("prisonId=$prisonCode")
@@ -600,6 +604,9 @@ abstract class IntegrationTestBase {
     }
     currentUser?.let {
       queryParams.add("currentUser=$currentUser")
+    }
+    userType?.let {
+      queryParams.add("userType=${userType.name}")
     }
 
     return queryParams

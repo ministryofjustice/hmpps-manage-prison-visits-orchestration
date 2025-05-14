@@ -91,14 +91,14 @@ class VisitSchedulerClient(
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono<List<VisitDto>>()
-    .blockOptional(apiTimeout).orElseGet { listOf<VisitDto>() }
+    .blockOptional(apiTimeout).orElseGet { listOf() }
 
   fun getCancelledPublicVisitsByBookerReference(bookerReference: String): List<VisitDto> = webClient.get()
     .uri(GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono<List<VisitDto>>()
-    .blockOptional(apiTimeout).orElseGet { listOf<VisitDto>() }
+    .blockOptional(apiTimeout).orElseGet { listOf() }
 
   fun getFuturePublicBookedVisitsByBookerReference(bookerReference: String): List<VisitDto> = webClient.get()
     .uri(GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
@@ -250,9 +250,16 @@ class VisitSchedulerClient(
     .retrieve()
     .bodyToMono<VisitDto>().block(apiTimeout)
 
-  fun getVisitSessions(prisonId: String, prisonerId: String?, min: Int?, max: Int?, username: String?): List<VisitSessionDto>? = webClient.get()
+  fun getVisitSessions(
+    prisonId: String,
+    prisonerId: String?,
+    min: Int?,
+    max: Int?,
+    username: String?,
+    userType: UserType,
+  ): List<VisitSessionDto>? = webClient.get()
     .uri("/visit-sessions") {
-      visitSessionsUriBuilder(prisonId, prisonerId, min, max, username, it).build()
+      visitSessionsUriBuilder(prisonId, prisonerId, min, max, username, userType, it).build()
     }
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
@@ -265,12 +272,13 @@ class VisitSchedulerClient(
     dateRange: DateRange,
     excludedApplicationReference: String? = null,
     username: String? = null,
+    userType: UserType,
   ): List<AvailableVisitSessionDto> {
     val uri = "/visit-sessions/available"
 
     return webClient.get()
       .uri(uri) {
-        visitAvailableSessionsUriBuilder(it, prisonId, prisonerId, sessionRestriction, dateRange, excludedApplicationReference, username).build()
+        visitAvailableSessionsUriBuilder(it, prisonId, prisonerId, sessionRestriction, dateRange, excludedApplicationReference, username, userType).build()
       }
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
@@ -535,12 +543,13 @@ class VisitSchedulerClient(
     return uriBuilder
   }
 
-  private fun visitSessionsUriBuilder(prisonId: String, prisonerId: String?, min: Int?, max: Int?, username: String?, uriBuilder: UriBuilder): UriBuilder {
+  private fun visitSessionsUriBuilder(prisonId: String, prisonerId: String?, min: Int?, max: Int?, username: String?, userType: UserType, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParam("prisonId", prisonId)
     uriBuilder.queryParamIfPresent("prisonerId", Optional.ofNullable(prisonerId))
     uriBuilder.queryParamIfPresent("min", Optional.ofNullable(min))
     uriBuilder.queryParamIfPresent("max", Optional.ofNullable(max))
     uriBuilder.queryParamIfPresent("username", Optional.ofNullable(username))
+    uriBuilder.queryParam("userType", userType.name)
     return uriBuilder
   }
 
@@ -552,6 +561,7 @@ class VisitSchedulerClient(
     dateRange: DateRange,
     excludedApplicationReference: String? = null,
     username: String? = null,
+    userType: UserType,
   ): UriBuilder {
     uriBuilder.queryParam("prisonId", prisonId)
     uriBuilder.queryParam("prisonerId", prisonerId)
@@ -564,6 +574,7 @@ class VisitSchedulerClient(
     username?.let {
       uriBuilder.queryParam("username", it)
     }
+    uriBuilder.queryParam("userType", userType.name)
     return uriBuilder
   }
 
