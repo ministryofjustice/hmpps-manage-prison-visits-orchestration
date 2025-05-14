@@ -6,6 +6,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.CreateApplicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationStatus.ACCEPTED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
 @DisplayName("Change a booked visit application tests")
@@ -26,7 +27,7 @@ class ChangeBookedVisitApplicationTest : IntegrationTestBase() {
     val prisonerId = "A123567B"
     val reference = "aa-bb-cc-dd"
     val createApplicationDto = createCreateApplicationDto(prisonerId)
-    val applicationDto = createApplicationDto(reference = reference, prisonerId = prisonerId)
+    val applicationDto = createApplicationDto(reference = reference, prisonerId = prisonerId, applicationStatus = ACCEPTED)
     visitSchedulerMockServer.stubChangeBookedVisit(reference, applicationDto)
 
     // When
