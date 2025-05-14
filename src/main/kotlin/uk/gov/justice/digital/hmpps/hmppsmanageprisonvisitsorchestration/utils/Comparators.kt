@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils
 
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertResponseDto
-import java.util.Comparator
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionDto
 
 class Comparators {
   companion object {
@@ -16,6 +16,9 @@ class Comparators {
         } else {
           1
         }
-      }
+      }.thenByDescending { it.activeFrom }
+        .thenComparing(AlertResponseDto::activeTo, nullsFirst(reverseOrder()))
+
+    val restrictionsComparatorDatCreatedDesc: Comparator<OffenderRestrictionDto> = compareByDescending<OffenderRestrictionDto> { it.startDate }.thenByDescending { it.expiryDate }
   }
 }
