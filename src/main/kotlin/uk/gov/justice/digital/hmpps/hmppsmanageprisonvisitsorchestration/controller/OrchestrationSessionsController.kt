@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerSessionsService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.validation.NullableNotEmpty
 import java.time.LocalDate
@@ -93,7 +94,10 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       example = "user-1",
     )
     username: String? = null,
-  ): List<VisitSessionDto>? = visitSchedulerSessionsService.getVisitSessions(prisonCode, prisonerId, min, max, username)
+    @RequestParam
+    @Parameter(description = "user type for the session", example = "STAFF", required = false)
+    userType: UserType = UserType.STAFF,
+  ): List<VisitSessionDto>? = visitSchedulerSessionsService.getVisitSessions(prisonCode, prisonerId, min, max, username, userType)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(GET_VISIT_SESSIONS_AVAILABLE)
@@ -160,6 +164,9 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       example = "user-1",
     )
     username: String? = null,
+    @RequestParam
+    @Parameter(description = "user type for the session", example = "PUBLIC", required = false)
+    userType: UserType = UserType.PUBLIC,
   ): List<AvailableVisitSessionDto> = visitSchedulerSessionsService.getAvailableVisitSessions(
     prisonCode = prisonCode,
     prisonerId = prisonerId,
@@ -171,6 +178,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     fromDateOverride = fromDateOverride,
     toDateOverride = toDateOverride,
     username = username,
+    userType = userType,
   )
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
