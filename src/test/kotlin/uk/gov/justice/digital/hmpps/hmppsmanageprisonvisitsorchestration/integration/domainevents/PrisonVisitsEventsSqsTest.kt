@@ -97,7 +97,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
       visitorId = "12345",
       validFromDate = LocalDate.parse("2023-09-20"),
       restrictionType = "BAN",
-      restrictionId = "123"
+      restrictionId = "123",
     )
 
     val domainEvent =
