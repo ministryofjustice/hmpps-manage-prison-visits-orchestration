@@ -97,6 +97,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
       visitorId = "12345",
       validFromDate = LocalDate.parse("2023-09-20"),
       restrictionType = "BAN",
+      restrictionId = "123",
     )
 
     val domainEvent =
@@ -107,6 +108,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
           visitorId = "12345",
           effectiveDate = "2023-09-20",
           restrictionType = "BAN",
+          offenderPersonRestrictionId = "123",
         ),
       )
 
@@ -184,15 +186,17 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
       visitorId = "12345",
       validFromDate = LocalDate.parse("2023-09-20"),
       restrictionType = "BAN",
+      restrictionId = "123",
     )
 
     val domainEvent =
       createDomainEventJson(
         VISITOR_RESTRICTION_UPSERTED_TYPE,
-        createPersonRestrictionAdditionalInformationJson(
+        createVisitorRestrictionAdditionalInformationJson(
           visitorId = "12345",
           effectiveDate = "2023-09-20",
           restrictionType = "BAN",
+          visitorRestrictionId = "123",
         ),
       )
     val publishRequest = createDomainEventPublishRequest(VISITOR_RESTRICTION_UPSERTED_TYPE, domainEvent)

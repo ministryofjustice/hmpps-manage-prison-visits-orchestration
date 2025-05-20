@@ -24,4 +24,8 @@ data class PersonRestrictionUpsertedInfo(
 
   @NotBlank
   val restrictionType: String,
+
+  @NotBlank
+  @JsonProperty("offenderPersonRestrictionId")
+  val restrictionId: String,
 ) : EventInfo

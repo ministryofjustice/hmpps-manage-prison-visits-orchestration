@@ -19,6 +19,8 @@ data class PersonRestrictionUpsertedNotificationDto(
   val validToDate: LocalDate? = null,
   @NotBlank
   val restrictionType: String,
+  @NotBlank
+  val restrictionId: String,
 ) {
 
   constructor(info: PersonRestrictionUpsertedInfo) : this(
@@ -27,5 +29,6 @@ data class PersonRestrictionUpsertedNotificationDto(
     LocalDate.parse(info.validFromDate, DateTimeFormatter.ISO_DATE),
     info.validToDate?.let { LocalDate.parse(info.validToDate, DateTimeFormatter.ISO_DATE) },
     info.restrictionType,
+    info.restrictionId,
   )
 }
