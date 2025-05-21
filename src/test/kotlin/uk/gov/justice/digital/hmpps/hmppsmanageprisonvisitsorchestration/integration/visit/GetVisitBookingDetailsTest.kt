@@ -80,6 +80,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
 
   private lateinit var eventAttribute1: VisitNotificationEventAttributeDto
   private lateinit var eventAttribute2: VisitNotificationEventAttributeDto
+  private lateinit var eventAttribute3: VisitNotificationEventAttributeDto
 
   @BeforeEach
   internal fun setup() {
@@ -131,7 +132,8 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
 
     eventAttribute1 = VisitNotificationEventAttributeDto(NotificationEventAttributeType.VISITOR_ID, "10001")
     eventAttribute2 = VisitNotificationEventAttributeDto(NotificationEventAttributeType.VISITOR_RESTRICTION, "BAN")
-    notification2 = createNotificationEvent(NotificationEventType.VISITOR_RESTRICTION_UPSERTED_EVENT, additionalData = listOf(eventAttribute1, eventAttribute2))
+    eventAttribute3 = VisitNotificationEventAttributeDto(NotificationEventAttributeType.VISITOR_RESTRICTION_ID, "123")
+    notification2 = createNotificationEvent(NotificationEventType.VISITOR_RESTRICTION_UPSERTED_EVENT, additionalData = listOf(eventAttribute1, eventAttribute2, eventAttribute3))
   }
 
   fun callGetVisitFullDetailsByReference(
