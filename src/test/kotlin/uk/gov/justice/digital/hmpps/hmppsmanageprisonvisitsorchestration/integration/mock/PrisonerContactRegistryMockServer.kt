@@ -13,8 +13,6 @@ class PrisonerContactRegistryMockServer : WireMockServer(8095) {
   fun stubGetPrisonerContacts(
     prisonerId: String,
     withAddress: Boolean = false,
-    approvedVisitorsOnly: Boolean = true,
-    personId: Long? = null,
     hasDateOfBirth: Boolean? = null,
     contactsList: List<PrisonerContactDto>?,
     httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
@@ -22,7 +20,31 @@ class PrisonerContactRegistryMockServer : WireMockServer(8095) {
     val responseBuilder = createJsonResponseBuilder()
 
     stubFor(
-      get("/prisoners/$prisonerId/contacts/social?${getContactsQueryParams(personId, hasDateOfBirth, withAddress, approvedVisitorsOnly)}")
+      get("/v2/prisoners/$prisonerId/contacts/social?${getContactsQueryParams(hasDateOfBirth, withAddress)}")
+        .willReturn(
+          if (contactsList == null) {
+            responseBuilder
+              .withStatus(httpStatus.value())
+          } else {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(contactsList))
+          },
+        ),
+    )
+  }
+
+  fun stubGetApprovedPrisonerContacts(
+    prisonerId: String,
+    withAddress: Boolean = false,
+    hasDateOfBirth: Boolean? = null,
+    contactsList: List<PrisonerContactDto>?,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      get("/v2/prisoners/$prisonerId/contacts/social/approved?${getContactsQueryParams(hasDateOfBirth, withAddress)}")
         .willReturn(
           if (contactsList == null) {
             responseBuilder
@@ -40,7 +62,7 @@ class PrisonerContactRegistryMockServer : WireMockServer(8095) {
     val responseBuilder = createJsonResponseBuilder()
 
     val visitorIdsString = visitorIds.joinToString(",")
-    val uri = "/prisoners/$prisonerId/approved/social/contacts/restrictions/closed?visitors=$visitorIdsString"
+    val uri = "/v2/prisoners/$prisonerId/contacts/social/approved/restrictions/closed?visitors=$visitorIdsString"
 
     stubFor(
       get(uri)
@@ -67,7 +89,7 @@ class PrisonerContactRegistryMockServer : WireMockServer(8095) {
 
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
-      get("/prisoners/$prisonerId/approved/social/contacts/restrictions/banned/dateRange?visitors=$visitorIdsString&fromDate=${dateRange.fromDate}&toDate=${dateRange.toDate}")
+      get("/v2/prisoners/$prisonerId/contacts/social/approved/restrictions/banned/dateRange?visitors=$visitorIdsString&fromDate=${dateRange.fromDate}&toDate=${dateRange.toDate}")
         .willReturn(
           if (result == null) {
             responseBuilder
@@ -82,23 +104,15 @@ class PrisonerContactRegistryMockServer : WireMockServer(8095) {
   }
 
   private fun getContactsQueryParams(
-    personId: Long? = null,
     hasDateOfBirth: Boolean? = null,
     withAddress: Boolean? = null,
-    approvedVisitorsOnly: Boolean? = null,
   ): String {
     val queryParams = ArrayList<String>()
-    personId?.let {
-      queryParams.add("id=$it")
-    }
     hasDateOfBirth?.let {
       queryParams.add("hasDateOfBirth=$it")
     }
     withAddress?.let {
       queryParams.add("withAddress=$it")
-    }
-    approvedVisitorsOnly?.let {
-      queryParams.add("approvedVisitorsOnly=$it")
     }
 
     return queryParams.joinToString("&")

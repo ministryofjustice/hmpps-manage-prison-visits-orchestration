@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.excepti
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import java.net.URI
 import java.time.Duration
-import java.util.Optional
+import java.util.*
 
 @Component
 class PrisonerContactRegistryClient(
@@ -28,15 +28,35 @@ class PrisonerContactRegistryClient(
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
+  fun getPrisonersApprovedSocialContacts(
+    prisonerId: String,
+    withAddress: Boolean,
+    hasDateOfBirth: Boolean? = null,
+  ): List<PrisonerContactDto> {
+    val uri = "v2/prisoners/$prisonerId/contacts/social/approved"
+    return webClient.get().uri(uri) {
+      getSocialContactsUriBuilder(withAddress, hasDateOfBirth, it).build()
+    }.retrieve()
+      .bodyToMono<List<PrisonerContactDto>>()
+      .onErrorResume { e ->
+        if (!isNotFoundError(e)) {
+          LOG.error("getPrisonersApprovedSocialContacts Failed for get request $uri")
+          Mono.error(e)
+        } else {
+          LOG.error("getPrisonersApprovedSocialContacts NOT_FOUND for get request $uri")
+          Mono.error { NotFoundException("Approved social contacts for prisonerId - $prisonerId not found on prisoner-contact-registry") }
+        }
+      }
+      .blockOptional(apiTimeout).orElseThrow { NotFoundException("Approved social contacts for prisonerId - $prisonerId not found on prisoner-contact-registry") }
+  }
+
   fun getPrisonersSocialContacts(
     prisonerId: String,
     withAddress: Boolean,
-    approvedVisitorsOnly: Boolean,
-    personId: Long? = null,
     hasDateOfBirth: Boolean? = null,
   ): List<PrisonerContactDto> {
-    val uri = "/prisoners/$prisonerId/contacts/social"
-    return getPrisonersSocialContactsAsMono(prisonerId, withAddress, approvedVisitorsOnly, personId, hasDateOfBirth)
+    val uri = "v2/prisoners/$prisonerId/contacts/social"
+    return getPrisonersSocialContactsAsMono(prisonerId, withAddress, hasDateOfBirth)
       .onErrorResume { e ->
         if (!isNotFoundError(e)) {
           LOG.error("getPrisonersSocialContacts Failed for get request $uri")
@@ -52,34 +72,28 @@ class PrisonerContactRegistryClient(
   fun getPrisonersSocialContactsAsMono(
     prisonerId: String,
     withAddress: Boolean,
-    approvedVisitorsOnly: Boolean,
-    personId: Long? = null,
     hasDateOfBirth: Boolean? = null,
   ): Mono<List<PrisonerContactDto>> {
-    val uri = "/prisoners/$prisonerId/contacts/social"
+    val uri = "v2/prisoners/$prisonerId/contacts/social"
     return webClient.get().uri(uri) {
-      getSocialContactsUriBuilder(personId, withAddress, hasDateOfBirth, approvedVisitorsOnly, it).build()
+      getSocialContactsUriBuilder(withAddress, hasDateOfBirth, it).build()
     }
       .retrieve()
       .bodyToMono<List<PrisonerContactDto>>()
   }
 
   private fun getSocialContactsUriBuilder(
-    personId: Long?,
     withAddress: Boolean,
     hasDateOfBirth: Boolean? = null,
-    approvedVisitorsOnly: Boolean,
     uriBuilder: UriBuilder,
   ): UriBuilder {
-    uriBuilder.queryParamIfPresent("id", Optional.ofNullable(personId))
     uriBuilder.queryParamIfPresent("hasDateOfBirth", Optional.ofNullable(hasDateOfBirth))
     uriBuilder.queryParam("withAddress", withAddress)
-    uriBuilder.queryParam("approvedVisitorsOnly", approvedVisitorsOnly)
     return uriBuilder
   }
 
   fun getBannedRestrictionDateRange(prisonerId: String, visitors: List<Long>, prisonDateRange: DateRange): DateRange {
-    val uri = "/prisoners/$prisonerId/approved/social/contacts/restrictions/banned/dateRange"
+    val uri = "v2/prisoners/$prisonerId/contacts/social/approved/restrictions/banned/dateRange"
 
     return webClient.get()
       .uri(uri) {
@@ -101,7 +115,7 @@ class PrisonerContactRegistryClient(
   }
 
   fun doVisitorsHaveClosedRestrictions(prisonerId: String, visitors: List<Long>): Boolean {
-    val uri = "/prisoners/$prisonerId/approved/social/contacts/restrictions/closed"
+    val uri = "v2/prisoners/$prisonerId/contacts/social/approved/restrictions/closed"
 
     return webClient.get()
       .uri(uri) {

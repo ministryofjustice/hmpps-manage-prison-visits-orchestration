@@ -17,7 +17,7 @@ class PrisonerContactService(
 
   fun getPrisonersApprovedSocialContactsWithDOB(prisonerNumber: String): List<PrisonerContactDto> {
     LOG.debug("Getting approved social contacts with a DOB for prisoner - {}", prisonerNumber)
-    return prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerNumber, withAddress = false, approvedVisitorsOnly = true, hasDateOfBirth = true)
+    return prisonerContactRegistryClient.getPrisonersApprovedSocialContacts(prisonerNumber, withAddress = false, hasDateOfBirth = true)
   }
 
   fun getPrisonersContacts(prisonerIds: Set<String>): Map<String, List<PrisonerContactDto>> {
@@ -38,6 +38,5 @@ class PrisonerContactService(
   private fun getPrisonerContacts(prisonerId: String): List<PrisonerContactDto> = prisonerContactRegistryClient.getPrisonersSocialContacts(
     prisonerId = prisonerId,
     withAddress = false,
-    approvedVisitorsOnly = false,
   )
 }
