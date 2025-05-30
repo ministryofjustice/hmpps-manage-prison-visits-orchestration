@@ -34,7 +34,7 @@ dependencies {
   testImplementation("io.swagger.parser.v3:swagger-parser:2.1.29")
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:3.0.1")
   testImplementation("org.mockito:mockito-inline:5.2.0")
-  testImplementation("org.testcontainers:localstack:1.21.0")
+  testImplementation("org.testcontainers:localstack:1.21.1")
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
   testImplementation("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
