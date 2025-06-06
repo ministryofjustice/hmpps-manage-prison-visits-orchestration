@@ -38,6 +38,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationGroupDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertsAddedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
@@ -447,16 +448,25 @@ class VisitSchedulerClient(
 
   fun getNotificationCountForPrison(prisonCode: String, notificationEventTypes: List<String>?): NotificationCountDto? = webClient.get()
     .uri("/visits/notification/$prisonCode/count") {
-      visitNotificationsCountUriBuilder(notificationEventTypes, it).build()
+      visitNotificationTypesUriBuilder(notificationEventTypes, it).build()
     }
     .retrieve()
     .bodyToMono<NotificationCountDto>().block(apiTimeout)
 
+  @Deprecated("endpoint deprecated - no longer needed")
   fun getFutureNotificationVisitGroups(prisonCode: String): List<NotificationGroupDto>? = webClient.get()
     .uri("/visits/notification/$prisonCode/groups")
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono<List<NotificationGroupDto>>().block(apiTimeout)
+
+  fun getFutureNotificationVisits(prisonCode: String, notificationEventTypes: List<String>?): List<NotificationVisitDto>? = webClient.get()
+    .uri("/visits/notification/$prisonCode/visits") {
+      visitNotificationTypesUriBuilder(notificationEventTypes, it).build()
+    }
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<List<NotificationVisitDto>>().block(apiTimeout)
 
   fun getPrison(prisonCode: String): VisitSchedulerPrisonDto {
     val uri = "/admin/prisons/prison/$prisonCode"
@@ -593,7 +603,7 @@ class VisitSchedulerClient(
     return uriBuilder
   }
 
-  private fun visitNotificationsCountUriBuilder(
+  private fun visitNotificationTypesUriBuilder(
     notificationEventTypes: List<String>?,
     uriBuilder: UriBuilder,
   ): UriBuilder {

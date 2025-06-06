@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.IgnoreVisitNotificationsOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationNotificationGroupDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationNotificationVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationPrisonerVisitsNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitBookingDetailsDto
@@ -53,7 +54,6 @@ class VisitSchedulerService(
   private val orchestrationVisitDtoBuilder: OrchestrationVisitDtoBuilder,
   private val prisonerSearchService: PrisonerSearchService,
   private val visitBookingDetailsClient: VisitBookingDetailsClient,
-  private val eventAuditDetailsService: EventAuditDetailsService,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -160,6 +160,7 @@ class VisitSchedulerService(
 
   fun getNotificationCountForPrison(prisonCode: String, notificationEventTypes: List<NotificationEventType>?): NotificationCountDto? = visitSchedulerClient.getNotificationCountForPrison(prisonCode, notificationEventTypes?.map { it.name }?.toList())
 
+  @Deprecated("endpoint deprecated - no longer needed")
   fun getFutureNotificationVisitGroups(prisonCode: String): List<OrchestrationNotificationGroupDto>? {
     val groups = visitSchedulerClient.getFutureNotificationVisitGroups(prisonCode)
 
@@ -175,6 +176,21 @@ class VisitSchedulerService(
         )
       }
       OrchestrationNotificationGroupDto(group.reference, group.type, affectedVisits)
+    }
+  }
+
+  fun getFutureNotificationVisits(prisonCode: String, notificationEventTypes: List<NotificationEventType>?): List<OrchestrationNotificationVisitDto> {
+    val visitsWithNotifications = visitSchedulerClient.getFutureNotificationVisits(prisonCode, notificationEventTypes?.map { it.name }?.toList()) ?: emptyList()
+
+    return visitsWithNotifications.map {
+      OrchestrationNotificationVisitDto(
+        prisonerNumber = it.prisonerNumber,
+        bookedByUserName = getUsernameFromActionedBy(it.bookedBy),
+        visitDate = it.visitDate,
+        visitReference = it.visitReference,
+        bookedByName = manageUsersService.getFullNameFromActionedBy(it.bookedBy),
+        notifications = it.notifications,
+      )
     }
   }
 
