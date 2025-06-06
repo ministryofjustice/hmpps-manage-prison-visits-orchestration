@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.POST_VISIT_FROM_EXTERNAL_SYSTEM
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ApplicationValidationErrorResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.FUTURE_NOTIFICATION_VISITS
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ActionedByDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
@@ -41,6 +42,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerVisitsNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventAttributeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase.Companion.getVisitsQueryParams
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.createJsonResponseBuilder
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.getJsonString
@@ -414,6 +416,23 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     )
   }
 
+  fun stubGetFutureVisitsWithNotificationsForPrison(prisonCode: String, notificationEventTypes: List<NotificationEventType>?, visitsWithNotifications: List<VisitNotificationsDto>) {
+    val responseBuilder = createJsonResponseBuilder()
+    var url = FUTURE_NOTIFICATION_VISITS.replace("{prisonCode}", prisonCode)
+    if (!notificationEventTypes.isNullOrEmpty()) {
+      url += "?types=${notificationEventTypes.joinToString(",") { it.name }}"
+    }
+    stubFor(
+      get(url)
+        .willReturn(
+          responseBuilder
+            .withStatus(HttpStatus.OK.value())
+            .withBody(getJsonString(visitsWithNotifications)),
+        ),
+    )
+  }
+
+  @Deprecated("no longer needed")
   fun stubFutureNotificationVisitGroups(prisonCode: String): NotificationGroupDto {
     val responseBuilder = createJsonResponseBuilder()
 

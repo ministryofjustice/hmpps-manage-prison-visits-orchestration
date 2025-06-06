@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.IgnoreVisitNotificationsOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationNotificationGroupDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.IgnoreVisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
@@ -30,6 +31,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 const val VISIT_NOTIFICATION_CONTROLLER_PATH: String = "/visits/notification"
 const val VISIT_NOTIFICATION_COUNT_FOR_PRISON_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/{prisonCode}/count"
 const val FUTURE_NOTIFICATION_VISIT_GROUPS: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/{prisonCode}/groups"
+const val FUTURE_NOTIFICATION_VISITS: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/{prisonCode}/visits"
 const val VISIT_NOTIFICATION_IGNORE: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/visit/{reference}/ignore"
 
 @RestController
@@ -71,6 +73,7 @@ class VisitNotificationController(
     notificationEventTypes: List<NotificationEventType>? = null,
   ): NotificationCountDto? = visitSchedulerService.getNotificationCountForPrison(prisonCode, notificationEventTypes)
 
+  @Deprecated("replaced with $FUTURE_NOTIFICATION_VISITS")
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(FUTURE_NOTIFICATION_VISIT_GROUPS)
   @Operation(
@@ -98,6 +101,37 @@ class VisitNotificationController(
     @PathVariable
     prisonCode: String,
   ): List<OrchestrationNotificationGroupDto>? = visitSchedulerService.getFutureNotificationVisitGroups(prisonCode)
+
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @GetMapping(FUTURE_NOTIFICATION_VISITS)
+  @Operation(
+    summary = "get future visits with notifications by prison code",
+    description = "Retrieve future visits that have a notification event attribute associated, empty response if no future visits with notifications found.",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Retrieved future visits with notifications by prison code",
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getFutureNotificationVisits(
+    @Schema(description = "prisonCode", example = "CFI", required = true)
+    @PathVariable
+    prisonCode: String,
+    @Schema(description = "list of notificationEventTypes", required = false)
+    @RequestParam(value = "types", required = false)
+    notificationEventTypes: List<NotificationEventType>?,
+  ): List<OrchestrationVisitNotificationsDto> = visitSchedulerService.getFutureVisitsWithNotifications(prisonCode, notificationEventTypes)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @PutMapping(VISIT_NOTIFICATION_IGNORE)

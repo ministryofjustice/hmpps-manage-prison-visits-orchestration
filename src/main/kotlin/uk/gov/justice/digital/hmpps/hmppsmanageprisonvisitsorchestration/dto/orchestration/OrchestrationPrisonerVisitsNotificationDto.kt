@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventAttributeDto
 import java.time.LocalDate
 
+@Deprecated("endpoint deprecated - no longer needed")
 class OrchestrationPrisonerVisitsNotificationDto(
   @Schema(description = "Prisoner Number", example = "AF34567G", required = true)
   @field:NotBlank
