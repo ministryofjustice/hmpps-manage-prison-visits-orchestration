@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ActionedByDto
 import java.time.LocalDate
 
-class NotificationVisitDto(
+class VisitNotificationsDto(
   @Schema(description = "Visit Booking Reference", example = "v9-d7-ed-7u", required = true)
   val visitReference: String,
   @Schema(description = "Prisoner Number", example = "AF34567G", required = true)

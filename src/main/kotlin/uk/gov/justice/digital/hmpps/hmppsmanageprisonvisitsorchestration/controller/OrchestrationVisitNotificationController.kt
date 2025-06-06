@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.IgnoreVisitNotificationsOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationNotificationGroupDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationNotificationVisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.IgnoreVisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
@@ -131,7 +131,7 @@ class VisitNotificationController(
     @Schema(description = "list of notificationEventTypes", required = false)
     @RequestParam(value = "types", required = false)
     notificationEventTypes: List<NotificationEventType>?,
-  ): List<OrchestrationNotificationVisitDto> = visitSchedulerService.getFutureNotificationVisits(prisonCode, notificationEventTypes)
+  ): List<OrchestrationVisitNotificationsDto> = visitSchedulerService.getFutureVisitsWithNotifications(prisonCode, notificationEventTypes)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @PutMapping(VISIT_NOTIFICATION_IGNORE)

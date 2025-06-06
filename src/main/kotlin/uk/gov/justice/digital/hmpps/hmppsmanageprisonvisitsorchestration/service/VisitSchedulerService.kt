@@ -13,9 +13,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.IgnoreVisitNotificationsOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationNotificationGroupDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationNotificationVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationPrisonerVisitsNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitBookingDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ActionedByDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
@@ -179,11 +179,11 @@ class VisitSchedulerService(
     }
   }
 
-  fun getFutureNotificationVisits(prisonCode: String, notificationEventTypes: List<NotificationEventType>?): List<OrchestrationNotificationVisitDto> {
-    val visitsWithNotifications = visitSchedulerClient.getFutureNotificationVisits(prisonCode, notificationEventTypes?.map { it.name }?.toList()) ?: emptyList()
+  fun getFutureVisitsWithNotifications(prisonCode: String, notificationEventTypes: List<NotificationEventType>?): List<OrchestrationVisitNotificationsDto> {
+    val visitsWithNotifications = visitSchedulerClient.getFutureVisitsWithNotifications(prisonCode, notificationEventTypes?.map { it.name }?.toList())
 
-    return visitsWithNotifications.map {
-      OrchestrationNotificationVisitDto(
+    return visitsWithNotifications?.map {
+      OrchestrationVisitNotificationsDto(
         prisonerNumber = it.prisonerNumber,
         bookedByUserName = getUsernameFromActionedBy(it.bookedBy),
         visitDate = it.visitDate,
@@ -191,7 +191,7 @@ class VisitSchedulerService(
         bookedByName = manageUsersService.getFullNameFromActionedBy(it.bookedBy),
         notifications = it.notifications,
       )
-    }
+    } ?: emptyList()
   }
 
   private fun mapVisitDtoToOrchestrationVisitDto(visits: List<VisitDto>?): List<OrchestrationVisitDto> {
