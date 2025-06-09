@@ -20,4 +20,8 @@ data class VisitorRestrictionUpsertedInfo(
 
   @NotBlank
   val restrictionType: String,
+
+  @NotBlank
+  @JsonProperty("visitorRestrictionId")
+  val restrictionId: String,
 ) : EventInfo

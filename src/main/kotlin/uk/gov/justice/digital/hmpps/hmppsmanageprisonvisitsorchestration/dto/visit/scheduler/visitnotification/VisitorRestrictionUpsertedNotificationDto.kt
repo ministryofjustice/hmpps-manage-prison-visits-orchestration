@@ -20,6 +20,9 @@ data class VisitorRestrictionUpsertedNotificationDto(
 
   @NotBlank
   val restrictionType: String,
+
+  @NotBlank
+  val restrictionId: String,
 ) {
 
   constructor(info: VisitorRestrictionUpsertedInfo) : this(
@@ -27,5 +30,6 @@ data class VisitorRestrictionUpsertedNotificationDto(
     LocalDate.parse(info.validFromDate, DateTimeFormatter.ISO_DATE),
     info.validToDate?.let { LocalDate.parse(info.validToDate, DateTimeFormatter.ISO_DATE) },
     info.restrictionType,
+    info.restrictionId,
   )
 }

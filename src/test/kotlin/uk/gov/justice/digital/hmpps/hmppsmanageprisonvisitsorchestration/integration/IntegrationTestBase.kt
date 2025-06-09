@@ -27,10 +27,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.CurrentIncentive
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitExternalSystemDetails
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ApplicationDto
@@ -64,7 +62,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 import java.util.stream.Collectors
-import kotlin.collections.ArrayList
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
@@ -543,31 +540,6 @@ abstract class IntegrationTestBase {
     visitContact = visitContact,
   )
 
-  final fun createPrison(
-    prisonCode: String = "HEI",
-    active: Boolean = true,
-    policyNoticeDaysMin: Int = 2,
-    policyNoticeDaysMax: Int = 28,
-    maxTotalVisitors: Int = 6,
-    maxAdultVisitors: Int = 3,
-    maxChildVisitors: Int = 3,
-    adultAgeYears: Int = 18,
-    clients: List<PrisonUserClientDto> = listOf(
-      PrisonUserClientDto(STAFF, true),
-      PrisonUserClientDto(PUBLIC, true),
-    ),
-  ): VisitSchedulerPrisonDto = VisitSchedulerPrisonDto(
-    prisonCode,
-    active,
-    policyNoticeDaysMin,
-    policyNoticeDaysMax,
-    maxTotalVisitors,
-    maxAdultVisitors,
-    maxChildVisitors,
-    adultAgeYears,
-    clients = clients,
-  )
-
   private fun getAvailableVisitSessionQueryParams(
     prisonCode: String,
     prisonerId: String,
@@ -581,7 +553,7 @@ abstract class IntegrationTestBase {
     currentUser: String? = null,
     userType: UserType? = null,
   ): List<String> {
-    val queryParams = java.util.ArrayList<String>()
+    val queryParams = ArrayList<String>()
     queryParams.add("prisonId=$prisonCode")
     queryParams.add("prisonerId=$prisonerId")
     queryParams.add("sessionRestriction=${sessionRestriction.name}")
@@ -616,7 +588,7 @@ abstract class IntegrationTestBase {
     prisonerId: String,
     visitorIds: List<Long>? = null,
   ): List<String> {
-    val queryParams = java.util.ArrayList<String>()
+    val queryParams = ArrayList<String>()
 
     queryParams.add("prisonerId=$prisonerId")
     visitorIds?.let {
@@ -691,13 +663,20 @@ abstract class IntegrationTestBase {
 
   )
 
-  final fun createOffenderRestrictionDto() = OffenderRestrictionDto(
-    restrictionId = 1,
-    restrictionType = "CLOSED",
-    restrictionTypeDescription = "",
-    startDate = LocalDate.now(),
-    expiryDate = LocalDate.now(),
-    active = true,
+  final fun createOffenderRestrictionDto(
+    restrictionId: Long = 1,
+    restrictionType: String = "CLOSED",
+    restrictionTypeDescription: String = "",
+    startDate: LocalDate = LocalDate.now(),
+    expiryDate: LocalDate? = null,
+    active: Boolean = true,
+  ) = OffenderRestrictionDto(
+    restrictionId = restrictionId,
+    restrictionType = restrictionType,
+    restrictionTypeDescription = restrictionTypeDescription,
+    startDate = startDate,
+    expiryDate = expiryDate,
+    active = active,
   )
 
   final fun createAddressDto(primary: Boolean, noFixedAddress: Boolean = false, street: String): AddressDto = AddressDto(
@@ -718,15 +697,6 @@ abstract class IntegrationTestBase {
     createdDateTime: LocalDateTime = LocalDateTime.now(),
     additionalData: List<VisitNotificationEventAttributeDto> = emptyList(),
   ) = VisitNotificationEventDto(type, notificationEventReference, createdDateTime, additionalData)
-
-  protected fun assertNotificationEvent(
-    notificationEventDto: VisitNotificationEventDto,
-    notificationEventType: NotificationEventType,
-    additionalData: List<VisitNotificationEventAttributeDto>,
-  ) {
-    Assertions.assertThat(notificationEventDto.type).isEqualTo(notificationEventType)
-    Assertions.assertThat(notificationEventDto.additionalData).isEqualTo(additionalData)
-  }
 
   protected fun generateRandomUUID(length: Int = 8): String = UUID.randomUUID().toString().substring(0, length)
 }

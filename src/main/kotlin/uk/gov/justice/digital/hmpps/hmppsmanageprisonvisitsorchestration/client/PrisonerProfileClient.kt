@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.excepti
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AlertsService.Companion.predicateFilterSupportedCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.Comparators.Companion.alertsComparatorDateUpdatedOrCreatedDateDesc
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.Comparators.Companion.restrictionsComparatorDatCreatedDesc
 import java.time.Duration
 
 @Component
@@ -52,7 +53,7 @@ class PrisonerProfileClient(
           predicateFilterSupportedCodes.test(it)
         }.sortedWith(alertsComparatorDateUpdatedOrCreatedDateDesc).map { alertResponse -> AlertDto(alertResponse) }
 
-        val prisonerRestrictions = prisonerProfileMonos.t6.offenderRestrictions ?: emptyList()
+        val prisonerRestrictions = (prisonerProfileMonos.t6.offenderRestrictions ?: emptyList()).sortedWith(restrictionsComparatorDatCreatedDesc)
 
         PrisonerProfileDto(
           prisoner,
@@ -81,7 +82,7 @@ class PrisonerProfileClient(
 
   private fun getContactsForPrisoner(prisonerProfile: PrisonerProfileDto): Map<Long?, PrisonerContactDto>? {
     try {
-      val contacts = prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerProfile.prisonerId, withAddress = false, approvedVisitorsOnly = false)
+      val contacts = prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerProfile.prisonerId, withAddress = false)
       return contacts.associateBy { it.personId }
     } catch (e: Exception) {
       // log a message if there is an error but do not terminate the call

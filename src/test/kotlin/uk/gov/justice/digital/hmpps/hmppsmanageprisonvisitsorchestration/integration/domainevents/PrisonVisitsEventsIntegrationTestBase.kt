@@ -247,6 +247,7 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     effectiveDate: String? = null,
     expiryDate: String? = null,
     restrictionType: String? = null,
+    offenderPersonRestrictionId: String? = null,
   ): String {
     val jsonValues = HashMap<String, Any>()
     nomsNumber?.let {
@@ -263,6 +264,36 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     }
     restrictionType?.let {
       jsonValues["restrictionType"] = restrictionType
+    }
+    offenderPersonRestrictionId?.let {
+      jsonValues["offenderPersonRestrictionId"] = offenderPersonRestrictionId
+    }
+
+    return createAdditionalInformationJson(jsonValues)
+  }
+
+  fun createVisitorRestrictionAdditionalInformationJson(
+    visitorId: String? = null,
+    effectiveDate: String? = null,
+    expiryDate: String? = null,
+    restrictionType: String? = null,
+    visitorRestrictionId: String? = null,
+  ): String {
+    val jsonValues = HashMap<String, Any>()
+    visitorId?.let {
+      jsonValues["personId"] = visitorId
+    }
+    effectiveDate?.let {
+      jsonValues["effectiveDate"] = effectiveDate
+    }
+    expiryDate?.let {
+      jsonValues["expiryDate"] = expiryDate
+    }
+    restrictionType?.let {
+      jsonValues["restrictionType"] = restrictionType
+    }
+    visitorRestrictionId?.let {
+      jsonValues["visitorRestrictionId"] = visitorRestrictionId
     }
 
     return createAdditionalInformationJson(jsonValues)

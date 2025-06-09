@@ -80,6 +80,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
 
   private lateinit var eventAttribute1: VisitNotificationEventAttributeDto
   private lateinit var eventAttribute2: VisitNotificationEventAttributeDto
+  private lateinit var eventAttribute3: VisitNotificationEventAttributeDto
 
   @BeforeEach
   internal fun setup() {
@@ -131,7 +132,8 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
 
     eventAttribute1 = VisitNotificationEventAttributeDto(NotificationEventAttributeType.VISITOR_ID, "10001")
     eventAttribute2 = VisitNotificationEventAttributeDto(NotificationEventAttributeType.VISITOR_RESTRICTION, "BAN")
-    notification2 = createNotificationEvent(NotificationEventType.VISITOR_RESTRICTION_UPSERTED_EVENT, additionalData = listOf(eventAttribute1, eventAttribute2))
+    eventAttribute3 = VisitNotificationEventAttributeDto(NotificationEventAttributeType.VISITOR_RESTRICTION_ID, "123")
+    notification2 = createNotificationEvent(NotificationEventType.VISITOR_RESTRICTION_UPSERTED_EVENT, additionalData = listOf(eventAttribute1, eventAttribute2, eventAttribute3))
   }
 
   fun callGetVisitFullDetailsByReference(
@@ -159,7 +161,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // alert 3's alert code is not relevant for visits so should be ignored
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, approvedVisitorsOnly = false, null, null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, contactsList = contactsList)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetUserDetails("test-user", "Test User")
@@ -197,7 +199,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // alert 3's alert code is not relevant for visits so should be ignored
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = true, approvedVisitorsOnly = false, personId = null, hasDateOfBirth = null, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = true, hasDateOfBirth = null, contactsList = contactsList)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetUserDetails("test-user", "Test User A")
@@ -237,7 +239,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // alert 3's alert code is not relevant for visits so should be ignored
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = true, approvedVisitorsOnly = false, personId = null, hasDateOfBirth = null, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = true, hasDateOfBirth = null, contactsList = contactsList)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetUserDetails("test-user", "Test User A")
@@ -276,7 +278,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // alert 3's alert code is not relevant for visits so should be ignored
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = true, approvedVisitorsOnly = false, personId = null, hasDateOfBirth = null, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = true, hasDateOfBirth = null, contactsList = contactsList)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetUserDetails("test-user", "Test User A")
@@ -324,7 +326,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // alert 3's alert code is not relevant for visits so should be ignored
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = true, approvedVisitorsOnly = false, personId = null, hasDateOfBirth = null, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = true, hasDateOfBirth = null, contactsList = contactsList)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetUserDetails("test-user", "Test User A")
@@ -374,7 +376,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // alert 3's alert code is not relevant for visits so should be ignored
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = true, approvedVisitorsOnly = false, personId = null, hasDateOfBirth = null, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = true, hasDateOfBirth = null, contactsList = contactsList)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetUserDetails("test-user", "Test User A")
@@ -429,7 +431,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // alert 3's alert code is not relevant for visits so should be ignored
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = true, approvedVisitorsOnly = false, personId = null, hasDateOfBirth = null, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = true, hasDateOfBirth = null, contactsList = contactsList)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetUserDetails("test-user", "Test User A")
@@ -481,7 +483,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // alert 3's alert code is not relevant for visits so should be ignored
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = true, approvedVisitorsOnly = false, personId = null, hasDateOfBirth = null, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = true, hasDateOfBirth = null, contactsList = contactsList)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetUserDetails("test-user", "Test User A")
@@ -518,7 +520,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, approvedVisitorsOnly = false, null, null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, contactsList = contactsList)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
 
@@ -546,7 +548,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, approvedVisitorsOnly = false, null, null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, contactsList = contactsList)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
 
@@ -575,7 +577,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     prisonRegisterMockServer.stubGetPrison(prisonCode, null, HttpStatus.NOT_FOUND)
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, approvedVisitorsOnly = false, null, null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, contactsList = contactsList)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
 
@@ -612,7 +614,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     prisonRegisterMockServer.stubGetPrison(prisonCode, null, HttpStatus.INTERNAL_SERVER_ERROR)
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, approvedVisitorsOnly = false, null, null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, contactsList = contactsList)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
 
     // When
@@ -638,7 +640,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // alert API returns a 500
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, null, HttpStatus.INTERNAL_SERVER_ERROR)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, approvedVisitorsOnly = false, null, null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, contactsList = contactsList)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
 
@@ -665,7 +667,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     // prison API returns a 404
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, null, HttpStatus.NOT_FOUND)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, approvedVisitorsOnly = false, null, null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, contactsList = contactsList)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
 
@@ -692,7 +694,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     // prison API returns a 404
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, null, HttpStatus.INTERNAL_SERVER_ERROR)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, approvedVisitorsOnly = false, null, null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, contactsList = contactsList)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
 
@@ -718,7 +720,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
     // prisoner contact registry API returns a 404
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, approvedVisitorsOnly = false, null, null, null, HttpStatus.NOT_FOUND)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, contactsList = null, httpStatus = HttpStatus.NOT_FOUND)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
 
@@ -745,7 +747,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
     // prisoner contact registry API returns a 404
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, approvedVisitorsOnly = false, null, null, null, HttpStatus.INTERNAL_SERVER_ERROR)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, contactsList = null, httpStatus = HttpStatus.INTERNAL_SERVER_ERROR)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
 
     // When
@@ -769,7 +771,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, approvedVisitorsOnly = false, null, null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, contactsList = contactsList)
     // visits get history - returns a 404
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, emptyList(), HttpStatus.NOT_FOUND)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
@@ -795,7 +797,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, approvedVisitorsOnly = false, null, null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, contactsList = contactsList)
     // visits get history - returns a 500
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, emptyList(), HttpStatus.INTERNAL_SERVER_ERROR)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
@@ -821,7 +823,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, approvedVisitorsOnly = false, null, null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, contactsList = contactsList)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     // visits get notifications - returns a 404
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, null, HttpStatus.NOT_FOUND)
@@ -847,7 +849,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, approvedVisitorsOnly = false, null, null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, contactsList = contactsList)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     // visits get notifications - returns a 404
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, null, HttpStatus.INTERNAL_SERVER_ERROR)
@@ -878,7 +880,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // alert 3's alert code is not relevant for visits so should be ignored
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, approvedVisitorsOnly = false, null, null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, contactsList = contactsList)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetUserDetailsFailure("test-user", HttpStatus.NOT_FOUND)
@@ -916,7 +918,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // alert 3's alert code is not relevant for visits so should be ignored
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, approvedVisitorsOnly = false, null, null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, contactsList = contactsList)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetUserDetailsFailure("test-user", HttpStatus.INTERNAL_SERVER_ERROR)
@@ -965,12 +967,19 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     val alert7 = createAlertResponseDto(alertTypeCode = "G", lastModifiedAt = LocalDateTime.now(), createdAt = LocalDateTime.now().minusMonths(1))
     // alert 7 - updated today, created today
     val alert8 = createAlertResponseDto(alertTypeCode = "H", lastModifiedAt = LocalDateTime.now().minusMinutes(1), createdAt = LocalDateTime.now().minusMinutes(1))
+    // alert 9 - created 3 years back, not updated, active to is 2 months from today
+    val alert9 = createAlertResponseDto(alertTypeCode = "I", lastModifiedAt = null, createdAt = LocalDateTime.now().minusYears(3), activeFrom = LocalDate.now().minusYears(3), activeTo = LocalDate.now().plusMonths(2))
+    // alert 10 - created 3 years back, not updated, active to is 3 months from today
+    val alert10 = createAlertResponseDto(alertTypeCode = "J", lastModifiedAt = null, createdAt = LocalDateTime.now().minusYears(3), activeFrom = LocalDate.now().minusYears(3), activeTo = LocalDate.now().plusMonths(3))
+    // alert 11 - created 3 years back, not updated, active from is 2 years back
+    val alert11 = createAlertResponseDto(alertTypeCode = "K", lastModifiedAt = null, createdAt = LocalDateTime.now().minusYears(3), activeFrom = LocalDate.now().minusYears(2), activeTo = null)
 
-    // expected sort order is alert7, alert8, alert2, alert5,  alert1, alert3, alert6, alert4 - G,H,B,E,A,C,F,D
-    val expectedAlerts = listOf(AlertDto(alert7), AlertDto(alert8), AlertDto(alert2), AlertDto(alert5), AlertDto(alert1), AlertDto(alert3), AlertDto(alert6), AlertDto(alert4))
-    alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3, alert4, alert5, alert6, alert7, alert8))
+    // expected sort order is alert7, alert8, alert2, alert5,  alert1, alert3, alert6, alert4, alert11, alert10, alert9 - G,H,B,E,A,C,F,D,K,J,I
+    val expectedAlerts = listOf(AlertDto(alert7), AlertDto(alert8), AlertDto(alert2), AlertDto(alert5), AlertDto(alert1), AlertDto(alert3), AlertDto(alert6), AlertDto(alert4), AlertDto(alert11), AlertDto(alert10), AlertDto(alert9))
+
+    alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3, alert4, alert5, alert6, alert7, alert8, alert9, alert10, alert11))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, approvedVisitorsOnly = false, null, null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, contactsList = contactsList)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetUserDetails("test-user", "Test User")
@@ -982,6 +991,52 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     responseSpec.expectStatus().isOk
     val visitBookingResponse = getResult(responseSpec.expectBody())
     assertThat(visitBookingResponse.prisoner.prisonerAlerts).isEqualTo(expectedAlerts)
+  }
+
+  @Test
+  fun `when prisoner has restrictions on call to get visit booking details these alerts are sorted by startDate descending`() {
+    // Given
+    val reference = "aa-bb-cc-dd"
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
+    val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors)
+    val contactsList = listOf(visitor1, visitor2, visitor3)
+    val eventList = listOf(eventAudit1, eventAudit2, eventAudit3, eventAudit4, eventAudit5)
+    val notifications = listOf(notification1, notification2)
+
+    visitSchedulerMockServer.stubGetVisit(reference, visit)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
+
+    // Given
+    // restriction 1 - start date today
+    val restriction1 = createOffenderRestrictionDto(restrictionId = 1, startDate = LocalDate.now(), expiryDate = null)
+    // restriction 2 - start date tomorrow
+    val restriction2 = createOffenderRestrictionDto(restrictionId = 2, startDate = LocalDate.now().plusDays(1), expiryDate = null)
+    // restriction 3 - start date 1 month back, expiry date tomorrow
+    val restriction3 = createOffenderRestrictionDto(restrictionId = 3, startDate = LocalDate.now().minusMonths(1), expiryDate = LocalDate.now().plusDays(1))
+    // restriction 4 - start date 5 days back, expiry date 3 months ahead
+    val restriction4 = createOffenderRestrictionDto(restrictionId = 4, startDate = LocalDate.now().minusDays(5), expiryDate = LocalDate.now().plusMonths(3))
+    // restriction 5 - start date 5 days back, expiry date 2 days ahead
+    val restriction5 = createOffenderRestrictionDto(restrictionId = 5, startDate = LocalDate.now().minusDays(5), expiryDate = LocalDate.now().plusDays(2))
+    // restriction 6 - start date 5 days back, expiry date 3 days ahead
+    val restriction6 = createOffenderRestrictionDto(restrictionId = 6, startDate = LocalDate.now().minusDays(5), expiryDate = LocalDate.now().plusDays(3))
+
+    // expected sort order is restriction2, restriction1, restriction4, restriction6, restriction5, restriction3
+    val expectedRestrictions = listOf(restriction2, restriction1, restriction4, restriction6, restriction5, restriction3)
+    alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
+    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(1, listOf(restriction1, restriction2, restriction3, restriction4, restriction5, restriction6)))
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = true, contactsList = contactsList)
+    visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
+    visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
+    manageUsersApiMockServer.stubGetUserDetails("test-user", "Test User")
+
+    // When
+    val responseSpec = callGetVisitFullDetailsByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isOk
+    val visitBookingResponse = getResult(responseSpec.expectBody())
+    assertThat(visitBookingResponse.prisoner.prisonerRestrictions).isEqualTo(expectedRestrictions)
   }
 
   private fun getResult(bodyContentSpec: WebTestClient.BodyContentSpec): VisitBookingDetailsDto = objectMapper.readValue(bodyContentSpec.returnResult().responseBody, VisitBookingDetailsDto::class.java)

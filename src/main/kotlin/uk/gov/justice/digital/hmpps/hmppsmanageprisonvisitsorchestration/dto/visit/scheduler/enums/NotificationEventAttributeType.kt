@@ -3,5 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 @Suppress("unused")
 enum class NotificationEventAttributeType {
   VISITOR_RESTRICTION,
+  VISITOR_RESTRICTION_ID,
   VISITOR_ID,
+  PAIRED_VISIT,
 }
