@@ -34,6 +34,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ApplicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ChangeApplicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.CreateApplicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.OutcomeStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
@@ -274,6 +275,7 @@ abstract class IntegrationTestBase {
     modifiedTimestamp: LocalDateTime = LocalDateTime.now(),
     sessionTemplateReference: String = "ref.ref.ref",
     visitors: List<VisitorDto>? = listOf(),
+    applicationStatus: ApplicationStatus,
   ): ApplicationDto = ApplicationDto(
     sessionTemplateReference = sessionTemplateReference,
     reference = reference,
@@ -286,7 +288,7 @@ abstract class IntegrationTestBase {
     createdTimestamp = createdTimestamp,
     modifiedTimestamp = modifiedTimestamp,
     visitors = visitors!!,
-    completed = false,
+    applicationStatus = applicationStatus,
     reserved = false,
     userType = PUBLIC,
   )
