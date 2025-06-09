@@ -6,6 +6,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ChangeApplicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationStatus.ACCEPTED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
 @DisplayName("Change a reserved application")
@@ -27,7 +28,7 @@ class ChangeReservedApplicationTest : IntegrationTestBase() {
     val applicationReference = "aaa-bbb-ccc-ddd"
     val visitReference = "aa-bb-cc-dd"
     val changeApplicationDto = createChangeApplicationDto()
-    val applicationDto = createApplicationDto(reference = applicationReference)
+    val applicationDto = createApplicationDto(reference = applicationReference, applicationStatus = ACCEPTED)
     visitSchedulerMockServer.stubChangeReservedVisitSlot(visitReference, applicationDto)
 
     // When
