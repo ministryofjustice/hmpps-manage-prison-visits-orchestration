@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
 
+@Deprecated("endpoint deprecated - no longer needed")
 class OrchestrationNotificationGroupDto(
   @Schema(description = "notification group Reference", example = "v9*d7*ed*7u", required = true)
   @field:NotBlank
