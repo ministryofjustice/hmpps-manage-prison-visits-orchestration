@@ -119,4 +119,32 @@ class DateUtilsTest {
     Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMin.toLong() + pvbAdvanceFromDateByDays))
     Assertions.assertThat(dateRange.toDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMax.toLong()))
   }
+
+  @Test
+  fun `when min override passed is less than the prison allows the prison days configured needs to be considered`() {
+    // Given
+    val minOverrideDays = 1
+
+    // When
+    // minOverride is less than allowed prison configuration - ignore this parameter
+    val dateRange = dateUtils.getToDaysDateRange(prison, minOverride = minOverrideDays)
+
+    // Then
+    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMin.toLong()))
+    Assertions.assertThat(dateRange.toDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMax.toLong()))
+  }
+
+  @Test
+  fun `when max override passed is more than the prison allows the prison days configured needs to be considered`() {
+    // Given
+    // maxOverride is more than allowed prison configuration - ignore this parameter
+    val maxOverrideDays = 56
+
+    // When
+    val dateRange = dateUtils.getToDaysDateRange(prison, maxOverride = maxOverrideDays)
+
+    // Then
+    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMin.toLong()))
+    Assertions.assertThat(dateRange.toDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMax.toLong()))
+  }
 }

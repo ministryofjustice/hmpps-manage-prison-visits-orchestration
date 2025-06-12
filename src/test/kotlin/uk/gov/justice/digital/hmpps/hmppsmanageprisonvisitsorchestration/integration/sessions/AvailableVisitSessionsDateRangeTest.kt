@@ -299,6 +299,127 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `when fromDateOverride is less than the prison configured min the first date offered is today + prison configured min days`() {
+    // Given
+    // the fromDateOverride passed is less than the allowed prison config days
+    val fromDateOverride = 1
+    visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
+
+    // When
+    callGetAvailableVisitSessions(
+      webTestClient,
+      prisonCode = prisonCode,
+      prisonerId = prisonerId,
+      sessionRestriction = OPEN,
+      withAppointmentsCheck = true,
+      excludedApplicationReference = null,
+      fromDateOverride = fromDateOverride,
+      userType = PUBLIC,
+      authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
+    )
+
+    // Then
+    // date range should ignore the fromDateOverride as it is less than the prison configured min value
+    val dateRange = DateRange(
+      fromDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMin.toLong()),
+      toDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMax.toLong()),
+    )
+
+    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
+  }
+
+  @Test
+  fun `when fromDateOverride is more than the prison configured min the first date offered is today + fromDateOverride`() {
+    // Given
+    // the fromDateOverride passed is more than the allowed prison config days
+    val fromDateOverride = 15
+    visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
+
+    // When
+    callGetAvailableVisitSessions(
+      webTestClient,
+      prisonCode = prisonCode,
+      prisonerId = prisonerId,
+      sessionRestriction = OPEN,
+      withAppointmentsCheck = true,
+      excludedApplicationReference = null,
+      fromDateOverride = fromDateOverride,
+      userType = PUBLIC,
+      authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
+    )
+
+    // Then
+    // date range should use the fromDateOverride as it is more than the prison configured min value
+    val dateRange = DateRange(
+      fromDate = LocalDate.now().plusDays(fromDateOverride.toLong()),
+      toDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMax.toLong()),
+    )
+
+    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
+  }
+
+  @Test
+  fun `when toDateOverride is less than the prison configured max the first date offered is today + toDateOverride`() {
+    // Given
+    // the toDateOverride passed is less than the allowed prison config days
+    val toDateOverride = 15
+    visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
+
+    // When
+    callGetAvailableVisitSessions(
+      webTestClient,
+      prisonCode = prisonCode,
+      prisonerId = prisonerId,
+      sessionRestriction = OPEN,
+      withAppointmentsCheck = true,
+      excludedApplicationReference = null,
+      toDateOverride = toDateOverride,
+      userType = PUBLIC,
+      authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
+    )
+
+    // Then
+    // date range should use the toDateOverride as it is more than the prison configured max value
+    val dateRange = DateRange(
+      fromDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMin.toLong()),
+      toDate = LocalDate.now().plusDays(toDateOverride.toLong()),
+    )
+
+    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
+  }
+
+  @Test
+  fun `when toDateOverride is more than the prison configured max the first date offered is today + prison configured max days`() {
+    // Given
+    // the toDateOverride passed is more than the allowed prison config days
+
+    val toDateOverride = 56
+    visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
+
+    // When
+    callGetAvailableVisitSessions(
+      webTestClient,
+      prisonCode = prisonCode,
+      prisonerId = prisonerId,
+      sessionRestriction = OPEN,
+      withAppointmentsCheck = true,
+      excludedApplicationReference = null,
+      toDateOverride = toDateOverride,
+      userType = PUBLIC,
+      authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
+    )
+
+    // Then
+    // date range should ignore the toDateOverride as it is more than the prison configured max value
+    val dateRange = DateRange(
+      fromDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMin.toLong()),
+      toDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMax.toLong()),
+    )
+
+    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
+  }
+
+  @Test
   fun `when usertype not passed to get visit sessions usertype defaults to PUBLIC when visit scheduler client is called`() {
     // Given
     visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
