@@ -37,7 +37,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationGroupDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertsAddedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
@@ -452,13 +451,6 @@ class VisitSchedulerClient(
     }
     .retrieve()
     .bodyToMono<NotificationCountDto>().block(apiTimeout)
-
-  @Deprecated("endpoint deprecated - no longer needed")
-  fun getFutureNotificationVisitGroups(prisonCode: String): List<NotificationGroupDto>? = webClient.get()
-    .uri("/visits/notification/$prisonCode/groups")
-    .accept(MediaType.APPLICATION_JSON)
-    .retrieve()
-    .bodyToMono<List<NotificationGroupDto>>().block(apiTimeout)
 
   fun getFutureVisitsWithNotifications(prisonCode: String, notificationEventTypes: List<String>?): List<VisitNotificationsDto>? = webClient.get()
     .uri("/visits/notification/$prisonCode/visits") {
