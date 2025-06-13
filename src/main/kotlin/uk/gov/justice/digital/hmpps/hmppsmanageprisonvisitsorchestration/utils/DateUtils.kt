@@ -14,8 +14,17 @@ class DateUtils {
   ): DateRange {
     val today = LocalDate.now()
 
-    val min = minOverride ?: prison.policyNoticeDaysMin
-    val max = maxOverride ?: prison.policyNoticeDaysMax
+    val min = if (minOverride == null || minOverride < prison.policyNoticeDaysMin) {
+      prison.policyNoticeDaysMin
+    } else {
+      minOverride
+    }
+
+    val max = if (maxOverride == null || maxOverride > prison.policyNoticeDaysMax) {
+      prison.policyNoticeDaysMax
+    } else {
+      maxOverride
+    }
 
     val bookableStartDate = today.plusDays(min.toLong())
     val bookableEndDate = today.plusDays(max.toLong())
