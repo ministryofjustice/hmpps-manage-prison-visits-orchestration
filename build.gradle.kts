@@ -1,7 +1,7 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "8.2.0"
-  kotlin("plugin.spring") version "2.1.21"
-  id("org.jetbrains.kotlin.plugin.noarg") version "2.1.21"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "8.3.0"
+  kotlin("plugin.spring") version "2.2.0"
+  id("org.jetbrains.kotlin.plugin.noarg") version "2.2.0"
 }
 
 configurations {
@@ -31,10 +31,10 @@ dependencies {
 
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
-  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.29")
+  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.30")
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:3.0.1")
   testImplementation("org.mockito:mockito-inline:5.2.0")
-  testImplementation("org.testcontainers:localstack:1.21.1")
+  testImplementation("org.testcontainers:localstack:1.21.2")
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
   testImplementation("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
