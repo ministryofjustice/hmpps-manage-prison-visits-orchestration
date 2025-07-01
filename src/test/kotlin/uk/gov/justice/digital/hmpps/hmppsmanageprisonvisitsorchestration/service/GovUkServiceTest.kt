@@ -45,7 +45,7 @@ class GovUkServiceTest {
   }
 
   @Test
-  fun `when future holidays are being retrieved with future flag as false only current and future dated ones are returned`() {
+  fun `when future holidays are being retrieved with future flag as false all results are returned`() {
     val events = listOf(
       HolidayEventDto("tomorrow-is-a-holiday", LocalDate.now().plusDays(1)),
       HolidayEventDto("yesterday-was-a-holiday", LocalDate.now().minusDays(1)),
