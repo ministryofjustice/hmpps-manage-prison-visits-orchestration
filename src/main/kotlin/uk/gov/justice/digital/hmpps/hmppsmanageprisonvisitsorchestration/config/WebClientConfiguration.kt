@@ -15,37 +15,37 @@ import java.time.Duration
 
 @Configuration
 class WebClientConfiguration(
-  @Value("\${visit-scheduler.api.url}")
+  @param:Value("\${visit-scheduler.api.url}")
   private val visitSchedulerBaseUrl: String,
 
-  @Value("\${prison.api.url}")
+  @param:Value("\${prison.api.url}")
   private val prisonApiBaseUrl: String,
 
-  @Value("\${alerts.api.url}")
+  @param:Value("\${alerts.api.url}")
   private val alertsApiBaseUrl: String,
 
-  @Value("\${prisoner.search.url}")
+  @param:Value("\${prisoner.search.url}")
   private val prisonSearchBaseUrl: String,
 
-  @Value("\${prison-register.api.url}")
+  @param:Value("\${prison-register.api.url}")
   private val prisonRegisterBaseUrl: String,
 
-  @Value("\${prisoner-contact.registry.url}")
+  @param:Value("\${prisoner-contact.registry.url}")
   private val prisonerContactRegistryBaseUrl: String,
 
-  @Value("\${manage-users.api.url}")
+  @param:Value("\${manage-users.api.url}")
   private val manageUsersApiBaseUrl: String,
 
-  @Value("\${whereabouts.api.url}")
+  @param:Value("\${whereabouts.api.url}")
   private val whereAboutsApiUrl: String,
 
-  @Value("\${prison-visit-booker-registry.api.url}")
+  @param:Value("\${prison-visit-booker-registry.api.url}")
   private val prisonVisitBookerRegistryApiUrl: String,
 
-  @Value("\${api.timeout:10s}")
+  @param:Value("\${api.timeout:10s}")
   private val apiTimeout: Duration,
 
-  @Value("\${api.health-timeout:2s}")
+  @param:Value("\${api.health-timeout:2s}")
   private val healthTimeout: Duration,
 ) {
   private enum class HmppsAuthClientRegistrationId(val clientRegistrationId: String) {
@@ -58,6 +58,10 @@ class WebClientConfiguration(
     WHEREABOUTS_API_CLIENT("other-hmpps-apis"),
     PRISON_VISIT_BOOKER_REGISTRY_API_CLIENT("other-hmpps-apis"),
     ALERTS_API("other-hmpps-apis"),
+  }
+
+  companion object {
+    const val GOV_UK_URL = "https://www.gov.uk/"
   }
 
   @Bean
@@ -125,4 +129,7 @@ class WebClientConfiguration(
 
   @Bean
   fun prisonVisitBookerRegistryHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(prisonVisitBookerRegistryApiUrl, healthTimeout)
+
+  @Bean
+  fun govUKWebClient(): WebClient = WebClient.builder().baseUrl(GOV_UK_URL).build()
 }

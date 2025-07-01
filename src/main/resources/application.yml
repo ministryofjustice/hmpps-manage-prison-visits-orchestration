@@ -103,3 +103,15 @@ hmpps:
   sqs:
     enabled: ${hmpps.sqs.enabled}
     queueAdminRole: ROLE_VISITS_QUEUE_ADMIN
+
+gov-uk:
+  api:
+    timeout: 10s
+    bank-holidays-local-cache: bank-holidays.json
+
+cache:
+  evict:
+    bank-holidays:
+      cron: "0 0 0 */7 * ?" #every 7 days
+    bank-holidays-local-cache:
+      cron: "0 0 0 */7 * ?" #every 7 days
