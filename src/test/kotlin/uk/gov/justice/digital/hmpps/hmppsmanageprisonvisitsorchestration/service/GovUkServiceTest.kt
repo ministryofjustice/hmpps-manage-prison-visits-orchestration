@@ -92,14 +92,13 @@ class GovUkServiceTest {
     ).thenReturn(holidaysDto)
 
     // When
-    val futureHolidays = govUkHolidayService.getGovUKBankHolidays(futureOnly = false)
+    val futureHolidays = govUkHolidayService.getGovUKBankHolidays(futureOnly = true)
 
     // Then
-    assertThat(futureHolidays.size).isEqualTo(4)
-    assertThat(futureHolidays[0].date).isEqualTo(LocalDate.now().minusDays(1))
-    assertThat(futureHolidays[1].date).isEqualTo(LocalDate.now())
-    assertThat(futureHolidays[2].date).isEqualTo(LocalDate.now().plusDays(1))
-    assertThat(futureHolidays[3].date).isEqualTo(LocalDate.now().plusDays(2))
+    assertThat(futureHolidays.size).isEqualTo(3)
+    assertThat(futureHolidays[0].date).isEqualTo(LocalDate.now())
+    assertThat(futureHolidays[1].date).isEqualTo(LocalDate.now().plusDays(1))
+    assertThat(futureHolidays[1].date).isEqualTo(LocalDate.now().plusDays(2))
   }
 
   @Test
@@ -125,13 +124,12 @@ class GovUkServiceTest {
     ).thenReturn(holidaysDto)
 
     // When
-    val futureHolidays = govUkHolidayService.getGovUKBankHolidays(futureOnly = false)
+    val futureHolidays = govUkHolidayService.getGovUKBankHolidays(futureOnly = true)
 
     // Then
-    assertThat(futureHolidays.size).isEqualTo(4)
-    assertThat(futureHolidays[0].date).isEqualTo(LocalDate.now().minusDays(1))
-    assertThat(futureHolidays[1].date).isEqualTo(LocalDate.now())
-    assertThat(futureHolidays[2].date).isEqualTo(LocalDate.now().plusDays(1))
-    assertThat(futureHolidays[3].date).isEqualTo(LocalDate.now().plusDays(2))
+    assertThat(futureHolidays.size).isEqualTo(3)
+    assertThat(futureHolidays[0].date).isEqualTo(LocalDate.now())
+    assertThat(futureHolidays[1].date).isEqualTo(LocalDate.now().plusDays(1))
+    assertThat(futureHolidays[2].date).isEqualTo(LocalDate.now().plusDays(2))
   }
 }
