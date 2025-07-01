@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitNoteDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSubStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorSupportDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.OutcomeStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
@@ -30,6 +31,8 @@ data class VisitBookingDetailsDto internal constructor(
   val visitRoom: String,
   @Schema(description = "Visit Status", example = "RESERVED", required = true)
   val visitStatus: VisitStatus,
+  @Schema(description = "Visit Sub Status", example = "AUTO_APPROVED", required = true)
+  val visitSubStatus: VisitSubStatus,
   @Schema(description = "Outcome Status", example = "VISITOR_CANCELLED", required = false)
   val outcomeStatus: OutcomeStatus?,
   @Schema(description = "Visit Restriction", example = "OPEN", required = true)
@@ -71,6 +74,7 @@ data class VisitBookingDetailsDto internal constructor(
     reference = visit.reference,
     visitRoom = visit.visitRoom,
     visitStatus = visit.visitStatus,
+    visitSubStatus = visit.visitSubStatus,
     outcomeStatus = visit.outcomeStatus,
     visitRestriction = visit.visitRestriction,
     startTimestamp = visit.startTimestamp,

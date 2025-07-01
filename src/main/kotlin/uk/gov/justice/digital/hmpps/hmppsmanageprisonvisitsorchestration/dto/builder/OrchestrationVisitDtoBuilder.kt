@@ -17,6 +17,7 @@ class OrchestrationVisitDtoBuilder(
     prisonerLastName = prisoner?.lastName,
     prisonCode = visitDto.prisonCode,
     visitStatus = visitDto.visitStatus,
+    visitSubStatus = visitDto.visitSubStatus,
     outcomeStatus = visitDto.outcomeStatus,
     startTimestamp = visitDto.startTimestamp,
     endTimestamp = visitDto.endTimestamp,

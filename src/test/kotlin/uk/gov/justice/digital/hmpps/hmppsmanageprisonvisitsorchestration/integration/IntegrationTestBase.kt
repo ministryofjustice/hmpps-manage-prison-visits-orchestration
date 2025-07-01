@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitExternalSystemDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSubStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ApplicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ChangeApplicationDto
@@ -216,6 +217,7 @@ abstract class IntegrationTestBase {
     visitRoom: String = "A1 L3",
     visitType: VisitType = VisitType.SOCIAL,
     visitStatus: VisitStatus = VisitStatus.BOOKED,
+    visitSubStatus: VisitSubStatus = VisitSubStatus.AUTO_APPROVED,
     visitRestriction: VisitRestriction = VisitRestriction.OPEN,
     startTimestamp: LocalDateTime = LocalDateTime.now(),
     endTimestamp: LocalDateTime = startTimestamp.plusHours(1),
@@ -236,6 +238,7 @@ abstract class IntegrationTestBase {
     visitRoom = visitRoom,
     visitType = visitType,
     visitStatus = visitStatus,
+    visitSubStatus = visitSubStatus,
     visitRestriction = visitRestriction,
     startTimestamp = startTimestamp,
     endTimestamp = endTimestamp,
