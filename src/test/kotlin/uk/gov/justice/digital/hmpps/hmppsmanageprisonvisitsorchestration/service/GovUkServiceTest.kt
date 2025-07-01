@@ -98,7 +98,7 @@ class GovUkServiceTest {
     assertThat(futureHolidays.size).isEqualTo(3)
     assertThat(futureHolidays[0].date).isEqualTo(LocalDate.now())
     assertThat(futureHolidays[1].date).isEqualTo(LocalDate.now().plusDays(1))
-    assertThat(futureHolidays[1].date).isEqualTo(LocalDate.now().plusDays(2))
+    assertThat(futureHolidays[2].date).isEqualTo(LocalDate.now().plusDays(2))
   }
 
   @Test
