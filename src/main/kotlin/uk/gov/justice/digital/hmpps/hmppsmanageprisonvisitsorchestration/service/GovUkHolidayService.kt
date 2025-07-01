@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GovUKHolidayClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidayEventDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidaysDto
 import java.util.function.Predicate
 
 @Service
@@ -24,20 +23,18 @@ class GovUkHolidayService(
 
   fun getGovUKBankHolidays(futureOnly: Boolean = false): List<HolidayEventDto> {
     LOG.debug("Entered getGovUKBankHolidays, futureOnly:$futureOnly")
-    var holidaysDto: HolidaysDto?
+    var bankHolidays: List<HolidayEventDto>?
     try {
-      holidaysDto = govUKHolidayClient.getHolidays()
+      bankHolidays = govUKHolidayClient.getHolidays()?.englandAndWalesHolidays?.events
     } catch (e: WebClientResponseException) {
       LOG.info("Failed to acquire bank holidays from gov uk api, attempting to acquire from local cache, exception: {}", e.message)
 
-      // TODO - check if this is needed?
-      holidaysDto = govUKHolidayClient.getHolidaysFromLocalCache()
+      // if there was an exception return an empty list
+      bankHolidays = emptyList()
     }
 
-    var bankHolidays = holidaysDto?.englandAndWalesHolidays?.events
-
-    if (futureOnly) {
-      bankHolidays = bankHolidays?.filter { futureDatedHolidays.test(it) }
+    if (futureOnly && !bankHolidays.isNullOrEmpty()) {
+      bankHolidays = bankHolidays.filter { futureDatedHolidays.test(it) }
     }
 
     return bankHolidays?.sortedBy { it.date } ?: emptyList()

@@ -20,11 +20,4 @@ class ScheduledCacheEvictTask {
   fun evictBankHolidaysCache() {
     LOG.debug("Evicting bank holidays cache.")
   }
-
-  // TODO - need to discuss this
-  @Scheduled(cron = "\${cache.evict.bank-holidays-local-cache.cron:0 0 0 */7 * ?}")
-  @CacheEvict(value = ["bank-holidays-local-cache"], allEntries = true)
-  fun evictBankHolidaysLocalCache() {
-    LOG.debug("Evicting bank holidays local cache.")
-  }
 }

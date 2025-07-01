@@ -70,66 +70,32 @@ class GovUkServiceTest {
   }
 
   @Test
-  fun `when future holidays are being retrieved and a NOT_FOUND error occurs then a call is made to get holidays from local cache`() {
-    val events = listOf(
-      HolidayEventDto("tomorrow-is-a-holiday", LocalDate.now().plusDays(1)),
-      HolidayEventDto("yesterday-was-a-holiday", LocalDate.now().minusDays(1)),
-      HolidayEventDto("today-is-a-holiday", LocalDate.now()),
-      HolidayEventDto("day-after-tomorrow-is-a-holiday", LocalDate.now().plusDays(2)),
-    )
-    val holidaysDto = HolidaysDto(
-      englandAndWalesHolidays = HolidayEventByDivisionDto("england-and-wales", events),
-    )
-
+  fun `when future holidays are being retrieved and a NOT_FOUND error occurs then an empty list is returned`() {
     whenever(
       govUKHolidayClient.getHolidays(),
     ).thenThrow(
       WebClientResponseException.create(HttpStatus.NOT_FOUND.value(), "", HttpHeaders.EMPTY, byteArrayOf(), null),
     )
 
-    whenever(
-      govUKHolidayClient.getHolidaysFromLocalCache(),
-    ).thenReturn(holidaysDto)
-
     // When
     val futureHolidays = govUkHolidayService.getGovUKBankHolidays(futureOnly = true)
 
     // Then
-    assertThat(futureHolidays.size).isEqualTo(3)
-    assertThat(futureHolidays[0].date).isEqualTo(LocalDate.now())
-    assertThat(futureHolidays[1].date).isEqualTo(LocalDate.now().plusDays(1))
-    assertThat(futureHolidays[2].date).isEqualTo(LocalDate.now().plusDays(2))
+    assertThat(futureHolidays).isEmpty()
   }
 
   @Test
-  fun `when future holidays are being retrieved and an INTERNAL_SERVER_ERROR error occurs then a call is made to get holidays from local cache`() {
-    val events = listOf(
-      HolidayEventDto("tomorrow-is-a-holiday", LocalDate.now().plusDays(1)),
-      HolidayEventDto("yesterday-was-a-holiday", LocalDate.now().minusDays(1)),
-      HolidayEventDto("today-is-a-holiday", LocalDate.now()),
-      HolidayEventDto("day-after-tomorrow-is-a-holiday", LocalDate.now().plusDays(2)),
-    )
-    val holidaysDto = HolidaysDto(
-      englandAndWalesHolidays = HolidayEventByDivisionDto("england-and-wales", events),
-    )
-
+  fun `when all holidays are being retrieved and an INTERNAL_SERVER_ERROR error occurs then an empty list is returned`() {
     whenever(
       govUKHolidayClient.getHolidays(),
     ).thenThrow(
       WebClientResponseException.create(HttpStatus.INTERNAL_SERVER_ERROR.value(), "", HttpHeaders.EMPTY, byteArrayOf(), null),
     )
 
-    whenever(
-      govUKHolidayClient.getHolidaysFromLocalCache(),
-    ).thenReturn(holidaysDto)
-
     // When
-    val futureHolidays = govUkHolidayService.getGovUKBankHolidays(futureOnly = true)
+    val futureHolidays = govUkHolidayService.getGovUKBankHolidays()
 
     // Then
-    assertThat(futureHolidays.size).isEqualTo(3)
-    assertThat(futureHolidays[0].date).isEqualTo(LocalDate.now())
-    assertThat(futureHolidays[1].date).isEqualTo(LocalDate.now().plusDays(1))
-    assertThat(futureHolidays[2].date).isEqualTo(LocalDate.now().plusDays(2))
+    assertThat(futureHolidays).isEmpty()
   }
 }

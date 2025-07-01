@@ -19,6 +19,7 @@ generic-service:
     WHEREABOUTS_API_URL: https://whereabouts-api.service.justice.gov.uk
     PRISON-VISIT-BOOKER-REGISTRY_API_URL: https://hmpps-prison-visit-booker-registry.prison.service.justice.gov.uk
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
+    CACHE_EVICT_BANK_HOLIDAYS_CRON: "0 0 0 */1 * ?" #every day on PROD
 
 generic-prometheus-alerts:
   alertSeverity: visits-alerts
