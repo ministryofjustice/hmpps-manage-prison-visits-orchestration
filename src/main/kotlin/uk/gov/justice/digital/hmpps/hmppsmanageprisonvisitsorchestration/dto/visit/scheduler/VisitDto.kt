@@ -35,6 +35,8 @@ class VisitDto(
   val visitType: VisitType,
   @Schema(description = "Visit Status", example = "RESERVED", required = true)
   val visitStatus: VisitStatus,
+  @Schema(description = "Visit Sub Status", example = "AUTO_APPROVED", required = true)
+  val visitSubStatus: VisitSubStatus,
   @Schema(description = "Outcome Status", example = "VISITOR_CANCELLED", required = false)
   val outcomeStatus: OutcomeStatus?,
   @Schema(description = "Visit Restriction", example = "OPEN", required = true)
