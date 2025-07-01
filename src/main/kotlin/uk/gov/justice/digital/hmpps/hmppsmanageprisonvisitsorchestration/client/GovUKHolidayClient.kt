@@ -32,7 +32,7 @@ class GovUKHolidayClient(
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
-    const val HOLIDAYS_JSON = "bank-holidays1.json"
+    const val HOLIDAYS_JSON = "bank-holidays.json"
   }
 
   @Cacheable("bank-holidays", unless = "#result == null")
