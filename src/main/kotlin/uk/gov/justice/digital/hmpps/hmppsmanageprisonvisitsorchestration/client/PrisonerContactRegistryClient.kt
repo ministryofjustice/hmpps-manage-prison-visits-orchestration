@@ -180,7 +180,7 @@ class PrisonerContactRegistryClient(
     return uriBuilder.build()
   }
 
-  class VisitorRestrictionDateRangeRequestDto(
+  data class VisitorRestrictionDateRangeRequestDto(
     val prisonerId: String,
     val visitors: List<String>,
     val restrictionCodesForReview: List<String>,
