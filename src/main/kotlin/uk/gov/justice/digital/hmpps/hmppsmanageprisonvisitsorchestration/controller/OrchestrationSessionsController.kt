@@ -144,6 +144,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       description = "Defaults to true if not passed. If true, will not return visit times that clash with higher priority legal or medical appointments.",
     )
     withAppointmentsCheck: Boolean? = true,
+    // TODO - to be removed as PVB does not use this parameter
     @RequestParam(value = "excludedApplicationReference", required = false)
     @Parameter(
       description = "The current application reference to be excluded from capacity count and double booking",
@@ -179,6 +180,8 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     toDateOverride = toDateOverride,
     username = username,
     userType = userType,
+    // TODO - to be removed as PVB does not use this parameter
+    excludedApplicationReference = excludedApplicationReference,
   )
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
