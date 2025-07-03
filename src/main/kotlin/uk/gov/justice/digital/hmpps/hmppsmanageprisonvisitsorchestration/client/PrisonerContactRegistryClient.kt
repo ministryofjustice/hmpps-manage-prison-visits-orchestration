@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
+import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.util.UriBuilder
@@ -21,11 +22,20 @@ import java.util.*
 
 @Component
 class PrisonerContactRegistryClient(
-  @Qualifier("prisonerContactRegistryWebClient") private val webClient: WebClient,
-  @Value("\${prisoner-contact.registry.timeout:10s}") private val apiTimeout: Duration,
+  @param:Qualifier("prisonerContactRegistryWebClient")
+  private val webClient: WebClient,
+  @param:Value("\${prisoner-contact.registry.timeout:10s}")
+  private val apiTimeout: Duration,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
+    const val CONTACT_REGISTRY_CONTACTS_PATH: String = "/v2/prisoners/{prisonerId}/contacts"
+    const val CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_PATH: String = "$CONTACT_REGISTRY_CONTACTS_PATH/social/approved"
+    const val CONTACT_REGISTRY_SOCIAL_CONTACTS_PATH: String = "$CONTACT_REGISTRY_CONTACTS_PATH/social"
+    const val CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_RESTRICTIONS_PATH: String = "$CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_PATH/restrictions"
+    const val CONTACT_REGISTRY_BANNED_RESTRICTION_DATE_RANGE_PATH: String = "$CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_RESTRICTIONS_PATH/banned/dateRange"
+    const val CONTACT_REGISTRY_HAS_CLOSED_RESTRICTIONS_PATH: String = "$CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_RESTRICTIONS_PATH/closed"
+    const val CONTACT_REGISTRY_REVIEW_RESTRICTIONS_DATE_RANGES_PATH: String = "$CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_RESTRICTIONS_PATH/visit-request/date-ranges"
   }
 
   fun getPrisonersApprovedSocialContacts(
@@ -33,7 +43,7 @@ class PrisonerContactRegistryClient(
     withAddress: Boolean,
     hasDateOfBirth: Boolean? = null,
   ): List<PrisonerContactDto> {
-    val uri = "v2/prisoners/$prisonerId/contacts/social/approved"
+    val uri = CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_PATH.replace("{prisonerId}", prisonerId)
     return webClient.get().uri(uri) {
       getSocialContactsUriBuilder(withAddress, hasDateOfBirth, it).build()
     }.retrieve()
@@ -55,7 +65,7 @@ class PrisonerContactRegistryClient(
     withAddress: Boolean,
     hasDateOfBirth: Boolean? = null,
   ): List<PrisonerContactDto> {
-    val uri = "v2/prisoners/$prisonerId/contacts/social"
+    val uri = CONTACT_REGISTRY_SOCIAL_CONTACTS_PATH.replace("{prisonerId}", prisonerId)
     return getPrisonersSocialContactsAsMono(prisonerId, withAddress, hasDateOfBirth)
       .onErrorResume { e ->
         if (!isNotFoundError(e)) {
@@ -74,7 +84,7 @@ class PrisonerContactRegistryClient(
     withAddress: Boolean,
     hasDateOfBirth: Boolean? = null,
   ): Mono<List<PrisonerContactDto>> {
-    val uri = "v2/prisoners/$prisonerId/contacts/social"
+    val uri = CONTACT_REGISTRY_SOCIAL_CONTACTS_PATH.replace("{prisonerId}", prisonerId)
     return webClient.get().uri(uri) {
       getSocialContactsUriBuilder(withAddress, hasDateOfBirth, it).build()
     }
@@ -93,7 +103,7 @@ class PrisonerContactRegistryClient(
   }
 
   fun getBannedRestrictionDateRange(prisonerId: String, visitors: List<Long>, prisonDateRange: DateRange): DateRange {
-    val uri = "v2/prisoners/$prisonerId/contacts/social/approved/restrictions/banned/dateRange"
+    val uri = CONTACT_REGISTRY_BANNED_RESTRICTION_DATE_RANGE_PATH.replace("{prisonerId}", prisonerId)
 
     return webClient.get()
       .uri(uri) {
@@ -115,7 +125,7 @@ class PrisonerContactRegistryClient(
   }
 
   fun doVisitorsHaveClosedRestrictions(prisonerId: String, visitors: List<Long>): Boolean {
-    val uri = "v2/prisoners/$prisonerId/contacts/social/approved/restrictions/closed"
+    val uri = CONTACT_REGISTRY_HAS_CLOSED_RESTRICTIONS_PATH.replace("{prisonerId}", prisonerId)
 
     return webClient.get()
       .uri(uri) {
@@ -134,6 +144,30 @@ class PrisonerContactRegistryClient(
       .blockOptional(apiTimeout).get().value
   }
 
+  fun getVisitorRestrictionDateRanges(prisonerId: String, visitors: List<Long>, restrictionCodesForReview: List<String>, sessionDateRange: DateRange): List<DateRange>? {
+    val uri = CONTACT_REGISTRY_REVIEW_RESTRICTIONS_DATE_RANGES_PATH.replace("{prisonerId}", prisonerId)
+    val visitorRestrictionDateRangeRequestDto = VisitorRestrictionDateRangeRequestDto(
+      prisonerId = prisonerId,
+      visitors = visitors.map { it.toString() },
+      restrictionCodesForReview = restrictionCodesForReview,
+      sessionDateRange = sessionDateRange,
+    )
+
+    return webClient.post()
+      .uri(uri)
+      .body(BodyInserters.fromValue(visitorRestrictionDateRangeRequestDto))
+      .retrieve()
+      .bodyToMono<List<DateRange>>()
+      .onErrorResume { e ->
+        if (!isNotFoundError(e)) {
+          LOG.error("getVisitorRestrictionDateRanges failed for request $uri")
+        } else {
+          LOG.error("getVisitorRestrictionDateRanges failed with NOT_FOUND error for request $uri")
+        }
+        return@onErrorResume Mono.justOrEmpty(null)
+      }.block(apiTimeout)
+  }
+
   private fun getVisitorsHaveClosedRestrictionsParams(visitorIds: List<Long>, uriBuilder: UriBuilder): URI {
     uriBuilder.queryParam("visitors", visitorIds.joinToString(","))
     return uriBuilder.build()
@@ -145,4 +179,11 @@ class PrisonerContactRegistryClient(
     uriBuilder.queryParam("toDate", dateRange.toDate)
     return uriBuilder.build()
   }
+
+  class VisitorRestrictionDateRangeRequestDto(
+    val prisonerId: String,
+    val visitors: List<String>,
+    val restrictionCodesForReview: List<String>,
+    val sessionDateRange: DateRange,
+  )
 }
