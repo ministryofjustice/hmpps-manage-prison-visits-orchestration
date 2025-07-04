@@ -1,8 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.enums
 
 enum class PrisonerRestrictionsForReview {
+  ACC,
+  CCTV,
   CHILD,
+  DIHCON,
   NONCON,
   PREINF,
-  RESTRICT,
+  RESTRICTED,
 }

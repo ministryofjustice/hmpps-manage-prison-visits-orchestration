@@ -308,15 +308,15 @@ class VisitSchedulerSessionsService(
       }
 
     availableSessions.filter { dateUtils.isDateBetweenDateRanges(prisonerRestrictionDateRanges, it.sessionDate) }.forEach {
-      it.isSessionForReview = true
+      it.sessionForReview = true
     }
 
-    if (visitors != null && availableSessions.any { !it.isSessionForReview }) {
+    if (visitors != null && availableSessions.any { !it.sessionForReview }) {
       val visitorRestrictionDateRanges = getVisitorsRestrictionDateRanges(prisonerId, visitors, visitorRestrictionCodesForReview, dateRange)
 
       // only for any sessions that are not for review - if the session date falls within visitor restriction date range set the session for review
-      availableSessions.filter { !it.isSessionForReview.and(dateUtils.isDateBetweenDateRanges(visitorRestrictionDateRanges, it.sessionDate)) }.forEach {
-        it.isSessionForReview = true
+      availableSessions.filter { (!it.sessionForReview).and(dateUtils.isDateBetweenDateRanges(visitorRestrictionDateRanges, it.sessionDate)) }.forEach {
+        it.sessionForReview = true
       }
     }
   }

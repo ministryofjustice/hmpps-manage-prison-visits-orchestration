@@ -27,5 +27,5 @@ data class AvailableVisitSessionDto(
   val sessionRestriction: SessionRestriction,
 
   @param:Schema(description = "Does session need review, defaults to false", example = "true", required = true)
-  var isSessionForReview: Boolean = false,
+  var sessionForReview: Boolean = false,
 )
