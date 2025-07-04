@@ -5,8 +5,10 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonApiClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.enums.RestrictionsForReview
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.enums.PrisonerRestrictionsForReview
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.enums.VisitorRestrictionsForReview
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
@@ -36,12 +38,12 @@ class VisitSchedulerSessionsService(
   private val excludeDatesService: ExcludeDatesService,
   private val dateUtils: DateUtils,
   private val prisonApiClient: PrisonApiClient,
+  private val prisonerContactRegistryClient: PrisonerContactRegistryClient,
 
   @param:Value("\${public.service.from-date-override: 2}")
   private val publicServiceFromDateOverride: Long,
   @param:Value("\${public.service.to-date-override: 28}")
   private val publicServiceToDateOverride: Long,
-
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -296,9 +298,11 @@ class VisitSchedulerSessionsService(
     dateRange: DateRange,
     availableSessions: List<AvailableVisitSessionDto>,
   ) {
-    val requestRestrictions = RestrictionsForReview.entries.map { it.name }
+    val prisonerRestrictionCodesForReview = PrisonerRestrictionsForReview.entries.map { it.name }
+    val visitorRestrictionCodesForReview = VisitorRestrictionsForReview.entries.map { it.name }
+
     val prisonerRestrictionDateRanges =
-      getPrisonerRestrictionDateRanges(prisonerId, requestRestrictions).let { restrictionDateRanges ->
+      getPrisonerRestrictionDateRanges(prisonerId, prisonerRestrictionCodesForReview).let { restrictionDateRanges ->
         dateUtils.getUniqueDateRanges(restrictionDateRanges = restrictionDateRanges ?: emptyList(), dateRange)
           .sortedBy { it.fromDate }
       }
@@ -308,9 +312,9 @@ class VisitSchedulerSessionsService(
     }
 
     if (visitors != null && availableSessions.any { !it.isSessionForReview }) {
-      val visitorRestrictionDateRanges = getVisitorsRestrictionDateRanges(prisonerId, visitors, requestRestrictions)
+      val visitorRestrictionDateRanges = getVisitorsRestrictionDateRanges(prisonerId, visitors, visitorRestrictionCodesForReview, dateRange)
 
-      // only for any sessions that are not for review - id the session date falls within visitor restriction date range set the session for review
+      // only for any sessions that are not for review - if the session date falls within visitor restriction date range set the session for review
       availableSessions.filter { !it.isSessionForReview.and(dateUtils.isDateBetweenDateRanges(visitorRestrictionDateRanges, it.sessionDate)) }.forEach {
         it.isSessionForReview = true
       }
@@ -319,9 +323,9 @@ class VisitSchedulerSessionsService(
 
   private fun getPrisonerRestrictionDateRanges(
     prisonerId: String,
-    requestRestrictions: List<String>,
+    restrictionCodesForReview: List<String>,
   ): List<IndefiniteDateRange>? = prisonApiClient.getPrisonerRestrictions(prisonerId).offenderRestrictions?.let { offenderRestrictions ->
-    offenderRestrictions.filter { it.restrictionType in requestRestrictions }.map { offenderRestriction ->
+    offenderRestrictions.filter { it.restrictionType in restrictionCodesForReview }.map { offenderRestriction ->
       IndefiniteDateRange(
         fromDate = offenderRestriction.startDate,
         toDate = offenderRestriction.expiryDate,
@@ -329,13 +333,13 @@ class VisitSchedulerSessionsService(
     }
   }
 
-  // TODO - to be implemented
   private fun getVisitorsRestrictionDateRanges(
     prisonerId: String,
     visitors: List<Long>,
-    requestRestrictions: List<String>,
+    restrictionCodesForReview: List<String>,
+    dateRange: DateRange,
   ): List<DateRange> {
-    // TODO - to be implemented - call prisoner registry to get visitors restriction's date ranges
-    return emptyList()
+    val dateRanges = prisonerContactRegistryClient.getVisitorRestrictionDateRanges(prisonerId, visitors, restrictionCodesForReview, dateRange)
+    return dateRanges ?: emptyList()
   }
 }
