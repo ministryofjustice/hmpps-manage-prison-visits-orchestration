@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -182,8 +183,11 @@ class PrisonerContactRegistryClient(
 
   data class VisitorRestrictionDateRangeRequestDto(
     val prisonerId: String,
+    @param:JsonProperty("visitorIds")
     val visitors: List<String>,
+    @param:JsonProperty("supportedVisitorRestrictionsCodesForRequestVisits")
     val restrictionCodesForReview: List<String>,
+    @param:JsonProperty("currentDateRange")
     val sessionDateRange: DateRange,
   )
 }

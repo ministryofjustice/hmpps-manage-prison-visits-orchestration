@@ -262,4 +262,13 @@ class DateUtilsTest {
 
     Assertions.assertThat(dateUtils.isDateBetweenDateRanges(dateRanges, dateToBeChecked)).isFalse
   }
+
+  @Test
+  fun `test isDateBetweenDateRanges with different date ranges - check if date ranges is empty`() {
+    // date ranges are empty
+    val dateToBeChecked = LocalDate.now().plusDays(12)
+    val dateRanges: List<DateRange> = emptyList()
+
+    Assertions.assertThat(dateUtils.isDateBetweenDateRanges(dateRanges, dateToBeChecked)).isFalse
+  }
 }
