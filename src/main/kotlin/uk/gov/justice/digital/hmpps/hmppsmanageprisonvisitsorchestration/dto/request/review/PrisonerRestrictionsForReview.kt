@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.enums
+package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.request.review
 
 enum class PrisonerRestrictionsForReview {
   ACC,

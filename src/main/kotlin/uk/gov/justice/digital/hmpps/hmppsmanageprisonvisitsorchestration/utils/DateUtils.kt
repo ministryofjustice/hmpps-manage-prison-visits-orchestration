@@ -53,14 +53,14 @@ class DateUtils {
   }
 
   fun getUniqueDateRanges(
-    restrictionDateRanges: List<IndefiniteDateRange>,
+    dateRanges: List<IndefiniteDateRange>,
     dateRangeToCheckAgainst: DateRange,
   ): List<DateRange> {
-    val uniqueDateRanges = restrictionDateRanges.filter { restrictionDateRange ->
+    val uniqueDateRanges = dateRanges.filter { dateRange ->
       // consider only null expiry dates or restriction to date not before from date
-      (restrictionDateRange.toDate == null || (!restrictionDateRange.toDate.isBefore(dateRangeToCheckAgainst.fromDate)))
+      (dateRange.toDate == null || (!dateRange.toDate.isBefore(dateRangeToCheckAgainst.fromDate)))
         // also ignore any date ranges that start after the checked date range to date
-        .and(!restrictionDateRange.fromDate.isAfter(dateRangeToCheckAgainst.toDate))
+        .and(!dateRange.fromDate.isAfter(dateRangeToCheckAgainst.toDate))
     }.map { restrictionDateRange ->
       // if restriction start date is after dateRange fromDate use restriction start date else date range start date
       val fromDate = if (restrictionDateRange.fromDate.isAfter(dateRangeToCheckAgainst.fromDate)) restrictionDateRange.fromDate else dateRangeToCheckAgainst.fromDate
