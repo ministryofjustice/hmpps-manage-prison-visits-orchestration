@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.IsExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.ScheduledEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.DateRangeNotFoundException
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonService.Companion.logger
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
 import java.time.LocalDate
@@ -313,14 +314,14 @@ class VisitSchedulerSessionsService(
 
     // check for alerts that will force the session to go under review
     if (hasSessionsNotUnderReview(availableSessions)) {
-      getPrisonerAlertsDateRanges(prisonerId, prisonerAlertCodesForReview).takeIf { it.isNotEmpty() }?.let {
+      getPrisonerAlertsDateRanges(prisonerId, prisonerAlertCodesForReview, dateRange).takeIf { it.isNotEmpty() }?.let {
         markSessionsForReview(it, dateRange, availableSessions)
       }
     }
 
     // check for prisoner restrictions that will force the session to go under review
     if (hasSessionsNotUnderReview(availableSessions)) {
-      getPrisonerRestrictionDateRanges(prisonerId, prisonerRestrictionCodesForReview)?.let {
+      getPrisonerRestrictionDateRanges(prisonerId, prisonerRestrictionCodesForReview, dateRange)?.let {
         markSessionsForReview(it, dateRange, availableSessions)
       }
     }
@@ -336,6 +337,7 @@ class VisitSchedulerSessionsService(
   private fun getPrisonerAlertsDateRanges(
     prisonerId: String,
     alertCodesForReview: List<String>,
+    dateRange: DateRange,
   ): List<IndefiniteDateRange> {
     val alertsDateRanges = try {
       alertsApiClient.getPrisonerAlerts(prisonerId)
@@ -347,9 +349,9 @@ class VisitSchedulerSessionsService(
             )
           }
         }
-    } catch (_: WebClientResponseException) {
-      // ignore the error and return an empty list instead
-      emptyList()
+    } catch (e: WebClientResponseException) {
+      LOG.info("There was an exception - {}  getting alerts for prisoner - {}, marking all available visit sessions for review.", e.message, prisonerId)
+      return listOf(IndefiniteDateRange(dateRange))
     }
 
     return alertsDateRanges
@@ -358,13 +360,26 @@ class VisitSchedulerSessionsService(
   private fun getPrisonerRestrictionDateRanges(
     prisonerId: String,
     restrictionCodesForReview: List<String>,
-  ): List<IndefiniteDateRange>? = prisonApiClient.getPrisonerRestrictions(prisonerId).offenderRestrictions?.let { offenderRestrictions ->
-    offenderRestrictions.filter { it.restrictionType in restrictionCodesForReview }.map { offenderRestriction ->
-      IndefiniteDateRange(
-        fromDate = offenderRestriction.startDate,
-        toDate = offenderRestriction.expiryDate,
-      )
+    dateRange: DateRange,
+  ): List<IndefiniteDateRange>? {
+    val prisonerRestrictionDateRanges = try {
+      prisonApiClient.getPrisonerRestrictions(prisonerId).offenderRestrictions?.let { offenderRestrictions ->
+        offenderRestrictions.filter { it.restrictionType in restrictionCodesForReview }.map { offenderRestriction ->
+          IndefiniteDateRange(
+            fromDate = offenderRestriction.startDate,
+            toDate = offenderRestriction.expiryDate,
+          )
+        }
+      }
+    } catch (e: WebClientResponseException) {
+      LOG.info("There was a web client exception - {}  getting prisoner restrictions for prisoner - {}, marking all available visit sessions for review.", e.message, prisonerId)
+      return listOf(IndefiniteDateRange(dateRange))
+    } catch (e: NotFoundException) {
+      LOG.info("There was a NOT_FOUND exception - {}  getting prisoner restrictions for prisoner - {}, marking all available visit sessions for review.", e.message, prisonerId)
+      return listOf(IndefiniteDateRange(dateRange))
     }
+
+    return prisonerRestrictionDateRanges
   }
 
   private fun getVisitorsRestrictionDateRanges(
@@ -373,8 +388,14 @@ class VisitSchedulerSessionsService(
     restrictionCodesForReview: List<String>,
     dateRange: DateRange,
   ): List<DateRange> {
-    val dateRanges = prisonerContactRegistryClient.getVisitorRestrictionDateRanges(prisonerId, visitors, restrictionCodesForReview, dateRange)
-    return dateRanges ?: emptyList()
+    val visitorRestrictionDateRanges = try {
+      prisonerContactRegistryClient.getVisitorRestrictionDateRanges(prisonerId, visitors, restrictionCodesForReview, dateRange) ?: emptyList()
+    } catch (e: WebClientResponseException) {
+      LOG.info("There was an exception - {}  getting visitor restrictions for prisoner - {} and visitors - {}, marking all available visit sessions for review.", e.message, prisonerId, visitors)
+      return listOf(dateRange)
+    }
+
+    return visitorRestrictionDateRanges
   }
 
   private fun markSessionsForReview(dateRanges: List<IndefiniteDateRange>, sessionDateRange: DateRange, availableSessions: List<AvailableVisitSessionDto>) {

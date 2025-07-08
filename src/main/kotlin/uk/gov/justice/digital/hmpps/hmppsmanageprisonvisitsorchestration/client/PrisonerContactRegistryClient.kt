@@ -165,7 +165,7 @@ class PrisonerContactRegistryClient(
         } else {
           LOG.error("getVisitorRestrictionDateRanges failed with NOT_FOUND error for request $uri")
         }
-        return@onErrorResume Mono.justOrEmpty(null)
+        Mono.error(e)
       }.block(apiTimeout)
   }
 
