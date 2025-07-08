@@ -764,7 +764,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when call to alerts API throws NOT_FOUND then all sessions are sent back with sessionForReview flag set to false`() {
+  fun `when call to alerts API throws NOT_FOUND then all sessions are sent back with sessionForReview flag set to true`() {
     // Given
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, null, HttpStatus.NOT_FOUND)
     val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
@@ -782,16 +782,16 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     val availableSessions = getResults(returnResult)
     assertThat(availableSessions.size).isEqualTo(3)
     assertThat(availableSessions[0].sessionTemplateReference).isEqualTo(visitSession1.sessionTemplateReference)
-    assertThat(availableSessions[0].sessionForReview).isFalse
+    assertThat(availableSessions[0].sessionForReview).isTrue
     assertThat(availableSessions[1].sessionTemplateReference).isEqualTo(visitSession2.sessionTemplateReference)
-    assertThat(availableSessions[1].sessionForReview).isFalse
+    assertThat(availableSessions[1].sessionForReview).isTrue
     assertThat(availableSessions[2].sessionTemplateReference).isEqualTo(visitSession3.sessionTemplateReference)
-    assertThat(availableSessions[2].sessionForReview).isFalse
+    assertThat(availableSessions[2].sessionForReview).isTrue
 
     verify(prisonerContactRegistryClientSpy, times(1)).doVisitorsHaveClosedRestrictions(prisonerId, visitorIds)
     verify(prisonerContactRegistryClientSpy, times(1)).getBannedRestrictionDateRange(prisonerId, visitorIds, dateRange)
-    verify(prisonerContactRegistryClientSpy, times(1)).getVisitorRestrictionDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange)
-    verify(prisonApiClientSpy, times(2)).getPrisonerRestrictions(prisonerId)
+    verify(prisonerContactRegistryClientSpy, times(0)).getVisitorRestrictionDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange)
+    verify(prisonApiClientSpy, times(1)).getPrisonerRestrictions(prisonerId)
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
@@ -799,7 +799,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when call to alerts API throws INTERNAL_SERVER_ERROR then all sessions are sent back with sessionForReview flag set to false`() {
+  fun `when call to alerts API throws INTERNAL_SERVER_ERROR then all sessions are sent back with sessionForReview flag set to true`() {
     // Given
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, null, HttpStatus.INTERNAL_SERVER_ERROR)
     val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
@@ -817,87 +817,16 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     val availableSessions = getResults(returnResult)
     assertThat(availableSessions.size).isEqualTo(3)
     assertThat(availableSessions[0].sessionTemplateReference).isEqualTo(visitSession1.sessionTemplateReference)
-    assertThat(availableSessions[0].sessionForReview).isFalse
+    assertThat(availableSessions[0].sessionForReview).isTrue
     assertThat(availableSessions[1].sessionTemplateReference).isEqualTo(visitSession2.sessionTemplateReference)
-    assertThat(availableSessions[1].sessionForReview).isFalse
+    assertThat(availableSessions[1].sessionForReview).isTrue
     assertThat(availableSessions[2].sessionTemplateReference).isEqualTo(visitSession3.sessionTemplateReference)
-    assertThat(availableSessions[2].sessionForReview).isFalse
+    assertThat(availableSessions[2].sessionForReview).isTrue
 
     verify(prisonerContactRegistryClientSpy, times(1)).doVisitorsHaveClosedRestrictions(prisonerId, visitorIds)
     verify(prisonerContactRegistryClientSpy, times(1)).getBannedRestrictionDateRange(prisonerId, visitorIds, dateRange)
-    verify(prisonerContactRegistryClientSpy, times(1)).getVisitorRestrictionDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange)
-    verify(prisonApiClientSpy, times(2)).getPrisonerRestrictions(prisonerId)
-    verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
-    verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
-    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
-  }
-
-  @Test
-  fun `when call to get prisoner restrictions throws NOT_FOUND then all sessions are sent back with sessionForReview flag set to false`() {
-    // Given
-    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, null, HttpStatus.NOT_FOUND)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
-
-    prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
-    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = listOf()))
-    prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
-    alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf())
-
-    // When
-    val responseSpec = callGetAvailableVisitSessionsV2(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
-
-    // Then
-    val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val availableSessions = getResults(returnResult)
-    assertThat(availableSessions.size).isEqualTo(3)
-    assertThat(availableSessions[0].sessionTemplateReference).isEqualTo(visitSession1.sessionTemplateReference)
-    assertThat(availableSessions[0].sessionForReview).isFalse
-    assertThat(availableSessions[1].sessionTemplateReference).isEqualTo(visitSession2.sessionTemplateReference)
-    assertThat(availableSessions[1].sessionForReview).isFalse
-    assertThat(availableSessions[2].sessionTemplateReference).isEqualTo(visitSession3.sessionTemplateReference)
-    assertThat(availableSessions[2].sessionForReview).isFalse
-
-    verify(prisonerContactRegistryClientSpy, times(1)).doVisitorsHaveClosedRestrictions(prisonerId, visitorIds)
-    verify(prisonerContactRegistryClientSpy, times(1)).getBannedRestrictionDateRange(prisonerId, visitorIds, dateRange)
-    verify(prisonerContactRegistryClientSpy, times(1)).getVisitorRestrictionDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange)
-    verify(prisonApiClientSpy, times(2)).getPrisonerRestrictions(prisonerId)
-    verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
-    verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
-    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
-  }
-
-  @Test
-  fun `when call to prisoner restrictions throws INTERNAL_SERVER_ERROR then all sessions are sent back with sessionForReview flag set to false`() {
-    // Given
-    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, null, HttpStatus.INTERNAL_SERVER_ERROR)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
-
-    prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
-    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = listOf()))
-    prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
-
-    // When
-    val responseSpec = callGetAvailableVisitSessionsV2(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
-
-    // Then
-    val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val availableSessions = getResults(returnResult)
-    assertThat(availableSessions.size).isEqualTo(3)
-    assertThat(availableSessions[0].sessionTemplateReference).isEqualTo(visitSession1.sessionTemplateReference)
-    assertThat(availableSessions[0].sessionForReview).isFalse
-    assertThat(availableSessions[1].sessionTemplateReference).isEqualTo(visitSession2.sessionTemplateReference)
-    assertThat(availableSessions[1].sessionForReview).isFalse
-    assertThat(availableSessions[2].sessionTemplateReference).isEqualTo(visitSession3.sessionTemplateReference)
-    assertThat(availableSessions[2].sessionForReview).isFalse
-
-    verify(prisonerContactRegistryClientSpy, times(1)).doVisitorsHaveClosedRestrictions(prisonerId, visitorIds)
-    verify(prisonerContactRegistryClientSpy, times(1)).getBannedRestrictionDateRange(prisonerId, visitorIds, dateRange)
-    verify(prisonerContactRegistryClientSpy, times(1)).getVisitorRestrictionDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange)
-    verify(prisonApiClientSpy, times(2)).getPrisonerRestrictions(prisonerId)
+    verify(prisonerContactRegistryClientSpy, times(0)).getVisitorRestrictionDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange)
+    verify(prisonApiClientSpy, times(1)).getPrisonerRestrictions(prisonerId)
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
@@ -925,11 +854,11 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     val availableSessions = getResults(returnResult)
     assertThat(availableSessions.size).isEqualTo(3)
     assertThat(availableSessions[0].sessionTemplateReference).isEqualTo(visitSession1.sessionTemplateReference)
-    assertThat(availableSessions[0].sessionForReview).isFalse
+    assertThat(availableSessions[0].sessionForReview).isTrue
     assertThat(availableSessions[1].sessionTemplateReference).isEqualTo(visitSession2.sessionTemplateReference)
-    assertThat(availableSessions[1].sessionForReview).isFalse
+    assertThat(availableSessions[1].sessionForReview).isTrue
     assertThat(availableSessions[2].sessionTemplateReference).isEqualTo(visitSession3.sessionTemplateReference)
-    assertThat(availableSessions[2].sessionForReview).isFalse
+    assertThat(availableSessions[2].sessionForReview).isTrue
 
     verify(prisonerContactRegistryClientSpy, times(1)).doVisitorsHaveClosedRestrictions(prisonerId, visitorIds)
     verify(prisonerContactRegistryClientSpy, times(1)).getBannedRestrictionDateRange(prisonerId, visitorIds, dateRange)
@@ -950,7 +879,6 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
 
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = listOf()))
-    prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
     whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
@@ -961,11 +889,11 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     val availableSessions = getResults(returnResult)
     assertThat(availableSessions.size).isEqualTo(3)
     assertThat(availableSessions[0].sessionTemplateReference).isEqualTo(visitSession1.sessionTemplateReference)
-    assertThat(availableSessions[0].sessionForReview).isFalse
+    assertThat(availableSessions[0].sessionForReview).isTrue
     assertThat(availableSessions[1].sessionTemplateReference).isEqualTo(visitSession2.sessionTemplateReference)
-    assertThat(availableSessions[1].sessionForReview).isFalse
+    assertThat(availableSessions[1].sessionForReview).isTrue
     assertThat(availableSessions[2].sessionTemplateReference).isEqualTo(visitSession3.sessionTemplateReference)
-    assertThat(availableSessions[2].sessionForReview).isFalse
+    assertThat(availableSessions[2].sessionForReview).isTrue
 
     verify(prisonerContactRegistryClientSpy, times(1)).doVisitorsHaveClosedRestrictions(prisonerId, visitorIds)
     verify(prisonerContactRegistryClientSpy, times(1)).getBannedRestrictionDateRange(prisonerId, visitorIds, dateRange)
