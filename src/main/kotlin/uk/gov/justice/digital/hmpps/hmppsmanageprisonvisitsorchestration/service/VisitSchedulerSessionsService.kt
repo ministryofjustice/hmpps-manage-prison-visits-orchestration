@@ -40,6 +40,7 @@ class VisitSchedulerSessionsService(
   private val prisonerProfileService: PrisonerProfileService,
   private val prisonService: PrisonService,
   private val excludeDatesService: ExcludeDatesService,
+  private val govUkHolidayService: GovUkHolidayService,
   private val dateUtils: DateUtils,
   private val prisonApiClient: PrisonApiClient,
   private val prisonerContactRegistryClient: PrisonerContactRegistryClient,
@@ -52,8 +53,8 @@ class VisitSchedulerSessionsService(
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
-    const val CLASHING_APPOINTMENT_LOG_MSG =
-      "Visit session for prisonerId - {}, date - {}, start time - {}, end time - {} is unavailable as it clashes with {} medical / legal appointment(s), appointment details - {}"
+    const val CLASHING_APPOINTMENT_LOG_MSG = "Visit session for prisonerId - {}, date - {}, start time - {}, end time - {} is unavailable as it clashes with {} medical / legal appointment(s), appointment details - {}"
+    const val TOTAL_DAYS_TO_ADD_IF_SESSIONS_UNDER_REVIEW: Int = 2
 
     val availableVisitSessionsSortOrder: Comparator<AvailableVisitSessionDto> = compareBy(
       { it.sessionDate },
@@ -121,7 +122,7 @@ class VisitSchedulerSessionsService(
 
     val dateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, fromDateOverride = publicServiceFromDateOverride.toInt(), toDateOverride = publicServiceToDateOverride.toInt())
 
-    val availableVisitSessions = getAvailableVisitSessionsForDateRange(
+    var availableVisitSessions = getAvailableVisitSessionsForDateRange(
       prisonCode = prisonCode,
       prisonerId = prisonerId,
       visitors = visitors,
@@ -135,6 +136,11 @@ class VisitSchedulerSessionsService(
     }?.takeIf { it.isNotEmpty() }?.also {
       setSessionForReview(prisonerId, visitors, dateRange, it)
     } ?: emptyList()
+
+    if (hasSessionsUnderReview(availableVisitSessions)) {
+      val newDateRangeStartDate = advanceFromDateIfSessionsUnderReview(dateRange)
+      availableVisitSessions = availableVisitSessions.filter { it.sessionDate >= newDateRangeStartDate }
+    }
 
     return availableVisitSessions.sortedWith(availableVisitSessionsSortOrder)
   }
@@ -407,4 +413,12 @@ class VisitSchedulerSessionsService(
   }
 
   private fun hasSessionsNotUnderReview(availableSessions: List<AvailableVisitSessionDto>): Boolean = availableSessions.any { !it.sessionForReview }
+
+  private fun hasSessionsUnderReview(availableSessions: List<AvailableVisitSessionDto>): Boolean = availableSessions.any { it.sessionForReview }
+
+  private fun advanceFromDateIfSessionsUnderReview(dateRange: DateRange): LocalDate {
+    val newFromDate = dateRange.fromDate.plusDays(TOTAL_DAYS_TO_ADD_IF_SESSIONS_UNDER_REVIEW.toLong())
+    val bankHolidays = govUkHolidayService.getGovUKBankHolidays(dateRange).map { it.date }
+    return dateUtils.advanceDaysIfWeekendOrBankHoliday(newFromDate, dateRange.toDate, bankHolidays)
+  }
 }

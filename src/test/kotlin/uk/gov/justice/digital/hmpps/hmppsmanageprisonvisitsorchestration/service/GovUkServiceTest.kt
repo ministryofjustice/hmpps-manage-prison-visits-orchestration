@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
@@ -13,12 +14,22 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidayEventByDivisionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidayEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidaysDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
 import java.time.LocalDate
 
 @ExtendWith(MockitoExtension::class)
 class GovUkServiceTest {
   private val govUKHolidayClient = mock<GovUKHolidayClient>()
-  private val govUkHolidayService = GovUkHolidayService(govUKHolidayClient)
+  private val dateUtils = mock<DateUtils>()
+  private val govUkHolidayService = GovUkHolidayService(govUKHolidayClient, dateUtils)
+
+  @BeforeEach
+  fun setup() {
+    whenever(
+      dateUtils.getCurrentDate(),
+    ).thenReturn(LocalDate.now())
+  }
 
   @Test
   fun `when future holidays are being retrieved with future flag as true only current and future dated ones are returned`() {
@@ -67,6 +78,56 @@ class GovUkServiceTest {
     assertThat(futureHolidays[0].date).isEqualTo(LocalDate.now().minusDays(1))
     assertThat(futureHolidays[1].date).isEqualTo(LocalDate.now())
     assertThat(futureHolidays[2].date).isEqualTo(LocalDate.now().plusDays(1))
+  }
+
+  @Test
+  fun `when holidays are being retrieved for a date range holiday dates in passed date range are returned`() {
+    val events = listOf(
+      HolidayEventDto("day-after-tomorrow-is-a-holiday", LocalDate.now().plusDays(2)),
+      HolidayEventDto("day-before-yesterday-was-a-holiday", LocalDate.now().minusDays(2)),
+      HolidayEventDto("today-is-a-holiday", LocalDate.now()),
+    )
+    val holidaysDto = HolidaysDto(
+      englandAndWalesHolidays = HolidayEventByDivisionDto("england-and-wales", events),
+    )
+
+    whenever(
+      govUKHolidayClient.getHolidays(),
+    ).thenReturn(holidaysDto)
+
+    // When
+    val dateRange = DateRange(LocalDate.now().minusDays(1), LocalDate.now().plusDays(1))
+    val futureHolidays = govUkHolidayService.getGovUKBankHolidays(dateRange)
+
+    // Then
+    assertThat(futureHolidays.size).isEqualTo(1)
+    assertThat(futureHolidays[0].date).isEqualTo(LocalDate.now())
+  }
+
+  @Test
+  fun `when holidays are being retrieved for a date range holiday dates in passed date range (inclusive dates) are returned`() {
+    val events = listOf(
+      HolidayEventDto("day-after-tomorrow-is-a-holiday", LocalDate.now().plusDays(2)),
+      HolidayEventDto("day-before-yesterday-was-a-holiday", LocalDate.now().minusDays(2)),
+      HolidayEventDto("today-is-a-holiday", LocalDate.now()),
+    )
+    val holidaysDto = HolidaysDto(
+      englandAndWalesHolidays = HolidayEventByDivisionDto("england-and-wales", events),
+    )
+
+    whenever(
+      govUKHolidayClient.getHolidays(),
+    ).thenReturn(holidaysDto)
+
+    // When
+    val dateRange = DateRange(LocalDate.now().minusDays(2), LocalDate.now().plusDays(2))
+    val futureHolidays = govUkHolidayService.getGovUKBankHolidays(dateRange)
+
+    // Then
+    assertThat(futureHolidays.size).isEqualTo(3)
+    assertThat(futureHolidays[0].date).isEqualTo(LocalDate.now().minusDays(2))
+    assertThat(futureHolidays[1].date).isEqualTo(LocalDate.now())
+    assertThat(futureHolidays[2].date).isEqualTo(LocalDate.now().plusDays(2))
   }
 
   @Test

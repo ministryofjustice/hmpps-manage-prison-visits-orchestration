@@ -6,37 +6,51 @@ import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GovUKHolidayClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidayEventDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidaysDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
 import java.util.function.Predicate
 
 @Service
 class GovUkHolidayService(
   private val govUKHolidayClient: GovUKHolidayClient,
+  private val dateUtils: DateUtils,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
-
-    val futureDatedHolidays: Predicate<HolidayEventDto> =
-      Predicate {
-        (it.date.isEqual(java.time.LocalDate.now()) || it.date.isAfter(java.time.LocalDate.now()))
-      }
   }
 
-  fun getGovUKBankHolidays(futureOnly: Boolean = false): List<HolidayEventDto> {
-    LOG.debug("Entered getGovUKBankHolidays, futureOnly:$futureOnly")
-    var bankHolidays: List<HolidayEventDto>?
-    try {
-      bankHolidays = govUKHolidayClient.getHolidays()?.englandAndWalesHolidays?.events
-    } catch (e: WebClientResponseException) {
-      LOG.info("Failed to acquire bank holidays from gov uk api, attempting to acquire from local cache, exception: {}", e.message)
-
-      // if there was an exception return an empty list
-      bankHolidays = emptyList()
+  val futureDatedHolidays: Predicate<HolidayEventDto> =
+    Predicate {
+      val today = dateUtils.getCurrentDate()
+      (it.date >= today)
     }
 
-    if (futureOnly && !bankHolidays.isNullOrEmpty()) {
+  fun getGovUKBankHolidays(futureOnly: Boolean = false): List<HolidayEventDto> {
+    LOG.debug("Entered getGovUKBankHolidays, futureOnly: {}", futureOnly)
+    var bankHolidays = getBankHolidays()?.englandAndWalesHolidays?.events.orEmpty()
+    if (futureOnly && bankHolidays.isNotEmpty()) {
       bankHolidays = bankHolidays.filter { futureDatedHolidays.test(it) }
     }
+    return bankHolidays.sortedBy { it.date }
+  }
 
-    return bankHolidays?.sortedBy { it.date } ?: emptyList()
+  fun getGovUKBankHolidays(dateRange: DateRange): List<HolidayEventDto> {
+    LOG.debug("Entered getGovUKBankHolidays, dateRange: {}", dateRange)
+    val bankHolidays = getBankHolidays()?.englandAndWalesHolidays?.events.orEmpty().filter { it.date >= dateRange.fromDate && it.date <= dateRange.toDate }
+    return bankHolidays.sortedBy { it.date }
+  }
+
+  private fun getBankHolidays(): HolidaysDto? {
+    LOG.debug("Entered getBankHolidays")
+    var holidaysDto: HolidaysDto? = null
+    try {
+      holidaysDto = govUKHolidayClient.getHolidays()
+    } catch (e: WebClientResponseException) {
+      // log and ignore the error
+      LOG.info("Failed to acquire bank holidays from gov uk api, exception: {}", e.message)
+    }
+
+    return holidaysDto
   }
 }

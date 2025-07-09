@@ -4,6 +4,8 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.IndefiniteDateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
+import java.time.DayOfWeek.SATURDAY
+import java.time.DayOfWeek.SUNDAY
 import java.time.LocalDate
 
 @Component
@@ -13,7 +15,7 @@ class DateUtils {
     minOverride: Int? = null,
     maxOverride: Int? = null,
   ): DateRange {
-    val today = LocalDate.now()
+    val today = getCurrentDate()
 
     val min = if (minOverride == null || minOverride < prison.policyNoticeDaysMin) {
       prison.policyNoticeDaysMin
@@ -75,4 +77,17 @@ class DateUtils {
 
     return uniqueDateRanges.distinct()
   }
+
+  fun advanceDaysIfWeekendOrBankHoliday(fromDate: LocalDate, toDate: LocalDate, bankHolidays: List<LocalDate>): LocalDate {
+    var newFromDate = fromDate
+    while ((isWeekend(newFromDate) || isBankHoliday(newFromDate, bankHolidays)) && newFromDate < toDate) {
+      newFromDate = newFromDate.plusDays(1)
+    }
+
+    return newFromDate
+  }
+
+  private fun isWeekend(dateToBeChecked: LocalDate): Boolean = ((dateToBeChecked.dayOfWeek == SATURDAY || dateToBeChecked.dayOfWeek == SUNDAY))
+
+  private fun isBankHoliday(dateToBeChecked: LocalDate, holidays: List<LocalDate>): Boolean = holidays.contains(dateToBeChecked)
 }
