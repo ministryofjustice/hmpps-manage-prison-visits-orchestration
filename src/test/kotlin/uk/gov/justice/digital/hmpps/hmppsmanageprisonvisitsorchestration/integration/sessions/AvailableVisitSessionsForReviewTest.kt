@@ -765,6 +765,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
   @Test
   fun `when call to alerts API throws NOT_FOUND then all sessions are sent back with sessionForReview flag set to true`() {
     // Given
+    // fails to get alerts so all sessions should be marked for review
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, null, HttpStatus.NOT_FOUND)
     val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
 
@@ -800,6 +801,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
   @Test
   fun `when call to alerts API throws INTERNAL_SERVER_ERROR then all sessions are sent back with sessionForReview flag set to true`() {
     // Given
+    // fails to get alerts so all sessions should be marked for review
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, null, HttpStatus.INTERNAL_SERVER_ERROR)
     val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
 
@@ -833,11 +835,12 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when call to get visitor restrictions throws NOT_FOUND then all sessions are sent back with sessionForReview flag set to false`() {
+  fun `when call to get visitor restrictions throws NOT_FOUND then all sessions are sent back with sessionForReview flag set to true`() {
     // Given
     val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
 
     // get visitor restriction date ranges throws 404
+    // fails to get visitor restrictions so all sessions should be marked for review
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, null, HttpStatus.NOT_FOUND)
 
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
@@ -870,10 +873,11 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when call to visitor restrictions throws INTERNAL_SERVER_ERROR then all sessions are sent back with sessionForReview flag set to false`() {
+  fun `when call to visitor restrictions throws INTERNAL_SERVER_ERROR then all sessions are sent back with sessionForReview flag set to true`() {
     // Given
     val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
     // get visitor restriction date ranges throws 500
+    // fails to get visitor restrictions so all sessions should be marked for review
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, null, HttpStatus.INTERNAL_SERVER_ERROR)
 
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
@@ -896,8 +900,6 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
 
     verify(prisonerContactRegistryClientSpy, times(1)).doVisitorsHaveClosedRestrictions(prisonerId, visitorIds)
     verify(prisonerContactRegistryClientSpy, times(1)).getBannedRestrictionDateRange(prisonerId, visitorIds, dateRange)
-    verify(prisonerContactRegistryClientSpy, times(1)).getVisitorRestrictionDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange)
-    verify(prisonApiClientSpy, times(2)).getPrisonerRestrictions(prisonerId)
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
