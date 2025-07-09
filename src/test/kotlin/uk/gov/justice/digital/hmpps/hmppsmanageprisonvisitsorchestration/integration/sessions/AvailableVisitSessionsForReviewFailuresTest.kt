@@ -60,8 +60,9 @@ class AvailableVisitSessionsForReviewFailuresTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when call to get prisoner restrictions throws NOT_FOUND then all sessions are sent back with sessionForReview flag set to false`() {
+  fun `when call to get prisoner restrictions throws NOT_FOUND then all sessions are sent back with sessionForReview flag set to true`() {
     // Given
+    // fails to get prisoner restrictions so all sessions should be marked for review
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, null, HttpStatus.NOT_FOUND)
     val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
 
@@ -91,8 +92,10 @@ class AvailableVisitSessionsForReviewFailuresTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when call to prisoner restrictions throws INTERNAL_SERVER_ERROR then all sessions are sent back with sessionForReview flag set to false`() {
+  fun `when call to prisoner restrictions throws INTERNAL_SERVER_ERROR then all sessions are sent back with sessionForReview flag set to true`() {
     // Given
+
+    // fails to get prisoner restrictions so all sessions should be marked for review
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, null, HttpStatus.INTERNAL_SERVER_ERROR)
     val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
 
