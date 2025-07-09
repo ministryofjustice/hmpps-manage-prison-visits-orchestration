@@ -213,9 +213,6 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     @RequestParam(value = "prisonerId", required = true)
     @Parameter(description = "Filter results by prisoner id", example = "A12345DC", required = true)
     prisonerId: String,
-    @RequestParam(value = "sessionRestriction", required = false)
-    @Parameter(description = "Filter sessions by session restriction - OPEN or CLOSED, if prisoner has CLOSED it will use that", example = "CLOSED", required = false)
-    sessionRestriction: SessionRestriction? = null,
     @RequestParam(value = "visitors", required = false)
     @Parameter(
       description = "List of visitors who require visit sessions",
@@ -241,7 +238,6 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
   ): List<AvailableVisitSessionDto> = visitSchedulerSessionsService.getAvailableVisitSessions(
     prisonCode = prisonCode,
     prisonerId = prisonerId,
-    requestedSessionRestriction = sessionRestriction,
     visitors = visitors,
     excludedApplicationReference = excludedApplicationReference,
     username = username,
