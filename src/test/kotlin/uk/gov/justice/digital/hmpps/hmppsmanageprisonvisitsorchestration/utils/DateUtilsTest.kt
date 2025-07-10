@@ -13,8 +13,8 @@ import java.time.temporal.TemporalAdjusters
 
 @ExtendWith(MockitoExtension::class)
 class DateUtilsTest {
-
-  private val dateUtils = DateUtils()
+  private val currentDateUtils = CurrentDateUtils()
+  private val dateUtils = DateUtils(currentDateUtils)
 
   private val today = LocalDate.now()
 

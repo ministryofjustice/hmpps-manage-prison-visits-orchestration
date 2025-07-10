@@ -51,6 +51,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.ScheduledEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.AlertsApiMockServer
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.HmppsAuthExtension
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.ManageUsersApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonApiMockServer
@@ -79,6 +80,7 @@ abstract class IntegrationTestBase {
     val manageUsersApiMockServer = ManageUsersApiMockServer()
     val prisonVisitBookerRegistryMockServer = PrisonVisitBookerRegistryMockServer()
     val whereaboutsApiMockServer = WhereaboutsApiMockServer()
+    val govUkMockServer = GovUkMockServer()
 
     @BeforeEach
     fun resetStubs() {
@@ -91,6 +93,7 @@ abstract class IntegrationTestBase {
       manageUsersApiMockServer.resetAll()
       prisonVisitBookerRegistryMockServer.resetAll()
       whereaboutsApiMockServer.resetAll()
+      govUkMockServer.resetAll()
     }
 
     @BeforeAll
@@ -105,6 +108,7 @@ abstract class IntegrationTestBase {
       manageUsersApiMockServer.start()
       prisonVisitBookerRegistryMockServer.start()
       whereaboutsApiMockServer.start()
+      govUkMockServer.start()
     }
 
     @AfterAll
@@ -119,6 +123,7 @@ abstract class IntegrationTestBase {
       manageUsersApiMockServer.stop()
       prisonVisitBookerRegistryMockServer.stop()
       whereaboutsApiMockServer.stop()
+      govUkMockServer.stop()
     }
 
     fun getVisitsQueryParams(

@@ -3,23 +3,23 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.servic
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.IsExcludeDateDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.CurrentDateUtils
 import java.time.LocalDate
 import java.util.function.Predicate
 
 @Service
 class ExcludeDatesService(
   private val manageUsersService: ManageUsersService,
-  private val dateUtils: DateUtils,
+  private val currentDateUtils: CurrentDateUtils,
 ) {
 
   fun getFutureExcludeDates(excludeDates: List<ExcludeDateDto>): List<ExcludeDateDto> {
-    val futureDatesPredicate: Predicate<ExcludeDateDto> = Predicate { it.excludeDate >= dateUtils.getCurrentDate() }
+    val futureDatesPredicate: Predicate<ExcludeDateDto> = Predicate { it.excludeDate >= currentDateUtils.getCurrentDate() }
     return getExcludeDates(excludeDates, futureDatesPredicate).sortedBy { it.excludeDate }
   }
 
   fun getPastExcludeDates(excludeDates: List<ExcludeDateDto>): List<ExcludeDateDto> {
-    val pastDatesPredicate: Predicate<ExcludeDateDto> = Predicate { it.excludeDate < dateUtils.getCurrentDate() }
+    val pastDatesPredicate: Predicate<ExcludeDateDto> = Predicate { it.excludeDate < currentDateUtils.getCurrentDate() }
     return getExcludeDates(excludeDates, pastDatesPredicate).sortedByDescending { it.excludeDate }
   }
 
