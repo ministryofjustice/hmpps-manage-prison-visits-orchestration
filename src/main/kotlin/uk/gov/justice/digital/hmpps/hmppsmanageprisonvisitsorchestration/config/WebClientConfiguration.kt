@@ -47,6 +47,9 @@ class WebClientConfiguration(
 
   @param:Value("\${api.health-timeout:2s}")
   private val healthTimeout: Duration,
+
+  @param:Value("\${gov-uk.api.url}")
+  private val govUKApiUrl: String,
 ) {
   private enum class HmppsAuthClientRegistrationId(val clientRegistrationId: String) {
     VISIT_SCHEDULER("visit-scheduler"),
@@ -58,10 +61,6 @@ class WebClientConfiguration(
     WHEREABOUTS_API_CLIENT("other-hmpps-apis"),
     PRISON_VISIT_BOOKER_REGISTRY_API_CLIENT("other-hmpps-apis"),
     ALERTS_API("other-hmpps-apis"),
-  }
-
-  companion object {
-    const val GOV_UK_URL = "https://www.gov.uk/"
   }
 
   @Bean
@@ -131,5 +130,5 @@ class WebClientConfiguration(
   fun prisonVisitBookerRegistryHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(prisonVisitBookerRegistryApiUrl, healthTimeout)
 
   @Bean
-  fun govUKWebClient(): WebClient = WebClient.builder().baseUrl(GOV_UK_URL).build()
+  fun govUKWebClient(): WebClient = WebClient.builder().baseUrl(govUKApiUrl).build()
 }

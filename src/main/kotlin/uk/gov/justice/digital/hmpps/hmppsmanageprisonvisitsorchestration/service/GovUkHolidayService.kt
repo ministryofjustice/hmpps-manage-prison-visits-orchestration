@@ -8,13 +8,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidayEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidaysDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.CurrentDateUtils
 import java.util.function.Predicate
 
 @Service
 class GovUkHolidayService(
   private val govUKHolidayClient: GovUKHolidayClient,
-  private val dateUtils: DateUtils,
+  private val currentDateUtils: CurrentDateUtils,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -22,7 +22,7 @@ class GovUkHolidayService(
 
   val futureDatedHolidays: Predicate<HolidayEventDto> =
     Predicate {
-      val today = dateUtils.getCurrentDate()
+      val today = currentDateUtils.getCurrentDate()
       (it.date >= today)
     }
 

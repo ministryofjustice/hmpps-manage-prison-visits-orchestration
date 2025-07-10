@@ -51,6 +51,10 @@ prison-visit-booker-registry:
     url: http://localhost:8098
     timeout: 10s
 
+gov-uk:
+  api:
+    url: http://localhost:8100
+
 hmpps:
   auth:
     url: http://localhost:8090/auth

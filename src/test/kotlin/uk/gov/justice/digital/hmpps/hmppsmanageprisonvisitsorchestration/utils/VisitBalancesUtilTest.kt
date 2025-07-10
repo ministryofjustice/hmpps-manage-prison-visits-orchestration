@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import java.time.LocalDate
 
 class VisitBalancesUtilTest {
-  private val dateUtil: DateUtils = mock()
+  private val currentDateUtil: CurrentDateUtils = mock()
 
   @Test
   fun `test available VOs is a total of VO and PVO`() {
@@ -16,8 +16,8 @@ class VisitBalancesUtilTest {
     val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = null, latestPrivIepAdjustDate = null)
 
     // When
-    whenever(dateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val availableVos = VisitBalancesUtil(dateUtil).calculateAvailableVos(visitBalance)
+    whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
+    val availableVos = VisitBalancesUtil(currentDateUtil).calculateAvailableVos(visitBalance)
 
     // Then
     Assertions.assertThat(availableVos).isEqualTo(7)
@@ -31,8 +31,8 @@ class VisitBalancesUtilTest {
     val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
 
     // When
-    whenever(dateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(dateUtil).calculateVoRenewalDate(visitBalance)
+    whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
+    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
 
     // Then
     Assertions.assertThat(renewalDate).isEqualTo(latestIepAdjustDate)
@@ -46,8 +46,8 @@ class VisitBalancesUtilTest {
     val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
 
     // When
-    whenever(dateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(dateUtil).calculateVoRenewalDate(visitBalance)
+    whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
+    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
 
     // Then
     Assertions.assertThat(renewalDate).isEqualTo(latestPrivIepAdjustDate)
@@ -60,8 +60,8 @@ class VisitBalancesUtilTest {
     val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = date, latestPrivIepAdjustDate = date)
 
     // When
-    whenever(dateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(dateUtil).calculateVoRenewalDate(visitBalance)
+    whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
+    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
 
     // Then
     Assertions.assertThat(renewalDate).isEqualTo(date)
@@ -75,8 +75,8 @@ class VisitBalancesUtilTest {
     val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
 
     // When
-    whenever(dateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(dateUtil).calculateVoRenewalDate(visitBalance)
+    whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
+    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
 
     // Then
     Assertions.assertThat(renewalDate).isEqualTo(LocalDate.now().plusMonths(1).withDayOfMonth(1))
@@ -90,8 +90,8 @@ class VisitBalancesUtilTest {
     val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
 
     // When
-    whenever(dateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(dateUtil).calculateVoRenewalDate(visitBalance)
+    whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
+    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
     // Then
     Assertions.assertThat(renewalDate).isEqualTo(LocalDate.now().plusDays(14))
   }
@@ -104,10 +104,10 @@ class VisitBalancesUtilTest {
     // When
     // calculating from 21st June 2024 - renewal date will be 01st Jul 2024
     val dateFrom = LocalDate.of(2024, 6, 21)
-    whenever(dateUtil.getCurrentDate()).thenReturn(dateFrom)
+    whenever(currentDateUtil.getCurrentDate()).thenReturn(dateFrom)
 
     val expectedRenewalDate = LocalDate.of(2024, 7, 1)
-    val renewalDate = VisitBalancesUtil(dateUtil).calculateVoRenewalDate(visitBalance)
+    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
 
     // Then
     Assertions.assertThat(renewalDate).isEqualTo(expectedRenewalDate)
@@ -121,10 +121,10 @@ class VisitBalancesUtilTest {
     // When
     // calculating from 16th June 2024 - renewal date will be 30th Jun 2024
     val dateFrom = LocalDate.of(2024, 6, 16)
-    whenever(dateUtil.getCurrentDate()).thenReturn(dateFrom)
+    whenever(currentDateUtil.getCurrentDate()).thenReturn(dateFrom)
 
     val expectedRenewalDate = LocalDate.of(2024, 6, 30)
-    val renewalDate = VisitBalancesUtil(dateUtil).calculateVoRenewalDate(visitBalance)
+    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
 
     // Then
     Assertions.assertThat(renewalDate).isEqualTo(expectedRenewalDate)
@@ -138,10 +138,10 @@ class VisitBalancesUtilTest {
     // When
     // calculating from 17th June 2024 - renewal date will be 01st Jul 2024 as both are on the 1st
     val dateFrom = LocalDate.of(2024, 6, 17)
-    whenever(dateUtil.getCurrentDate()).thenReturn(dateFrom)
+    whenever(currentDateUtil.getCurrentDate()).thenReturn(dateFrom)
 
     val expectedRenewalDate = LocalDate.of(2024, 7, 1)
-    val renewalDate = VisitBalancesUtil(dateUtil).calculateVoRenewalDate(visitBalance)
+    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
 
     // Then
     Assertions.assertThat(renewalDate).isEqualTo(expectedRenewalDate)
@@ -156,8 +156,8 @@ class VisitBalancesUtilTest {
     val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
 
     // When
-    whenever(dateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(dateUtil).calculateVoRenewalDate(visitBalance)
+    whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
+    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
 
     // Then
     Assertions.assertThat(renewalDate).isEqualTo(latestPrivIepAdjustDate)
@@ -172,8 +172,8 @@ class VisitBalancesUtilTest {
     val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
 
     // When
-    whenever(dateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(dateUtil).calculateVoRenewalDate(visitBalance)
+    whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
+    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
 
     // Then
     Assertions.assertThat(renewalDate).isEqualTo(latestIepAdjustDate)
@@ -188,8 +188,8 @@ class VisitBalancesUtilTest {
     val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
 
     // When
-    whenever(dateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(dateUtil).calculateVoRenewalDate(visitBalance)
+    whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
+    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
 
     // Then
     Assertions.assertThat(renewalDate).isEqualTo(latestPrivIepAdjustDate)
@@ -205,8 +205,8 @@ class VisitBalancesUtilTest {
     val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
 
     // When
-    whenever(dateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(dateUtil).calculateVoRenewalDate(visitBalance)
+    whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
+    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
 
     // Then
     Assertions.assertThat(renewalDate).isEqualTo(latestIepAdjustDate)

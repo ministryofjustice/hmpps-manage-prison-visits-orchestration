@@ -106,6 +106,7 @@ hmpps:
 
 gov-uk:
   api:
+    url: https://gov.uk
     timeout: 10s
 
 cache:

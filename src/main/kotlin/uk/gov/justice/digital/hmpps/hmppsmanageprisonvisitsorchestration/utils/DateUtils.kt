@@ -9,13 +9,13 @@ import java.time.DayOfWeek.SUNDAY
 import java.time.LocalDate
 
 @Component
-class DateUtils {
+class DateUtils(private val currentDateUtils: CurrentDateUtils) {
   fun getToDaysDateRange(
     prison: VisitSchedulerPrisonDto,
     minOverride: Int? = null,
     maxOverride: Int? = null,
   ): DateRange {
-    val today = getCurrentDate()
+    val today = currentDateUtils.getCurrentDate()
 
     val min = if (minOverride == null || minOverride < prison.policyNoticeDaysMin) {
       prison.policyNoticeDaysMin
@@ -47,8 +47,6 @@ class DateUtils {
 
     return dateRange
   }
-
-  fun getCurrentDate(): LocalDate = LocalDate.now()
 
   fun isDateBetweenDateRanges(dateRanges: List<DateRange>, date: LocalDate): Boolean = dateRanges.any { dateRange ->
     !(date.isBefore(dateRange.fromDate) || date.isAfter(dateRange.toDate))

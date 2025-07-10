@@ -15,19 +15,19 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.gov
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidayEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidaysDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.CurrentDateUtils
 import java.time.LocalDate
 
 @ExtendWith(MockitoExtension::class)
 class GovUkServiceTest {
   private val govUKHolidayClient = mock<GovUKHolidayClient>()
-  private val dateUtils = mock<DateUtils>()
-  private val govUkHolidayService = GovUkHolidayService(govUKHolidayClient, dateUtils)
+  private val currentDateUtils = mock<CurrentDateUtils>()
+  private val govUkHolidayService = GovUkHolidayService(govUKHolidayClient, currentDateUtils)
 
   @BeforeEach
   fun setup() {
     whenever(
-      dateUtils.getCurrentDate(),
+      currentDateUtils.getCurrentDate(),
     ).thenReturn(LocalDate.now())
   }
 

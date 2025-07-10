@@ -21,14 +21,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerAuthFailureException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerPrisonerValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.CurrentDateUtils
 import java.time.LocalDate
 
 @Service
 class PublicBookerService(
   private val prisonVisitBookerRegistryClient: PrisonVisitBookerRegistryClient,
   private val prisonerContactService: PrisonerContactService,
-  private val dateUtils: DateUtils,
+  private val currentDateUtils: CurrentDateUtils,
   private val bookerPrisonerInfoClient: BookerPrisonerInfoClient,
   private val visitSchedulerClient: VisitSchedulerClient,
   private val prisonerSearchClient: PrisonerSearchClient,
@@ -127,7 +127,7 @@ class PublicBookerService(
     VisitorRestrictionType.entries.forEach { restrictionType ->
       val restrictionsByType = restrictions.filter { restriction ->
         isRestrictionType(restrictionType, restriction) &&
-          hasRestrictionForDate(restriction, dateUtils.getCurrentDate())
+          hasRestrictionForDate(restriction, currentDateUtils.getCurrentDate())
       }
 
       if (restrictionsByType.isNotEmpty()) {
