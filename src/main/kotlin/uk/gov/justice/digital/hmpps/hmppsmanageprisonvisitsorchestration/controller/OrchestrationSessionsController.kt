@@ -27,7 +27,6 @@ import java.time.LocalTime
 
 const val GET_VISIT_SESSIONS = "/visit-sessions"
 const val GET_VISIT_SESSIONS_AVAILABLE = "$GET_VISIT_SESSIONS/available"
-const val GET_VISIT_SESSIONS_AVAILABLE_V2 = "$GET_VISIT_SESSIONS/available/v2"
 const val GET_VISIT_SESSIONS_AVAILABLE_RESTRICTION = "$GET_VISIT_SESSIONS_AVAILABLE/restriction"
 const val GET_VISIT_SESSIONS_CAPACITY = "$GET_VISIT_SESSIONS/capacity"
 
@@ -144,7 +143,6 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       description = "Defaults to true if not passed. If true, will not return visit times that clash with higher priority legal or medical appointments.",
     )
     withAppointmentsCheck: Boolean? = true,
-    // TODO - to be removed as PVB does not use this parameter
     @RequestParam(value = "excludedApplicationReference", required = false)
     @Parameter(
       description = "The current application reference to be excluded from capacity count and double booking",
@@ -173,77 +171,12 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     prisonCode = prisonCode,
     prisonerId = prisonerId,
     requestedSessionRestriction = sessionRestriction,
-    withAppointmentsCheck = withAppointmentsCheck ?: true,
-    pvbAdvanceFromDateByDays = pvbAdvanceFromDateByDays ?: 0,
     visitors = visitors,
+    withAppointmentsCheck = withAppointmentsCheck ?: true,
+    excludedApplicationReference = excludedApplicationReference,
+    pvbAdvanceFromDateByDays = pvbAdvanceFromDateByDays ?: 0,
     fromDateOverride = fromDateOverride,
     toDateOverride = toDateOverride,
-    username = username,
-    userType = userType,
-    // TODO - to be removed as PVB does not use this parameter
-    excludedApplicationReference = excludedApplicationReference,
-  )
-
-  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
-  @GetMapping(GET_VISIT_SESSIONS_AVAILABLE_V2)
-  @Operation(
-    summary = "Returns available visit sessions for a specified prisoner and visitors combination for the date range passed in",
-    description = "Returns available visit sessions for a specified prisoner and visitors combination for the date range passed in. Used by Visits Public only, not PVB",
-    responses = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Visit session information returned",
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorized to access this endpoint",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "400",
-        description = "Incorrect request to Get visit sessions ",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-    ],
-  )
-  fun getAvailableVisitSessions(
-    @RequestParam(value = "prisonId", required = true)
-    @Parameter(description = "Query by NOMIS Prison Identifier", example = "MDI", required = true)
-    prisonCode: String,
-    @RequestParam(value = "prisonerId", required = true)
-    @Parameter(description = "Filter results by prisoner id", example = "A12345DC", required = true)
-    prisonerId: String,
-    @RequestParam(value = "sessionRestriction", required = false)
-    @Parameter(description = "Filter sessions by session restriction - OPEN or CLOSED, if prisoner has CLOSED it will use that", example = "CLOSED", required = false)
-    sessionRestriction: SessionRestriction? = null,
-    @RequestParam(value = "visitors", required = false)
-    @Parameter(
-      description = "List of visitors who require visit sessions",
-      example = "4729510,4729220",
-    )
-    @NullableNotEmpty(message = "An empty visitors list is not allowed")
-    visitors: List<Long>? = null,
-    @RequestParam(value = "excludedApplicationReference", required = false)
-    @Parameter(
-      description = "The current application reference to be excluded from capacity count and double booking",
-      example = "dfs-wjs-eqr",
-    )
-    excludedApplicationReference: String? = null,
-    @RequestParam(value = "username", required = false)
-    @Parameter(
-      description = "Username for the user making the request. Used to exclude user's pending applications from session capacity count. Optional, ignored if not passed in.",
-      example = "user-1",
-    )
-    username: String? = null,
-    @RequestParam
-    @Parameter(description = "user type for the session", example = "PUBLIC", required = false)
-    userType: UserType = UserType.PUBLIC,
-  ): List<AvailableVisitSessionDto> = visitSchedulerSessionsService.getAvailableVisitSessions(
-    prisonCode = prisonCode,
-    prisonerId = prisonerId,
-    requestedSessionRestriction = sessionRestriction,
-    visitors = visitors,
-    excludedApplicationReference = excludedApplicationReference,
     username = username,
     userType = userType,
   )

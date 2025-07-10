@@ -9,23 +9,20 @@ import java.time.LocalDate
 
 @Schema(description = "Visit Session")
 data class AvailableVisitSessionDto(
-  @param:Schema(description = "Session date", example = "2020-11-01", required = true)
+  @Schema(description = "Session date", example = "2020-11-01", required = true)
   @field:NotNull
-  @field:FutureOrPresent
+  @FutureOrPresent
   val sessionDate: LocalDate,
 
-  @param:Schema(description = "sessionTemplateReference", example = "v9d.7ed.7u", required = true)
+  @Schema(description = "sessionTemplateReference", example = "v9d.7ed.7u", required = true)
   val sessionTemplateReference: String,
 
-  @param:Schema(description = "Session time slot", required = true)
+  @Schema(description = "Session time slot", required = true)
   @field:NotNull
-  @field:Valid
+  @Valid
   val sessionTimeSlot: SessionTimeSlotDto,
 
-  @param:Schema(description = "Session Restriction", example = "OPEN", required = true)
+  @Schema(description = "Session Restriction", example = "OPEN", required = true)
   @field:NotNull
   val sessionRestriction: SessionRestriction,
-
-  @param:Schema(description = "Does session need review, defaults to false", example = "true", required = true)
-  var isSessionForReview: Boolean = false,
 )
