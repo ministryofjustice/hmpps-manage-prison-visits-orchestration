@@ -1,8 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock
 
 import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.post
 import org.springframework.http.HttpStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient.Companion.CONTACT_REGISTRY_REVIEW_RESTRICTIONS_DATE_RANGES_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.HasClosedRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
@@ -94,6 +98,37 @@ class PrisonerContactRegistryMockServer : WireMockServer(8095) {
           if (result == null) {
             responseBuilder
               .withStatus(HttpStatus.NOT_FOUND.value())
+          } else {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(result))
+          },
+        ),
+    )
+  }
+
+  fun stubGetVisitorRestrictionsDateRanges(
+    prisonerId: String,
+    visitorIds: List<Long>,
+    restrictionsForReview: List<String>,
+    dateRange: DateRange,
+    result: List<DateRange>?,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val visitorRestrictionDateRangeRequestDto = PrisonerContactRegistryClient.VisitorRestrictionDateRangeRequestDto(
+      prisonerId,
+      visitorIds.map { it.toString() },
+      restrictionsForReview,
+      dateRange,
+    )
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      post(CONTACT_REGISTRY_REVIEW_RESTRICTIONS_DATE_RANGES_PATH.replace("{prisonerId}", prisonerId))
+        .withRequestBody(equalToJson(getJsonString(visitorRestrictionDateRangeRequestDto)))
+        .willReturn(
+          if (result == null) {
+            responseBuilder
+              .withStatus(httpStatus.value())
           } else {
             responseBuilder
               .withStatus(HttpStatus.OK.value())

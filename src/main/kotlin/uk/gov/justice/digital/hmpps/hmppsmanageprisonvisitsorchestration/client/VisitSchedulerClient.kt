@@ -286,11 +286,11 @@ class VisitSchedulerClient(
       .bodyToMono<List<AvailableVisitSessionDto>>()
       .onErrorResume { e ->
         if (!isNotFoundError(e)) {
-          LOG.error("getAvailableVisitSessions Failed for get request $uri")
+          LOG.error("getAvailableVisitSessions Failed for get request $uri ")
           Mono.error(e)
         } else {
           LOG.error("getAvailableVisitSessions returned NOT_FOUND for get request $uri")
-          Mono.error { NotFoundException("getAvailableVisitSessions not found for - $prisonId on prison-api", e) }
+          Mono.error { NotFoundException("getAvailableVisitSessions not found for get request $uri", e) }
         }
       }
       .blockOptional(apiTimeout).get()

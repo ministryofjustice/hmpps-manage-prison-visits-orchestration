@@ -13,6 +13,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.testcontainers.shaded.org.apache.commons.lang3.RandomUtils
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.GET_VISIT_SESSIONS_AVAILABLE_PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.ORCHESTRATION_GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.ORCHESTRATION_GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.ORCHESTRATION_GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
@@ -50,6 +51,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.ScheduledEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.AlertsApiMockServer
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.HmppsAuthExtension
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.ManageUsersApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonApiMockServer
@@ -78,6 +80,7 @@ abstract class IntegrationTestBase {
     val manageUsersApiMockServer = ManageUsersApiMockServer()
     val prisonVisitBookerRegistryMockServer = PrisonVisitBookerRegistryMockServer()
     val whereaboutsApiMockServer = WhereaboutsApiMockServer()
+    val govUkMockServer = GovUkMockServer()
 
     @BeforeEach
     fun resetStubs() {
@@ -90,6 +93,7 @@ abstract class IntegrationTestBase {
       manageUsersApiMockServer.resetAll()
       prisonVisitBookerRegistryMockServer.resetAll()
       whereaboutsApiMockServer.resetAll()
+      govUkMockServer.resetAll()
     }
 
     @BeforeAll
@@ -104,6 +108,7 @@ abstract class IntegrationTestBase {
       manageUsersApiMockServer.start()
       prisonVisitBookerRegistryMockServer.start()
       whereaboutsApiMockServer.start()
+      govUkMockServer.start()
     }
 
     @AfterAll
@@ -118,6 +123,7 @@ abstract class IntegrationTestBase {
       manageUsersApiMockServer.stop()
       prisonVisitBookerRegistryMockServer.stop()
       whereaboutsApiMockServer.stop()
+      govUkMockServer.stop()
     }
 
     fun getVisitsQueryParams(
@@ -459,6 +465,33 @@ abstract class IntegrationTestBase {
       .exchange()
   }
 
+  fun callGetAvailableVisitSessionsPublic(
+    webTestClient: WebTestClient,
+    prisonCode: String,
+    prisonerId: String,
+    visitorIds: List<Long>? = null,
+    excludedApplicationReference: String? = null,
+    userType: UserType? = null,
+    userName: String? = null,
+    authHttpHeaders: (HttpHeaders) -> Unit,
+  ): WebTestClient.ResponseSpec {
+    val uri = GET_VISIT_SESSIONS_AVAILABLE_PUBLIC
+
+    val uriParams =
+      getAvailableVisitSessionV2QueryParams(
+        prisonCode = prisonCode,
+        prisonerId = prisonerId,
+        visitorIds = visitorIds,
+        excludedApplicationReference = excludedApplicationReference,
+        userType = userType,
+        userName = userName,
+      ).joinToString("&")
+
+    return webTestClient.get().uri("$uri?$uriParams")
+      .headers(authHttpHeaders)
+      .exchange()
+  }
+
   fun callGetAvailableVisitSessionsRestriction(
     webTestClient: WebTestClient,
     prisonerId: String,
@@ -579,6 +612,33 @@ abstract class IntegrationTestBase {
     }
     currentUser?.let {
       queryParams.add("currentUser=$currentUser")
+    }
+    userType?.let {
+      queryParams.add("userType=${userType.name}")
+    }
+
+    return queryParams
+  }
+
+  private fun getAvailableVisitSessionV2QueryParams(
+    prisonCode: String,
+    prisonerId: String,
+    visitorIds: List<Long>? = null,
+    excludedApplicationReference: String?,
+    userType: UserType? = null,
+    userName: String? = null,
+  ): List<String> {
+    val queryParams = ArrayList<String>()
+    queryParams.add("prisonId=$prisonCode")
+    queryParams.add("prisonerId=$prisonerId")
+    visitorIds?.let {
+      queryParams.add("visitors=${it.joinToString(",")}")
+    }
+    excludedApplicationReference?.let {
+      queryParams.add("excludedApplicationReference=$excludedApplicationReference")
+    }
+    userName?.let {
+      queryParams.add("userName=$userName")
     }
     userType?.let {
       queryParams.add("userType=${userType.name}")
