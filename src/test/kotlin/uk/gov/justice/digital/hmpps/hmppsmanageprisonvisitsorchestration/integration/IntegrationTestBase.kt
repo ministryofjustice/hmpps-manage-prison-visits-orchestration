@@ -13,7 +13,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.testcontainers.shaded.org.apache.commons.lang3.RandomUtils
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.GET_VISIT_SESSIONS_AVAILABLE_V2
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.GET_VISIT_SESSIONS_AVAILABLE_PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.ORCHESTRATION_GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.ORCHESTRATION_GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.ORCHESTRATION_GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
@@ -465,7 +465,7 @@ abstract class IntegrationTestBase {
       .exchange()
   }
 
-  fun callGetAvailableVisitSessionsV2(
+  fun callGetAvailableVisitSessionsPublic(
     webTestClient: WebTestClient,
     prisonCode: String,
     prisonerId: String,
@@ -475,7 +475,7 @@ abstract class IntegrationTestBase {
     userName: String? = null,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
-    val uri = GET_VISIT_SESSIONS_AVAILABLE_V2
+    val uri = GET_VISIT_SESSIONS_AVAILABLE_PUBLIC
 
     val uriParams =
       getAvailableVisitSessionV2QueryParams(

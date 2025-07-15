@@ -27,7 +27,7 @@ import java.time.LocalTime
 
 const val GET_VISIT_SESSIONS = "/visit-sessions"
 const val GET_VISIT_SESSIONS_AVAILABLE = "$GET_VISIT_SESSIONS/available"
-const val GET_VISIT_SESSIONS_AVAILABLE_V2 = "$GET_VISIT_SESSIONS/available/v2"
+const val GET_VISIT_SESSIONS_AVAILABLE_PUBLIC = "$GET_VISIT_SESSIONS/public/available"
 const val GET_VISIT_SESSIONS_AVAILABLE_RESTRICTION = "$GET_VISIT_SESSIONS_AVAILABLE/restriction"
 const val GET_VISIT_SESSIONS_CAPACITY = "$GET_VISIT_SESSIONS/capacity"
 
@@ -185,10 +185,10 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
   )
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
-  @GetMapping(GET_VISIT_SESSIONS_AVAILABLE_V2)
+  @GetMapping(GET_VISIT_SESSIONS_AVAILABLE_PUBLIC)
   @Operation(
-    summary = "Returns available visit sessions for a specified prisoner and visitors combination for the date range passed in",
-    description = "Returns available visit sessions for a specified prisoner and visitors combination for the date range passed in. Used by Visits Public only, not PVB",
+    summary = "Returns available visit sessions with sessions marked for review for a specified prisoner and visitors combination for the date range passed in.",
+    description = "Returns available visit sessions with sessions marked for review for a specified prisoner and visitors combination for the date range passed in. Marks sessions for review if prisoner alerts / restrictions or visitor restrictions are found. Used by Visits Public only, not PVB",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -235,7 +235,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     @RequestParam
     @Parameter(description = "user type for the session", example = "PUBLIC", required = false)
     userType: UserType = UserType.PUBLIC,
-  ): List<AvailableVisitSessionDto> = visitSchedulerSessionsService.getAvailableVisitSessions(
+  ): List<AvailableVisitSessionDto> = visitSchedulerSessionsService.getAvailableVisitSessionsForPublicUser(
     prisonCode = prisonCode,
     prisonerId = prisonerId,
     visitors = visitors,

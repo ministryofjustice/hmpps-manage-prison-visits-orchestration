@@ -109,8 +109,8 @@ class VisitSchedulerSessionsService(
     return availableVisitSessions.sortedWith(availableVisitSessionsSortOrder)
   }
 
-  // this method is used by the V2 endpoint
-  fun getAvailableVisitSessions(
+  // gets available visit sessions for a public booker and marks sessions for review if the prisoner has alerts / restrictions or visitors have restrictions
+  fun getAvailableVisitSessionsForPublicUser(
     prisonCode: String,
     prisonerId: String,
     visitors: List<Long>?,
@@ -137,6 +137,7 @@ class VisitSchedulerSessionsService(
       setSessionForReview(prisonerId, visitors, dateRange, it)
     } ?: emptyList()
 
+    // advance the first session available from if there are sessions under review
     if (hasSessionsUnderReview(availableVisitSessions)) {
       val newDateRangeStartDate = advanceFromDateIfSessionsUnderReview(dateRange)
       availableVisitSessions = availableVisitSessions.filter { it.sessionDate >= newDateRangeStartDate }

@@ -72,7 +72,7 @@ class AvailableVisitSessionsForReviewFailuresTest : IntegrationTestBase() {
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf())
     Mockito.`when`(prisonerProfileService.hasPrisonerGotClosedRestrictions(prisonerId)).thenReturn(false)
     // When
-    val responseSpec = callGetAvailableVisitSessionsV2(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -105,7 +105,7 @@ class AvailableVisitSessionsForReviewFailuresTest : IntegrationTestBase() {
     Mockito.`when`(prisonerProfileService.hasPrisonerGotClosedRestrictions(prisonerId)).thenReturn(false)
 
     // When
-    val responseSpec = callGetAvailableVisitSessionsV2(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
