@@ -23,6 +23,23 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.D
 import java.time.LocalDate
 import java.time.LocalTime
 
+// TODO: Request a visit - Sessions flagged as request sessions ticket - Orchestration changes:
+//  1. New endpoint, takes similar arguments as the getAvailableSessions endpoint but excludes PVB arguments (public session only endpoint)
+//  2. Uses same flow as the VisitSchedulerSessionsService.kt -> getAvailableVisitSessions() method with a few changes, after
+//     getting adjusted DateRange from the getBannedRestrictionDateRage() and getting sessions via visit-scheduler call, do the following:
+//  3.
+//    3a. Make a call to get all supported prisoner restrictions and capture their date range in a DateRange DTO.
+//        If any of the supported prisoner restrictions contains a NULL expiry date, skip doing visitor check and set all sessions isRequest flag to TRUE.
+//    3b. If all found supported restrictions contain an expiry, capture their to / from date in a List<DateRangeDto>.
+//    3c. Call the prisoner-contact-registry new endpoint (Aaron to make this), which will also return a List<DateRangeDto>
+//    3d.  Loop through all sessions returned from visit-scheduler, and check if their sessionDate is in any of the date ranges in our list.
+//         IF Yes -> Set that session's isRequest flag to TRUE.
+//         IF No -> Set that session's isRequest flag to FALSE.
+//  4. Return the list to frontend.
+//  -
+//  Additional notes:
+//  - Keep the try catch logic, as it's needed in case BAN date range can't be found, we return an emptyList() (current functionality).
+
 @Service
 class VisitSchedulerSessionsService(
   private val visitSchedulerClient: VisitSchedulerClient,
@@ -54,7 +71,6 @@ class VisitSchedulerSessionsService(
     visitors: List<Long>?,
     withAppointmentsCheck: Boolean,
     excludedApplicationReference: String? = null,
-    pvbAdvanceFromDateByDays: Int,
     fromDateOverride: Int? = null,
     toDateOverride: Int? = null,
     username: String? = null,
@@ -64,12 +80,21 @@ class VisitSchedulerSessionsService(
 
     // advance from date by n days
     var dateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, fromDateOverride = fromDateOverride, toDateOverride = toDateOverride)
-    dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
 
     var availableVisitSessions = try {
       val updatedDateRange =
         visitors?.let { prisonerProfileService.getBannedRestrictionDateRage(prisonerId, visitors, dateRange) } ?: dateRange
       visitSchedulerClient.getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction, updatedDateRange, excludedApplicationReference, username, userType)
+
+      // Visitor 1 = Restriction (02/07 - 05/07) / Visitor 2 = Restriction (07/07 - 21/07)
+      // Call to prisoner-contact-registry returns a List<DateRange>
+
+      // Call to get prisoner restriction List<DateRange> and combine with the visitor List<DateRange>
+
+      // Do Comparison:
+      // For all availableVisitSessions, loop through, and if the returned prisoner-contact-registry contains that date within
+      // the list of date ranges, we set a new flag on the AvailableVisitSessionDto isRequestSession to true
+      // Finally return updated sessions list.
     } catch (e: DateRangeNotFoundException) {
       LOG.error("getAvailableVisitSessions range is not returned therefore we do not have a valid date range and should return an empty list")
       emptyList()
