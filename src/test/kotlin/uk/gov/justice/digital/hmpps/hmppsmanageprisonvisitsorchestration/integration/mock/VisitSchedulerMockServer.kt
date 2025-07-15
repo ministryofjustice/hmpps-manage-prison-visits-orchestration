@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.UpdateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitRequestsCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ApplicationDto
@@ -405,6 +406,26 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
           responseBuilder
             .withStatus(HttpStatus.OK.value())
             .withBody(getJsonString(NotificationCountDto(count))),
+        ),
+    )
+  }
+
+  fun stubGetCountVisitRequestsForPrison(prisonCode: String, count: Int, status: HttpStatus? = null) {
+    val responseBuilder = createJsonResponseBuilder()
+    val url = "/visits/requests/$prisonCode/count"
+
+    stubFor(
+      get(url)
+        .willReturn(
+          if (status == null) {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(VisitRequestsCountDto(count)))
+          } else {
+            responseBuilder
+              .withStatus(status.value())
+              .withBody(getJsonString(VisitRequestsCountDto(count)))
+          },
         ),
     )
   }
