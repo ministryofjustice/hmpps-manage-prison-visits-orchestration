@@ -28,6 +28,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.UpdateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitRequestsCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
@@ -451,6 +452,12 @@ class VisitSchedulerClient(
     }
     .retrieve()
     .bodyToMono<NotificationCountDto>().block(apiTimeout)
+
+  fun getVisitRequestsCountForPrison(prisonCode: String): VisitRequestsCountDto? = webClient.get()
+    .uri("/visits/requests/$prisonCode/count")
+    .retrieve()
+    .bodyToMono<VisitRequestsCountDto>()
+    .block(apiTimeout)
 
   fun getFutureVisitsWithNotifications(prisonCode: String, notificationEventTypes: List<String>?): List<VisitNotificationsDto>? = webClient.get()
     .uri("/visits/notification/$prisonCode/visits") {

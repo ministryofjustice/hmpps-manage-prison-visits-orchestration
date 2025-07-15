@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.IgnoreVisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitRequestsCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
@@ -157,6 +158,8 @@ class VisitSchedulerService(
   }
 
   fun getNotificationCountForPrison(prisonCode: String, notificationEventTypes: List<NotificationEventType>?): NotificationCountDto? = visitSchedulerClient.getNotificationCountForPrison(prisonCode, notificationEventTypes?.map { it.name }?.toList())
+
+  fun getVisitRequestsCountForPrison(prisonCode: String): VisitRequestsCountDto? = visitSchedulerClient.getVisitRequestsCountForPrison(prisonCode)
 
   fun getFutureVisitsWithNotifications(prisonCode: String, notificationEventTypes: List<NotificationEventType>?): List<OrchestrationVisitNotificationsDto> {
     val visitsWithNotifications = visitSchedulerClient.getFutureVisitsWithNotifications(prisonCode, notificationEventTypes?.map { it.name }?.toList())
