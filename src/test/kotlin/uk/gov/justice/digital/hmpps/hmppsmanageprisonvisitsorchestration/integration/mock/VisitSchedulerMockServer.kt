@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.POST_VISIT_FROM_EXTERNAL_SYSTEM
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ApplicationValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.FUTURE_NOTIFICATION_VISITS
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.VISIT_REQUESTS_VISITS_FOR_PRISON_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CreateVisitFromExternalSystemDto
@@ -25,6 +26,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.UpdateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitRequestSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitRequestsCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
@@ -442,6 +444,20 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
           responseBuilder
             .withStatus(HttpStatus.OK.value())
             .withBody(getJsonString(visitsWithNotifications)),
+        ),
+    )
+  }
+
+  fun stubGetVisitRequestsForPrison(prisonCode: String, visitRequests: List<VisitRequestSummaryDto>) {
+    val responseBuilder = createJsonResponseBuilder()
+    val url = VISIT_REQUESTS_VISITS_FOR_PRISON_PATH.replace("{prisonCode}", prisonCode)
+
+    stubFor(
+      get(url)
+        .willReturn(
+          responseBuilder
+            .withStatus(HttpStatus.OK.value())
+            .withBody(getJsonString(visitRequests)),
         ),
     )
   }

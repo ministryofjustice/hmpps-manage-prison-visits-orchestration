@@ -13,10 +13,13 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitRequestSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitRequestsCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
 
 const val VISIT_REQUESTS_CONTROLLER_PATH: String = "/visits/requests"
+
+const val VISIT_REQUESTS_VISITS_FOR_PRISON_PATH: String = "$VISIT_REQUESTS_CONTROLLER_PATH/{prisonCode}"
 const val VISIT_REQUESTS_COUNT_FOR_PRISON_PATH: String = "$VISIT_REQUESTS_CONTROLLER_PATH/{prisonCode}/count"
 
 @RestController
@@ -54,4 +57,32 @@ class OrchestrationVisitRequestsController(
     @PathVariable
     prisonCode: String,
   ): VisitRequestsCountDto? = visitSchedulerService.getVisitRequestsCountForPrison(prisonCode)
+
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @GetMapping(VISIT_REQUESTS_VISITS_FOR_PRISON_PATH)
+  @Operation(
+    summary = "Get all visit requests for a prison",
+    description = "Retrieve a list of visit requests for a prison",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Successfully retrieved all visit requests for a prison",
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getVisitRequestsForPrison(
+    @Schema(description = "prisonCode", example = "CFI", required = true)
+    @PathVariable
+    prisonCode: String,
+  ): List<OrchestrationVisitRequestSummaryDto> = visitSchedulerService.getVisitRequestsForPrison(prisonCode)
 }

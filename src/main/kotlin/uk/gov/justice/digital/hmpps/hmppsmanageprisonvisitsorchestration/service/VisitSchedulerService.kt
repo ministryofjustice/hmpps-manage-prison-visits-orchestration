@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.IgnoreVisitNotificationsOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitNotificationsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitRequestSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitBookingDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ActionedByDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
@@ -172,6 +173,22 @@ class VisitSchedulerService(
         visitReference = it.visitReference,
         bookedByName = manageUsersService.getFullNameFromActionedBy(it.bookedBy),
         notifications = it.notifications,
+      )
+    } ?: emptyList()
+  }
+
+  fun getVisitRequestsForPrison(prisonCode: String): List<OrchestrationVisitRequestSummaryDto> {
+    val visitRequestsList = visitSchedulerClient.getVisitRequestsForPrison(prisonCode)
+
+    return visitRequestsList?.map { visitRequest ->
+      OrchestrationVisitRequestSummaryDto(
+        visitReference = visitRequest.visitReference,
+        visitDate = visitRequest.visitDate,
+        requestedOnDate = visitRequest.requestedOnDate,
+        prisonerFirstName = visitRequest.prisonerFirstName,
+        prisonerLastName = visitRequest.prisonerLastName,
+        prisonNumber = visitRequest.prisonNumber,
+        mainContact = visitRequest.mainContact,
       )
     } ?: emptyList()
   }
