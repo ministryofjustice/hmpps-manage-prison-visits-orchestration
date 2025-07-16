@@ -35,7 +35,7 @@ class VisitRequestsForPrisonTest : IntegrationTestBase() {
         prisonerLastName = "Name",
         prisonNumber = "AA123456",
         mainContact = "Main Contact",
-      )
+      ),
     )
 
     visitSchedulerMockServer.stubGetVisitRequestsForPrison(prisonCode, visitRequests = visitRequestsList)
@@ -47,7 +47,7 @@ class VisitRequestsForPrisonTest : IntegrationTestBase() {
     responseSpec.expectStatus().isOk
     val visitsWithNotifications = getVisitRequestsForPrisonResult(responseSpec)
     Assertions.assertThat(visitsWithNotifications.size).isEqualTo(1)
-    Assertions.assertThat(visitsWithNotifications[0].visitReference).isEqualTo( "ab-cd-ef-gh")
+    Assertions.assertThat(visitsWithNotifications[0].visitReference).isEqualTo("ab-cd-ef-gh")
     Assertions.assertThat(visitsWithNotifications[0].visitDate).isEqualTo(LocalDate.now().plusDays(1))
     Assertions.assertThat(visitsWithNotifications[0].requestedOnDate).isEqualTo(LocalDate.now().minusDays(3))
     Assertions.assertThat(visitsWithNotifications[0].prisonerFirstName).isEqualTo("Prisoner")
