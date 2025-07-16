@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.bui
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.BookingOrchestrationRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.IgnoreVisitNotificationsOrchestrationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationApproveVisitRequestResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitRequestSummaryDto
@@ -191,6 +192,18 @@ class VisitSchedulerService(
         mainContact = visitRequest.mainContact,
       )
     } ?: emptyList()
+  }
+
+  fun approveVisitRequestByReference(visitReference: String): OrchestrationApproveVisitRequestResponseDto? {
+    visitSchedulerClient.approveVisitRequestByReference(visitReference)?.let {
+      return OrchestrationApproveVisitRequestResponseDto(
+        visitReference = it.visitReference,
+        prisonerFirstName = it.prisonerFirstName,
+        prisonerLastName = it.prisonerLastName,
+      )
+    }
+
+    return null
   }
 
   private fun mapVisitDtoToOrchestrationVisitDto(visits: List<VisitDto>?): List<OrchestrationVisitDto> {
