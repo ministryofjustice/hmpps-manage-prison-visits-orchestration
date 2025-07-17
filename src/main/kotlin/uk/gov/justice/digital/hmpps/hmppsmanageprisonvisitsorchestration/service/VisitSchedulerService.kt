@@ -194,8 +194,8 @@ class VisitSchedulerService(
     } ?: emptyList()
   }
 
-  fun approveVisitRequestByReference(visitReference: String): OrchestrationApproveVisitRequestResponseDto {
-    visitSchedulerClient.approveVisitRequestByReference(visitReference).let {
+  fun approveVisitRequestByReference(visitReference: String): OrchestrationApproveVisitRequestResponseDto? {
+    visitSchedulerClient.approveVisitRequestByReference(visitReference)?.let {
       val prisoner = try {
         prisonerSearchService.getPrisoner(it.prisonerId)
       } catch (e: Exception) {
@@ -209,6 +209,8 @@ class VisitSchedulerService(
         prisonerLastName = prisoner?.lastName ?: it.prisonerId,
       )
     }
+
+    return null
   }
 
   private fun mapVisitDtoToOrchestrationVisitDto(visits: List<VisitDto>?): List<OrchestrationVisitDto> {

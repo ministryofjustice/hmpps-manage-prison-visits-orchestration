@@ -474,12 +474,12 @@ class VisitSchedulerClient(
     .retrieve()
     .bodyToMono<List<VisitRequestSummaryDto>>().block(apiTimeout)
 
-  fun approveVisitRequestByReference(visitReference: String): VisitDto = webClient.put()
+  fun approveVisitRequestByReference(visitReference: String): VisitDto? = webClient.put()
     .uri("/visits/requests/$visitReference/approve")
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono<VisitDto>()
-    .block(apiTimeout)!!
+    .block(apiTimeout)
 
   fun getPrison(prisonCode: String): VisitSchedulerPrisonDto {
     val uri = "/admin/prisons/prison/$prisonCode"
