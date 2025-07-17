@@ -29,7 +29,7 @@ class DateUtils(private val currentDateUtils: CurrentDateUtils) {
       maxOverride
     }
 
-    val bookableStartDate = today.plusDays(min.toLong())
+    val bookableStartDate = today.plusDays(min.toLong().plus(1))
     val bookableEndDate = today.plusDays(max.toLong())
     return DateRange(bookableStartDate, bookableEndDate)
   }

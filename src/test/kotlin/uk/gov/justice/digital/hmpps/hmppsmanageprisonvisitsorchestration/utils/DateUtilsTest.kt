@@ -35,7 +35,7 @@ class DateUtilsTest {
     val dateRange = dateUtils.getToDaysDateRange(prison)
 
     // Then
-    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMin.toLong()))
+    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMin.toLong().plus(1)))
     Assertions.assertThat(dateRange.toDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMax.toLong()))
   }
 
@@ -49,7 +49,7 @@ class DateUtilsTest {
     dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
 
     // Then
-    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMin.toLong() + pvbAdvanceFromDateByDays))
+    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMin.toLong().plus(1) + pvbAdvanceFromDateByDays))
     Assertions.assertThat(dateRange.toDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMax.toLong()))
   }
 
@@ -63,7 +63,7 @@ class DateUtilsTest {
     dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
 
     // Then
-    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMin.toLong()))
+    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMin.toLong().plus(1)))
     Assertions.assertThat(dateRange.toDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMax.toLong()))
   }
 
@@ -77,7 +77,7 @@ class DateUtilsTest {
     dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
 
     // Then
-    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMin.toLong()))
+    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMin.toLong().plus(1)))
     Assertions.assertThat(dateRange.toDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMax.toLong()))
   }
 
@@ -91,21 +91,21 @@ class DateUtilsTest {
     dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
 
     // Then
-    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMin.toLong()))
+    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMin.toLong().plus(1)))
     Assertions.assertThat(dateRange.toDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMax.toLong()))
   }
 
   @Test
   fun `adds days if number of days is same as max policy days`() {
     // Given
-    val pvbAdvanceFromDateByDays = (prison.policyNoticeDaysMax - prison.policyNoticeDaysMin)
+    val pvbAdvanceFromDateByDays = (prison.policyNoticeDaysMax - (prison.policyNoticeDaysMin + 1))
 
     // When
     var dateRange = dateUtils.getToDaysDateRange(prison)
     dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
 
     // Then
-    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMin.toLong() + pvbAdvanceFromDateByDays))
+    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMin.toLong().plus(1) + pvbAdvanceFromDateByDays))
     Assertions.assertThat(dateRange.toDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMax.toLong()))
     Assertions.assertThat(dateRange.fromDate).isEqualTo(dateRange.toDate)
   }
@@ -120,7 +120,7 @@ class DateUtilsTest {
     dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
 
     // Then
-    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMin.toLong() + pvbAdvanceFromDateByDays))
+    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMin.toLong().plus(1) + pvbAdvanceFromDateByDays))
     Assertions.assertThat(dateRange.toDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMax.toLong()))
   }
 
@@ -134,7 +134,7 @@ class DateUtilsTest {
     val dateRange = dateUtils.getToDaysDateRange(prison, minOverride = minOverrideDays)
 
     // Then
-    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMin.toLong()))
+    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMin.toLong().plus(1)))
     Assertions.assertThat(dateRange.toDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMax.toLong()))
   }
 
@@ -148,7 +148,7 @@ class DateUtilsTest {
     val dateRange = dateUtils.getToDaysDateRange(prison, maxOverride = maxOverrideDays)
 
     // Then
-    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMin.toLong()))
+    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMin.toLong().plus(1)))
     Assertions.assertThat(dateRange.toDate).isEqualTo(today.plusDays(prison.policyNoticeDaysMax.toLong()))
   }
 
