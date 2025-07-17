@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.bui
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.BookingOrchestrationRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.IgnoreVisitNotificationsOrchestrationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationApproveVisitRequestResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitRequestSummaryDto
@@ -191,6 +192,25 @@ class VisitSchedulerService(
         mainContact = visitRequest.mainContact,
       )
     } ?: emptyList()
+  }
+
+  fun approveVisitRequestByReference(visitReference: String): OrchestrationApproveVisitRequestResponseDto? {
+    visitSchedulerClient.approveVisitRequestByReference(visitReference)?.let {
+      val prisoner = try {
+        prisonerSearchService.getPrisoner(it.prisonerId)
+      } catch (e: Exception) {
+        LOG.error("Exception thrown on visit-scheduler call - /visits/$visitReference/approve. Catching and using placeholder to avoid failing - exception $e")
+        null
+      }
+
+      return OrchestrationApproveVisitRequestResponseDto(
+        visitReference = visitReference,
+        prisonerFirstName = prisoner?.firstName ?: it.prisonerId,
+        prisonerLastName = prisoner?.lastName ?: it.prisonerId,
+      )
+    }
+
+    return null
   }
 
   private fun mapVisitDtoToOrchestrationVisitDto(visits: List<VisitDto>?): List<OrchestrationVisitDto> {
