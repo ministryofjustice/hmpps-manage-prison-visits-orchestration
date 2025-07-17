@@ -463,16 +463,20 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     )
   }
 
-  fun stubApproveVisitRequestByReference(visitReference: String, approveVisitRequestResponse: VisitDto) {
+  fun stubApproveVisitRequestByReference(visitReference: String, approveVisitRequestResponse: VisitDto?, status: HttpStatus? = null) {
     val responseBuilder = createJsonResponseBuilder()
     val url = VISIT_REQUESTS_APPROVE_VISIT_BY_REFERENCE_PATH.replace("{reference}", visitReference)
 
     stubFor(
       put(url)
         .willReturn(
-          responseBuilder
-            .withStatus(HttpStatus.OK.value())
-            .withBody(getJsonString(approveVisitRequestResponse)),
+          if (approveVisitRequestResponse == null) {
+            responseBuilder.withStatus(status?.value() ?: HttpStatus.NOT_FOUND.value())
+          } else {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(approveVisitRequestResponse))
+          },
         ),
     )
   }

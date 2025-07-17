@@ -71,6 +71,21 @@ class ApproveVisitRequestByReferenceTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `when approve visit request is called but fails, then error response is returned up to caller`() {
+    // Given
+    val visitReference = "ab-cd-ef-gh"
+
+    visitSchedulerMockServer.stubApproveVisitRequestByReference(visitReference, null, HttpStatus.BAD_REQUEST)
+
+    // When
+    prisonOffenderSearchMockServer.stubGetPrisonerById("AB12345DS", null, HttpStatus.INTERNAL_SERVER_ERROR)
+    val responseSpec = callApproveVisitRequestByReference(webTestClient, visitReference, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isBadRequest
+  }
+
+  @Test
   fun `when no role specified then access forbidden status is returned`() {
     // Given
     val authHttpHeaders = setAuthorisation(roles = listOf())
