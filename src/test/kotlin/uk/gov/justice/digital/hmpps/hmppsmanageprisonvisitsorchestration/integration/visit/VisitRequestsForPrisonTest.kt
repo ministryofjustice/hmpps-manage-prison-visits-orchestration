@@ -45,15 +45,15 @@ class VisitRequestsForPrisonTest : IntegrationTestBase() {
 
     // Then
     responseSpec.expectStatus().isOk
-    val visitsWithNotifications = getVisitRequestsForPrisonResult(responseSpec)
-    Assertions.assertThat(visitsWithNotifications.size).isEqualTo(1)
-    Assertions.assertThat(visitsWithNotifications[0].visitReference).isEqualTo("ab-cd-ef-gh")
-    Assertions.assertThat(visitsWithNotifications[0].visitDate).isEqualTo(LocalDate.now().plusDays(1))
-    Assertions.assertThat(visitsWithNotifications[0].requestedOnDate).isEqualTo(LocalDate.now().minusDays(3))
-    Assertions.assertThat(visitsWithNotifications[0].prisonerFirstName).isEqualTo("Prisoner")
-    Assertions.assertThat(visitsWithNotifications[0].prisonerLastName).isEqualTo("Name")
-    Assertions.assertThat(visitsWithNotifications[0].prisonNumber).isEqualTo("AA123456")
-    Assertions.assertThat(visitsWithNotifications[0].mainContact).isEqualTo("Main Contact")
+    val visitRequestList = getVisitRequestsForPrisonResult(responseSpec)
+    Assertions.assertThat(visitRequestList.size).isEqualTo(1)
+    Assertions.assertThat(visitRequestList[0].visitReference).isEqualTo("ab-cd-ef-gh")
+    Assertions.assertThat(visitRequestList[0].visitDate).isEqualTo(LocalDate.now().plusDays(1))
+    Assertions.assertThat(visitRequestList[0].requestedOnDate).isEqualTo(LocalDate.now().minusDays(3))
+    Assertions.assertThat(visitRequestList[0].prisonerFirstName).isEqualTo("Prisoner")
+    Assertions.assertThat(visitRequestList[0].prisonerLastName).isEqualTo("Name")
+    Assertions.assertThat(visitRequestList[0].prisonNumber).isEqualTo("AA123456")
+    Assertions.assertThat(visitRequestList[0].mainContact).isEqualTo("Main Contact")
   }
 
   @Test
