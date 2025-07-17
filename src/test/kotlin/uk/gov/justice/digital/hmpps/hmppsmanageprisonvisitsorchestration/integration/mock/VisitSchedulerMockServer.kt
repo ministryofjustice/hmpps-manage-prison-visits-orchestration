@@ -528,7 +528,8 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
   ): DateRange {
     val dateRangeToUse = dateRange ?: run {
       val today = LocalDate.now()
-      val fromDate = today.plusDays(visitSchedulerPrisonDto.policyNoticeDaysMin.toLong())
+      // add 1 to the policyNoticeDaysMin to ensure we are adding whole days
+      val fromDate = today.plusDays(visitSchedulerPrisonDto.policyNoticeDaysMin.toLong().plus(1))
       val toDate = today.plusDays(visitSchedulerPrisonDto.policyNoticeDaysMax.toLong())
       DateRange(fromDate, toDate)
     }

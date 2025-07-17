@@ -170,7 +170,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     val prisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18)
 
     val toDay = LocalDate.now()
-    val fromDate = toDay.plusDays(prisonDto.policyNoticeDaysMin.toLong())
+    val fromDate = toDay.plusDays(prisonDto.policyNoticeDaysMin.toLong().plus(1))
     val toDate = toDay.plusDays(prisonDto.policyNoticeDaysMax.toLong())
     val dateRange = DateRange(fromDate, toDate)
 

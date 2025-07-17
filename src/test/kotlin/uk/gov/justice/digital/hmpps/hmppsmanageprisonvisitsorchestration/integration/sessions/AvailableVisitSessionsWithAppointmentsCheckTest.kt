@@ -54,7 +54,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
   fun `when there are no clashing appointments sessions are returned`() {
     // Given
     // appointment is not on the same date as the visits
-    val dateRange = DateRange(fromDate = LocalDate.now().plusDays(2), LocalDate.now().plusDays(28))
+    val dateRange = DateRange(fromDate = LocalDate.now().plusDays(2).plusDays(1), LocalDate.now().plusDays(28))
 
     whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
@@ -378,7 +378,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
   @Test
   fun `when call to whereabouts throws 404 then same 404 error status is sent back`() {
     // Given
-    val dateRange = DateRange(LocalDate.now().plusDays(2), LocalDate.now().plusDays(28))
+    val dateRange = DateRange(LocalDate.now().plusDays(2).plusDays(1), LocalDate.now().plusDays(28))
     whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, null)
 
     // When
@@ -392,7 +392,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
   @Test
   fun `when call to whereabouts throws INTERNAL_SERVER_ERROR then same INTERNAL_SERVER_ERROR error status is sent back`() {
     // Given
-    val dateRange = DateRange(LocalDate.now().plusDays(2), LocalDate.now().plusDays(28))
+    val dateRange = DateRange(LocalDate.now().plusDays(2).plusDays(1), LocalDate.now().plusDays(28))
     whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, null, HttpStatus.INTERNAL_SERVER_ERROR)
 
     // When
