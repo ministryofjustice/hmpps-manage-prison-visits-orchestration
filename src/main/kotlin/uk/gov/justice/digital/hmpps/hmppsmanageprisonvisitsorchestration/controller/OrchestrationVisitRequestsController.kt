@@ -116,5 +116,5 @@ class OrchestrationVisitRequestsController(
     @Schema(description = "visit reference", required = true)
     @PathVariable
     reference: String,
-  ): OrchestrationApproveVisitRequestResponseDto? = visitSchedulerService.approveVisitRequestByReference(visitReference = reference)
+  ): OrchestrationApproveVisitRequestResponseDto = visitSchedulerService.approveVisitRequestByReference(visitReference = reference)
 }

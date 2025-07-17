@@ -19,7 +19,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.control
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.VISIT_REQUESTS_APPROVE_VISIT_BY_REFERENCE_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.VISIT_REQUESTS_VISITS_FOR_PRISON_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ApproveVisitRequestResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CreateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
@@ -464,7 +463,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     )
   }
 
-  fun stubApproveVisitRequestByReference(visitReference: String, approveResponse: ApproveVisitRequestResponseDto) {
+  fun stubApproveVisitRequestByReference(visitReference: String, approveVisitRequestResponse: VisitDto) {
     val responseBuilder = createJsonResponseBuilder()
     val url = VISIT_REQUESTS_APPROVE_VISIT_BY_REFERENCE_PATH.replace("{reference}", visitReference)
 
@@ -473,7 +472,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
         .willReturn(
           responseBuilder
             .withStatus(HttpStatus.OK.value())
-            .withBody(getJsonString(approveResponse)),
+            .withBody(getJsonString(approveVisitRequestResponse)),
         ),
     )
   }

@@ -194,16 +194,21 @@ class VisitSchedulerService(
     } ?: emptyList()
   }
 
-  fun approveVisitRequestByReference(visitReference: String): OrchestrationApproveVisitRequestResponseDto? {
-    visitSchedulerClient.approveVisitRequestByReference(visitReference)?.let {
+  fun approveVisitRequestByReference(visitReference: String): OrchestrationApproveVisitRequestResponseDto {
+    visitSchedulerClient.approveVisitRequestByReference(visitReference).let {
+      val prisoner = try {
+        prisonerSearchService.getPrisoner(it.prisonerId)
+      } catch (e: Exception) {
+        LOG.error("Exception thrown on visit-scheduler call - /visits/$visitReference/approve. Catching and using placeholder to avoid failing - exception $e")
+        null
+      }
+
       return OrchestrationApproveVisitRequestResponseDto(
-        visitReference = it.visitReference,
-        prisonerFirstName = it.prisonerFirstName,
-        prisonerLastName = it.prisonerLastName,
+        visitReference = visitReference,
+        prisonerFirstName = prisoner?.firstName ?: it.prisonerId,
+        prisonerLastName = prisoner?.lastName ?: it.prisonerId,
       )
     }
-
-    return null
   }
 
   private fun mapVisitDtoToOrchestrationVisitDto(visits: List<VisitDto>?): List<OrchestrationVisitDto> {
