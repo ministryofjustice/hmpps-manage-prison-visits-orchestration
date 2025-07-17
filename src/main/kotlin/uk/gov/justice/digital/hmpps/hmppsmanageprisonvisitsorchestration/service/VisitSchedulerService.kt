@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitRequestSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitBookingDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ActionedByDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ApproveVisitRequestBodyDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.IgnoreVisitNotificationsDto
@@ -194,17 +195,17 @@ class VisitSchedulerService(
     } ?: emptyList()
   }
 
-  fun approveVisitRequestByReference(visitReference: String): OrchestrationApproveVisitRequestResponseDto? {
-    visitSchedulerClient.approveVisitRequestByReference(visitReference)?.let {
+  fun approveVisitRequestByReference(approveVisitRequestResponseDto: ApproveVisitRequestBodyDto): OrchestrationApproveVisitRequestResponseDto? {
+    visitSchedulerClient.approveVisitRequestByReference(approveVisitRequestResponseDto)?.let {
       val prisoner = try {
         prisonerSearchService.getPrisoner(it.prisonerId)
       } catch (e: Exception) {
-        LOG.error("Exception thrown on visit-scheduler call - /visits/$visitReference/approve. Catching and using placeholder to avoid failing - exception $e")
+        LOG.error("Exception thrown on visit-scheduler call - /visits/${approveVisitRequestResponseDto.visitReference}/approve. Catching and using placeholder to avoid failing - exception $e")
         null
       }
 
       return OrchestrationApproveVisitRequestResponseDto(
-        visitReference = visitReference,
+        visitReference = it.reference,
         prisonerFirstName = prisoner?.firstName ?: it.prisonerId,
         prisonerLastName = prisoner?.lastName ?: it.prisonerId,
       )

@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isUnprocessableEntityError
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ApplicationValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ApproveVisitRequestBodyDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
@@ -474,8 +475,9 @@ class VisitSchedulerClient(
     .retrieve()
     .bodyToMono<List<VisitRequestSummaryDto>>().block(apiTimeout)
 
-  fun approveVisitRequestByReference(visitReference: String): VisitDto? = webClient.put()
-    .uri("/visits/requests/$visitReference/approve")
+  fun approveVisitRequestByReference(approveVisitRequestResponseDto: ApproveVisitRequestBodyDto): VisitDto? = webClient.put()
+    .uri("/visits/requests/${approveVisitRequestResponseDto.visitReference}/approve")
+    .body(BodyInserters.fromValue(approveVisitRequestResponseDto))
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono<VisitDto>()
