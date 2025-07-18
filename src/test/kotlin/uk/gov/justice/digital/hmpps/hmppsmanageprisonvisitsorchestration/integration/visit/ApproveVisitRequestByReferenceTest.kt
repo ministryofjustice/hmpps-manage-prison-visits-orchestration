@@ -8,8 +8,10 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
+import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.VISIT_REQUESTS_APPROVE_VISIT_BY_REFERENCE_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationApproveVisitRequestResponseDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ApproveVisitRequestBodyDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSubStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
@@ -36,12 +38,13 @@ class ApproveVisitRequestByReferenceTest : IntegrationTestBase() {
       dateOfBirth = LocalDate.of(1980, 1, 1),
       convictedStatus = "Convicted",
     )
+    val approveVisitRequestBodyDto = ApproveVisitRequestBodyDto(visitReference, "user_1")
 
     visitSchedulerMockServer.stubApproveVisitRequestByReference(visitReference, createVisitDto(reference = visitReference, visitStatus = VisitStatus.BOOKED, visitSubStatus = VisitSubStatus.APPROVED))
 
     // When
     prisonOffenderSearchMockServer.stubGetPrisonerById("AB12345DS", prisonerDto)
-    val responseSpec = callApproveVisitRequestByReference(webTestClient, visitReference, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callApproveVisitRequestByReference(webTestClient, approveVisitRequestBodyDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -55,12 +58,13 @@ class ApproveVisitRequestByReferenceTest : IntegrationTestBase() {
   fun `when approve visit request is called but prisoner response fails, then success response is returned with placeholder`() {
     // Given
     val visitReference = "ab-cd-ef-gh"
+    val approveVisitRequestBodyDto = ApproveVisitRequestBodyDto(visitReference, "user_1")
 
     visitSchedulerMockServer.stubApproveVisitRequestByReference(visitReference, createVisitDto(reference = visitReference, visitStatus = VisitStatus.BOOKED, visitSubStatus = VisitSubStatus.APPROVED))
 
     // When
     prisonOffenderSearchMockServer.stubGetPrisonerById("AB12345DS", null, HttpStatus.INTERNAL_SERVER_ERROR)
-    val responseSpec = callApproveVisitRequestByReference(webTestClient, visitReference, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callApproveVisitRequestByReference(webTestClient, approveVisitRequestBodyDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -74,12 +78,13 @@ class ApproveVisitRequestByReferenceTest : IntegrationTestBase() {
   fun `when approve visit request is called but fails, then error response is returned up to caller`() {
     // Given
     val visitReference = "ab-cd-ef-gh"
+    val approveVisitRequestBodyDto = ApproveVisitRequestBodyDto(visitReference, "user_1")
 
     visitSchedulerMockServer.stubApproveVisitRequestByReference(visitReference, null, HttpStatus.BAD_REQUEST)
 
     // When
     prisonOffenderSearchMockServer.stubGetPrisonerById("AB12345DS", null, HttpStatus.INTERNAL_SERVER_ERROR)
-    val responseSpec = callApproveVisitRequestByReference(webTestClient, visitReference, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callApproveVisitRequestByReference(webTestClient, approveVisitRequestBodyDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isBadRequest
@@ -89,9 +94,10 @@ class ApproveVisitRequestByReferenceTest : IntegrationTestBase() {
   fun `when no role specified then access forbidden status is returned`() {
     // Given
     val authHttpHeaders = setAuthorisation(roles = listOf())
+    val approveVisitRequestBodyDto = ApproveVisitRequestBodyDto("ab-cd-ef-gh", "user_1")
 
     // When
-    val responseSpec = callApproveVisitRequestByReference(webTestClient, "ab-cd-ef-gh", authHttpHeaders)
+    val responseSpec = callApproveVisitRequestByReference(webTestClient, approveVisitRequestBodyDto, authHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isForbidden
@@ -112,13 +118,14 @@ class ApproveVisitRequestByReferenceTest : IntegrationTestBase() {
 
   fun callApproveVisitRequestByReference(
     webTestClient: WebTestClient,
-    visitReference: String,
+    dto: ApproveVisitRequestBodyDto,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): ResponseSpec {
-    val url = VISIT_REQUESTS_APPROVE_VISIT_BY_REFERENCE_PATH.replace("{reference}", visitReference)
+    val url = VISIT_REQUESTS_APPROVE_VISIT_BY_REFERENCE_PATH.replace("{reference}", dto.visitReference)
 
     return webTestClient.put().uri(url)
       .headers(authHttpHeaders)
+      .body(BodyInserters.fromValue(dto))
       .exchange()
   }
 }
