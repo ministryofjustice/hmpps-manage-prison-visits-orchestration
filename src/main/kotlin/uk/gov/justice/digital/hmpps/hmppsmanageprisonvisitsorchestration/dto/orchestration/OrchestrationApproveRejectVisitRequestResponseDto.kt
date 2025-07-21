@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.or
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 
-data class OrchestrationApproveVisitRequestResponseDto(
+data class OrchestrationApproveRejectVisitRequestResponseDto(
   @field:Schema(description = "Reference of the approved visit", required = true)
   @field:NotBlank
   val visitReference: String,

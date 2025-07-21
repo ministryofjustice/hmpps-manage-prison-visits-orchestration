@@ -16,9 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationApproveVisitRequestResponseDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationApproveRejectVisitRequestResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitRequestSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ApproveVisitRequestBodyDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.RejectVisitRequestBodyDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitRequestsCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
 
@@ -28,6 +29,7 @@ const val VISIT_REQUESTS_VISITS_FOR_PRISON_PATH: String = "$VISIT_REQUESTS_CONTR
 const val VISIT_REQUESTS_COUNT_FOR_PRISON_PATH: String = "$VISIT_REQUESTS_CONTROLLER_PATH/{prisonCode}/count"
 
 const val VISIT_REQUESTS_APPROVE_VISIT_BY_REFERENCE_PATH: String = "$VISIT_REQUESTS_CONTROLLER_PATH/{reference}/approve"
+const val VISIT_REQUESTS_REJECT_VISIT_BY_REFERENCE_PATH: String = "$VISIT_REQUESTS_CONTROLLER_PATH/{reference}/reject"
 
 @RestController
 @Validated
@@ -126,5 +128,40 @@ class OrchestrationVisitRequestsController(
     reference: String,
     @RequestBody @Valid
     approveVisitRequestBodyDto: ApproveVisitRequestBodyDto,
-  ): OrchestrationApproveVisitRequestResponseDto? = visitSchedulerService.approveVisitRequestByReference(approveVisitRequestBodyDto)
+  ): OrchestrationApproveRejectVisitRequestResponseDto? = visitSchedulerService.approveVisitRequestByReference(approveVisitRequestBodyDto)
+
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @PutMapping(VISIT_REQUESTS_REJECT_VISIT_BY_REFERENCE_PATH)
+  @Operation(
+    summary = "Reject a visit request",
+    description = "Endpoint to reject a visit request by visit reference",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Successfully rejected visit request",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to reject visit request by reference (not found or not in correct sub status)",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun rejectVisitRequestByReference(
+    @Schema(description = "visit reference", required = true)
+    @PathVariable
+    reference: String,
+    @RequestBody @Valid
+    rejectVisitRequestBodyDto: RejectVisitRequestBodyDto,
+  ): OrchestrationApproveRejectVisitRequestResponseDto? = visitSchedulerService.rejectVisitRequestByReference(rejectVisitRequestBodyDto)
 }

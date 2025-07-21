@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.IgnoreVisitNotificationsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.RejectVisitRequestBodyDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.UpdateVisitFromExternalSystemDto
@@ -478,6 +479,14 @@ class VisitSchedulerClient(
   fun approveVisitRequestByReference(approveVisitRequestResponseDto: ApproveVisitRequestBodyDto): VisitDto? = webClient.put()
     .uri("/visits/requests/${approveVisitRequestResponseDto.visitReference}/approve")
     .body(BodyInserters.fromValue(approveVisitRequestResponseDto))
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<VisitDto>()
+    .block(apiTimeout)
+
+  fun rejectVisitRequestByReference(rejectVisitRequestBodyDto: RejectVisitRequestBodyDto): VisitDto? = webClient.put()
+    .uri("/visits/requests/${rejectVisitRequestBodyDto.visitReference}/reject")
+    .body(BodyInserters.fromValue(rejectVisitRequestBodyDto))
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono<VisitDto>()
