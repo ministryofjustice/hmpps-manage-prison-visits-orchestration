@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.IgnoreVisitNotificationsOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationApproveVisitRequestResponseDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationRejectVisitRequestResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitRequestSummaryDto
@@ -22,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.IgnoreVisitNotificationsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.RejectVisitRequestBodyDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitRequestsCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
@@ -205,6 +207,25 @@ class VisitSchedulerService(
       }
 
       return OrchestrationApproveVisitRequestResponseDto(
+        visitReference = it.reference,
+        prisonerFirstName = prisoner?.firstName ?: it.prisonerId,
+        prisonerLastName = prisoner?.lastName ?: it.prisonerId,
+      )
+    }
+
+    return null
+  }
+
+  fun rejectVisitRequestByReference(rejectVisitRequestBodyDto: RejectVisitRequestBodyDto): OrchestrationRejectVisitRequestResponseDto? {
+    visitSchedulerClient.rejectVisitRequestByReference(rejectVisitRequestBodyDto)?.let {
+      val prisoner = try {
+        prisonerSearchService.getPrisoner(it.prisonerId)
+      } catch (e: Exception) {
+        LOG.error("Exception thrown on visit-scheduler call - /visits/${rejectVisitRequestBodyDto.visitReference}/reject. Catching and using placeholder to avoid failing - exception $e")
+        null
+      }
+
+      return OrchestrationRejectVisitRequestResponseDto(
         visitReference = it.reference,
         prisonerFirstName = prisoner?.firstName ?: it.prisonerId,
         prisonerLastName = prisoner?.lastName ?: it.prisonerId,

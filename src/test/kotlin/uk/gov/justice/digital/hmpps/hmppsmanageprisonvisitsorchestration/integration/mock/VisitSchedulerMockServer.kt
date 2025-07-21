@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ApplicationValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.FUTURE_NOTIFICATION_VISITS
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.VISIT_REQUESTS_APPROVE_VISIT_BY_REFERENCE_PATH
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.VISIT_REQUESTS_REJECT_VISIT_BY_REFERENCE_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.VISIT_REQUESTS_VISITS_FOR_PRISON_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
@@ -476,6 +477,24 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
             responseBuilder
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(approveVisitRequestResponse))
+          },
+        ),
+    )
+  }
+
+  fun stubRejectVisitRequestByReference(visitReference: String, rejectVisitRequestResponse: VisitDto?, status: HttpStatus? = null) {
+    val responseBuilder = createJsonResponseBuilder()
+    val url = VISIT_REQUESTS_REJECT_VISIT_BY_REFERENCE_PATH.replace("{reference}", visitReference)
+
+    stubFor(
+      put(url)
+        .willReturn(
+          if (rejectVisitRequestResponse == null) {
+            responseBuilder.withStatus(status?.value() ?: HttpStatus.NOT_FOUND.value())
+          } else {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(rejectVisitRequestResponse))
           },
         ),
     )
