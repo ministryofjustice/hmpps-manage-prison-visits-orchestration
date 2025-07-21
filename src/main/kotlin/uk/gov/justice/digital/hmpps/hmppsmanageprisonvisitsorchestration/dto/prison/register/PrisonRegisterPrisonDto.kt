@@ -10,6 +10,4 @@ data class PrisonRegisterPrisonDto(
   val prisonId: String,
   @Schema(description = "Name of the prison", example = "Moorland HMP", required = true)
   val prisonName: String,
-  @Schema(description = "Whether the prison is still active", required = true)
-  val active: Boolean,
 )

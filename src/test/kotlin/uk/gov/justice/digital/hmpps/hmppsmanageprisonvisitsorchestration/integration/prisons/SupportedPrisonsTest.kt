@@ -38,8 +38,8 @@ class SupportedPrisonsTest : IntegrationTestBase() {
     .headers(authHttpHeaders)
     .exchange()
 
-  val prison1Dto = PrisonRegisterPrisonDto("BLI", "BLI Prison", true)
-  val prison2Dto = PrisonRegisterPrisonDto("HEI", "HEI Prison", true)
+  val prison1Dto = PrisonRegisterPrisonDto("BLI", "BLI Prison")
+  val prison2Dto = PrisonRegisterPrisonDto("HEI", "HEI Prison")
 
   @Test
   fun `when active prisons exist then all active prisons are returned`() {
@@ -137,14 +137,14 @@ class SupportedPrisonsTest : IntegrationTestBase() {
   fun `when get detailed view of supported prisons called and active prisons exist then all active prisons details are returned sorted by prison name`() {
     // Given
     val prisons = listOf("BLI", "HEI")
-    val prisonZDto = PrisonRegisterPrisonDto("BLI", "Z Prison", true)
-    val prisonBDto = PrisonRegisterPrisonDto("BLI", "B Prison", true)
-    val prisonHDto = PrisonRegisterPrisonDto("HEI", "H Prison", true)
-    val prisonGDto = PrisonRegisterPrisonDto("HEI", "G Prison", true)
+    val prisonZDto = PrisonRegisterPrisonDto("BLI", "Z Prison")
+    val prisonBDto = PrisonRegisterPrisonDto("BLI", "B Prison")
+    val prisonHDto = PrisonRegisterPrisonDto("HEI", "H Prison")
+    val prisonGDto = PrisonRegisterPrisonDto("HEI", "G Prison")
 
     // lower case prison names
-    val prisonADto = PrisonRegisterPrisonDto("HEI", "a Prison", true)
-    val prisonCDto = PrisonRegisterPrisonDto("HEI", "c Prison", true)
+    val prisonADto = PrisonRegisterPrisonDto("HEI", "a Prison")
+    val prisonCDto = PrisonRegisterPrisonDto("HEI", "c Prison")
 
     visitSchedulerMockServer.stubGetSupportedPrisons(STAFF, prisons.toMutableList())
     prisonRegisterMockServer.stubPrisonsByIds(listOf(prisonZDto, prisonBDto, prisonHDto, prisonGDto, prisonADto, prisonCDto))

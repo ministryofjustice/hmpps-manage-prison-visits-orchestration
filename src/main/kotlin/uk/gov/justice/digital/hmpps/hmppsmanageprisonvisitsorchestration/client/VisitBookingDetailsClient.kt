@@ -55,7 +55,7 @@ class VisitBookingDetailsClient(
 
     val visitBookingDetails = Mono.zip(prisonDetailsMono, prisonerDetailsMono, prisonerAlertsMono, prisonerRestrictionsMono, visitorsMono, eventsMono, notificationsMono)
       .map { visitBookingDetailsMono ->
-        val prison = visitBookingDetailsMono.t1.getOrNull() ?: PrisonRegisterPrisonDto(prisonId = visit.prisonCode, prisonName = visit.prisonCode, active = true)
+        val prison = visitBookingDetailsMono.t1.getOrNull() ?: PrisonRegisterPrisonDto(prisonId = visit.prisonCode, prisonName = visit.prisonCode)
         val prisoner = visitBookingDetailsMono.t2
         val prisonerAlerts = visitBookingDetailsMono.t3.content.filter {
           predicateFilterSupportedCodes.test(it)

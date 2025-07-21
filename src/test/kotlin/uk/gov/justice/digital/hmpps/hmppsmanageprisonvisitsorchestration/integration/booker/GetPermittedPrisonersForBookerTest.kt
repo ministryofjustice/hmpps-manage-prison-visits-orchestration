@@ -50,7 +50,7 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
   @MockitoSpyBean
   lateinit var prisonRegisterClientSpy: PrisonRegisterClient
 
-  private final val prisonDto = PrisonRegisterPrisonDto(PRISON_CODE, PRISON_NAME, true)
+  private final val prisonDto = PrisonRegisterPrisonDto(PRISON_CODE, PRISON_NAME)
   private final val registeredPrisonDto = RegisteredPrisonDto(PRISON_CODE, PRISON_NAME)
 
   private final val currentIncentive = createCurrentIncentive()
@@ -164,7 +164,7 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     )
     prisonApiMockServer.stubGetVisitBalances(prisoner1Dto.prisonerNumber, visitBalance1)
     prisonApiMockServer.stubGetVisitBalances(prisoner2Dto.prisonerNumber, visitBalance2)
-    prisonRegisterMockServer.stubGetPrison(PRISON_CODE, PrisonRegisterPrisonDto(PRISON_CODE, "MDI", active = true))
+    prisonRegisterMockServer.stubGetPrison(PRISON_CODE, PrisonRegisterPrisonDto(PRISON_CODE, "MDI"))
     prisonRegisterMockServer.stubGetPrison(PRISON_CODE, prisonDto)
 
     // When
