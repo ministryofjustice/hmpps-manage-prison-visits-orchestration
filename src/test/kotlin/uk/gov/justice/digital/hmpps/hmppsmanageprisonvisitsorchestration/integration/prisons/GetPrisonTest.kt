@@ -27,7 +27,7 @@ class GetPrisonTest : IntegrationTestBase() {
 
   final val prisonCode = "HEI"
   val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18)
-  val prisonRegisterPrisonDto = PrisonRegisterPrisonDto(prisonCode, "HMP Hewell", true)
+  val prisonRegisterPrisonDto = PrisonRegisterPrisonDto(prisonCode, "HMP Hewell")
   val prisonRegisterPrisonContactDetailsDto = PrisonRegisterContactDetailsDto("example@email.com", "07777777777", "https://www.example.com")
 
   fun callGetSupportedPrisons(

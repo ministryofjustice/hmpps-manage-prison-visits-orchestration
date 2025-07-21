@@ -106,7 +106,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // visitor 3 has no addresses
     visitor3 = createContactDto(3, "Third", "VisitorC", addresses = emptyList())
 
-    prison = PrisonRegisterPrisonDto(prisonCode, "Prison-MDI", true)
+    prison = PrisonRegisterPrisonDto(prisonCode, "Prison-MDI")
 
     alert1 = createAlertResponseDto(alertTypeCode = "T", code = "C1", createdAt = LocalDateTime.now(), lastModifiedAt = LocalDateTime.now())
     alert2 = createAlertResponseDto(alertTypeCode = "T1", code = "C2", createdAt = LocalDateTime.now().minusHours(1), lastModifiedAt = LocalDateTime.now().minusHours(1))
@@ -589,7 +589,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     val visitBookingResponse = getResult(responseSpec.expectBody())
 
     // as prison register search returned a 404 we expect both prison code and name to have the same value of prison code
-    val expectedPrison = PrisonRegisterPrisonDto(prisonCode, prisonCode, true)
+    val expectedPrison = PrisonRegisterPrisonDto(prisonCode, prisonCode)
     val expectedVisitContact = VisitContactDto(
       contactDto = visit.visitContact!!,
       visitContactId = visitor3.personId,
