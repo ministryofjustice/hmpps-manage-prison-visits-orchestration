@@ -16,8 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationApproveVisitRequestResponseDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationRejectVisitRequestResponseDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationApproveRejectVisitRequestResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitRequestSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ApproveVisitRequestBodyDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.RejectVisitRequestBodyDto
@@ -129,7 +128,7 @@ class OrchestrationVisitRequestsController(
     reference: String,
     @RequestBody @Valid
     approveVisitRequestBodyDto: ApproveVisitRequestBodyDto,
-  ): OrchestrationApproveVisitRequestResponseDto? = visitSchedulerService.approveVisitRequestByReference(approveVisitRequestBodyDto)
+  ): OrchestrationApproveRejectVisitRequestResponseDto? = visitSchedulerService.approveVisitRequestByReference(approveVisitRequestBodyDto)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @PutMapping(VISIT_REQUESTS_REJECT_VISIT_BY_REFERENCE_PATH)
@@ -164,5 +163,5 @@ class OrchestrationVisitRequestsController(
     reference: String,
     @RequestBody @Valid
     rejectVisitRequestBodyDto: RejectVisitRequestBodyDto,
-  ): OrchestrationRejectVisitRequestResponseDto? = visitSchedulerService.rejectVisitRequestByReference(rejectVisitRequestBodyDto)
+  ): OrchestrationApproveRejectVisitRequestResponseDto? = visitSchedulerService.rejectVisitRequestByReference(rejectVisitRequestBodyDto)
 }

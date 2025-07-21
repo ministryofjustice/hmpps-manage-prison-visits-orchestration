@@ -10,7 +10,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.VISIT_REQUESTS_REJECT_VISIT_BY_REFERENCE_PATH
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationRejectVisitRequestResponseDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationApproveRejectVisitRequestResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.RejectVisitRequestBodyDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSubStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
@@ -114,7 +114,7 @@ class RejectVisitRequestByReferenceTest : IntegrationTestBase() {
     responseSpec.expectStatus().isUnauthorized
   }
 
-  fun getRejectVisitRequestByReferenceResult(responseSpec: ResponseSpec): OrchestrationRejectVisitRequestResponseDto = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, OrchestrationRejectVisitRequestResponseDto::class.java)
+  fun getRejectVisitRequestByReferenceResult(responseSpec: ResponseSpec): OrchestrationApproveRejectVisitRequestResponseDto = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, OrchestrationApproveRejectVisitRequestResponseDto::class.java)
 
   fun callRejectVisitRequestByReference(
     webTestClient: WebTestClient,

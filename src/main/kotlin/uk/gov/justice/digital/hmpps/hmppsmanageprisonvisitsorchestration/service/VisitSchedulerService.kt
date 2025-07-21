@@ -12,8 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.bui
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.BookingOrchestrationRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.CancelVisitOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.IgnoreVisitNotificationsOrchestrationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationApproveVisitRequestResponseDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationRejectVisitRequestResponseDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationApproveRejectVisitRequestResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitRequestSummaryDto
@@ -197,7 +196,7 @@ class VisitSchedulerService(
     } ?: emptyList()
   }
 
-  fun approveVisitRequestByReference(approveVisitRequestResponseDto: ApproveVisitRequestBodyDto): OrchestrationApproveVisitRequestResponseDto? {
+  fun approveVisitRequestByReference(approveVisitRequestResponseDto: ApproveVisitRequestBodyDto): OrchestrationApproveRejectVisitRequestResponseDto? {
     visitSchedulerClient.approveVisitRequestByReference(approveVisitRequestResponseDto)?.let {
       val prisoner = try {
         prisonerSearchService.getPrisoner(it.prisonerId)
@@ -206,7 +205,7 @@ class VisitSchedulerService(
         null
       }
 
-      return OrchestrationApproveVisitRequestResponseDto(
+      return OrchestrationApproveRejectVisitRequestResponseDto(
         visitReference = it.reference,
         prisonerFirstName = prisoner?.firstName ?: it.prisonerId,
         prisonerLastName = prisoner?.lastName ?: it.prisonerId,
@@ -216,7 +215,7 @@ class VisitSchedulerService(
     return null
   }
 
-  fun rejectVisitRequestByReference(rejectVisitRequestBodyDto: RejectVisitRequestBodyDto): OrchestrationRejectVisitRequestResponseDto? {
+  fun rejectVisitRequestByReference(rejectVisitRequestBodyDto: RejectVisitRequestBodyDto): OrchestrationApproveRejectVisitRequestResponseDto? {
     visitSchedulerClient.rejectVisitRequestByReference(rejectVisitRequestBodyDto)?.let {
       val prisoner = try {
         prisonerSearchService.getPrisoner(it.prisonerId)
@@ -225,7 +224,7 @@ class VisitSchedulerService(
         null
       }
 
-      return OrchestrationRejectVisitRequestResponseDto(
+      return OrchestrationApproveRejectVisitRequestResponseDto(
         visitReference = it.reference,
         prisonerFirstName = prisoner?.firstName ?: it.prisonerId,
         prisonerLastName = prisoner?.lastName ?: it.prisonerId,
