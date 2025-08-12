@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import java.time.LocalDateTime
 
 /**
@@ -39,6 +40,12 @@ data class VisitPreviewDto internal constructor(
 
   @Schema(description = "Visit Restriction", example = "OPEN", required = true)
   val visitRestriction: VisitRestriction,
+
+  @Schema(description = "Visit Status", example = "BOOKED", required = true)
+  val visitStatus: VisitStatus,
+
+  @Schema(description = "Visit Sub Status", example = "REQUESTED", required = true)
+  val visitSubStatus: VisitSubStatus,
 ) {
   constructor(visit: VisitDto, prisoner: PrisonerDto) :
     this(
@@ -50,6 +57,8 @@ data class VisitPreviewDto internal constructor(
       visitTimeSlot = SessionTimeSlotDto(visit.startTimestamp.toLocalTime(), visit.endTimestamp.toLocalTime()),
       firstBookedDateTime = visit.firstBookedDateTime ?: visit.createdTimestamp,
       visitRestriction = visit.visitRestriction,
+      visitStatus = visit.visitStatus,
+      visitSubStatus = visit.visitSubStatus,
     )
 
   constructor(visit: VisitDto) :
@@ -62,5 +71,7 @@ data class VisitPreviewDto internal constructor(
       visitTimeSlot = SessionTimeSlotDto(visit.startTimestamp.toLocalTime(), visit.endTimestamp.toLocalTime()),
       firstBookedDateTime = visit.firstBookedDateTime ?: visit.createdTimestamp,
       visitRestriction = visit.visitRestriction,
+      visitStatus = visit.visitStatus,
+      visitSubStatus = visit.visitSubStatus,
     )
 }
