@@ -8,8 +8,10 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTimeSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSubStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -50,9 +52,10 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
     val visit1Visitors = listOf(VisitorDto(nomisPersonId = 1, visitContact = false), VisitorDto(nomisPersonId = 2, visitContact = false), VisitorDto(nomisPersonId = 3, visitContact = true))
     val visitDto = createVisitDto(reference = "ss-bb", prisonerId = prisonerId1, sessionTemplateReference = sessionTemplateReference, startTimestamp = sessionDate.atTime(10, 0), endTimestamp = sessionDate.atTime(11, 0), visitors = visit1Visitors, firstBookedDate = LocalDate.now().atTime(11, 0))
     val visitDto2 = createVisitDto(reference = "xx-bb", prisonerId = prisonerId2, sessionTemplateReference = sessionTemplateReference, startTimestamp = sessionDate.atTime(10, 0), endTimestamp = sessionDate.atTime(11, 0), firstBookedDate = LocalDate.now().atTime(12, 0))
+    val visitDto3 = createVisitDto(reference = "yy-cc", prisonerId = prisonerId2, sessionTemplateReference = sessionTemplateReference, startTimestamp = sessionDate.atTime(10, 0), endTimestamp = sessionDate.atTime(11, 0), firstBookedDate = LocalDate.now().atTime(13, 0), visitSubStatus = VisitSubStatus.REQUESTED)
     val visitStatus = "BOOKED"
     val visitRestriction = VisitRestriction.OPEN
-    val visitsList = mutableListOf(visitDto, visitDto2)
+    val visitsList = mutableListOf(visitDto, visitDto2, visitDto3)
 
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId1, prisonerDto1)
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId2, prisonerDto2)
@@ -64,15 +67,18 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isOk
     val visits = getResults(responseSpec).toList()
-    Assertions.assertThat(visits).hasSize(2)
+    Assertions.assertThat(visits).hasSize(3)
     val visitReferences = visits.stream().map { it.visitReference }
-    Assertions.assertThat(visitReferences).containsExactlyInAnyOrder(visitDto.reference, visitDto2.reference)
+    Assertions.assertThat(visitReferences).containsExactlyInAnyOrder(visitDto.reference, visitDto2.reference, visitDto3.reference)
 
     val visit1 = getVisitByReference(visits, visitDto.reference)
-    assertVisitDetails(visit1, visitDto.reference, prisonerId1, prisonerDto1.firstName, prisonerDto1.lastName, 3, visitDto.firstBookedDateTime, visitDto.visitRestriction)
+    assertVisitDetails(visit1, visitDto.reference, prisonerId1, prisonerDto1.firstName, prisonerDto1.lastName, 3, visitDto.firstBookedDateTime, visitDto.visitRestriction, VisitStatus.BOOKED, VisitSubStatus.AUTO_APPROVED)
 
     val visit2 = getVisitByReference(visits, visitDto2.reference)
-    assertVisitDetails(visit2, visitDto2.reference, prisonerId2, prisonerDto2.firstName, prisonerDto2.lastName, 0, visitDto2.firstBookedDateTime, visitDto.visitRestriction)
+    assertVisitDetails(visit2, visitDto2.reference, prisonerId2, prisonerDto2.firstName, prisonerDto2.lastName, 0, visitDto2.firstBookedDateTime, visitDto2.visitRestriction, VisitStatus.BOOKED, VisitSubStatus.AUTO_APPROVED)
+
+    val visit3 = getVisitByReference(visits, visitDto3.reference)
+    assertVisitDetails(visit3, visitDto3.reference, prisonerId2, prisonerDto2.firstName, prisonerDto2.lastName, 0, visitDto3.firstBookedDateTime, visitDto3.visitRestriction, VisitStatus.BOOKED, VisitSubStatus.REQUESTED)
   }
 
   @Test
@@ -102,10 +108,10 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
     Assertions.assertThat(visitReferences).containsExactlyInAnyOrder(visitDto.reference, visitDto2.reference)
 
     val visit1 = getVisitByReference(visits, visitDto.reference)
-    assertVisitDetails(visit1, visitDto.reference, prisonerId1, prisonerDto1.firstName, prisonerDto1.lastName, 3, visitDto.createdTimestamp, visitDto.visitRestriction)
+    assertVisitDetails(visit1, visitDto.reference, prisonerId1, prisonerDto1.firstName, prisonerDto1.lastName, 3, visitDto.createdTimestamp, visitDto.visitRestriction, VisitStatus.BOOKED, VisitSubStatus.AUTO_APPROVED)
 
     val visit2 = getVisitByReference(visits, visitDto2.reference)
-    assertVisitDetails(visit2, visitDto2.reference, prisonerId2, prisonerDto2.firstName, prisonerDto2.lastName, 0, visitDto2.createdTimestamp, visitDto.visitRestriction)
+    assertVisitDetails(visit2, visitDto2.reference, prisonerId2, prisonerDto2.firstName, prisonerDto2.lastName, 0, visitDto2.createdTimestamp, visitDto.visitRestriction, VisitStatus.BOOKED, VisitSubStatus.AUTO_APPROVED)
   }
 
   @Test
@@ -160,15 +166,15 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
 
     val visit1 = getVisitByReference(visits, visitDto.reference)
     // prisoner names should be replaced by prisoner ids
-    assertVisitDetails(visit1, visitDto.reference, prisonerId1, prisonerId1, prisonerId1, 3, visitDto.createdTimestamp, visitDto.visitRestriction)
+    assertVisitDetails(visit1, visitDto.reference, prisonerId1, prisonerId1, prisonerId1, 3, visitDto.createdTimestamp, visitDto.visitRestriction, VisitStatus.BOOKED, VisitSubStatus.AUTO_APPROVED)
 
     val visit2 = getVisitByReference(visits, visitDto2.reference)
-    assertVisitDetails(visit2, visitDto2.reference, prisonerId2, prisonerDto2.firstName, prisonerDto2.lastName, 2, visitDto2.createdTimestamp, visitDto.visitRestriction)
+    assertVisitDetails(visit2, visitDto2.reference, prisonerId2, prisonerDto2.firstName, prisonerDto2.lastName, 2, visitDto2.createdTimestamp, visitDto.visitRestriction, VisitStatus.BOOKED, VisitSubStatus.AUTO_APPROVED)
   }
 
   private fun getResults(responseSpec: WebTestClient.ResponseSpec): Array<VisitPreviewDto> = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, Array<VisitPreviewDto>::class.java)
 
-  private fun assertVisitDetails(visit: VisitPreviewDto, visitReference: String, prisonerId: String, firstName: String, lastName: String, visitorCount: Int, firstBookedDateTime: LocalDateTime?, visitRestriction: VisitRestriction) {
+  private fun assertVisitDetails(visit: VisitPreviewDto, visitReference: String, prisonerId: String, firstName: String, lastName: String, visitorCount: Int, firstBookedDateTime: LocalDateTime?, visitRestriction: VisitRestriction, visitStatus: VisitStatus, visitSubStatus: VisitSubStatus) {
     Assertions.assertThat(visit.visitReference).isEqualTo(visitReference)
     Assertions.assertThat(visit.prisonerId).isEqualTo(prisonerId)
     Assertions.assertThat(visit.firstName).isEqualTo(firstName)
@@ -177,6 +183,8 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
     Assertions.assertThat(visit.visitTimeSlot).isEqualTo(SessionTimeSlotDto(LocalTime.of(10, 0), LocalTime.of(11, 0)))
     Assertions.assertThat(visit.firstBookedDateTime).isEqualTo(firstBookedDateTime)
     Assertions.assertThat(visit.visitRestriction).isEqualTo(visitRestriction)
+    Assertions.assertThat(visit.visitStatus).isEqualTo(visitStatus)
+    Assertions.assertThat(visit.visitSubStatus).isEqualTo(visitSubStatus)
   }
 
   private fun getVisitByReference(visits: List<VisitPreviewDto>, reference: String): VisitPreviewDto = visits.toList().stream().filter { it.visitReference == reference }.findFirst().get()
