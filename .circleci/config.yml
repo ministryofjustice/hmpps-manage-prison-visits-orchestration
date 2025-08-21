@@ -1,8 +1,6 @@
 version: 2.1
-
 orbs:
   hmpps: ministryofjustice/hmpps@11
-
 parameters:
   alerts-slack-channel:
     type: string
@@ -10,7 +8,6 @@ parameters:
   releases-slack-channel:
     type: string
     default: visits-releases
-
 jobs:
   acceptance_tests_public_ui_main:
     docker:
@@ -45,7 +42,6 @@ jobs:
           path: /root/project/hmpps-book-a-prison-visit-ui-tests/playwright-report/index.html
       - store_artifacts:
           path: /root/project/hmpps-book-a-prison-visit-ui-tests/test-results
-
   acceptance_tests_staff_playwright-e2e:
     docker:
       - image: mcr.microsoft.com/playwright:v1.51.0-jammy
@@ -79,7 +75,6 @@ jobs:
           path: /root/project/hmpps-book-a-prison-visit-staff-e2e-tests/playwright-report/index.html
       - store_artifacts:
           path: /root/project/hmpps-book-a-prison-visit-staff-e2e-tests/test-results
-
   validate:
     executor:
       name: hmpps/localstack
@@ -102,10 +97,8 @@ jobs:
           path: build/test-results
       - store_artifacts:
           path: build/reports/tests
-
 workflows:
   version: 2
-
   build-test-deploy-main:
     jobs:
       - validate:
@@ -115,21 +108,18 @@ workflows:
             branches:
               only:
                 - main
-
       - hmpps/helm_lint:
           name: helm_lint
           filters:
             branches:
               only:
                 - main
-
       - hmpps/build_multiplatform_docker:
           name: build_docker
           filters:
             branches:
               only:
                 - main
-
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
@@ -142,7 +132,6 @@ workflows:
             - validate
             - build_docker
             - helm_lint
-
       - hmpps/deploy_env:
           name: deploy_staging
           env: "staging"
@@ -179,7 +168,6 @@ workflows:
             branches:
               only:
                 - main
-
       - acceptance_tests_staff_playwright-e2e:
           requires:
             - request-acceptance-staff-playwright-approval
@@ -188,7 +176,6 @@ workflows:
             branches:
               only:
                 - main
-
       - hmpps/deploy_env:
           name: deploy_preprod
           env: "preprod"
@@ -209,7 +196,6 @@ workflows:
             branches:
               only:
                 - main
-
       - hmpps/deploy_env:
           name: deploy_prod
           env: "prod"
@@ -232,7 +218,6 @@ workflows:
             branches:
               only:
                 - main
-
   build-test-deploy-feature:
     jobs:
       - validate:
@@ -242,21 +227,18 @@ workflows:
             branches:
               ignore:
                 - main
-
       - hmpps/helm_lint:
           name: helm_lint
           filters:
             branches:
               ignore:
                 - main
-
       - hmpps/build_multiplatform_docker:
           name: build_docker
           filters:
             branches:
               ignore:
                 - main
-
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
@@ -277,7 +259,6 @@ workflows:
             branches:
               ignore:
                 - main
-
       - hmpps/deploy_env:
           name: deploy_staging
           env: "staging"
@@ -300,48 +281,6 @@ workflows:
             branches:
               ignore:
                 - main
-
-  security:
-    triggers:
-      - schedule:
-          cron: "54 5 * * 1-5"
-          filters:
-            branches:
-              only:
-                - main
-    jobs:
-      - hmpps/gradle_owasp_dependency_check:
-          jdk_tag: "21.0"
-          cache_key: "v2_0"
-          slack_channel: << pipeline.parameters.alerts-slack-channel >>
-          context:
-            - hmpps-common-vars
-      - hmpps/trivy_latest_scan:
-          slack_channel: << pipeline.parameters.alerts-slack-channel >>
-          context:
-            - hmpps-common-vars
-      - hmpps/veracode_pipeline_scan:
-          jdk_tag: "21.0"
-          slack_channel: << pipeline.parameters.alerts-slack-channel >>
-          context:
-            - veracode-credentials
-            - hmpps-common-vars
-  security-weekly:
-    triggers:
-      - schedule:
-          cron: "21 5 * * 1"
-          filters:
-            branches:
-              only:
-                - main
-    jobs:
-      - hmpps/veracode_policy_scan:
-          jdk_tag: "21.0"
-          slack_channel: << pipeline.parameters.alerts-slack-channel >>
-          context:
-            - veracode-credentials
-            - hmpps-common-vars
-
   daily-test-runs:
     triggers:
       - schedule:
