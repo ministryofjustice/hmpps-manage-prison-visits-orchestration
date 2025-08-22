@@ -12,9 +12,9 @@ class CourtVideoAppointmentCreatedNotifier : EventNotifier() {
     val info: CourtVideoAppointmentInfo = getAdditionalInfo(domainEvent, CourtVideoAppointmentInfo::class.java)
     LOG.debug("Enter CourtVideoAppointmentCreatedNotifier Info: {}", info)
 
-    // TODO: VB-5754 - Add the eventCode to AdditionalInformation object, and filter to only process certain event codes (see JIRA for list).
     getVisitSchedulerService().processCourtVideoAppointmentCreated(info)
   }
 
+  // TODO: VB-5754 - Add the eventCode to AdditionalInformation object, and filter to only process certain event codes (see JIRA for list).
   override fun isProcessableEvent(domainEvent: DomainEvent): Boolean = true
 }
