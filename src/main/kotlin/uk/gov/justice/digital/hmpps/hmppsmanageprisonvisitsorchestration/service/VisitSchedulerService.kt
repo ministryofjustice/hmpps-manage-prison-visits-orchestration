@@ -153,6 +153,10 @@ class VisitSchedulerService(
     visitSchedulerClient.processCourtVideoAppointmentCreated(CourtVideoAppointmentNotificationDto(info))
   }
 
+  fun processCourtVideoAppointmentUpdated(info: CourtVideoAppointmentInfo) {
+    visitSchedulerClient.processCourtVideoAppointmentUpdated(CourtVideoAppointmentNotificationDto(info))
+  }
+
   fun processCourtVideoAppointmentCancelledDeleted(info: CourtVideoAppointmentInfo) {
     visitSchedulerClient.processCourtVideoAppointmentCancelledDeleted(CourtVideoAppointmentNotificationDto(info))
   }
