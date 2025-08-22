@@ -11,6 +11,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import software.amazon.awssdk.services.sns.model.PublishRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_COURT_VIDEO_APPOINTMENT_CANCELLED_DELETED_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_COURT_VIDEO_APPOINTMENT_CREATED_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_NON_ASSOCIATION_CHANGE_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PERSON_RESTRICTION_UPSERTED_PATH
@@ -25,7 +26,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.ale
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonerReceivedReasonType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonerReleaseReasonType.RELEASED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.CourtVideoAppointmentCreatedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.CourtVideoAppointmentNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertsAddedNotificationDto
@@ -34,7 +35,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorApprovedUnapprovedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerReceivedInfo
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.COURT_VIDEO_APPOINTMENT_CANCELLED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.COURT_VIDEO_APPOINTMENT_CREATED_EVENT_TYPE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.COURT_VIDEO_APPOINTMENT_DELETED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.DELETE_INCENTIVES_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.EventNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.INSERTED_INCENTIVES_EVENT_TYPE
@@ -541,14 +544,14 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
   @Test
   fun `test court-video-appointment-created is processed`() {
     // Given
-    val sentRequestToVsip = CourtVideoAppointmentCreatedNotificationDto(
+    val sentRequestToVsip = CourtVideoAppointmentNotificationDto(
       appointmentInstanceId = "TEST",
     )
 
     val domainEvent =
       createDomainEventJson(
         COURT_VIDEO_APPOINTMENT_CREATED_EVENT_TYPE,
-        createCourtVideoAppointmentCreatedAdditionalInformationJson(
+        createCourtVideoAppointmentAdditionalInformationJson(
           appointmentInstanceId = "TEST",
         ),
       )
@@ -564,6 +567,62 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     assertStandardCalls(courtVideoAppointmentCreatedNotifierSpy, VISIT_NOTIFICATION_COURT_VIDEO_APPOINTMENT_CREATED_PATH, sentRequestToVsip)
     await untilAsserted { verify(visitSchedulerService, times(1)).processCourtVideoAppointmentCreated(any()) }
     await untilAsserted { verify(visitSchedulerClient, times(1)).processCourtVideoAppointmentCreated(any()) }
+  }
+
+  @Test
+  fun `test court-video-appointment-deleted is processed`() {
+    // Given
+    val sentRequestToVsip = CourtVideoAppointmentNotificationDto(
+      appointmentInstanceId = "TEST",
+    )
+
+    val domainEvent =
+      createDomainEventJson(
+        COURT_VIDEO_APPOINTMENT_DELETED_EVENT_TYPE,
+        createCourtVideoAppointmentAdditionalInformationJson(
+          appointmentInstanceId = "TEST",
+        ),
+      )
+
+    val publishRequest = createDomainEventPublishRequest(COURT_VIDEO_APPOINTMENT_DELETED_EVENT_TYPE, domainEvent)
+
+    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_COURT_VIDEO_APPOINTMENT_CANCELLED_DELETED_PATH)
+
+    // When
+    sendSqSMessage(publishRequest)
+
+    // Then
+    assertStandardCalls(courtVideoAppointmentDeletedNotifierSpy, VISIT_NOTIFICATION_COURT_VIDEO_APPOINTMENT_CANCELLED_DELETED_PATH, sentRequestToVsip)
+    await untilAsserted { verify(visitSchedulerService, times(1)).processCourtVideoAppointmentCancelledDeleted(any()) }
+    await untilAsserted { verify(visitSchedulerClient, times(1)).processCourtVideoAppointmentCancelledDeleted(any()) }
+  }
+
+  @Test
+  fun `test court-video-appointment-cancelled is processed`() {
+    // Given
+    val sentRequestToVsip = CourtVideoAppointmentNotificationDto(
+      appointmentInstanceId = "TEST",
+    )
+
+    val domainEvent =
+      createDomainEventJson(
+        COURT_VIDEO_APPOINTMENT_CANCELLED_EVENT_TYPE,
+        createCourtVideoAppointmentAdditionalInformationJson(
+          appointmentInstanceId = "TEST",
+        ),
+      )
+
+    val publishRequest = createDomainEventPublishRequest(COURT_VIDEO_APPOINTMENT_CANCELLED_EVENT_TYPE, domainEvent)
+
+    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_COURT_VIDEO_APPOINTMENT_CANCELLED_DELETED_PATH)
+
+    // When
+    sendSqSMessage(publishRequest)
+
+    // Then
+    assertStandardCalls(courtVideoAppointmentCancelledNotifierSpy, VISIT_NOTIFICATION_COURT_VIDEO_APPOINTMENT_CANCELLED_DELETED_PATH, sentRequestToVsip)
+    await untilAsserted { verify(visitSchedulerService, times(1)).processCourtVideoAppointmentCancelledDeleted(any()) }
+    await untilAsserted { verify(visitSchedulerClient, times(1)).processCourtVideoAppointmentCancelledDeleted(any()) }
   }
 
   private fun sendSqSMessage(publishRequest: PublishRequest?) {
