@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.servic
 
 import jakarta.validation.constraints.NotBlank
 
-data class CourtVideoAppointmentCreatedInfo(
+data class CourtVideoAppointmentInfo(
   @field:NotBlank
   val appointmentInstanceId: String,
 ) : EventInfo
