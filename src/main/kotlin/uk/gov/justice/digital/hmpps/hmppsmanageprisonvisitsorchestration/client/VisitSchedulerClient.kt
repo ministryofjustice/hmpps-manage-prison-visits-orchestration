@@ -39,7 +39,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.CourtVideoAppointmentCreatedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.CourtVideoAppointmentNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionUpsertedNotificationDto
@@ -65,6 +65,8 @@ const val GET_VISIT_HISTORY_CONTROLLER_PATH: String = "$VISIT_CONTROLLER_PATH/{r
 const val VISIT_NOTIFICATION_CONTROLLER_PATH: String = "$VISIT_CONTROLLER_PATH/notification"
 
 const val VISIT_NOTIFICATION_COURT_VIDEO_APPOINTMENT_CREATED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/court-video-appointment/created"
+const val VISIT_NOTIFICATION_COURT_VIDEO_APPOINTMENT_UPDATED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/court-video-appointment/updated"
+const val VISIT_NOTIFICATION_COURT_VIDEO_APPOINTMENT_CANCELLED_DELETED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/court-video-appointment/cancelled-or-deleted"
 
 const val VISIT_NOTIFICATION_NON_ASSOCIATION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/non-association/changed"
 
@@ -437,13 +439,33 @@ class VisitSchedulerClient(
       .block(apiTimeout)
   }
 
-  fun processCourtVideoAppointmentCreated(sendDto: CourtVideoAppointmentCreatedNotificationDto) {
+  fun processCourtVideoAppointmentCreated(sendDto: CourtVideoAppointmentNotificationDto) {
     webClient.post()
       .uri(VISIT_NOTIFICATION_COURT_VIDEO_APPOINTMENT_CREATED_PATH)
       .body(BodyInserters.fromValue(sendDto))
       .retrieve()
       .toBodilessEntity()
       .doOnError { e -> LOG.error("Could not processCourtVideoAppointmentCreated :", e) }
+      .block(apiTimeout)
+  }
+
+  fun processCourtVideoAppointmentUpdated(sendDto: CourtVideoAppointmentNotificationDto) {
+    webClient.post()
+      .uri(VISIT_NOTIFICATION_COURT_VIDEO_APPOINTMENT_UPDATED_PATH)
+      .body(BodyInserters.fromValue(sendDto))
+      .retrieve()
+      .toBodilessEntity()
+      .doOnError { e -> LOG.error("Could not processCourtVideoAppointmentUpdated :", e) }
+      .block(apiTimeout)
+  }
+
+  fun processCourtVideoAppointmentCancelledDeleted(sendDto: CourtVideoAppointmentNotificationDto) {
+    webClient.post()
+      .uri(VISIT_NOTIFICATION_COURT_VIDEO_APPOINTMENT_CANCELLED_DELETED_PATH)
+      .body(BodyInserters.fromValue(sendDto))
+      .retrieve()
+      .toBodilessEntity()
+      .doOnError { e -> LOG.error("Could not processCourtVideoAppointmentCancelledDeleted :", e) }
       .block(apiTimeout)
   }
 
