@@ -841,6 +841,25 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     )
   }
 
+  fun stubGetBookerVisitAuditHistory(
+    bookerReference: String,
+    events: List<EventAuditDto>? = null,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      get("/public/booker/$bookerReference/visits/events")
+        .willReturn(
+          if (events != null) {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(events))
+          } else {
+            responseBuilder.withStatus(httpStatus.value())
+          },
+        ),
+    )
+  }
+
   private fun getVisitsBySessionTemplateQueryParams(
     sessionTemplateReference: String?,
     sessionDate: LocalDate,

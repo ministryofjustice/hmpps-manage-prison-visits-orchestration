@@ -83,6 +83,7 @@ const val VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH: String = "$VISIT_NOTI
 const val GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/booked/future"
 const val GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/cancelled"
 const val GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/booked/past"
+const val GET_VISIT_EVENTS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/events"
 
 const val POST_VISIT_FROM_EXTERNAL_SYSTEM: String = "$VISIT_CONTROLLER_PATH/external-system"
 
@@ -582,6 +583,12 @@ class VisitSchedulerClient(
       Mono.error(e)
     }
     .block(apiTimeout)
+
+  fun getBookerHistoryAsMono(bookerReference: String): Mono<List<EventAuditDto>> = webClient.get()
+    .uri(GET_VISIT_EVENTS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<List<EventAuditDto>>()
 
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParamIfPresent("prisonId", Optional.ofNullable(visitSearchRequestFilter.prisonCode))

@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient.Companion.LOG
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
@@ -31,6 +32,7 @@ const val PERMITTED_PRISONERS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/permitte
 const val PERMITTED_VISITORS: String = "$PERMITTED_PRISONERS/{prisonerId}/permitted/visitors"
 const val VALIDATE_PRISONER: String = "$PERMITTED_PRISONERS/{prisonerId}/validate"
 const val REGISTER_PRISONER: String = "$PERMITTED_PRISONERS/register"
+const val BOOKER_REGISTRY_AUDIT_HISTORY: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/audit"
 
 @Component
 class PrisonVisitBookerRegistryClient(
@@ -143,4 +145,10 @@ class PrisonVisitBookerRegistryClient(
 
     return e
   }
+
+  fun getBookerAuditHistoryAsMono(bookerReference: String): Mono<List<BookerAuditDto>> = webClient.get()
+    .uri(BOOKER_REGISTRY_AUDIT_HISTORY.replace("{bookerReference}", bookerReference))
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<List<BookerAuditDto>>()
 }
