@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitExternalSystemDetails
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSubStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
@@ -256,6 +257,52 @@ abstract class IntegrationTestBase {
     firstBookedDateTime = firstBookedDate,
     visitExternalSystemDetails = visitExternalSystemDetails,
   )
+
+  final fun createVisitPreviewDto(
+    reference: String = "aa-bb-cc-dd",
+    applicationReference: String = "aaa-bbb-ccc-ddd",
+    prisonerId: String = "AB12345DS",
+    prisonCode: String = "MDI",
+    visitRoom: String = "A1 L3",
+    visitType: VisitType = VisitType.SOCIAL,
+    visitStatus: VisitStatus = VisitStatus.BOOKED,
+    visitSubStatus: VisitSubStatus = VisitSubStatus.AUTO_APPROVED,
+    visitRestriction: VisitRestriction = VisitRestriction.OPEN,
+    startTimestamp: LocalDateTime = LocalDateTime.now(),
+    endTimestamp: LocalDateTime = startTimestamp.plusHours(1),
+    outcomeStatus: OutcomeStatus? = null,
+    createdTimestamp: LocalDateTime = LocalDateTime.now(),
+    modifiedTimestamp: LocalDateTime = LocalDateTime.now(),
+    sessionTemplateReference: String? = "ref.ref.ref",
+    visitors: List<VisitorDto>? = null,
+    contact: ContactDto? = ContactDto("Jane Doe", "01234567890", "email@example.com"),
+    firstBookedDate: LocalDateTime? = null,
+    visitExternalSystemDetails: VisitExternalSystemDetails? = null,
+  ): VisitPreviewDto {
+    val visit = VisitDto(
+      applicationReference = applicationReference,
+      sessionTemplateReference = sessionTemplateReference,
+      reference = reference,
+      prisonerId = prisonerId,
+      prisonCode = prisonCode,
+      visitRoom = visitRoom,
+      visitType = visitType,
+      visitStatus = visitStatus,
+      visitSubStatus = visitSubStatus,
+      visitRestriction = visitRestriction,
+      startTimestamp = startTimestamp,
+      endTimestamp = endTimestamp,
+      outcomeStatus = outcomeStatus,
+      createdTimestamp = createdTimestamp,
+      modifiedTimestamp = modifiedTimestamp,
+      visitors = visitors,
+      visitContact = contact,
+      firstBookedDateTime = firstBookedDate,
+      visitExternalSystemDetails = visitExternalSystemDetails,
+    )
+
+    return VisitPreviewDto(visit)
+  }
 
   fun createCreateApplicationDto(prisonerId: String, sessionTemplateReference: String = "ref.ref.ref", sessionDate: LocalDate? = LocalDate.now()): CreateApplicationDto {
     val visitor = VisitorDto(1, false)

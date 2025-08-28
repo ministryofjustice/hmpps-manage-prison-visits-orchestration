@@ -44,13 +44,16 @@ class VisitsByDateService(
       prisonCode,
       page = PAGE_NUMBER,
       size = MAX_VISIT_RECORDS,
-    )?.toList()?.map { visit ->
-      try {
-        val prisoner = prisonerSearchClient.getPrisonerById(visit.prisonerId)
-        VisitPreviewDto(visit, prisoner)
-      } catch (e: Exception) {
-        LOG.debug("Unable to find prisoner ${visit.prisonerId}", e)
-        VisitPreviewDto(visit)
+    )?.toList().also { visitPreviewDtos ->
+      visitPreviewDtos?.forEach {
+        try {
+          // Set the prisoner's name. If the call to prisonerSearchClient fails, keep the first / last name set as prisonerId
+          val prisoner = prisonerSearchClient.getPrisonerById(it.prisonerId)
+          it.firstName = prisoner.firstName
+          it.lastName = prisoner.lastName
+        } catch (e: Exception) {
+          LOG.debug("Unable to load prisoner details - ${it.prisonerId}", e)
+        }
       }
     } ?: emptyList()
   }
