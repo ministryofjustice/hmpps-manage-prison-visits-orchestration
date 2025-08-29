@@ -92,7 +92,7 @@ class VisitSchedulerSessionsService(
     val visitSessions = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max = null, username, userType)
     val prisonerSchedules =
       try {
-        whereAboutsApiClient.getEvents(prisonerId, dateRangeForPrison.fromDate, dateRangeForPrison.toDate).map { PrisonerScheduledEventDto(it) }
+        whereAboutsApiClient.getEvents(prisonerId, dateRangeForPrison.fromDate, dateRangeForPrison.toDate)
       } catch (_: NotFoundException) {
         LOG.warn("No schedule data found for prisonerId - $prisonerId, returning an empty list")
         emptyList()
@@ -105,7 +105,7 @@ class VisitSchedulerSessionsService(
     val dateRangeIterator = DateRangeIterator(sessionAndScheduleDateRange)
     while (dateRangeIterator.hasNext()) {
       val sessionDate = dateRangeIterator.next()
-      sessionsAndSchedule.add(getSessionsAndScheduleDataForDate(sessionDate, visitSessions, prisonerSchedules.filter { it.eventDate == sessionDate }))
+      sessionsAndSchedule.add(getSessionsAndScheduleDataForDate(sessionDate, visitSessions, prisonerSchedules))
     }
 
     return VisitSessionsAndScheduleDto(scheduledEventsAvailable, sessionsAndSchedule)
@@ -462,8 +462,14 @@ class VisitSchedulerSessionsService(
     return dateUtils.advanceDaysIfWeekendOrBankHoliday(newFromDate, dateRange.toDate, bankHolidays)
   }
 
-  private fun getSessionsAndScheduleDataForDate(sessionDate: LocalDate, visitSessions: List<VisitSessionDto>?, prisonerSchedules: List<PrisonerScheduledEventDto>): SessionsAndScheduleDto {
+  private fun getSessionsAndScheduleDataForDate(sessionDate: LocalDate, visitSessions: List<VisitSessionDto>?, prisonerSchedules: List<ScheduledEventDto>): SessionsAndScheduleDto {
     val visitSessionsForDate = visitSessions?.filter { it.startTimestamp.toLocalDate() == sessionDate }?.map { VisitSessionV2Dto(it) } ?: emptyList()
-    return SessionsAndScheduleDto(sessionDate, visitSessionsForDate, prisonerSchedules)
+    val prisonerScheduleForDate = if (visitSessionsForDate.isNotEmpty()) {
+      prisonerSchedules.filter { it.eventDate == sessionDate }.map { PrisonerScheduledEventDto(it) }
+    } else {
+      emptyList()
+    }
+
+    return SessionsAndScheduleDto(sessionDate, visitSessionsForDate, prisonerScheduleForDate)
   }
 }
