@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.WhereAboutsApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.enums.PrisonerSupportedAlertCodeType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.request.review.PrisonerRestrictionsForReview
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.request.review.VisitorRestrictionsForReview
@@ -25,6 +26,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.IsExcludeDateDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.PrisonerScheduledEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.SessionsAndScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.VisitSessionV2Dto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.VisitSessionsAndScheduleDto
@@ -53,6 +55,7 @@ class VisitSchedulerSessionsService(
   private val publicServiceFromDateOverride: Long,
   @param:Value("\${public.service.to-date-override: 28}")
   private val publicServiceToDateOverride: Long,
+  private val whereAboutsApiClient: WhereAboutsApiClient,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -77,7 +80,7 @@ class VisitSchedulerSessionsService(
 
   fun getVisitSessionsAndSchedule(
     prisonCode: String,
-    prisonerId: String?,
+    prisonerId: String,
     min: Int?,
     username: String?,
     userType: UserType,
@@ -86,19 +89,15 @@ class VisitSchedulerSessionsService(
     val dateRangeForPrison = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode)
     val sessionAndScheduleDateRange = DateRange(LocalDate.now(), dateRangeForPrison.toDate)
     val visitSessions = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max = null, username, userType)
+    val prisonerSchedules = whereAboutsApiClient.getEvents(prisonerId, dateRangeForPrison.fromDate, dateRangeForPrison.toDate).map { PrisonerScheduledEventDto(it) }
 
     val dateRangeIterator = DateRangeIterator(sessionAndScheduleDateRange)
     while (dateRangeIterator.hasNext()) {
       val sessionDate = dateRangeIterator.next()
-      sessionsAndScheduleList.add(getSessionsAndScheduleDataForDate(sessionDate, visitSessions))
+      sessionsAndScheduleList.add(getSessionsAndScheduleDataForDate(sessionDate, visitSessions, prisonerSchedules))
     }
 
     return VisitSessionsAndScheduleDto(false, sessionsAndScheduleList)
-  }
-
-  private fun getSessionsAndScheduleDataForDate(sessionDate: LocalDate, visitSessions: List<VisitSessionDto>?): SessionsAndScheduleDto {
-    val visitSessionsForDate = visitSessions?.filter { it.startTimestamp.toLocalDate() == sessionDate }?.map { VisitSessionV2Dto(it) } ?: emptyList()
-    return SessionsAndScheduleDto(sessionDate, visitSessionsForDate, scheduledEvents = emptyList())
   }
 
   fun getAvailableVisitSessions(
@@ -450,5 +449,10 @@ class VisitSchedulerSessionsService(
     val newFromDate = dateRange.fromDate.plusDays(TOTAL_DAYS_TO_ADD_IF_SESSIONS_UNDER_REVIEW.toLong())
     val bankHolidays = govUkHolidayService.getGovUKBankHolidays(dateRange).map { it.date }
     return dateUtils.advanceDaysIfWeekendOrBankHoliday(newFromDate, dateRange.toDate, bankHolidays)
+  }
+
+  private fun getSessionsAndScheduleDataForDate(sessionDate: LocalDate, visitSessions: List<VisitSessionDto>?, prisonerSchedules: List<PrisonerScheduledEventDto>): SessionsAndScheduleDto {
+    val visitSessionsForDate = visitSessions?.filter { it.startTimestamp.toLocalDate() == sessionDate }?.map { VisitSessionV2Dto(it) } ?: emptyList()
+    return SessionsAndScheduleDto(sessionDate, visitSessionsForDate, prisonerSchedules)
   }
 }

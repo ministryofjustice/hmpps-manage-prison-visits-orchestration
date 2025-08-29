@@ -13,5 +13,5 @@ class SessionsAndScheduleDto(
   val visitSessions: List<VisitSessionV2Dto>,
 
   @Schema(description = "Visit sessions", required = true)
-  val scheduledEvents: List<ScheduledEventDto>,
+  val scheduledEvents: List<PrisonerScheduledEventDto>,
 )
