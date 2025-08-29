@@ -4,14 +4,17 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isNotFoundError
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import java.time.Duration
+import java.util.concurrent.TimeoutException
 
 @Component
 class PrisonerSearchClient(
@@ -47,4 +50,43 @@ class PrisonerSearchClient(
       Mono.empty()
     }
   }
+
+  fun getPrisonersByPrisonerIds(prisonerIds: List<String>): RestPage<PrisonerDto>? {
+    logger.info("Calling prisoner-search to get all prisoners for given prisonerIds $prisonerIds")
+    val requestBody = AttributeSearch(
+      queries = listOf(
+        AttributeQuery(
+          matchers = listOf(
+            Matcher(attribute = "prisonerNumber", condition = "IN", searchTerm = prisonerIds.joinToString(separator = ",")),
+          ),
+        ),
+      ),
+    )
+
+    return webClient
+      .post()
+      .uri("/attribute-search?size=10000")
+      .bodyValue(requestBody)
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<RestPage<PrisonerDto>>()
+      .block(apiTimeout)
+  }
 }
+
+data class AttributeSearch(
+  val joinType: String = "AND",
+  val queries: List<AttributeQuery>,
+)
+
+data class AttributeQuery(
+  val joinType: String = "AND",
+  val matchers: List<Matcher>,
+)
+
+data class Matcher(
+  val type: String = "String",
+  val attribute: String,
+  val condition: String,
+  val searchTerm: String,
+)
