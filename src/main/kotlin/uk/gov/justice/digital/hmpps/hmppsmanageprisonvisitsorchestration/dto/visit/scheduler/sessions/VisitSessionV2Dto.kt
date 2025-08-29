@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTimeSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionConflict
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
 
 data class VisitSessionV2Dto(
   @Schema(description = "Session Template Reference", example = "v9d.7ed.7u", required = true)
@@ -17,10 +16,6 @@ data class VisitSessionV2Dto(
   @Schema(description = "Visit Room", example = "Visits Main Hall", required = true)
   @field:NotBlank
   val visitRoom: String,
-
-  @Schema(description = "The type of visits taking place within this session", example = "SOCIAL", required = true)
-  @field:NotNull
-  val visitType: VisitType,
 
   @Schema(description = "The number of concurrent visits which may take place within this session", example = "1", required = true)
   @field:NotNull
@@ -46,7 +41,6 @@ data class VisitSessionV2Dto(
   constructor(visitSessionDto: VisitSessionDto) : this (
     sessionTemplateReference = visitSessionDto.sessionTemplateReference,
     visitRoom = visitSessionDto.visitRoom,
-    visitType = visitSessionDto.visitType,
     openVisitCapacity = visitSessionDto.openVisitCapacity,
     openVisitBookedCount = visitSessionDto.openVisitBookedCount,
     closedVisitCapacity = visitSessionDto.closedVisitCapacity,

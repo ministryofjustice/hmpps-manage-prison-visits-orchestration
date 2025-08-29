@@ -98,7 +98,7 @@ class VisitSchedulerSessionsService(
 
   private fun getSessionsAndScheduleDataForDate(sessionDate: LocalDate, visitSessions: List<VisitSessionDto>?): SessionsAndScheduleDto {
     val visitSessionsForDate = visitSessions?.filter { it.startTimestamp.toLocalDate() == sessionDate }?.map { VisitSessionV2Dto(it) } ?: emptyList()
-    return SessionsAndScheduleDto(sessionDate, visitSessions = visitSessionsForDate, scheduledEvents = emptyList())
+    return SessionsAndScheduleDto(sessionDate, visitSessionsForDate, scheduledEvents = emptyList())
   }
 
   fun getAvailableVisitSessions(

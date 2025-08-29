@@ -7,7 +7,7 @@ import java.time.LocalDate
 class SessionsAndScheduleDto(
   @Schema(description = "Session date", example = "2020-11-01", required = true)
   @field:NotNull
-  val sessionDate: LocalDate,
+  val date: LocalDate,
 
   @Schema(description = "Visit sessions", required = true)
   val visitSessions: List<VisitSessionV2Dto>,
