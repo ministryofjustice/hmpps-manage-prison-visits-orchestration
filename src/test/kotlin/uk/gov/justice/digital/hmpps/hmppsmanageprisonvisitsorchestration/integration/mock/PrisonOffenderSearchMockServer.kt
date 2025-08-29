@@ -42,14 +42,16 @@ class PrisonOffenderSearchMockServer : WireMockServer(8094) {
           } else {
             responseBuilder
               .withStatus(HttpStatus.OK.value())
-              .withBody(getJsonString(
-                RestPage(
-                  content = prisoners,
-                  size = prisoners.size,
-                  total = prisoners.size.toLong(),
-                  page = 0
-                )
-              ))
+              .withBody(
+                getJsonString(
+                  RestPage(
+                    content = prisoners,
+                    size = prisoners.size,
+                    total = prisoners.size.toLong(),
+                    page = 0,
+                  ),
+                ),
+              )
           },
         ),
     )
