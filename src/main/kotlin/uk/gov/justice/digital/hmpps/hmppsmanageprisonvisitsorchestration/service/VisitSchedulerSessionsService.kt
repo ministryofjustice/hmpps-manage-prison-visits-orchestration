@@ -105,7 +105,7 @@ class VisitSchedulerSessionsService(
     val dateRangeIterator = DateRangeIterator(sessionAndScheduleDateRange)
     while (dateRangeIterator.hasNext()) {
       val sessionDate = dateRangeIterator.next()
-      sessionsAndSchedule.add(getSessionsAndScheduleDataForDate(sessionDate, visitSessions, prisonerSchedules))
+      sessionsAndSchedule.add(getSessionsAndScheduleDataForDate(sessionDate, visitSessions, prisonerSchedules.filter { it.eventDate == sessionDate }))
     }
 
     return VisitSessionsAndScheduleDto(scheduledEventsAvailable, sessionsAndSchedule)
