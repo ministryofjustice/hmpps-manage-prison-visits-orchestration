@@ -54,7 +54,7 @@ class VisitsByDateService(
 
     var prisonerDetailsList = emptyList<PrisonerDto>()
     try {
-      prisonerDetailsList = prisonerSearchClient.getPrisonersByPrisonerIds(visits.map { it.prisonerId }.toList())?.toList() ?: emptyList()
+      prisonerDetailsList = prisonerSearchClient.getPrisonersByPrisonerIds(visits.map { it.prisonerId }.distinct().toList())?.toList() ?: emptyList()
     } catch (e: Exception) {
       LOG.debug("Unable to load prisoner details - $e")
     }
