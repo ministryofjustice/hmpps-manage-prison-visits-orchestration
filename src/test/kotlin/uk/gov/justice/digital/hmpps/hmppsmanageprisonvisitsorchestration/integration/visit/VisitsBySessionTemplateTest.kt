@@ -53,8 +53,7 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
     val visitRestriction = VisitRestriction.OPEN
     val visitsList = mutableListOf(visitDto, visitDto2, visitDto3)
 
-    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId1, prisonerDto1)
-    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId2, prisonerDto2)
+    prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(prisonerIds = listOf(prisonerId1, prisonerId2), prisoners = listOf(prisonerDto1, prisonerDto2))
     visitSchedulerMockServer.stubGetVisitsBySessionTemplate(sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), prisonCode, 0, 1000, visitsList)
 
     // When
@@ -89,8 +88,7 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
     val visitRestriction = VisitRestriction.OPEN
     val visitsList = mutableListOf(visitDto, visitDto2)
 
-    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId1, prisonerDto1)
-    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId2, prisonerDto2)
+    prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(prisonerIds = listOf(prisonerId1, prisonerId2), prisoners = listOf(prisonerDto1, prisonerDto2))
     visitSchedulerMockServer.stubGetVisitsBySessionTemplate(sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), prisonCode, 0, 1000, visitsList)
 
     // When
@@ -118,8 +116,7 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
     val visitStatus = "BOOKED"
     val visitRestriction = VisitRestriction.OPEN
 
-    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId1, prisonerDto1)
-    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId2, prisonerDto2)
+    prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(prisonerIds = listOf(prisonerId1, prisonerId2), prisoners = listOf(prisonerDto1, prisonerDto2))
     visitSchedulerMockServer.stubGetVisitsBySessionTemplate(sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), prisonCode, 0, 1000, mutableListOf())
 
     // When
@@ -146,8 +143,7 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
     val visitsList = mutableListOf(visitDto, visitDto2)
 
     // prisoner1 search returns 404
-    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId1, null)
-    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId2, prisonerDto2)
+    prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(prisonerIds = listOf(prisonerId1, prisonerId2), prisoners = null)
     visitSchedulerMockServer.stubGetVisitsBySessionTemplate(sessionTemplateReference, sessionDate, listOf(visitStatus), listOf(visitRestriction), prisonCode, 0, 1000, visitsList)
 
     // When
@@ -165,7 +161,7 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
     assertVisitDetails(visit1, visitDto.visitReference, prisonerId1, prisonerId1, prisonerId1)
 
     val visit2 = getVisitByReference(visits, visitDto2.visitReference)
-    assertVisitDetails(visit2, visitDto2.visitReference, prisonerId2, prisonerDto2.firstName, prisonerDto2.lastName)
+    assertVisitDetails(visit2, visitDto2.visitReference, prisonerId2, prisonerId2, prisonerId2)
   }
 
   private fun getResults(responseSpec: WebTestClient.ResponseSpec): Array<VisitPreviewDto> = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, Array<VisitPreviewDto>::class.java)
