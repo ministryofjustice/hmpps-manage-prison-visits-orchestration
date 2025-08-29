@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
@@ -36,7 +37,8 @@ class VisitsByDateService(
       visitRestrictions,
       prisonCode,
     )
-    return visitSchedulerClient.getVisitsForSessionTemplateAndDate(
+
+    val visits = visitSchedulerClient.getVisitsForSessionTemplateAndDate(
       sessionTemplateReference,
       sessionDate,
       visitStatus,
@@ -44,14 +46,28 @@ class VisitsByDateService(
       prisonCode,
       page = PAGE_NUMBER,
       size = MAX_VISIT_RECORDS,
-    )?.toList()?.map { visit ->
-      try {
-        val prisoner = prisonerSearchClient.getPrisonerById(visit.prisonerId)
-        VisitPreviewDto(visit, prisoner)
-      } catch (e: Exception) {
-        LOG.debug("Unable to find prisoner ${visit.prisonerId}", e)
-        VisitPreviewDto(visit)
+    )?.toList() ?: emptyList()
+
+    if (visits.isEmpty()) {
+      return visits
+    }
+
+    var prisonerDetailsList = emptyList<PrisonerDto>()
+    try {
+      prisonerDetailsList = prisonerSearchClient.getPrisonersByPrisonerIds(visits.map { it.prisonerId }.distinct().toList())?.toList() ?: emptyList()
+    } catch (e: Exception) {
+      LOG.debug("Unable to load prisoner details - $e")
+    }
+
+    visits.forEach { visit ->
+      val prisonerDetails = prisonerDetailsList.firstOrNull { visit.prisonerId == it.prisonerNumber }
+
+      if (prisonerDetails != null) {
+        visit.firstName = prisonerDetails.firstName
+        visit.lastName = prisonerDetails.lastName
       }
-    } ?: emptyList()
+    }
+
+    return visits
   }
 }

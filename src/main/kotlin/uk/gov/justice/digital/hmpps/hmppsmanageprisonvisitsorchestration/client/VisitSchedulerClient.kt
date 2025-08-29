@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.UpdateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitRequestSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitRequestsCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
@@ -154,7 +155,7 @@ class VisitSchedulerClient(
     prisonCode: String,
     page: Int,
     size: Int,
-  ): RestPage<VisitDto>? = webClient.get()
+  ): RestPage<VisitPreviewDto>? = webClient.get()
     .uri("/visits/session-template") {
       it.queryParamIfPresent("sessionTemplateReference", Optional.ofNullable(sessionTemplateReference))
         .queryParam("fromDate", sessionDate)
@@ -168,7 +169,7 @@ class VisitSchedulerClient(
     }
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
-    .bodyToMono<RestPage<VisitDto>>()
+    .bodyToMono<RestPage<VisitPreviewDto>>()
     .block(apiTimeout)
 
   fun getVisitsAsMono(visitSearchRequestFilter: VisitSearchRequestFilter): Mono<RestPage<VisitDto>> = webClient.get()

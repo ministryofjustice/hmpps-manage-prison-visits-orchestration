@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import java.time.LocalDateTime
@@ -17,11 +16,11 @@ data class VisitPreviewDto internal constructor(
 
   @Schema(description = "First name of the prisoner", example = "John", required = true)
   @NotNull
-  val firstName: String,
+  var firstName: String,
 
   @Schema(description = "Last name of the prisoner", example = "Smith", required = true)
   @NotNull
-  val lastName: String,
+  var lastName: String,
 
   @Schema(description = "Visit reference", example = "dp-we-rs-te", required = true)
   @NotNull
@@ -47,20 +46,6 @@ data class VisitPreviewDto internal constructor(
   @Schema(description = "Visit Sub Status", example = "REQUESTED", required = true)
   val visitSubStatus: VisitSubStatus,
 ) {
-  constructor(visit: VisitDto, prisoner: PrisonerDto) :
-    this(
-      prisonerId = visit.prisonerId,
-      firstName = prisoner.firstName,
-      lastName = prisoner.lastName,
-      visitReference = visit.reference,
-      visitorCount = visit.visitors?.size ?: 0,
-      visitTimeSlot = SessionTimeSlotDto(visit.startTimestamp.toLocalTime(), visit.endTimestamp.toLocalTime()),
-      firstBookedDateTime = visit.firstBookedDateTime ?: visit.createdTimestamp,
-      visitRestriction = visit.visitRestriction,
-      visitStatus = visit.visitStatus,
-      visitSubStatus = visit.visitSubStatus,
-    )
-
   constructor(visit: VisitDto) :
     this(
       prisonerId = visit.prisonerId,
