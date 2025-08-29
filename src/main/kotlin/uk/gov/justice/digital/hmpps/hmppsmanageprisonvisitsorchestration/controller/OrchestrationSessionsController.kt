@@ -20,12 +20,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.VisitSessionsAndScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerSessionsService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.validation.NullableNotEmpty
 import java.time.LocalDate
 import java.time.LocalTime
 
 const val GET_VISIT_SESSIONS = "/visit-sessions"
+const val GET_VISIT_SESSIONS_AND_SCHEDULE = "/visit-sessions-and-schedule"
 const val GET_VISIT_SESSIONS_AVAILABLE = "$GET_VISIT_SESSIONS/available"
 const val GET_VISIT_SESSIONS_AVAILABLE_PUBLIC = "$GET_VISIT_SESSIONS/public/available"
 const val GET_VISIT_SESSIONS_AVAILABLE_RESTRICTION = "$GET_VISIT_SESSIONS_AVAILABLE/restriction"
@@ -99,6 +101,58 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     @Parameter(description = "user type for the session", example = "STAFF", required = false)
     userType: UserType = UserType.STAFF,
   ): List<VisitSessionDto>? = visitSchedulerSessionsService.getVisitSessions(prisonCode, prisonerId, min, max, username, userType)
+
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @GetMapping(GET_VISIT_SESSIONS_AND_SCHEDULE)
+  @Operation(
+    summary = "Returns all visit sessions and prisoner schedule for a specified prisoner",
+    description = "Retrieve all visit sessions and schedule for a specified prisoner",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Visit sessions and schedule information returned for a prisoner",
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to get visit sessions and schedule information for a prisoner ",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getVisitSessionsAndSchedule(
+    @RequestParam(value = "prisonId", required = true)
+    @Parameter(
+      description = "Query by NOMIS Prison Identifier",
+      example = "MDI",
+    )
+    prisonCode: String,
+    @RequestParam(value = "prisonerId", required = false)
+    @Parameter(
+      description = "Filter results by prisoner id",
+      example = "A12345DC",
+    )
+    prisonerId: String?,
+    @RequestParam(value = "min", required = false)
+    @Parameter(
+      description = "Override the default minimum number of days notice from the current date",
+      example = "2",
+    )
+    min: Int?,
+    @RequestParam(value = "username", required = false)
+    @Parameter(
+      description = "Username for the user making the request. Used to exclude user's pending applications from session capacity count. Optional, ignored if not passed in.",
+      example = "user-1",
+    )
+    username: String? = null,
+    @RequestParam
+    @Parameter(description = "user type for the session", example = "STAFF", required = false)
+    userType: UserType = UserType.STAFF,
+  ): VisitSessionsAndScheduleDto = visitSchedulerSessionsService.getVisitSessionsAndSchedule(prisonCode, prisonerId, min, username, userType)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(GET_VISIT_SESSIONS_AVAILABLE)

@@ -25,10 +25,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.IsExcludeDateDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.SessionsAndScheduleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.VisitSessionV2Dto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.VisitSessionsAndScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.ScheduledEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.DateRangeNotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonService.Companion.logger
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateRangeIterator
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
 import java.time.LocalDate
 import java.time.LocalTime
@@ -45,7 +49,6 @@ class VisitSchedulerSessionsService(
   private val prisonApiClient: PrisonApiClient,
   private val prisonerContactRegistryClient: PrisonerContactRegistryClient,
   private val alertsApiClient: AlertsApiClient,
-
   @param:Value("\${public.service.from-date-override: 2}")
   private val publicServiceFromDateOverride: Long,
   @param:Value("\${public.service.to-date-override: 28}")
@@ -71,6 +74,32 @@ class VisitSchedulerSessionsService(
     username: String?,
     userType: UserType,
   ): List<VisitSessionDto>? = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max, username, userType)
+
+  fun getVisitSessionsAndSchedule(
+    prisonCode: String,
+    prisonerId: String?,
+    min: Int?,
+    username: String?,
+    userType: UserType,
+  ): VisitSessionsAndScheduleDto {
+    val sessionsAndScheduleList = mutableListOf<SessionsAndScheduleDto>()
+    val dateRangeForPrison = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode)
+    val sessionAndScheduleDateRange = DateRange(LocalDate.now(), dateRangeForPrison.toDate)
+    val visitSessions = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max = null, username, userType)
+
+    val dateRangeIterator = DateRangeIterator(sessionAndScheduleDateRange)
+    while (dateRangeIterator.hasNext()) {
+      val sessionDate = dateRangeIterator.next()
+      sessionsAndScheduleList.add(getSessionsAndScheduleDataForDate(sessionDate, visitSessions))
+    }
+
+    return VisitSessionsAndScheduleDto(false, sessionsAndScheduleList)
+  }
+
+  private fun getSessionsAndScheduleDataForDate(sessionDate: LocalDate, visitSessions: List<VisitSessionDto>?): SessionsAndScheduleDto {
+    val visitSessionsForDate = visitSessions?.filter { it.startTimestamp.toLocalDate() == sessionDate }?.map { VisitSessionV2Dto(it) } ?: emptyList()
+    return SessionsAndScheduleDto(sessionDate, visitSessions = visitSessionsForDate, scheduledEvents = emptyList())
+  }
 
   fun getAvailableVisitSessions(
     prisonCode: String,
