@@ -7,13 +7,13 @@ class DateRangeIterator(
   val dateRange: DateRange,
   val stepDays: Long = 1,
 ) : Iterator<LocalDate> {
-  private var currentDate = dateRange.fromDate
+  private var date = dateRange.fromDate
 
-  override fun hasNext() = currentDate <= dateRange.toDate
+  override fun hasNext() = date <= dateRange.toDate
 
   override fun next(): LocalDate {
-    val next = currentDate
-    currentDate = currentDate.plusDays(stepDays)
+    val next = date
+    date = date.plusDays(stepDays)
     return next
   }
 }

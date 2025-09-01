@@ -85,28 +85,31 @@ class VisitSchedulerSessionsService(
     username: String?,
     userType: UserType,
   ): VisitSessionsAndScheduleDto {
+    if (userType == UserType.PUBLIC) {
+      throw IllegalArgumentException("Public user is not allowed to call this endpoint")
+    }
+
     var scheduledEventsAvailable = true
-    val sessionsAndSchedule = mutableListOf<SessionsAndScheduleDto>()
     val dateRangeForPrison = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode)
     val sessionAndScheduleDateRange = DateRange(LocalDate.now(), dateRangeForPrison.toDate)
+
+    // get sessions for prisoner and date range
     val visitSessions = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max = null, username, userType)
+
+    // get schedules for prisoner and date range
     val prisonerSchedules =
       try {
         whereAboutsApiClient.getEvents(prisonerId, dateRangeForPrison.fromDate, dateRangeForPrison.toDate)
       } catch (_: NotFoundException) {
-        LOG.warn("No schedule data found for prisonerId - $prisonerId, returning an empty list")
+        LOG.info("No schedule data found for prisonerId - $prisonerId, returning an empty list")
         emptyList()
       } catch (e: Exception) {
-        LOG.warn("An exception occurred when retrieving schedule data for prisonerId - $prisonerId, returning an empty list", e)
+        LOG.info("An exception occurred when retrieving schedule data for prisonerId - $prisonerId, returning an empty list", e)
         scheduledEventsAvailable = false
         emptyList()
       }
 
-    val dateRangeIterator = DateRangeIterator(sessionAndScheduleDateRange)
-    while (dateRangeIterator.hasNext()) {
-      val sessionDate = dateRangeIterator.next()
-      sessionsAndSchedule.add(getSessionsAndScheduleDataForDate(sessionDate, visitSessions, prisonerSchedules))
-    }
+    val sessionsAndSchedule = getSessionsAndScheduleDataForDates(sessionAndScheduleDateRange, visitSessions, prisonerSchedules)
 
     return VisitSessionsAndScheduleDto(scheduledEventsAvailable, sessionsAndSchedule)
   }
@@ -462,8 +465,23 @@ class VisitSchedulerSessionsService(
     return dateUtils.advanceDaysIfWeekendOrBankHoliday(newFromDate, dateRange.toDate, bankHolidays)
   }
 
+  private fun getSessionsAndScheduleDataForDates(sessionAndScheduleDateRange: DateRange, visitSessions: List<VisitSessionDto>?, prisonerSchedules: List<ScheduledEventDto>): List<SessionsAndScheduleDto> {
+    LOG.debug("getSessionsAndScheduleDataForDates: {}", sessionAndScheduleDateRange)
+    val sessionsAndSchedule = mutableListOf<SessionsAndScheduleDto>()
+    val dateRangeIterator = DateRangeIterator(sessionAndScheduleDateRange)
+    while (dateRangeIterator.hasNext()) {
+      val sessionDate = dateRangeIterator.next()
+      sessionsAndSchedule.add(getSessionsAndScheduleDataForDate(sessionDate, visitSessions, prisonerSchedules))
+    }
+
+    return sessionsAndSchedule.toList()
+  }
+
   private fun getSessionsAndScheduleDataForDate(sessionDate: LocalDate, visitSessions: List<VisitSessionDto>?, prisonerSchedules: List<ScheduledEventDto>): SessionsAndScheduleDto {
+    LOG.debug("getSessionsAndScheduleDataForDate: {}", sessionDate)
     val visitSessionsForDate = visitSessions?.filter { it.startTimestamp.toLocalDate() == sessionDate }?.map { VisitSessionV2Dto(it) } ?: emptyList()
+
+    // only populate schedule if sessions are available
     val prisonerScheduleForDate = if (visitSessionsForDate.isNotEmpty()) {
       prisonerSchedules.filter { it.eventDate == sessionDate }.map { PrisonerScheduledEventDto(it) }
     } else {
