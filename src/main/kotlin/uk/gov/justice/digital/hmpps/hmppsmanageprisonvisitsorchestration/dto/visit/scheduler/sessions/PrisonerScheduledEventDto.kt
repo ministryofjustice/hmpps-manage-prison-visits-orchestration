@@ -9,11 +9,11 @@ data class PrisonerScheduledEventDto(
   @Schema(required = false, description = "Type of scheduled event (as a code)")
   val eventType: String?,
 
-  @Schema(required = true, description = "Description of scheduled event type")
-  val eventTypeDesc: String? = null,
-
   @Schema(required = false, description = "Description of scheduled event sub type")
   val eventSubTypeDesc: String?,
+
+  @Schema(required = false, description = "Source-specific description for type or nature of the event")
+  val eventSourceDesc: String?,
 
   @Schema(required = false, description = "Date on which event occurs")
   val eventDate: LocalDate?,
@@ -26,8 +26,8 @@ data class PrisonerScheduledEventDto(
 ) {
   constructor(scheduledEventDto: ScheduledEventDto) : this (
     eventType = scheduledEventDto.eventType,
-    eventTypeDesc = scheduledEventDto.eventTypeDesc,
     eventSubTypeDesc = scheduledEventDto.eventSubTypeDesc,
+    eventSourceDesc = scheduledEventDto.eventSourceDesc,
     eventDate = scheduledEventDto.eventDate,
     startTime = scheduledEventDto.startTime?.toLocalTime(),
     endTime = scheduledEventDto.endTime?.toLocalTime(),
