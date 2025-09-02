@@ -577,13 +577,18 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     return dateRangeToUse
   }
 
-  fun stubGetVisitSessions(prisonId: String, prisonerId: String, visitSessions: List<VisitSessionDto>, userType: UserType) {
+  fun stubGetVisitSessions(prisonId: String, prisonerId: String, visitSessions: List<VisitSessionDto>?, userType: UserType, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
     stubFor(
       get("/visit-sessions?prisonId=$prisonId&prisonerId=$prisonerId&userType=${userType.name}")
         .willReturn(
-          createJsonResponseBuilder()
-            .withStatus(HttpStatus.OK.value())
-            .withBody(getJsonString(visitSessions)),
+          if (visitSessions != null) {
+            createJsonResponseBuilder()
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(visitSessions))
+          } else {
+            createJsonResponseBuilder()
+              .withStatus(httpStatus.value())
+          },
         ),
     )
   }

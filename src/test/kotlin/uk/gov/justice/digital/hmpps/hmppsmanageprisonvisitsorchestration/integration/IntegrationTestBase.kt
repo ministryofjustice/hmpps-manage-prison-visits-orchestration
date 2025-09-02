@@ -361,15 +361,20 @@ abstract class IntegrationTestBase {
     )
   }
 
-  fun createVisitSessionDto(prisonCode: String, sessionTemplateReference: String): VisitSessionDto = VisitSessionDto(
+  fun createVisitSessionDto(
+    prisonCode: String,
+    sessionTemplateReference: String,
+    startTimestamp: LocalDateTime = LocalDateTime.now(),
+    endTimestamp: LocalDateTime = LocalDateTime.now().plusHours(1),
+  ): VisitSessionDto = VisitSessionDto(
     sessionTemplateReference = sessionTemplateReference,
     prisonCode = prisonCode,
     visitRoom = "Visit Main Hall",
     visitType = VisitType.SOCIAL,
     closedVisitCapacity = 5,
     openVisitCapacity = 30,
-    startTimestamp = LocalDateTime.now(),
-    endTimestamp = LocalDateTime.now().plusHours(1),
+    startTimestamp = startTimestamp,
+    endTimestamp = endTimestamp,
   )
 
   final fun createPrisonNameDto(prisonCode: String, name: String): PrisonNameDto = PrisonNameDto(
@@ -382,8 +387,8 @@ abstract class IntegrationTestBase {
     eventDate: LocalDate,
     eventType: String = "APP",
     eventTypeDesc: String = "Appointment",
-    eventSubType: String,
-    eventSubTypeDesc: String,
+    eventSubType: String = "APP-SUB-TYPE",
+    eventSubTypeDesc: String = "Appointment sub type",
     eventStartTime: LocalDateTime? = null,
     eventEndTime: LocalDateTime? = null,
   ): ScheduledEventDto = ScheduledEventDto(
