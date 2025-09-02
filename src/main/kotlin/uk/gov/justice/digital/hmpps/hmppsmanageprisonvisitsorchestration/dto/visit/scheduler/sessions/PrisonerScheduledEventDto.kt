@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.ScheduledEventDto
-import java.time.LocalDate
 import java.time.LocalTime
 
 data class PrisonerScheduledEventDto(
@@ -15,9 +14,6 @@ data class PrisonerScheduledEventDto(
   @Schema(required = false, description = "Source-specific description for type or nature of the event")
   val eventSourceDesc: String?,
 
-  @Schema(required = false, description = "Date on which event occurs")
-  val eventDate: LocalDate?,
-
   @Schema(required = false, description = "Date and time at which event starts")
   val startTime: LocalTime?,
 
@@ -28,7 +24,6 @@ data class PrisonerScheduledEventDto(
     eventType = scheduledEventDto.eventType,
     eventSubTypeDesc = scheduledEventDto.eventSubTypeDesc,
     eventSourceDesc = scheduledEventDto.eventSourceDesc,
-    eventDate = scheduledEventDto.eventDate,
     startTime = scheduledEventDto.startTime?.toLocalTime(),
     endTime = scheduledEventDto.endTime?.toLocalTime(),
   )
