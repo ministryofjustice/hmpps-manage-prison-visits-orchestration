@@ -149,10 +149,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       example = "user-1",
     )
     username: String? = null,
-    @RequestParam
-    @Parameter(description = "user type for the session", example = "STAFF", required = false)
-    userType: UserType = UserType.STAFF,
-  ): VisitSessionsAndScheduleDto = visitSchedulerSessionsService.getVisitSessionsAndSchedule(prisonCode, prisonerId, min, username, userType)
+  ): VisitSessionsAndScheduleDto = visitSchedulerSessionsService.getVisitSessionsAndSchedule(prisonCode, prisonerId, min, username)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(GET_VISIT_SESSIONS_AVAILABLE)

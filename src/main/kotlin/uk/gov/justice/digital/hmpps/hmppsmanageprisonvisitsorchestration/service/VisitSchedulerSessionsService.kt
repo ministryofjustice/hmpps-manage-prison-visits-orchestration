@@ -83,18 +83,13 @@ class VisitSchedulerSessionsService(
     prisonerId: String,
     min: Int?,
     username: String?,
-    userType: UserType,
   ): VisitSessionsAndScheduleDto {
-    if (userType == UserType.PUBLIC) {
-      throw IllegalArgumentException("Public user is not allowed to call this endpoint")
-    }
-
     var scheduledEventsAvailable = true
     val dateRangeForPrison = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode)
     val sessionAndScheduleDateRange = DateRange(LocalDate.now(), dateRangeForPrison.toDate)
 
-    // get sessions for prisoner and date range
-    val visitSessions = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max = null, username, userType)
+    // get sessions for prisoner and date range with usertype as STAFF
+    val visitSessions = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max = null, username, UserType.STAFF)
 
     // get schedules for prisoner and date range
     val prisonerSchedules =
@@ -481,7 +476,7 @@ class VisitSchedulerSessionsService(
     LOG.debug("getSessionsAndScheduleDataForDate: {}", sessionDate)
     val visitSessionsForDate = visitSessions?.filter { it.startTimestamp.toLocalDate() == sessionDate }?.map { VisitSessionV2Dto(it) } ?: emptyList()
 
-    // only populate schedule if sessions are available
+    // only populate schedules if sessions are available
     val prisonerScheduleForDate = if (visitSessionsForDate.isNotEmpty()) {
       prisonerSchedules.filter { it.eventDate == sessionDate }.map { PrisonerScheduledEventDto(it) }
     } else {
