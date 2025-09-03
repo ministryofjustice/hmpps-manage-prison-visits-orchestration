@@ -12,7 +12,7 @@ import java.time.Duration
 class BookerAuditHistoryClient(
   private val visitSchedulerClient: VisitSchedulerClient,
   private val bookerRegistryClient: PrisonVisitBookerRegistryClient,
-  @Value("\${prison-visit-booker-registry.api.timeout}") private val apiTimeout: Duration,
+  @Value("\${prison-visit-booker-registry.api.timeout:10s}") private val apiTimeout: Duration,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
