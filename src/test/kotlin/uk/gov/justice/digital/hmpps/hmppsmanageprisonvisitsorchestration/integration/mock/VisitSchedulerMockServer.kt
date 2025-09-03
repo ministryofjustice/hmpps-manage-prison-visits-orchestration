@@ -28,6 +28,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.UpdateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitRequestSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitRequestsCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
@@ -148,7 +149,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     prisonCode: String,
     page: Int,
     size: Int,
-    visits: List<VisitDto>,
+    visits: List<VisitPreviewDto>,
   ) {
     val restPage = RestPage(content = visits, page = 0, size = size, total = visits.size.toLong())
     val uri = "/visits/session-template"
@@ -576,13 +577,18 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     return dateRangeToUse
   }
 
-  fun stubGetVisitSessions(prisonId: String, prisonerId: String, visitSessions: List<VisitSessionDto>, userType: UserType) {
+  fun stubGetVisitSessions(prisonId: String, prisonerId: String, visitSessions: List<VisitSessionDto>?, userType: UserType, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
     stubFor(
       get("/visit-sessions?prisonId=$prisonId&prisonerId=$prisonerId&userType=${userType.name}")
         .willReturn(
-          createJsonResponseBuilder()
-            .withStatus(HttpStatus.OK.value())
-            .withBody(getJsonString(visitSessions)),
+          if (visitSessions != null) {
+            createJsonResponseBuilder()
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(visitSessions))
+          } else {
+            createJsonResponseBuilder()
+              .withStatus(httpStatus.value())
+          },
         ),
     )
   }
