@@ -109,6 +109,10 @@ gov-uk:
     url: https://www.gov.uk
     timeout: 10s
 
+prison-visit-booker-registry:
+  api:
+    timeout: 10s
+
 cache:
   evict:
     bank-holidays:
