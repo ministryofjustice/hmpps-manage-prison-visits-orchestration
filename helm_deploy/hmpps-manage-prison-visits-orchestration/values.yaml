@@ -49,5 +49,8 @@ generic-service:
     groups:
       - internal
 
+  retryDlqCronjob:
+    enabled: true
+
 generic-prometheus-alerts:
   targetApplication: hmpps-manage-prison-visits-orchestration
