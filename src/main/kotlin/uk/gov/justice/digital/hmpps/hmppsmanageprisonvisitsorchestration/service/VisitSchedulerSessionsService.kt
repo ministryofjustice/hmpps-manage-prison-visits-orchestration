@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionDateConflict
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.CLOSED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.OPEN
@@ -85,8 +86,8 @@ class VisitSchedulerSessionsService(
     username: String?,
   ): VisitSessionsAndScheduleDto {
     var scheduledEventsAvailable = true
-    val dateRangeForPrison = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode)
-    val sessionAndScheduleDateRange = DateRange(LocalDate.now(), dateRangeForPrison.toDate)
+    val prisonDateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode)
+    val sessionAndScheduleDateRange = DateRange(LocalDate.now(), prisonDateRange.toDate)
 
     // get sessions for prisoner and date range with usertype as STAFF
     val visitSessions = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max = null, username, UserType.STAFF)
@@ -94,7 +95,7 @@ class VisitSchedulerSessionsService(
     // get schedules for prisoner and date range
     val prisonerSchedules =
       try {
-        whereAboutsApiClient.getEvents(prisonerId, dateRangeForPrison.fromDate, dateRangeForPrison.toDate)
+        whereAboutsApiClient.getEvents(prisonerId, prisonDateRange.fromDate, prisonDateRange.toDate)
       } catch (_: NotFoundException) {
         LOG.info("No schedule data found for prisonerId - $prisonerId, returning an empty list")
         emptyList()
@@ -104,7 +105,7 @@ class VisitSchedulerSessionsService(
         emptyList()
       }
 
-    val sessionsAndSchedule = getSessionsAndScheduleDataForDates(sessionAndScheduleDateRange, visitSessions, prisonerSchedules)
+    val sessionsAndSchedule = getSessionsAndScheduleDataForDates(sessionAndScheduleDateRange, prisonDateRange, visitSessions, prisonerSchedules)
 
     return VisitSessionsAndScheduleDto(scheduledEventsAvailable, sessionsAndSchedule)
   }
@@ -460,29 +461,46 @@ class VisitSchedulerSessionsService(
     return dateUtils.advanceDaysIfWeekendOrBankHoliday(newFromDate, dateRange.toDate, bankHolidays)
   }
 
-  private fun getSessionsAndScheduleDataForDates(sessionAndScheduleDateRange: DateRange, visitSessions: List<VisitSessionDto>?, prisonerSchedules: List<ScheduledEventDto>): List<SessionsAndScheduleDto> {
+  private fun getSessionsAndScheduleDataForDates(
+    sessionAndScheduleDateRange: DateRange,
+    prisonDateRange: DateRange,
+    visitSessions: List<VisitSessionDto>?,
+    prisonerSchedules: List<ScheduledEventDto>,
+  ): List<SessionsAndScheduleDto> {
     LOG.debug("getSessionsAndScheduleDataForDates: {}", sessionAndScheduleDateRange)
     val sessionsAndSchedule = mutableListOf<SessionsAndScheduleDto>()
     val dateRangeIterator = DateRangeIterator(sessionAndScheduleDateRange)
     while (dateRangeIterator.hasNext()) {
       val sessionDate = dateRangeIterator.next()
-      sessionsAndSchedule.add(getSessionsAndScheduleDataForDate(sessionDate, visitSessions, prisonerSchedules))
+      sessionsAndSchedule.add(getSessionsAndScheduleDataForDate(sessionDate, prisonDateRange, visitSessions, prisonerSchedules))
     }
 
     return sessionsAndSchedule.toList()
   }
 
-  private fun getSessionsAndScheduleDataForDate(sessionDate: LocalDate, visitSessions: List<VisitSessionDto>?, prisonerSchedules: List<ScheduledEventDto>): SessionsAndScheduleDto {
+  private fun getSessionsAndScheduleDataForDate(
+    sessionDate: LocalDate,
+    prisonDateRange: DateRange,
+    visitSessions: List<VisitSessionDto>?,
+    prisonerSchedules: List<ScheduledEventDto>,
+  ): SessionsAndScheduleDto {
     LOG.debug("getSessionsAndScheduleDataForDate: {}", sessionDate)
     val visitSessionsForDate = visitSessions?.filter { it.startTimestamp.toLocalDate() == sessionDate }?.map { VisitSessionV2Dto(it) } ?: emptyList()
+    val sessionDateConflicts: MutableList<SessionDateConflict> = mutableListOf()
+    var prisonerScheduleForDate: List<PrisonerScheduledEventDto> = emptyList()
 
-    // only populate schedules if sessions are available
-    val prisonerScheduleForDate = if (visitSessionsForDate.isNotEmpty()) {
-      prisonerSchedules.filter { it.eventDate == sessionDate }.map { PrisonerScheduledEventDto(it) }
+    // check if the date range is outside the booking window
+    if (isOutsideBookingWindow(sessionDate, prisonDateRange)) {
+      sessionDateConflicts.add(SessionDateConflict.OUTSIDE_BOOKING_WINDOW)
     } else {
-      emptyList()
+      // only populate schedules if sessions are available
+      if (visitSessionsForDate.isNotEmpty()) {
+        prisonerScheduleForDate = prisonerSchedules.filter { it.eventDate == sessionDate }.map { PrisonerScheduledEventDto(it) }
+        sessionDateConflicts.addAll(visitSessionsForDate.mapNotNull { it.sessionConflicts }.toList().flatten().mapNotNull { sessionConflict -> SessionDateConflict.get(sessionConflict) })
+      }
     }
-
-    return SessionsAndScheduleDto(sessionDate, visitSessionsForDate, prisonerScheduleForDate)
+    return SessionsAndScheduleDto(sessionDate, visitSessionsForDate, prisonerScheduleForDate, sessionDateConflicts.toSet())
   }
+
+  private fun isOutsideBookingWindow(date: LocalDate, prisonDateRange: DateRange): Boolean = (date.isBefore(prisonDateRange.fromDate) || date.isAfter(prisonDateRange.toDate))
 }

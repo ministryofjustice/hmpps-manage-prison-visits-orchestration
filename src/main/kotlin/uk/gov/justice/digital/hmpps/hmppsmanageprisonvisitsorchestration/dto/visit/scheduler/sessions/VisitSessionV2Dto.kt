@@ -41,7 +41,7 @@ data class VisitSessionV2Dto(
   val endTime: LocalTime,
 
   @Schema(description = "Session conflicts", required = false)
-  val sessionConflicts: MutableSet<@Valid SessionConflict>? = mutableSetOf(),
+  val sessionConflicts: Set<@Valid SessionConflict>? = setOf(),
 ) {
   constructor(visitSessionDto: VisitSessionDto) : this (
     sessionTemplateReference = visitSessionDto.sessionTemplateReference,

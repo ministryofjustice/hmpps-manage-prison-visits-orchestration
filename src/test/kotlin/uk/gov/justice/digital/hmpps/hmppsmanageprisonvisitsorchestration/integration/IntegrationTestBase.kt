@@ -39,6 +39,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.CreateApplicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.OutcomeStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionConflict
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
@@ -366,6 +367,7 @@ abstract class IntegrationTestBase {
     sessionTemplateReference: String,
     startTimestamp: LocalDateTime = LocalDateTime.now(),
     endTimestamp: LocalDateTime = LocalDateTime.now().plusHours(1),
+    sessionConflicts: Set<SessionConflict> = emptySet(),
   ): VisitSessionDto = VisitSessionDto(
     sessionTemplateReference = sessionTemplateReference,
     prisonCode = prisonCode,
@@ -375,6 +377,7 @@ abstract class IntegrationTestBase {
     openVisitCapacity = 30,
     startTimestamp = startTimestamp,
     endTimestamp = endTimestamp,
+    sessionConflicts = sessionConflicts,
   )
 
   final fun createPrisonNameDto(prisonCode: String, name: String): PrisonNameDto = PrisonNameDto(
