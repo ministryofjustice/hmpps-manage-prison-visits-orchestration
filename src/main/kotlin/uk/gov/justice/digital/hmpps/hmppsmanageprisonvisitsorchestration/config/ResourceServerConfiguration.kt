@@ -39,7 +39,7 @@ class ResourceServerConfiguration {
           "/swagger-resources/configuration/ui",
           "/swagger-resources/configuration/security",
           "/queue-admin/retry-all-dlqs",
-          ).forEach { authorize(it, permitAll) }
+        ).forEach { authorize(it, permitAll) }
         authorize(anyRequest, authenticated)
       }
       oauth2ResourceServer { jwt { jwtAuthenticationConverter = AuthAwareTokenConverter() } }
