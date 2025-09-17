@@ -12,6 +12,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType.EMAIL
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationValidationErrorCodes.APPLICATION_INVALID_NON_ASSOCIATION_VISITS
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationValidationErrorCodes.APPLICATION_INVALID_NO_VO_BALANCE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationValidationErrorCodes.APPLICATION_INVALID_SESSION_DATE_BLOCKED
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationValidationErrorCodes.APPLICATION_INVALID_VISIT_DATE_BLOCKED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
@@ -77,6 +79,56 @@ class BookVisitTest : IntegrationTestBase() {
     assertThat(errorResponse.validationErrors.size).isEqualTo(2)
     assertThat(errorResponse.validationErrors).contains(APPLICATION_INVALID_NON_ASSOCIATION_VISITS)
     assertThat(errorResponse.validationErrors).contains(APPLICATION_INVALID_NO_VO_BALANCE)
+  }
+
+  @Test
+  fun `when book visit slot fails due to prison date being blocked then UNPROCESSABLE_ENTITY status and appropriate error code is returned`() {
+    // Given
+    val applicationReference = "aaa-bbb-ccc-ddd"
+    visitSchedulerMockServer.stubGetBookedVisitByApplicationReference(applicationReference, null)
+    visitSchedulerMockServer.stubBookVisitApplicationValidationFailure(
+      applicationReference,
+      ApplicationValidationErrorResponse(
+        status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+        validationErrors = listOf(APPLICATION_INVALID_VISIT_DATE_BLOCKED),
+      ),
+    )
+
+    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL, false, UserType.STAFF)
+
+    // When
+    val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+    val errorResponse = getValidationErrorResponse(responseSpec)
+    assertThat(errorResponse.validationErrors.size).isEqualTo(1)
+    assertThat(errorResponse.validationErrors).contains(APPLICATION_INVALID_VISIT_DATE_BLOCKED)
+  }
+
+  @Test
+  fun `when book visit slot fails due to session date being blocked then UNPROCESSABLE_ENTITY status and appropriate error code is returned`() {
+    // Given
+    val applicationReference = "aaa-bbb-ccc-ddd"
+    visitSchedulerMockServer.stubGetBookedVisitByApplicationReference(applicationReference, null)
+    visitSchedulerMockServer.stubBookVisitApplicationValidationFailure(
+      applicationReference,
+      ApplicationValidationErrorResponse(
+        status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+        validationErrors = listOf(APPLICATION_INVALID_SESSION_DATE_BLOCKED),
+      ),
+    )
+
+    val requestDto = BookingOrchestrationRequestDto(actionedBy = "booker", EMAIL, false, UserType.STAFF)
+
+    // When
+    val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+    val errorResponse = getValidationErrorResponse(responseSpec)
+    assertThat(errorResponse.validationErrors.size).isEqualTo(1)
+    assertThat(errorResponse.validationErrors).contains(APPLICATION_INVALID_SESSION_DATE_BLOCKED)
   }
 
   @Test
