@@ -1,7 +1,7 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "9.0.0"
-  kotlin("plugin.spring") version "2.2.10"
-  id("org.jetbrains.kotlin.plugin.noarg") version "2.2.10"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "9.0.1"
+  kotlin("plugin.spring") version "2.2.20"
+  id("org.jetbrains.kotlin.plugin.noarg") version "2.2.20"
   id("org.owasp.dependencycheck") version "12.1.3"
 }
 
@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.5.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.6.0")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
@@ -25,14 +25,14 @@ dependencies {
 
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8")
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.19.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.20.0")
 
-  implementation("org.springframework.data:spring-data-commons:3.5.3")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.12")
+  implementation("org.springframework.data:spring-data-commons:3.5.4")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
 
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
-  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.33")
+  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.34")
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:3.0.1")
   testImplementation("org.mockito:mockito-inline:5.2.0")
   testImplementation("org.testcontainers:localstack:1.21.3")
