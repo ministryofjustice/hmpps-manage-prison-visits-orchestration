@@ -274,16 +274,16 @@ class PublicBookerController(
   @PostMapping(PUBLIC_BOOKER_SEARCH)
   @ResponseStatus(HttpStatus.OK)
   @Operation(
-    summary = "Search for a booker via email",
-    description = "Search for a booker via email",
+    summary = "Search for booker(s) via email",
+    description = "Search for all booker accounts that are registered to email",
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "Booker found successful",
+        description = "Booker(s) found successfully",
       ),
       ApiResponse(
         responseCode = "400",
-        description = "Incorrect request to search for a booker",
+        description = "Incorrect request to search for booker(s)",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
