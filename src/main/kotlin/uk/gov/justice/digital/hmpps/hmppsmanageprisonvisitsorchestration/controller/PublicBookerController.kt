@@ -22,6 +22,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.Boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterPrisonerForBookerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.SearchBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.BookerHistoryAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.BookerPrisonerRegistrationErrorCodes
@@ -34,6 +36,7 @@ const val PUBLIC_BOOKER_REGISTER_PRISONER_CONTROLLER_PATH: String = "$PUBLIC_BOO
 const val PUBLIC_BOOKER_GET_VISITORS_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH/{prisonerId}/permitted/visitors"
 const val PUBLIC_BOOKER_VALIDATE_PRISONER_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH/{prisonerId}/validate"
 const val PUBLIC_BOOKER_GET_BOOKER_AUDIT_PATH: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/audit"
+const val PUBLIC_BOOKER_SEARCH = "$PUBLIC_BOOKER_CONTROLLER_PATH/search"
 
 @RestController
 class PublicBookerController(
@@ -171,7 +174,12 @@ class PublicBookerController(
       ApiResponse(
         responseCode = "422",
         description = "Prisoner validation failed",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = BookerPrisonerValidationErrorResponse::class))],
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = BookerPrisonerValidationErrorResponse::class),
+          ),
+        ],
       ),
     ],
   )
@@ -212,7 +220,12 @@ class PublicBookerController(
       ApiResponse(
         responseCode = "422",
         description = "Prisoner registration failed",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = BookerPrisonerRegistrationErrorCodes::class))],
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = BookerPrisonerRegistrationErrorCodes::class),
+          ),
+        ],
       ),
     ],
   )
@@ -256,4 +269,32 @@ class PublicBookerController(
     @NotBlank
     bookerReference: String,
   ): List<BookerHistoryAuditDto> = publicBookerService.getBookerAudit(bookerReference)
+
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @PostMapping(PUBLIC_BOOKER_SEARCH)
+  @ResponseStatus(HttpStatus.OK)
+  @Operation(
+    summary = "Search for booker(s) via email",
+    description = "Search for all booker accounts that are registered to email",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Booker(s) found successfully",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to search for booker(s)",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions for this action",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun searchForBooker(
+    @RequestBody
+    searchBookerDto: SearchBookerDto,
+  ): List<BookerInfoDto> = publicBookerService.searchForBooker(searchBookerDto)
 }

@@ -21,18 +21,24 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterPrisonerForBookerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.SearchBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.BookerPrisonerRegistrationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerPrisonerRegistrationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerPrisonerValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import java.time.Duration
 
-const val PUBLIC_BOOKER_CONTROLLER_PATH: String = "/public/booker/{bookerReference}"
-const val PERMITTED_PRISONERS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/permitted/prisoners"
+const val PUBLIC_BOOKER_CONTROLLER_PATH: String = "/public/booker"
+
+const val PERMITTED_PRISONERS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/permitted/prisoners"
 const val PERMITTED_VISITORS: String = "$PERMITTED_PRISONERS/{prisonerId}/permitted/visitors"
 const val VALIDATE_PRISONER: String = "$PERMITTED_PRISONERS/{prisonerId}/validate"
 const val REGISTER_PRISONER: String = "$PERMITTED_PRISONERS/register"
-const val BOOKER_REGISTRY_AUDIT_HISTORY: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/audit"
+
+const val BOOKER_REGISTRY_AUDIT_HISTORY: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/audit"
+
+const val SEARCH_FOR_BOOKER: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/config/search"
 
 @Component
 class PrisonVisitBookerRegistryClient(
@@ -118,6 +124,22 @@ class PrisonVisitBookerRegistryClient(
       }
       .block(apiTimeout)
   }
+
+  fun searchForBooker(searchBookerDto: SearchBookerDto): List<BookerInfoDto> = webClient.post()
+    .uri(SEARCH_FOR_BOOKER)
+    .body(BodyInserters.fromValue(searchBookerDto))
+    .retrieve()
+    .bodyToMono<List<BookerInfoDto>>()
+    .onErrorResume { e ->
+      if (!ClientUtils.isNotFoundError(e)) {
+        logger.error("searchForBooker Failed for request to uri $SEARCH_FOR_BOOKER")
+        Mono.error(e)
+      } else {
+        logger.error("searchForBooker NOT_FOUND for request to uri $SEARCH_FOR_BOOKER")
+        Mono.error { NotFoundException("searchForBooker call failed for request to uri $SEARCH_FOR_BOOKER") }
+      }
+    }
+    .blockOptional(apiTimeout).orElseThrow { NotFoundException("searchForBooker call failed for request to uri $SEARCH_FOR_BOOKER") }
 
   private fun getPrisonerValidationErrorResponse(e: Throwable): Throwable {
     if (e is WebClientResponseException && isUnprocessableEntityError(e)) {
