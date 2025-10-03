@@ -10,7 +10,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.VisitBalancesDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDto
 import java.time.Duration
 import java.util.Optional
 
@@ -23,14 +23,14 @@ class VisitAllocationApiClient(
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun getPrisonerVOBalance(prisonerId: String): Optional<VisitBalancesDto>? = getPrisonerVOBalanceAsMono(prisonerId).block(apiTimeout)
+  fun getPrisonerVOBalance(prisonerId: String): Optional<PrisonerVOBalanceDto>? = getPrisonerVOBalanceAsMono(prisonerId).block(apiTimeout)
 
-  fun getPrisonerVOBalanceAsMono(prisonerId: String): Mono<Optional<VisitBalancesDto>> {
+  fun getPrisonerVOBalanceAsMono(prisonerId: String): Mono<Optional<PrisonerVOBalanceDto>> {
     val uri = "/visits/allocation/prisoner/$prisonerId/balance"
     return webClient.get()
       .uri(uri)
       .retrieve()
-      .bodyToMono<Optional<VisitBalancesDto>>()
+      .bodyToMono<Optional<PrisonerVOBalanceDto>>()
       .onErrorResume { e ->
         if (e is WebClientResponseException && e.statusCode == HttpStatus.NOT_FOUND) {
           // return an Optional.empty element if 404 is thrown
