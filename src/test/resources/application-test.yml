@@ -55,6 +55,10 @@ gov-uk:
   api:
     url: http://localhost:8100
 
+visit-allocation:
+  api:
+    url: http://localhost:8101
+
 hmpps:
   auth:
     url: http://localhost:8090/auth
