@@ -10,20 +10,20 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonRegisterClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitAllocationApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.BookerPrisonerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisteredPrisonDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.VisitBalancesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.CurrentIncentive
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.IncentiveLevel
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -45,10 +45,10 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
   lateinit var prisonerSearchClientSpy: PrisonerSearchClient
 
   @MockitoSpyBean
-  lateinit var prisonApiClientSpy: PrisonApiClient
+  lateinit var prisonRegisterClientSpy: PrisonRegisterClient
 
   @MockitoSpyBean
-  lateinit var prisonRegisterClientSpy: PrisonRegisterClient
+  lateinit var visitAllocationApiClientSpy: VisitAllocationApiClient
 
   private final val prisonDto = PrisonRegisterPrisonDto(PRISON_CODE, PRISON_NAME)
   private final val registeredPrisonDto = RegisteredPrisonDto(PRISON_CODE, PRISON_NAME)
@@ -73,19 +73,9 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     convictedStatus = "Convicted",
   )
 
-  // prisoner with prison ID as null
-  private final val prisoner3Dto = createPrisoner(
-    prisonerId = "CC112233C",
-    firstName = "First",
-    lastName = "Last",
-    dateOfBirth = LocalDate.of(2001, 12, 1),
-    currentIncentive = currentIncentive,
-    prisonId = null,
-    convictedStatus = "Convicted",
-  )
+  private val visitBalance1 = PrisonerVOBalanceDto(prisonerId = "test", availableVos = 4, accumulatedVos = 4, negativeVos = 0, availablePvos = 1, negativePvos = 2, lastVoAllocatedDate = LocalDate.now().minusDays(12), lastPvoAllocatedDate = LocalDate.now().minusDays(7))
 
-  private val visitBalance1 = VisitBalancesDto(4, 3, LocalDate.now().plusDays(7), LocalDate.now().plusDays(2))
-  private val visitBalance2 = VisitBalancesDto(2, 3, LocalDate.now().plusDays(14), LocalDate.now().plusDays(7))
+  private val visitBalance2 = PrisonerVOBalanceDto(prisonerId = "test", availableVos = 3, accumulatedVos = 4, negativeVos = 3, availablePvos = 3, negativePvos = 2, lastVoAllocatedDate = LocalDate.now().minusDays(12), lastPvoAllocatedDate = null)
 
   @Test
   fun `when booker has valid prisoners then all allowed prisoners are returned`() {
@@ -99,8 +89,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
         PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, true, PRISON_CODE, listOf(PermittedVisitorsForPermittedPrisonerBookerDto(1L, true))),
       ),
     )
-    prisonApiMockServer.stubGetVisitBalances(prisoner1Dto.prisonerNumber, visitBalance1)
-    prisonApiMockServer.stubGetVisitBalances(prisoner2Dto.prisonerNumber, visitBalance2)
+    visitAllocationApiMockServer.stubGetPrisonerVOBalance(prisoner1Dto.prisonerNumber, visitBalance1)
+    visitAllocationApiMockServer.stubGetPrisonerVOBalance(prisoner2Dto.prisonerNumber, visitBalance2)
     prisonRegisterMockServer.stubGetPrison(PRISON_CODE, prisonDto)
 
     // When
@@ -116,8 +106,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(2)).getPrisonerByIdAsMono(any())
-    verify(prisonApiClientSpy, times(1)).getVisitBalancesAsMono(prisoner1Dto.prisonerNumber)
-    verify(prisonApiClientSpy, times(1)).getVisitBalancesAsMono(prisoner2Dto.prisonerNumber)
+    verify(visitAllocationApiClientSpy, times(1)).getPrisonerVOBalanceAsMono(prisoner1Dto.prisonerNumber)
+    verify(visitAllocationApiClientSpy, times(1)).getPrisonerVOBalanceAsMono(prisoner2Dto.prisonerNumber)
     verify(prisonRegisterClientSpy, times(2)).getPrisonAsMonoEmptyIfNotFound(PRISON_CODE)
   }
 
@@ -130,8 +120,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
       BOOKER_REFERENCE,
       listOf(),
     )
-    prisonApiMockServer.stubGetVisitBalances(prisoner1Dto.prisonerNumber, visitBalance1)
-    prisonApiMockServer.stubGetVisitBalances(prisoner2Dto.prisonerNumber, visitBalance2)
+    visitAllocationApiMockServer.stubGetPrisonerVOBalance(prisoner1Dto.prisonerNumber, visitBalance1)
+    visitAllocationApiMockServer.stubGetPrisonerVOBalance(prisoner2Dto.prisonerNumber, visitBalance2)
     prisonRegisterMockServer.stubGetPrison(PRISON_CODE, prisonDto)
 
     // When
@@ -145,8 +135,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(0)).getPrisonerByIdAsMono(any())
-    verify(prisonApiClientSpy, times(0)).getVisitBalancesAsMono(prisoner1Dto.prisonerNumber)
-    verify(prisonApiClientSpy, times(0)).getVisitBalancesAsMono(prisoner2Dto.prisonerNumber)
+    verify(visitAllocationApiClientSpy, times(0)).getPrisonerVOBalanceAsMono(prisoner1Dto.prisonerNumber)
+    verify(visitAllocationApiClientSpy, times(0)).getPrisonerVOBalanceAsMono(prisoner2Dto.prisonerNumber)
     verify(prisonRegisterClientSpy, times(0)).getPrisonAsMonoEmptyIfNotFound(any())
   }
 
@@ -162,8 +152,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
         PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, true, PRISON_CODE, listOf()),
       ),
     )
-    prisonApiMockServer.stubGetVisitBalances(prisoner1Dto.prisonerNumber, visitBalance1)
-    prisonApiMockServer.stubGetVisitBalances(prisoner2Dto.prisonerNumber, visitBalance2)
+    visitAllocationApiMockServer.stubGetPrisonerVOBalance(prisoner1Dto.prisonerNumber, visitBalance1)
+    visitAllocationApiMockServer.stubGetPrisonerVOBalance(prisoner2Dto.prisonerNumber, visitBalance2)
     prisonRegisterMockServer.stubGetPrison(PRISON_CODE, PrisonRegisterPrisonDto(PRISON_CODE, "MDI"))
     prisonRegisterMockServer.stubGetPrison(PRISON_CODE, prisonDto)
 
@@ -181,8 +171,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     verify(prisonerSearchClientSpy, times(2)).getPrisonerByIdAsMono(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner1Dto.prisonerNumber)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner2Dto.prisonerNumber)
-    verify(prisonApiClientSpy, times(1)).getVisitBalancesAsMono(prisoner1Dto.prisonerNumber)
-    verify(prisonApiClientSpy, times(1)).getVisitBalancesAsMono(prisoner2Dto.prisonerNumber)
+    verify(visitAllocationApiClientSpy, times(1)).getPrisonerVOBalanceAsMono(prisoner1Dto.prisonerNumber)
+    verify(visitAllocationApiClientSpy, times(1)).getPrisonerVOBalanceAsMono(prisoner2Dto.prisonerNumber)
     verify(prisonRegisterClientSpy, times(2)).getPrisonAsMonoEmptyIfNotFound(PRISON_CODE)
   }
 
@@ -213,8 +203,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     verify(prisonerSearchClientSpy, times(2)).getPrisonerByIdAsMono(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner1Dto.prisonerNumber)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner2Dto.prisonerNumber)
-    verify(prisonApiClientSpy, times(1)).getVisitBalancesAsMono(prisoner1Dto.prisonerNumber)
-    verify(prisonApiClientSpy, times(1)).getVisitBalancesAsMono(prisoner2Dto.prisonerNumber)
+    verify(visitAllocationApiClientSpy, times(1)).getPrisonerVOBalanceAsMono(prisoner1Dto.prisonerNumber)
+    verify(visitAllocationApiClientSpy, times(1)).getPrisonerVOBalanceAsMono(prisoner2Dto.prisonerNumber)
     verify(prisonRegisterClientSpy, times(2)).getPrisonAsMonoEmptyIfNotFound(PRISON_CODE)
   }
 
@@ -237,8 +227,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isNotFound
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(0)).getPrisonerByIdAsMono(any())
-    verify(prisonApiClientSpy, times(0)).getVisitBalancesAsMono(prisoner1Dto.prisonerNumber)
-    verify(prisonApiClientSpy, times(0)).getVisitBalancesAsMono(prisoner2Dto.prisonerNumber)
+    verify(visitAllocationApiClientSpy, times(0)).getPrisonerVOBalanceAsMono(prisoner1Dto.prisonerNumber)
+    verify(visitAllocationApiClientSpy, times(0)).getPrisonerVOBalanceAsMono(prisoner2Dto.prisonerNumber)
     verify(prisonRegisterClientSpy, times(0)).getPrisonAsMonoEmptyIfNotFound(any())
   }
 
@@ -261,8 +251,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     responseSpec.expectStatus().is5xxServerError
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonerSearchClientSpy, times(0)).getPrisonerByIdAsMono(any())
-    verify(prisonApiClientSpy, times(0)).getVisitBalancesAsMono(prisoner1Dto.prisonerNumber)
-    verify(prisonApiClientSpy, times(0)).getVisitBalancesAsMono(prisoner2Dto.prisonerNumber)
+    verify(visitAllocationApiClientSpy, times(0)).getPrisonerVOBalanceAsMono(prisoner1Dto.prisonerNumber)
+    verify(visitAllocationApiClientSpy, times(0)).getPrisonerVOBalanceAsMono(prisoner2Dto.prisonerNumber)
     verify(prisonRegisterClientSpy, times(0)).getPrisonAsMonoEmptyIfNotFound(any())
   }
 
@@ -292,8 +282,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     verify(prisonerSearchClientSpy, times(2)).getPrisonerByIdAsMono(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner1Dto.prisonerNumber)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner2Dto.prisonerNumber)
-    verify(prisonApiClientSpy, times(1)).getVisitBalancesAsMono(prisoner1Dto.prisonerNumber)
-    verify(prisonApiClientSpy, times(1)).getVisitBalancesAsMono(prisoner2Dto.prisonerNumber)
+    verify(visitAllocationApiClientSpy, times(1)).getPrisonerVOBalanceAsMono(prisoner1Dto.prisonerNumber)
+    verify(visitAllocationApiClientSpy, times(1)).getPrisonerVOBalanceAsMono(prisoner2Dto.prisonerNumber)
     verify(prisonRegisterClientSpy, times(2)).getPrisonAsMonoEmptyIfNotFound(PRISON_CODE)
   }
 
@@ -329,8 +319,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     )
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisoner1Dto.prisonerNumber, prisoner1Dto)
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisoner2Dto.prisonerNumber, prisoner2Dto)
-    prisonApiMockServer.stubGetVisitBalances(prisoner1Dto.prisonerNumber, null)
-    prisonApiMockServer.stubGetVisitBalances(prisoner2Dto.prisonerNumber, null)
+    visitAllocationApiMockServer.stubGetPrisonerVOBalance(prisoner1Dto.prisonerNumber, null)
+    visitAllocationApiMockServer.stubGetPrisonerVOBalance(prisoner2Dto.prisonerNumber, null)
     prisonRegisterMockServer.stubGetPrison(PRISON_CODE, prisonDto)
 
     // When
@@ -345,8 +335,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     verify(prisonerSearchClientSpy, times(2)).getPrisonerByIdAsMono(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner1Dto.prisonerNumber)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner2Dto.prisonerNumber)
-    verify(prisonApiClientSpy, times(1)).getVisitBalancesAsMono(prisoner1Dto.prisonerNumber)
-    verify(prisonApiClientSpy, times(1)).getVisitBalancesAsMono(prisoner2Dto.prisonerNumber)
+    verify(visitAllocationApiClientSpy, times(1)).getPrisonerVOBalanceAsMono(prisoner1Dto.prisonerNumber)
+    verify(visitAllocationApiClientSpy, times(1)).getPrisonerVOBalanceAsMono(prisoner2Dto.prisonerNumber)
     verify(prisonRegisterClientSpy, times(2)).getPrisonAsMonoEmptyIfNotFound(PRISON_CODE)
   }
 
@@ -363,8 +353,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisoner1Dto.prisonerNumber, prisoner1Dto)
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisoner2Dto.prisonerNumber, prisoner2Dto)
     prisonRegisterMockServer.stubGetPrison(PRISON_CODE, null, HttpStatus.NOT_FOUND)
-    prisonApiMockServer.stubGetVisitBalances(prisoner1Dto.prisonerNumber, visitBalance1)
-    prisonApiMockServer.stubGetVisitBalances(prisoner2Dto.prisonerNumber, visitBalance2)
+    visitAllocationApiMockServer.stubGetPrisonerVOBalance(prisoner1Dto.prisonerNumber, visitBalance1)
+    visitAllocationApiMockServer.stubGetPrisonerVOBalance(prisoner2Dto.prisonerNumber, visitBalance2)
 
     // expect both code and name to be same as PRISON_CODE when prison registry returns 404
     val registeredPrisonDtoWhenNotReturned = RegisteredPrisonDto(PRISON_CODE, PRISON_CODE)
@@ -382,8 +372,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     verify(prisonerSearchClientSpy, times(2)).getPrisonerByIdAsMono(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner1Dto.prisonerNumber)
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(prisoner2Dto.prisonerNumber)
-    verify(prisonApiClientSpy, times(1)).getVisitBalancesAsMono(prisoner1Dto.prisonerNumber)
-    verify(prisonApiClientSpy, times(1)).getVisitBalancesAsMono(prisoner2Dto.prisonerNumber)
+    verify(visitAllocationApiClientSpy, times(1)).getPrisonerVOBalanceAsMono(prisoner1Dto.prisonerNumber)
+    verify(visitAllocationApiClientSpy, times(1)).getPrisonerVOBalanceAsMono(prisoner2Dto.prisonerNumber)
     verify(prisonRegisterClientSpy, times(2)).getPrisonAsMonoEmptyIfNotFound(PRISON_CODE)
   }
 
@@ -400,8 +390,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisoner1Dto.prisonerNumber, prisoner1Dto)
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisoner2Dto.prisonerNumber, prisoner2Dto)
     prisonRegisterMockServer.stubGetPrison(PRISON_CODE, null, HttpStatus.INTERNAL_SERVER_ERROR)
-    prisonApiMockServer.stubGetVisitBalances(prisoner1Dto.prisonerNumber, visitBalance1)
-    prisonApiMockServer.stubGetVisitBalances(prisoner2Dto.prisonerNumber, visitBalance2)
+    visitAllocationApiMockServer.stubGetPrisonerVOBalance(prisoner1Dto.prisonerNumber, visitBalance1)
+    visitAllocationApiMockServer.stubGetPrisonerVOBalance(prisoner2Dto.prisonerNumber, visitBalance2)
 
     // When
     val responseSpec = callGetPrisonersByBooker(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, BOOKER_REFERENCE)
@@ -425,8 +415,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
 
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getPermittedPrisonersForBooker(any())
     verify(prisonerSearchClientSpy, times(0)).getPrisonerByIdAsMono(any())
-    verify(prisonApiClientSpy, times(0)).getVisitBalancesAsMono(prisoner1Dto.prisonerNumber)
-    verify(prisonApiClientSpy, times(0)).getVisitBalancesAsMono(prisoner2Dto.prisonerNumber)
+    verify(visitAllocationApiClientSpy, times(0)).getPrisonerVOBalanceAsMono(prisoner1Dto.prisonerNumber)
+    verify(visitAllocationApiClientSpy, times(0)).getPrisonerVOBalanceAsMono(prisoner2Dto.prisonerNumber)
     verify(prisonRegisterClientSpy, times(0)).getPrison(any())
   }
 

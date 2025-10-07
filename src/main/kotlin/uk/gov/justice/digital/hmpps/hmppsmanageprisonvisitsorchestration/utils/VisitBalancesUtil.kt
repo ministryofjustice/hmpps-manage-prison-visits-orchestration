@@ -1,37 +1,71 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils
 
 import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.VisitBalancesDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitBalancesDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDto
 import java.time.LocalDate
 
 @Component
 class VisitBalancesUtil(private val currentDateUtil: CurrentDateUtils) {
-  fun calculateAvailableVos(visitBalance: VisitBalancesDto?): Int = (visitBalance?.remainingVo ?: 0) + (visitBalance?.remainingPvo ?: 0)
+  fun calculateAvailableVoAndPvoCount(visitBalance: PrisonerVOBalanceDto?): Int {
+    // total of available VOs and PVOs
+    return calculateAvailableVos(visitBalance) + calculateAvailablePvos(visitBalance)
+  }
 
-  fun calculateVoRenewalDate(visitBalance: VisitBalancesDto?): LocalDate {
+  private fun calculateAvailableVos(voBalancesDto: PrisonerVOBalanceDto?): Int {
+    // (available + accumulated) - negative balance
+    return (
+      (((voBalancesDto?.availableVos) ?: 0) + ((voBalancesDto?.accumulatedVos) ?: 0)) - ((voBalancesDto?.negativeVos) ?: 0)
+      )
+  }
+
+  private fun calculateAvailablePvos(voBalancesDto: PrisonerVOBalanceDto?): Int {
+    // available - negative balance
+    return (
+      ((voBalancesDto?.availablePvos) ?: 0) - ((voBalancesDto?.negativePvos) ?: 0)
+      )
+  }
+
+  fun calculateVoRenewalDate(visitBalance: PrisonerVOBalanceDto?): LocalDate {
     val currentDate = currentDateUtil.getCurrentDate()
     val latestVORenewalDate = calculateVORenewalDate(visitBalance, currentDate)
     val latestPVORenewalDate = calculatePVORenewalDate(visitBalance, currentDate)
 
-    return minOf(latestVORenewalDate, latestPVORenewalDate)
+    return if (latestPVORenewalDate == null) {
+      latestVORenewalDate
+    } else {
+      minOf(latestVORenewalDate, latestPVORenewalDate)
+    }
   }
 
-  private fun calculateVORenewalDate(visitBalance: VisitBalancesDto?, currentDate: LocalDate): LocalDate {
-    // IEP Adjust date is latestIepAdjustDate or if latestIepAdjustDate not available or today or in the past then calculated as TODAY + 14 days
-    val latestVORenewalDate = getLatestRenewalDate(visitBalance?.latestIepAdjustDate, currentDate)
-    return latestVORenewalDate ?: currentDate.plusDays(14)
+  fun getVisitBalancesDto(prisonerVOBalanceDto: PrisonerVOBalanceDto): VisitBalancesDto = VisitBalancesDto(
+    remainingVo = calculateAvailableVos(prisonerVOBalanceDto),
+    remainingPvo = calculateAvailablePvos(prisonerVOBalanceDto),
+    nextVoAllocationDate = calculateVORenewalDate(prisonerVOBalanceDto, currentDateUtil.getCurrentDate()),
+    nextPvoAllocationDate = calculatePVORenewalDate(prisonerVOBalanceDto, currentDateUtil.getCurrentDate()),
+  )
+
+  private fun calculateVORenewalDate(visitBalance: PrisonerVOBalanceDto?, currentDate: LocalDate): LocalDate {
+    // VO renewal date is last VO allocated date + 14 days
+    // if visitBalance is null or lastVoAllocatedDate + 14 falls in the past, returning currentDate + 14
+    return if (visitBalance == null || visitBalance.lastVoAllocatedDate.plusDays(14).isBefore(currentDate)) {
+      return currentDate.plusDays(14)
+    } else {
+      visitBalance.lastVoAllocatedDate.plusDays(14)
+    }
   }
 
-  private fun calculatePVORenewalDate(visitBalance: VisitBalancesDto?, currentDate: LocalDate): LocalDate {
-    // Privileged IEP Adjust date is latestPrivIepAdjustDate or if latestPrivIepAdjustDate not available or today or in the past then calculated as 1st day of next month
-    val latestPVORenewalDate = getLatestRenewalDate(visitBalance?.latestPrivIepAdjustDate, currentDate)
-    return latestPVORenewalDate ?: currentDate.plusMonths(1).withDayOfMonth(1)
-  }
-
-  private fun getLatestRenewalDate(latestRenewalDate: LocalDate?, currentDate: LocalDate): LocalDate? {
-    // ignore any dates that are before or equal to current date - dateFrom will always be current date
-    return latestRenewalDate?.let {
-      if (latestRenewalDate <= currentDate) null else latestRenewalDate
+  private fun calculatePVORenewalDate(visitBalance: PrisonerVOBalanceDto?, currentDate: LocalDate): LocalDate? {
+    // PVO renewal date is last VO allocated date + 28 days
+    // if visitBalance is null or lastVoAllocatedDate + 28 falls in the past, returning null
+    // TODO - what needs to be shown as PVO allocated date if lastPvoAllocatedDate is null?
+    return if (visitBalance == null ||
+      visitBalance.lastPvoAllocatedDate == null ||
+      visitBalance.lastPvoAllocatedDate.plusDays(28).isBefore(currentDate)
+    ) {
+      return null
+    } else {
+      visitBalance.lastPvoAllocatedDate.plusDays(28)
     }
   }
 }
