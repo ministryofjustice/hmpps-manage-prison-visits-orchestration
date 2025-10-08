@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "9.1.1"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "9.1.2"
   kotlin("plugin.spring") version "2.2.20"
   id("org.jetbrains.kotlin.plugin.noarg") version "2.2.20"
   id("org.owasp.dependencycheck") version "12.1.6"
@@ -21,7 +21,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
   implementation("org.springframework.boot:spring-boot-starter-cache")
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.4.11")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.5.0")
 
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8")
