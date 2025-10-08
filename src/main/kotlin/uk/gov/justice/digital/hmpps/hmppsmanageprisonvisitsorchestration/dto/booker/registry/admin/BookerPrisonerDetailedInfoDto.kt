@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.bo
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.Valid
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisteredPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
@@ -17,9 +18,9 @@ data class BookerPrisonerDetailedInfoDto(
   @field:Valid
   val permittedVisitors: List<BookerPrisonerVisitorDetailedInfoDto>,
 ) {
-  constructor(prisoner: PrisonerDto, registeredPrisonDto: RegisteredPrisonDto, visitors: List<PrisonerContactDto>) : this(
-    prisoner = prisoner,
-    registeredPrison = registeredPrisonDto,
+  constructor(bookerPrisonerInfoDto: BookerPrisonerInfoDto, visitors: List<PrisonerContactDto>) : this(
+    prisoner = bookerPrisonerInfoDto.prisoner,
+    registeredPrison = bookerPrisonerInfoDto.registeredPrison,
     permittedVisitors = visitors.map { BookerPrisonerVisitorDetailedInfoDto(it) }.toList(),
   )
 }

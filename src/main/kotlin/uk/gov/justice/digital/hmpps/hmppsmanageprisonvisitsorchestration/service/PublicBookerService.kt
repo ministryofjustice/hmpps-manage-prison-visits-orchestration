@@ -71,8 +71,7 @@ class PublicBookerService(
       val permittedVisitorInfos = prisonerVisitorsMap.getValue(prisoner.prisonerId).filter { contact -> prisoner.permittedVisitors.map { it.visitorId }.contains(contact.personId) }
 
       val prisonerDetails = BookerPrisonerDetailedInfoDto(
-        permittedPrisonerInfo.prisoner,
-        permittedPrisonerInfo.registeredPrison,
+        permittedPrisonerInfo,
         permittedVisitorInfos,
       )
 

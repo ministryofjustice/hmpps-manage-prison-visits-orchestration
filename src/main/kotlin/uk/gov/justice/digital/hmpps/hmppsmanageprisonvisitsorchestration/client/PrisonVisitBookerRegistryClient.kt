@@ -39,7 +39,7 @@ const val REGISTER_PRISONER: String = "$PERMITTED_PRISONERS/register"
 const val BOOKER_REGISTRY_AUDIT_HISTORY: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/audit"
 
 const val SEARCH_FOR_BOOKER: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/config/search"
-const val GET_BOOKER_BY_BOOKING_REFERENCE: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/config/{bookingReference}"
+const val GET_BOOKER_BY_BOOKING_REFERENCE: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/config/{bookerReference}"
 
 @Component
 class PrisonVisitBookerRegistryClient(
