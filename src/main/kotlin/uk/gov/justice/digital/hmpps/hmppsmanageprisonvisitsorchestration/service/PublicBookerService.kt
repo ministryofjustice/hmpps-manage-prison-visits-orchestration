@@ -64,7 +64,7 @@ class PublicBookerService(
       val permittedPrisonerInfo = bookerPrisonerInfoClient.getPermittedPrisonerInfo(prisoner)
       if (permittedPrisonerInfo == null) {
         logger.error("No prisoner info found for prisoner id - ${prisoner.prisonerId}")
-        return@forEach // TODO: What should we do here? Confirm with devs.
+        throw NotFoundException("call to getPermittedPrisonerInfo failed for prisonerId - ${prisoner.prisonerId}, for booker $bookerReference")
       }
 
       // Filter the contacts in the map retrieved earlier on to only contain the "permitted visitors" for the "permitted prisoner".

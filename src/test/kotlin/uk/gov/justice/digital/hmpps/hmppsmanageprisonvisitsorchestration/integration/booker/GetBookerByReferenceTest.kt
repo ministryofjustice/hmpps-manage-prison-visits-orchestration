@@ -50,6 +50,10 @@ class GetBookerByReferenceTest : IntegrationTestBase() {
     convictedStatus = "Convicted",
   )
 
+  private final val permittedPrisonerA = PermittedPrisonerForBookerDto(prisoner1Id, true, "HEI", listOf(PermittedVisitorsForPermittedPrisonerBookerDto(1L, true)))
+
+  private final val permittedPrisonerB = PermittedPrisonerForBookerDto(prisoner2Id, true, "HEI", listOf(PermittedVisitorsForPermittedPrisonerBookerDto(2L, true)))
+
   private val visitBalance1 = VisitBalancesDto(4, 3, LocalDate.now().plusDays(7), LocalDate.now().plusDays(2))
 
   private val visitBalance2 = VisitBalancesDto(2, 3, LocalDate.now().plusDays(14), LocalDate.now().plusDays(7))
@@ -64,9 +68,6 @@ class GetBookerByReferenceTest : IntegrationTestBase() {
     val prisonerContact1 = createContactDto(1, "First", "VisitorA")
     val prisonerContact2 = createContactDto(2, "Second", "VisitorB")
     val prisonerContact3 = createContactDto(3, "Random", "Visitor")
-
-    val permittedPrisonerA = PermittedPrisonerForBookerDto(prisoner1Id, true, "HEI", listOf(PermittedVisitorsForPermittedPrisonerBookerDto(1L, true)))
-    val permittedPrisonerB = PermittedPrisonerForBookerDto(prisoner2Id, true, "HEI", listOf(PermittedVisitorsForPermittedPrisonerBookerDto(2L, true)))
 
     val booker = BookerInfoDto(
       reference = bookerReference,
@@ -109,9 +110,6 @@ class GetBookerByReferenceTest : IntegrationTestBase() {
     val prisonerContact1 = createContactDto(1, "First", "VisitorA")
     val prisonerContact3 = createContactDto(3, "Random", "Visitor")
 
-    val permittedPrisonerA = PermittedPrisonerForBookerDto(prisoner1Id, true, "HEI", listOf(PermittedVisitorsForPermittedPrisonerBookerDto(1L, true)))
-    val permittedPrisonerB = PermittedPrisonerForBookerDto(prisoner2Id, true, "HEI", listOf(PermittedVisitorsForPermittedPrisonerBookerDto(2L, true)))
-
     val booker = BookerInfoDto(
       reference = bookerReference,
       email = "test@test.com",
@@ -146,6 +144,38 @@ class GetBookerByReferenceTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `when get booker by reference is called, but call to get prisoner details fails via prisoner search, then request fails with 404`() {
+    // Given
+    val bookerReference = "abc-def-ghi"
+
+    val prisonerContact1 = createContactDto(1, "First", "VisitorA")
+    val prisonerContact2 = createContactDto(2, "Second", "VisitorB")
+    val prisonerContact3 = createContactDto(3, "Random", "Visitor")
+
+    val booker = BookerInfoDto(
+      reference = bookerReference,
+      email = "test@test.com",
+      createdTimestamp = LocalDateTime.now().minusMonths(1),
+      permittedPrisoners = listOf(permittedPrisonerA, permittedPrisonerB),
+    )
+
+    prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(bookerReference, booker)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = permittedPrisonerA.prisonerId, contactsList = listOf(prisonerContact1, prisonerContact3))
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = permittedPrisonerB.prisonerId, contactsList = listOf(prisonerContact2, prisonerContact3))
+    prisonOffenderSearchMockServer.stubGetPrisonerById(permittedPrisonerA.prisonerId, null, httpStatus = HttpStatus.NOT_FOUND)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(permittedPrisonerB.prisonerId, prisoner2Dto)
+    prisonApiMockServer.stubGetVisitBalances(prisoner1Dto.prisonerNumber, visitBalance1)
+    prisonApiMockServer.stubGetVisitBalances(prisoner2Dto.prisonerNumber, visitBalance2)
+    prisonRegisterMockServer.stubGetPrison(prisonCode, prisonDto)
+
+    // When
+    val responseSpec = callGetBookerByBookerReference(bookerReference, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isNotFound
+  }
+
+  @Test
   fun `when booker registry returns a internal server error, then internal server error is thrown upwards to caller`() {
     // Given
     val bookerReference = "abc-def-ghi"
@@ -160,7 +190,7 @@ class GetBookerByReferenceTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when booker registry is called without token then UNAUTHORIZED status is returned`() {
+  fun `when endpoint is called without token then UNAUTHORIZED status is returned`() {
     // Given
     val bookerReference = "abc-def-ghi"
 
