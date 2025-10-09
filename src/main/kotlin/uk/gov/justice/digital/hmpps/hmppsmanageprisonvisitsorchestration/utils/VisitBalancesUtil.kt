@@ -58,7 +58,6 @@ class VisitBalancesUtil(private val currentDateUtil: CurrentDateUtils) {
   private fun calculatePVORenewalDate(visitBalance: PrisonerVOBalanceDto?, currentDate: LocalDate): LocalDate? {
     // PVO renewal date is last VO allocated date + 28 days
     // if visitBalance is null or lastVoAllocatedDate + 28 falls in the past, returning null
-    // TODO - what needs to be shown as PVO allocated date if lastPvoAllocatedDate is null?
     return if (visitBalance == null ||
       visitBalance.lastPvoAllocatedDate == null ||
       visitBalance.lastPvoAllocatedDate.plusDays(28).isBefore(currentDate)
