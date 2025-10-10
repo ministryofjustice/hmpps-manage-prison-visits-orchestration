@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.or
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestVisitorDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 
@@ -20,4 +21,6 @@ data class BookingOrchestrationRequestDto(
   val userType: UserType,
   @Schema(description = "flag to determine if visit should be a request or instant booking", required = false)
   val isRequestBooking: Boolean? = false,
+  @Schema(description = "Set of visitor details - includes Person ID (nomis) of the visitor and their age (in years) at the time of booking", required = false)
+  val visitorDetails: Set<BookingRequestVisitorDetailsDto>? = null,
 )
