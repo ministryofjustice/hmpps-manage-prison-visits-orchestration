@@ -8,18 +8,20 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.BookerPrisonerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerHistoryAuditDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterPrisonerForBookerDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorInfoDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerDetailedInfoDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerPrisonerDetailedInfoDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.SearchBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.RestrictionDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorRestrictionType
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.BookerHistoryAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.BookerPrisonerValidationErrorCodes.REGISTERED_PRISON_NOT_SUPPORTED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerAuthFailureException
@@ -42,9 +44,45 @@ class PublicBookerService(
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun searchForBooker(searchBookerDto: SearchBookerDto): List<BookerInfoDto> {
+  fun searchForBooker(searchBookerDto: SearchBookerDto): List<BookerSearchResultsDto> {
     logger.info("Entered PublicBookerService - searchForBooker")
     return prisonVisitBookerRegistryClient.searchForBooker(searchBookerDto)
+  }
+
+  fun getBookerDetails(bookerReference: String): BookerDetailedInfoDto {
+    logger.info("PublicBookerService - getBookerDetails called for bookerReference : $bookerReference")
+
+    // Get overarching booker info (Such as reference and email)
+    val booker = prisonVisitBookerRegistryClient.getBookerByBookerReference(bookerReference)
+
+    // For all the bookers "permitted prisoners", retrieve their entire social contacts list
+    val prisonerVisitorsMap = prisonerContactService.getPrisonersContacts(booker.permittedPrisoners.map { it.prisonerId }.toSet())
+
+    // Begin looping each of the bookers "permitted prisoner" and craft a BookerPrisonerDetailedInfoDto
+    val prisonerDetailsList = mutableListOf<BookerPrisonerDetailedInfoDto>()
+    booker.permittedPrisoners.forEach { prisoner ->
+      val permittedPrisonerInfo = bookerPrisonerInfoClient.getPermittedPrisonerInfo(prisoner)
+      if (permittedPrisonerInfo == null) {
+        logger.error("No prisoner info found for prisoner id - ${prisoner.prisonerId}")
+        throw NotFoundException("call to getPermittedPrisonerInfo failed for prisonerId - ${prisoner.prisonerId}, for booker $bookerReference")
+      }
+
+      // Filter the contacts in the map retrieved earlier on to only contain the "permitted visitors" for the "permitted prisoner".
+      val permittedVisitorInfos = prisonerVisitorsMap.getValue(prisoner.prisonerId).filter { contact -> prisoner.permittedVisitors.map { it.visitorId }.contains(contact.personId) }
+
+      val prisonerDetails = BookerPrisonerDetailedInfoDto(
+        permittedPrisonerInfo,
+        permittedVisitorInfos,
+      )
+
+      prisonerDetailsList.add(prisonerDetails)
+    }
+
+    return BookerDetailedInfoDto(
+      reference = booker.reference,
+      email = booker.email,
+      permittedPrisoners = prisonerDetailsList,
+    )
   }
 
   fun bookerAuthorisation(createBookerAuthDetail: AuthDetailDto): BookerReference = prisonVisitBookerRegistryClient.bookerAuthorisation(createBookerAuthDetail) ?: throw BookerAuthFailureException("Failed to authorise booker with details - $createBookerAuthDetail")
