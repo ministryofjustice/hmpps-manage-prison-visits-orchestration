@@ -42,6 +42,9 @@ class WebClientConfiguration(
   @param:Value("\${prison-visit-booker-registry.api.url}")
   private val prisonVisitBookerRegistryApiUrl: String,
 
+  @param:Value("\${visit-allocation.api.url}")
+  private val visitAllocationApiUrl: String,
+
   @param:Value("\${api.timeout:10s}")
   private val apiTimeout: Duration,
 
@@ -61,6 +64,7 @@ class WebClientConfiguration(
     WHEREABOUTS_API_CLIENT("other-hmpps-apis"),
     PRISON_VISIT_BOOKER_REGISTRY_API_CLIENT("other-hmpps-apis"),
     ALERTS_API("other-hmpps-apis"),
+    VISIT_ALLOCATION_API_CLIENT("other-hmpps-apis"),
   }
 
   @Bean
@@ -109,6 +113,9 @@ class WebClientConfiguration(
   fun prisonVisitBookerRegistryWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient = builder.authorisedWebClient(authorizedClientManager, registrationId = HmppsAuthClientRegistrationId.PRISON_VISIT_BOOKER_REGISTRY_API_CLIENT.clientRegistrationId, url = prisonVisitBookerRegistryApiUrl, apiTimeout)
 
   @Bean
+  fun visitAllocationApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient = builder.authorisedWebClient(authorizedClientManager, registrationId = HmppsAuthClientRegistrationId.VISIT_ALLOCATION_API_CLIENT.clientRegistrationId, url = visitAllocationApiUrl, apiTimeout)
+
+  @Bean
   fun visitSchedulerHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(visitSchedulerBaseUrl, healthTimeout)
 
   @Bean
@@ -128,6 +135,8 @@ class WebClientConfiguration(
 
   @Bean
   fun prisonVisitBookerRegistryHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(prisonVisitBookerRegistryApiUrl, healthTimeout)
+
+  fun visitAllocationApiHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(prisonVisitBookerRegistryApiUrl, healthTimeout)
 
   @Bean
   fun govUKWebClient(): WebClient = WebClient.builder().baseUrl(govUKApiUrl).build()
