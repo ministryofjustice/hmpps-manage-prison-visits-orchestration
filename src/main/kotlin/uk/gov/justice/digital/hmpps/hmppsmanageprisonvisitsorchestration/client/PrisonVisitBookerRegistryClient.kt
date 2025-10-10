@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.SearchBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.BookerPrisonerRegistrationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerPrisonerRegistrationException
@@ -126,11 +127,11 @@ class PrisonVisitBookerRegistryClient(
       .block(apiTimeout)
   }
 
-  fun searchForBooker(searchBookerDto: SearchBookerDto): List<BookerInfoDto> = webClient.post()
+  fun searchForBooker(searchBookerDto: SearchBookerDto): List<BookerSearchResultsDto> = webClient.post()
     .uri(SEARCH_FOR_BOOKER)
     .body(BodyInserters.fromValue(searchBookerDto))
     .retrieve()
-    .bodyToMono<List<BookerInfoDto>>()
+    .bodyToMono<List<BookerSearchResultsDto>>()
     .onErrorResume { e ->
       if (!ClientUtils.isNotFoundError(e)) {
         logger.error("searchForBooker Failed for request to uri $SEARCH_FOR_BOOKER")
