@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.SEARCH_FOR_BOOKER
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_SEARCH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.SearchBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDateTime
@@ -110,7 +111,7 @@ class SearchForBookerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isUnauthorized
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerInfoDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<BookerInfoDto>::class.java).toList()
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerSearchResultsDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<BookerSearchResultsDto>::class.java).toList()
 
   fun callSearchBooker(
     searchBookerDto: SearchBookerDto,
