@@ -27,7 +27,7 @@ class SearchForBookerTest : IntegrationTestBase() {
   fun `when booker exists with same email, then booker is returned`() {
     // Given
     val searchDto = SearchBookerDto(email = "test_email@test.com")
-    val booker = BookerInfoDto(reference = "abc-def-ghi", email = "test_email@test.com", LocalDateTime.now().minusMonths(1))
+    val booker = BookerInfoDto(reference = "abc-def-ghi", email = "test_email@test.com", LocalDateTime.now().minusMonths(1), emptyList())
     prisonVisitBookerRegistryMockServer.stubSearchBooker(searchDto, listOf(booker))
 
     // When
@@ -47,8 +47,8 @@ class SearchForBookerTest : IntegrationTestBase() {
   fun `when multiple booker exists with same email, then all bookers are returned`() {
     // Given
     val searchDto = SearchBookerDto(email = "test_email@test.com")
-    val booker = BookerInfoDto(reference = "abc-def-ghi", email = "test_email@test.com", LocalDateTime.now().minusMonths(1))
-    val otherBooker = BookerInfoDto(reference = "xyz-abc-ghf", email = "test_email@test.com", LocalDateTime.now().minusMonths(2))
+    val booker = BookerInfoDto(reference = "abc-def-ghi", email = "test_email@test.com", LocalDateTime.now().minusMonths(1), emptyList())
+    val otherBooker = BookerInfoDto(reference = "xyz-abc-ghf", email = "test_email@test.com", LocalDateTime.now().minusMonths(2), emptyList())
 
     prisonVisitBookerRegistryMockServer.stubSearchBooker(searchDto, listOf(booker, otherBooker))
 

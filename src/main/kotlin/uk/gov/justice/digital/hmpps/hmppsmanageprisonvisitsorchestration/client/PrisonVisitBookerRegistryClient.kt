@@ -39,6 +39,7 @@ const val REGISTER_PRISONER: String = "$PERMITTED_PRISONERS/register"
 const val BOOKER_REGISTRY_AUDIT_HISTORY: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/audit"
 
 const val SEARCH_FOR_BOOKER: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/config/search"
+const val GET_BOOKER_BY_BOOKING_REFERENCE: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/config/{bookerReference}"
 
 @Component
 class PrisonVisitBookerRegistryClient(
@@ -140,6 +141,26 @@ class PrisonVisitBookerRegistryClient(
       }
     }
     .blockOptional(apiTimeout).orElseThrow { NotFoundException("searchForBooker call failed for request to uri $SEARCH_FOR_BOOKER") }
+
+  fun getBookerByBookerReference(bookerReference: String): BookerInfoDto {
+    val uri = GET_BOOKER_BY_BOOKING_REFERENCE.replace("{bookerReference}", bookerReference)
+
+    return webClient.get()
+      .uri(uri)
+      .retrieve()
+      .bodyToMono<BookerInfoDto>()
+      .onErrorResume { e ->
+        if (!ClientUtils.isNotFoundError(e)) {
+          logger.error("getBookerByBookerReference Failed for get request $uri")
+          Mono.error(e)
+        } else {
+          logger.error("getBookerByBookerReference NOT_FOUND for get request $uri")
+          Mono.error { NotFoundException("booker not found on booker-registry for booker reference - $bookerReference") }
+        }
+      }
+      .blockOptional(apiTimeout)
+      .orElseThrow { NotFoundException("booker not found on booker-registry for booker reference - $bookerReference") }
+  }
 
   private fun getPrisonerValidationErrorResponse(e: Throwable): Throwable {
     if (e is WebClientResponseException && isUnprocessableEntityError(e)) {
