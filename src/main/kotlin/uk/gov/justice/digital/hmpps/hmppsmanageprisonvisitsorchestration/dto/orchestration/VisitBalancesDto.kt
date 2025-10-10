@@ -11,8 +11,14 @@ data class VisitBalancesDto(
   @Schema(required = true, description = "Balance of privilege visit orders remaining")
   val remainingPvo: Int,
 
+  @Schema(description = "Date of last VO allocation")
+  val lastVoAllocationDate: LocalDate,
+
   @Schema(description = "Date of next VO allocation")
   val nextVoAllocationDate: LocalDate,
+
+  @Schema(description = "Date of last PVO allocation, null if not allocated")
+  val lastPvoAllocationDate: LocalDate? = null,
 
   @Schema(description = "Date of next PVO allocation, null if not allocated")
   val nextPvoAllocationDate: LocalDate? = null,

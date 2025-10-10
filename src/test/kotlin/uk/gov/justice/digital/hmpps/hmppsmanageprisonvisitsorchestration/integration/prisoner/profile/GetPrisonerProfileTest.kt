@@ -77,7 +77,7 @@ class GetPrisonerProfileTest(
   private val alert = AlertDto(alertResponseDto)
   private final val prisonerRestrictionDto = createOffenderRestrictionDto()
   private final val visitBalancesDto = createPrisonerVoBalanceDto()
-  private final val expectedVisitBalances = VisitBalancesDto(remainingVo = 10, remainingPvo = 10, nextVoAllocationDate = LocalDate.now().plusDays(14), nextPvoAllocationDate = LocalDate.now().plusDays(28))
+  private final val expectedVisitBalances = VisitBalancesDto(remainingVo = 10, remainingPvo = 10, lastVoAllocationDate = LocalDate.now(), nextVoAllocationDate = LocalDate.now().plusDays(14), lastPvoAllocationDate = LocalDate.now(), nextPvoAllocationDate = LocalDate.now().plusDays(28))
 
   private val contactsDto = createContactsList(listOf(visitor1, visitor2, visitor3))
   private val visit1Visitors = listOf(

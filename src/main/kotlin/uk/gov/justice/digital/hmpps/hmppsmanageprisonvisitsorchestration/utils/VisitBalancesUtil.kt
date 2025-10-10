@@ -41,7 +41,9 @@ class VisitBalancesUtil(private val currentDateUtil: CurrentDateUtils) {
   fun getVisitBalancesDto(prisonerVOBalanceDto: PrisonerVOBalanceDto): VisitBalancesDto = VisitBalancesDto(
     remainingVo = calculateAvailableVos(prisonerVOBalanceDto),
     remainingPvo = calculateAvailablePvos(prisonerVOBalanceDto),
+    lastVoAllocationDate = prisonerVOBalanceDto.lastVoAllocatedDate,
     nextVoAllocationDate = calculateVORenewalDate(prisonerVOBalanceDto, currentDateUtil.getCurrentDate()),
+    lastPvoAllocationDate = prisonerVOBalanceDto.lastPvoAllocatedDate,
     nextPvoAllocationDate = calculatePVORenewalDate(prisonerVOBalanceDto, currentDateUtil.getCurrentDate()),
   )
 
