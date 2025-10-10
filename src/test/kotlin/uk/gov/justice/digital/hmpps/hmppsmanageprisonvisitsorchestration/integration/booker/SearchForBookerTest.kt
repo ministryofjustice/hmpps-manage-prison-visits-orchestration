@@ -13,7 +13,6 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.SEARCH_FOR_BOOKER
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_SEARCH
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.SearchBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
@@ -28,7 +27,7 @@ class SearchForBookerTest : IntegrationTestBase() {
   fun `when booker exists with same email, then booker is returned`() {
     // Given
     val searchDto = SearchBookerDto(email = "test_email@test.com")
-    val booker = BookerInfoDto(reference = "abc-def-ghi", email = "test_email@test.com", LocalDateTime.now().minusMonths(1), emptyList())
+    val booker = BookerSearchResultsDto(reference = "abc-def-ghi", email = "test_email@test.com", LocalDateTime.now().minusMonths(1))
     prisonVisitBookerRegistryMockServer.stubSearchBooker(searchDto, listOf(booker))
 
     // When
@@ -48,8 +47,8 @@ class SearchForBookerTest : IntegrationTestBase() {
   fun `when multiple booker exists with same email, then all bookers are returned`() {
     // Given
     val searchDto = SearchBookerDto(email = "test_email@test.com")
-    val booker = BookerInfoDto(reference = "abc-def-ghi", email = "test_email@test.com", LocalDateTime.now().minusMonths(1), emptyList())
-    val otherBooker = BookerInfoDto(reference = "xyz-abc-ghf", email = "test_email@test.com", LocalDateTime.now().minusMonths(2), emptyList())
+    val booker = BookerSearchResultsDto(reference = "abc-def-ghi", email = "test_email@test.com", LocalDateTime.now().minusMonths(1))
+    val otherBooker = BookerSearchResultsDto(reference = "xyz-abc-ghf", email = "test_email@test.com", LocalDateTime.now().minusMonths(2))
 
     prisonVisitBookerRegistryMockServer.stubSearchBooker(searchDto, listOf(booker, otherBooker))
 
