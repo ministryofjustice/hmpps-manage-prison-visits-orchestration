@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import org.springframework.http.HttpStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_BOOKER_BY_BOOKING_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PERMITTED_PRISONERS
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PERMITTED_VISITORS
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.REGISTER_PRISONER
@@ -16,6 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.SearchBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.createJsonResponseBuilder
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.getJsonString
@@ -51,7 +53,7 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
     )
   }
 
-  fun stubSearchBooker(searchBookerDto: SearchBookerDto, bookers: List<BookerInfoDto>?, httpStatus: HttpStatus = HttpStatus.OK) {
+  fun stubSearchBooker(searchBookerDto: SearchBookerDto, bookers: List<BookerSearchResultsDto>?, httpStatus: HttpStatus = HttpStatus.OK) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
       WireMock.post(SEARCH_FOR_BOOKER)
@@ -64,6 +66,23 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
             responseBuilder
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(bookers))
+          },
+        ),
+    )
+  }
+
+  fun stubGetBookerByBookerReference(bookerReference: String, booker: BookerInfoDto?, httpStatus: HttpStatus = HttpStatus.OK) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      WireMock.get(GET_BOOKER_BY_BOOKING_REFERENCE.replace("{bookerReference}", bookerReference))
+        .willReturn(
+          if (booker == null) {
+            responseBuilder
+              .withStatus(httpStatus.value())
+          } else {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(booker))
           },
         ),
     )
