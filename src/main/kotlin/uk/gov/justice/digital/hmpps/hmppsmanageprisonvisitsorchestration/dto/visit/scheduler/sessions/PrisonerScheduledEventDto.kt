@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.ScheduledEventDto
 import java.time.LocalTime
@@ -14,9 +15,11 @@ data class PrisonerScheduledEventDto(
   @Schema(required = false, description = "Source-specific description for type or nature of the event")
   val eventSourceDesc: String?,
 
+  @JsonFormat(pattern = "HH:mm", shape = JsonFormat.Shape.STRING)
   @Schema(required = false, description = "Date and time at which event starts")
   val startTime: LocalTime?,
 
+  @JsonFormat(pattern = "HH:mm", shape = JsonFormat.Shape.STRING)
   @Schema(required = false, description = "Date and time at which event ends")
   val endTime: LocalTime?,
 ) {
