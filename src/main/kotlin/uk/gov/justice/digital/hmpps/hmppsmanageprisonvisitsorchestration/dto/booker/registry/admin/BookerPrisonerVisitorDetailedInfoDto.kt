@@ -17,11 +17,15 @@ data class BookerPrisonerVisitorDetailedInfoDto(
 
   @Schema(description = "Date of birth", example = "2000-01-31", required = false)
   val dateOfBirth: LocalDate?,
+
+  @Schema(description = "Description of relationship to Prisoner", example = "Mother", required = false)
+  val relationshipDescription: String?,
 ) {
   constructor(contact: PrisonerContactDto) : this(
     visitorId = contact.personId!!,
     firstName = contact.firstName,
     lastName = contact.lastName,
     dateOfBirth = contact.dateOfBirth,
+    relationshipDescription = contact.relationshipDescription,
   )
 }
