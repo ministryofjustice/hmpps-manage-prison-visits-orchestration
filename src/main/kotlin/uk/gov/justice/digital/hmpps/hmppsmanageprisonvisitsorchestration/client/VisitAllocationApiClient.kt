@@ -26,7 +26,7 @@ class VisitAllocationApiClient(
   fun getPrisonerVOBalance(prisonerId: String): Optional<PrisonerVOBalanceDto>? = getPrisonerVOBalanceAsMono(prisonerId).block(apiTimeout)
 
   fun getPrisonerVOBalanceAsMono(prisonerId: String): Mono<Optional<PrisonerVOBalanceDto>> {
-    val uri = "/visits/allocation/prisoner/$prisonerId/balance"
+    val uri = "/visits/allocation/prisoner/$prisonerId/balance/detailed"
     return webClient.get()
       .uri(uri)
       .retrieve()

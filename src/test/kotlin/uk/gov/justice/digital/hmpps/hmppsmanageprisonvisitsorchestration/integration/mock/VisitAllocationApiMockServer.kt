@@ -16,7 +16,7 @@ class VisitAllocationApiMockServer : WireMockServer(8101) {
   ) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
-      WireMock.get("/visits/allocation/prisoner/$prisonerId/balance")
+      WireMock.get("/visits/allocation/prisoner/$prisonerId/balance/detailed")
         .willReturn(
           if (prisonerVOBalanceDto == null) {
             responseBuilder
