@@ -14,16 +14,19 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AlertsService.Companion.predicateFilterSupportedCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.Comparators.Companion.alertsComparatorDateUpdatedOrCreatedDateDesc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.Comparators.Companion.restrictionsComparatorDatCreatedDesc
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.VisitBalancesUtil
 import java.time.Duration
 
 @Component
 class PrisonerProfileClient(
   private val prisonApiClient: PrisonApiClient,
+  private val visitAllocationApiClient: VisitAllocationApiClient,
   private val alertsApiClient: AlertsApiClient,
   private val prisonerSearchClient: PrisonerSearchClient,
   private val visitSchedulerClient: VisitSchedulerClient,
   private val prisonerContactRegistryClient: PrisonerContactRegistryClient,
   private val prisonRegisterClient: PrisonRegisterClient,
+  private val visitBalancesUtil: VisitBalancesUtil,
   @Value("\${prisoner.profile.timeout:10s}") private val apiTimeout: Duration,
 ) {
   companion object {
@@ -38,7 +41,7 @@ class PrisonerProfileClient(
     LOG.trace("getPrisonerProfile - Beginning calls to collect prisoner profile data for prisoner {} in {}", prisonerId, prisonId)
     val prisonerMono = prisonerSearchClient.getPrisonerByIdAsMono(prisonerId)
     val inmateDetailMono = prisonApiClient.getInmateDetailsAsMono(prisonerId)
-    val visitBalancesMono = prisonApiClient.getVisitBalancesAsMono(prisonerId)
+    val visitBalancesMono = visitAllocationApiClient.getPrisonerVOBalanceAsMono(prisonerId)
     val visitSchedulerMono = visitSchedulerClient.getVisitsAsMono(visitSearchRequestFilter)
     val alertsMono = alertsApiClient.getPrisonerAlertsAsMono(prisonerId)
     val prisonerRestrictionsMono = prisonApiClient.getPrisonerRestrictionsAsMono(prisonerId)
@@ -47,7 +50,14 @@ class PrisonerProfileClient(
       .map { prisonerProfileMonos ->
         val prisoner = prisonerProfileMonos.t1 ?: throw InvalidPrisonerProfileException("Unable to retrieve offender details from Prisoner Search API")
         val inmateDetails = prisonerProfileMonos.t2 ?: throw InvalidPrisonerProfileException("Unable to retrieve inmate details from Prison API")
-        val visitBalances = if (prisonerProfileMonos.t3.isEmpty) null else prisonerProfileMonos.t3.get()
+        val visitBalances = if (prisonerProfileMonos.t3.isEmpty) {
+          null
+        } else {
+          prisonerProfileMonos.t3.get().let {
+            visitBalancesUtil.getVisitBalancesDto(it)
+          }
+        }
+
         val visits = prisonerProfileMonos.t4.content.map { visitDto -> VisitSummaryDto(visitDto = visitDto) }
         val prisonerAlerts = prisonerProfileMonos.t5.content.filter {
           predicateFilterSupportedCodes.test(it)

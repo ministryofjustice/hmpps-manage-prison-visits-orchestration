@@ -4,19 +4,15 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isNotFoundError
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.InmateDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.VisitBalancesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import java.time.Duration
-import java.util.Optional
 
 @Component
 class PrisonApiClient(
@@ -35,23 +31,6 @@ class PrisonApiClient(
     .uri("/api/offenders/$prisonerId")
     .retrieve()
     .bodyToMono()
-
-  fun getVisitBalances(prisonerId: String): Optional<VisitBalancesDto>? = getVisitBalancesAsMono(prisonerId).block(apiTimeout)
-
-  fun getVisitBalancesAsMono(prisonerId: String): Mono<Optional<VisitBalancesDto>> {
-    return webClient.get()
-      .uri("/api/bookings/offenderNo/$prisonerId/visit/balances")
-      .retrieve()
-      .bodyToMono<Optional<VisitBalancesDto>>()
-      .onErrorResume { e ->
-        if (e is WebClientResponseException && e.statusCode == HttpStatus.NOT_FOUND) {
-          // return an Optional.empty element if 404 is thrown
-          return@onErrorResume Mono.just(Optional.empty())
-        } else {
-          Mono.error(e)
-        }
-      }
-  }
 
   fun getPrisonerRestrictions(prisonerId: String): OffenderRestrictionsDto {
     val uri = "/api/offenders/$prisonerId/offender-restrictions"
