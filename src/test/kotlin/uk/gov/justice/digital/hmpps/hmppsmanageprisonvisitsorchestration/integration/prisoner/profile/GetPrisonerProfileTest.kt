@@ -848,10 +848,14 @@ class GetPrisonerProfileTest(
     availableVos = 8,
     accumulatedVos = 4,
     negativeVos = 2,
+    voBalance = 10,
     availablePvos = 10,
     negativePvos = 0,
+    pvoBalance = 10,
     lastVoAllocatedDate = LocalDate.now(),
+    nextVoAllocationDate = LocalDate.now().plusDays(14),
     lastPvoAllocatedDate = LocalDate.now(),
+    nextPvoAllocationDate = LocalDate.now().plusDays(28),
   )
 
   private fun createCurrentIncentive(): CurrentIncentive {

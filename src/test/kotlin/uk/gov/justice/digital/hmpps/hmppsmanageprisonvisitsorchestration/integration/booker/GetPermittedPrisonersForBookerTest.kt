@@ -73,9 +73,9 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     convictedStatus = "Convicted",
   )
 
-  private val visitBalance1 = PrisonerVOBalanceDto(prisonerId = "test", availableVos = 4, accumulatedVos = 4, negativeVos = 0, availablePvos = 1, negativePvos = 2, lastVoAllocatedDate = LocalDate.now().minusDays(12), lastPvoAllocatedDate = LocalDate.now().minusDays(7))
+  private val visitBalance1 = PrisonerVOBalanceDto(prisonerId = "test", availableVos = 4, accumulatedVos = 4, negativeVos = 0, voBalance = 8, availablePvos = 1, negativePvos = 2, pvoBalance = -1, lastVoAllocatedDate = LocalDate.now().minusDays(12), nextVoAllocationDate = LocalDate.now().plusDays(2), lastPvoAllocatedDate = LocalDate.now().minusDays(7), nextPvoAllocationDate = LocalDate.now().plusDays(7))
 
-  private val visitBalance2 = PrisonerVOBalanceDto(prisonerId = "test", availableVos = 3, accumulatedVos = 4, negativeVos = 3, availablePvos = 3, negativePvos = 2, lastVoAllocatedDate = LocalDate.now().minusDays(12), lastPvoAllocatedDate = null)
+  private val visitBalance2 = PrisonerVOBalanceDto(prisonerId = "test", availableVos = 3, accumulatedVos = 4, negativeVos = 3, voBalance = 4, availablePvos = 3, negativePvos = 2, pvoBalance = 1, lastVoAllocatedDate = LocalDate.now().minusDays(12), nextVoAllocationDate = LocalDate.now().plusDays(2), lastPvoAllocatedDate = null, nextPvoAllocationDate = null)
 
   @Test
   fun `when booker has valid prisoners then all allowed prisoners are returned`() {

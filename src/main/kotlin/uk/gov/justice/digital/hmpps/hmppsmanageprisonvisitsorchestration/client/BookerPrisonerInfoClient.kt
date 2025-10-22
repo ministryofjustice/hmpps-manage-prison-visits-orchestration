@@ -47,7 +47,7 @@ class BookerPrisonerInfoClient(
         return BookerPrisonerInfoDto(
           offenderSearchPrisoner,
           visitBalancesUtil.calculateAvailableVoAndPvoCount(voBalancesDto),
-          visitBalancesUtil.calculateVoRenewalDate(voBalancesDto),
+          visitBalancesUtil.calculateRenewalDate(voBalancesDto),
           registeredPrison,
         )
       }

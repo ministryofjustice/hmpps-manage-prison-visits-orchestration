@@ -8,13 +8,13 @@ import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.PrisonerProfileDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitBalancesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AlertsService.Companion.predicateFilterSupportedCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.Comparators.Companion.alertsComparatorDateUpdatedOrCreatedDateDesc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.Comparators.Companion.restrictionsComparatorDatCreatedDesc
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.VisitBalancesUtil
 import java.time.Duration
 
 @Component
@@ -26,7 +26,6 @@ class PrisonerProfileClient(
   private val visitSchedulerClient: VisitSchedulerClient,
   private val prisonerContactRegistryClient: PrisonerContactRegistryClient,
   private val prisonRegisterClient: PrisonRegisterClient,
-  private val visitBalancesUtil: VisitBalancesUtil,
   @Value("\${prisoner.profile.timeout:10s}") private val apiTimeout: Duration,
 ) {
   companion object {
@@ -54,7 +53,7 @@ class PrisonerProfileClient(
           null
         } else {
           prisonerProfileMonos.t3.get().let {
-            visitBalancesUtil.getVisitBalancesDto(it)
+            VisitBalancesDto(it)
           }
         }
 

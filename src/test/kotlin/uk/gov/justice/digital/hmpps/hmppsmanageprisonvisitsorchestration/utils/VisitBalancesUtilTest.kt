@@ -10,10 +10,34 @@ import java.time.LocalDate
 class VisitBalancesUtilTest {
   private val currentDateUtil: CurrentDateUtils = mock()
 
+  private fun createPrisonerVOBalanceDto(
+    prisonerId: String,
+    availableVos: Int,
+    accumulatedVos: Int,
+    negativeVos: Int,
+    availablePvos: Int,
+    negativePvos: Int,
+    lastVoAllocatedDate: LocalDate,
+    lastPvoAllocatedDate: LocalDate?,
+  ) = PrisonerVOBalanceDto(
+    prisonerId = prisonerId,
+    voBalance = (availableVos + accumulatedVos) - negativeVos,
+    availableVos = availableVos,
+    accumulatedVos = accumulatedVos,
+    negativeVos = negativeVos,
+    pvoBalance = availablePvos - negativePvos,
+    availablePvos = availablePvos,
+    negativePvos = negativePvos,
+    lastVoAllocatedDate = lastVoAllocatedDate,
+    nextVoAllocationDate = lastVoAllocatedDate.plusDays(14),
+    lastPvoAllocatedDate = lastPvoAllocatedDate,
+    nextPvoAllocationDate = lastPvoAllocatedDate?.plusDays(28),
+  )
+
   @Test
   fun `test available VOs is a total of VO and PVO`() {
     // Given
-    val visitBalance = PrisonerVOBalanceDto(prisonerId = "test", availableVos = 3, accumulatedVos = 5, negativeVos = 0, availablePvos = 1, negativePvos = 2, lastVoAllocatedDate = LocalDate.now(), lastPvoAllocatedDate = null)
+    val visitBalance = createPrisonerVOBalanceDto(prisonerId = "test", availableVos = 3, accumulatedVos = 5, negativeVos = 0, availablePvos = 1, negativePvos = 2, lastVoAllocatedDate = LocalDate.now(), lastPvoAllocatedDate = null)
 
     // When
     whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
@@ -28,11 +52,11 @@ class VisitBalancesUtilTest {
     // Given
     val lastVOAllocationDate = LocalDate.now().minusDays(3)
     val lastPVOAllocationDate = LocalDate.now().minusDays(7)
-    val visitBalance = PrisonerVOBalanceDto(prisonerId = "test", availableVos = 3, accumulatedVos = 4, negativeVos = 0, availablePvos = 1, negativePvos = 2, lastVoAllocatedDate = lastVOAllocationDate, lastPvoAllocatedDate = lastPVOAllocationDate)
+    val visitBalance = createPrisonerVOBalanceDto(prisonerId = "test", availableVos = 3, accumulatedVos = 4, negativeVos = 0, availablePvos = 1, negativePvos = 2, lastVoAllocatedDate = lastVOAllocationDate, lastPvoAllocatedDate = lastPVOAllocationDate)
 
     // When
     whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
+    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateRenewalDate(visitBalance)
 
     // Then
     Assertions.assertThat(renewalDate).isEqualTo(lastVOAllocationDate.plusDays(14))
@@ -43,11 +67,11 @@ class VisitBalancesUtilTest {
     // Given
     val lastVOAllocationDate = LocalDate.now().minusDays(13)
     val lastPVOAllocationDate = LocalDate.now().minusDays(28)
-    val visitBalance = PrisonerVOBalanceDto(prisonerId = "test", availableVos = 3, accumulatedVos = 4, negativeVos = 0, availablePvos = 1, negativePvos = 2, lastVoAllocatedDate = lastVOAllocationDate, lastPvoAllocatedDate = lastPVOAllocationDate)
+    val visitBalance = createPrisonerVOBalanceDto(prisonerId = "test", availableVos = 3, accumulatedVos = 4, negativeVos = 0, availablePvos = 1, negativePvos = 2, lastVoAllocatedDate = lastVOAllocationDate, lastPvoAllocatedDate = lastPVOAllocationDate)
 
     // When
     whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
+    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateRenewalDate(visitBalance)
 
     // Then
     Assertions.assertThat(renewalDate).isEqualTo(lastPVOAllocationDate.plusDays(28))
@@ -58,11 +82,11 @@ class VisitBalancesUtilTest {
     // Given
     val lastVoAllocatedDate = LocalDate.now()
     val lastPvoAllocatedDate = LocalDate.now()
-    val visitBalance = PrisonerVOBalanceDto(prisonerId = "test", availableVos = 3, accumulatedVos = 4, negativeVos = 0, availablePvos = 1, negativePvos = 2, lastVoAllocatedDate = lastVoAllocatedDate, lastPvoAllocatedDate = lastPvoAllocatedDate)
+    val visitBalance = createPrisonerVOBalanceDto(prisonerId = "test", availableVos = 3, accumulatedVos = 4, negativeVos = 0, availablePvos = 1, negativePvos = 2, lastVoAllocatedDate = lastVoAllocatedDate, lastPvoAllocatedDate = lastPvoAllocatedDate)
 
     // When
     whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
+    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateRenewalDate(visitBalance)
 
     // Then
     Assertions.assertThat(renewalDate).isEqualTo(lastVoAllocatedDate.plusDays(14))
@@ -73,29 +97,14 @@ class VisitBalancesUtilTest {
     // Given
     val lastVoAllocatedDate = LocalDate.now()
     val lastPvoAllocatedDate = null
-    val visitBalance = PrisonerVOBalanceDto(prisonerId = "test", availableVos = 3, accumulatedVos = 4, negativeVos = 0, availablePvos = 1, negativePvos = 2, lastVoAllocatedDate = lastVoAllocatedDate, lastPvoAllocatedDate = lastPvoAllocatedDate)
+    val visitBalance = createPrisonerVOBalanceDto(prisonerId = "test", availableVos = 3, accumulatedVos = 4, negativeVos = 0, availablePvos = 1, negativePvos = 2, lastVoAllocatedDate = lastVoAllocatedDate, lastPvoAllocatedDate = lastPvoAllocatedDate)
 
     // When
     whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
+    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateRenewalDate(visitBalance)
 
     // Then
     Assertions.assertThat(renewalDate).isEqualTo(lastVoAllocatedDate.plusDays(14))
-  }
-
-  @Test
-  fun `test VO Renewal date is currentDate + 14 when lastVOAllocatedDate + 14 and lastPvoAllocatedDate + 28 falls in the past`() {
-    // Given
-    val lastVoAllocatedDate = LocalDate.now().minusDays(15)
-    val lastPvoAllocatedDate = LocalDate.now().minusDays(30)
-    val visitBalance = PrisonerVOBalanceDto(prisonerId = "test", availableVos = 3, accumulatedVos = 4, negativeVos = 0, availablePvos = 1, negativePvos = 2, lastVoAllocatedDate = lastVoAllocatedDate, lastPvoAllocatedDate = lastPvoAllocatedDate)
-
-    // When
-    whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
-
-    // Then
-    Assertions.assertThat(renewalDate).isEqualTo(LocalDate.now().plusDays(14))
   }
 
   @Test
@@ -105,7 +114,7 @@ class VisitBalancesUtilTest {
 
     // When
     whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
+    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateRenewalDate(visitBalance)
 
     // Then
     Assertions.assertThat(renewalDate).isEqualTo(LocalDate.now().plusDays(14))
