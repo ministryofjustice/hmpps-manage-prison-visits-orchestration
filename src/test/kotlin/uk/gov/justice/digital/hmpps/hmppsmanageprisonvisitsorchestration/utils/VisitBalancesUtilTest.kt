@@ -48,7 +48,7 @@ class VisitBalancesUtilTest {
   }
 
   @Test
-  fun `test VO Renewal date is next VO allocation date when earlier of the 2 dates`() {
+  fun `test VO Renewal date is next VO allocation date when VO date is earlier of the 2 dates`() {
     // Given
     val lastVOAllocationDate = LocalDate.now().minusDays(3)
     val lastPVOAllocationDate = LocalDate.now().minusDays(7)
@@ -63,7 +63,7 @@ class VisitBalancesUtilTest {
   }
 
   @Test
-  fun `test VO Renewal date is next PVO allocation date when earlier of the 2 dates`() {
+  fun `test VO Renewal date is next VO allocation date when VO date is later of the 2 dates`() {
     // Given
     val lastVOAllocationDate = LocalDate.now().minusDays(13)
     val lastPVOAllocationDate = LocalDate.now().minusDays(28)
@@ -74,7 +74,7 @@ class VisitBalancesUtilTest {
     val renewalDate = VisitBalancesUtil(currentDateUtil).calculateRenewalDate(visitBalance)
 
     // Then
-    Assertions.assertThat(renewalDate).isEqualTo(lastPVOAllocationDate.plusDays(28))
+    Assertions.assertThat(renewalDate).isEqualTo(lastVOAllocationDate.plusDays(14))
   }
 
   @Test

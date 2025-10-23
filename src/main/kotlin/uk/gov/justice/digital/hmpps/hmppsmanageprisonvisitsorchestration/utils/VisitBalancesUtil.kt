@@ -11,19 +11,9 @@ class VisitBalancesUtil(private val currentDateUtil: CurrentDateUtils) {
     return ((visitBalance?.voBalance ?: 0) + (visitBalance?.pvoBalance ?: 0))
   }
 
-  fun calculateRenewalDate(visitBalance: PrisonerVOBalanceDto?): LocalDate {
+  fun calculateRenewalDate(voBalanceDto: PrisonerVOBalanceDto?): LocalDate {
     val currentDate = currentDateUtil.getCurrentDate()
 
-    if (visitBalance == null) {
-      return currentDate.plusDays(14)
-    }
-    val nextVORenewalDate = visitBalance.nextVoAllocationDate
-    val nextPVORenewalDate = visitBalance.nextPvoAllocationDate
-
-    return if (nextPVORenewalDate == null) {
-      nextVORenewalDate
-    } else {
-      minOf(nextVORenewalDate, nextPVORenewalDate)
-    }
+    return voBalanceDto?.nextVoAllocationDate ?: currentDate.plusDays(14)
   }
 }
