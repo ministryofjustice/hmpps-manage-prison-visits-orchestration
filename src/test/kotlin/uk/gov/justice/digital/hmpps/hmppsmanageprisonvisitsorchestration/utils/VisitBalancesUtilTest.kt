@@ -4,211 +4,119 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.VisitBalancesDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDto
 import java.time.LocalDate
 
 class VisitBalancesUtilTest {
   private val currentDateUtil: CurrentDateUtils = mock()
 
+  private fun createPrisonerVOBalanceDto(
+    prisonerId: String,
+    availableVos: Int,
+    accumulatedVos: Int,
+    negativeVos: Int,
+    availablePvos: Int,
+    negativePvos: Int,
+    lastVoAllocatedDate: LocalDate,
+    lastPvoAllocatedDate: LocalDate?,
+  ) = PrisonerVOBalanceDto(
+    prisonerId = prisonerId,
+    voBalance = (availableVos + accumulatedVos) - negativeVos,
+    availableVos = availableVos,
+    accumulatedVos = accumulatedVos,
+    negativeVos = negativeVos,
+    pvoBalance = availablePvos - negativePvos,
+    availablePvos = availablePvos,
+    negativePvos = negativePvos,
+    lastVoAllocatedDate = lastVoAllocatedDate,
+    nextVoAllocationDate = lastVoAllocatedDate.plusDays(14),
+    lastPvoAllocatedDate = lastPvoAllocatedDate,
+    nextPvoAllocationDate = lastPvoAllocatedDate?.plusDays(28),
+  )
+
   @Test
   fun `test available VOs is a total of VO and PVO`() {
     // Given
-    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = null, latestPrivIepAdjustDate = null)
+    val visitBalance = createPrisonerVOBalanceDto(prisonerId = "test", availableVos = 3, accumulatedVos = 5, negativeVos = 0, availablePvos = 1, negativePvos = 2, lastVoAllocatedDate = LocalDate.now(), lastPvoAllocatedDate = null)
 
     // When
     whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val availableVos = VisitBalancesUtil(currentDateUtil).calculateAvailableVos(visitBalance)
+    val availableVos = VisitBalancesUtil(currentDateUtil).calculateAvailableVoAndPvoCount(visitBalance)
 
     // Then
     Assertions.assertThat(availableVos).isEqualTo(7)
   }
 
   @Test
-  fun `test VO Renewal date is latestIepAdjustDate when earlier of the 2 dates`() {
+  fun `test VO Renewal date is next VO allocation date when VO date is earlier of the 2 dates`() {
     // Given
-    val latestIepAdjustDate = LocalDate.now().plusDays(3)
-    val latestPrivIepAdjustDate = LocalDate.now().plusDays(7)
-    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
+    val lastVOAllocationDate = LocalDate.now().minusDays(3)
+    val lastPVOAllocationDate = LocalDate.now().minusDays(7)
+    val visitBalance = createPrisonerVOBalanceDto(prisonerId = "test", availableVos = 3, accumulatedVos = 4, negativeVos = 0, availablePvos = 1, negativePvos = 2, lastVoAllocatedDate = lastVOAllocationDate, lastPvoAllocatedDate = lastPVOAllocationDate)
 
     // When
     whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
+    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateRenewalDate(visitBalance)
 
     // Then
-    Assertions.assertThat(renewalDate).isEqualTo(latestIepAdjustDate)
+    Assertions.assertThat(renewalDate).isEqualTo(lastVOAllocationDate.plusDays(14))
   }
 
   @Test
-  fun `test VO Renewal date is latestPrivIepAdjustDate when earlier of the 2 dates`() {
+  fun `test VO Renewal date is next VO allocation date when VO date is later of the 2 dates`() {
     // Given
-    val latestIepAdjustDate = LocalDate.now().plusDays(14)
-    val latestPrivIepAdjustDate = LocalDate.now().plusDays(8)
-    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
+    val lastVOAllocationDate = LocalDate.now().minusDays(13)
+    val lastPVOAllocationDate = LocalDate.now().minusDays(28)
+    val visitBalance = createPrisonerVOBalanceDto(prisonerId = "test", availableVos = 3, accumulatedVos = 4, negativeVos = 0, availablePvos = 1, negativePvos = 2, lastVoAllocatedDate = lastVOAllocationDate, lastPvoAllocatedDate = lastPVOAllocationDate)
 
     // When
     whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
+    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateRenewalDate(visitBalance)
 
     // Then
-    Assertions.assertThat(renewalDate).isEqualTo(latestPrivIepAdjustDate)
+    Assertions.assertThat(renewalDate).isEqualTo(lastVOAllocationDate.plusDays(14))
   }
 
   @Test
-  fun `test VO Renewal date is passed date when both are same`() {
+  fun `test VO Renewal date is next voAllocationDate when pvoAllocationDate and voAllocationDate are the same date`() {
     // Given
-    val date = LocalDate.now().plusDays(14)
-    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = date, latestPrivIepAdjustDate = date)
+    val lastVoAllocatedDate = LocalDate.now()
+    val lastPvoAllocatedDate = LocalDate.now()
+    val visitBalance = createPrisonerVOBalanceDto(prisonerId = "test", availableVos = 3, accumulatedVos = 4, negativeVos = 0, availablePvos = 1, negativePvos = 2, lastVoAllocatedDate = lastVoAllocatedDate, lastPvoAllocatedDate = lastPvoAllocatedDate)
 
     // When
     whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
+    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateRenewalDate(visitBalance)
 
     // Then
-    Assertions.assertThat(renewalDate).isEqualTo(date)
+    Assertions.assertThat(renewalDate).isEqualTo(lastVoAllocatedDate.plusDays(14))
   }
 
   @Test
-  fun `test VO Renewal date is 1st of next month when IEP adjust date is after that`() {
+  fun `test VO Renewal date is next voAllocationDate when pvoAllocationDate is null`() {
     // Given
-    val latestIepAdjustDate = LocalDate.now().plusMonths(1).withDayOfMonth(2)
-    val latestPrivIepAdjustDate = null
-    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
+    val lastVoAllocatedDate = LocalDate.now()
+    val lastPvoAllocatedDate = null
+    val visitBalance = createPrisonerVOBalanceDto(prisonerId = "test", availableVos = 3, accumulatedVos = 4, negativeVos = 0, availablePvos = 1, negativePvos = 2, lastVoAllocatedDate = lastVoAllocatedDate, lastPvoAllocatedDate = lastPvoAllocatedDate)
 
     // When
     whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
+    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateRenewalDate(visitBalance)
 
     // Then
-    Assertions.assertThat(renewalDate).isEqualTo(LocalDate.now().plusMonths(1).withDayOfMonth(1))
+    Assertions.assertThat(renewalDate).isEqualTo(lastVoAllocatedDate.plusDays(14))
   }
 
   @Test
-  fun `test VO Renewal date is today + 14 days if privileged IEP adjust date falls after that`() {
+  fun `test VO Renewal date is currentDate + 14 when visitBalance is null`() {
     // Given
-    val latestIepAdjustDate = null
-    val latestPrivIepAdjustDate = LocalDate.now().plusDays(15)
-    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
+    val visitBalance = null
 
     // When
     whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
+    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateRenewalDate(visitBalance)
+
     // Then
     Assertions.assertThat(renewalDate).isEqualTo(LocalDate.now().plusDays(14))
-  }
-
-  @Test
-  fun `test VO Renewal date is first day of month after when both are null and current date is less than 14 days away from end of month`() {
-    // Given
-    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = null, latestPrivIepAdjustDate = null)
-
-    // When
-    // calculating from 21st June 2024 - renewal date will be 01st Jul 2024
-    val dateFrom = LocalDate.of(2024, 6, 21)
-    whenever(currentDateUtil.getCurrentDate()).thenReturn(dateFrom)
-
-    val expectedRenewalDate = LocalDate.of(2024, 7, 1)
-    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
-
-    // Then
-    Assertions.assertThat(renewalDate).isEqualTo(expectedRenewalDate)
-  }
-
-  @Test
-  fun `test VO Renewal date is dateFrom add 14 days when both are null and current date is more than 14 days away from end of month`() {
-    // Given
-    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = null, latestPrivIepAdjustDate = null)
-
-    // When
-    // calculating from 16th June 2024 - renewal date will be 30th Jun 2024
-    val dateFrom = LocalDate.of(2024, 6, 16)
-    whenever(currentDateUtil.getCurrentDate()).thenReturn(dateFrom)
-
-    val expectedRenewalDate = LocalDate.of(2024, 6, 30)
-    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
-
-    // Then
-    Assertions.assertThat(renewalDate).isEqualTo(expectedRenewalDate)
-  }
-
-  @Test
-  fun `test VO Renewal date is dateFrom add 14 days when both are null and current date is 13 days away from end of month`() {
-    // Given
-    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = null, latestPrivIepAdjustDate = null)
-
-    // When
-    // calculating from 17th June 2024 - renewal date will be 01st Jul 2024 as both are on the 1st
-    val dateFrom = LocalDate.of(2024, 6, 17)
-    whenever(currentDateUtil.getCurrentDate()).thenReturn(dateFrom)
-
-    val expectedRenewalDate = LocalDate.of(2024, 7, 1)
-    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
-
-    // Then
-    Assertions.assertThat(renewalDate).isEqualTo(expectedRenewalDate)
-  }
-
-  @Test
-  fun `test VO Renewal date is latestPrivIepAdjustDate when latestIepAdjustDate is in the past`() {
-    // Given
-    // although latestIepAdjustDate is less than latestPrivIepAdjustDate this date needs to be ignored as it is in the past
-    val latestIepAdjustDate = LocalDate.now().minusDays(1)
-    val latestPrivIepAdjustDate = LocalDate.now().plusDays(1)
-    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
-
-    // When
-    whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
-
-    // Then
-    Assertions.assertThat(renewalDate).isEqualTo(latestPrivIepAdjustDate)
-  }
-
-  @Test
-  fun `test VO Renewal date is latestIepAdjustDate when latestPrivIepAdjustDate is in the past`() {
-    // Given
-    val latestIepAdjustDate = LocalDate.now().plusDays(1)
-    // although latestPrivIepAdjustDate is less than latestIepAdjustDate this date needs to be ignored as it is in the past
-    val latestPrivIepAdjustDate = LocalDate.now().minusDays(1)
-    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
-
-    // When
-    whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
-
-    // Then
-    Assertions.assertThat(renewalDate).isEqualTo(latestIepAdjustDate)
-  }
-
-  @Test
-  fun `test VO Renewal date is latestPrivIepAdjustDate when latestIepAdjustDate is same as today`() {
-    // Given
-    // although latestIepAdjustDate is less than latestPrivIepAdjustDate this date needs to be ignored as it is same as today
-    val latestIepAdjustDate = LocalDate.now()
-    val latestPrivIepAdjustDate = LocalDate.now().plusDays(1)
-    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
-
-    // When
-    whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
-
-    // Then
-    Assertions.assertThat(renewalDate).isEqualTo(latestPrivIepAdjustDate)
-  }
-
-  @Test
-  fun `test VO Renewal date is latestIepAdjustDate when latestPrivIepAdjustDate  is same as today`() {
-    // Given
-    val latestIepAdjustDate = LocalDate.now().plusDays(1)
-
-    // although latestPrivIepAdjustDate is less than latestIepAdjustDate this date needs to be ignored as it is same as today
-    val latestPrivIepAdjustDate = LocalDate.now()
-    val visitBalance = VisitBalancesDto(remainingVo = 3, remainingPvo = 4, latestIepAdjustDate = latestIepAdjustDate, latestPrivIepAdjustDate = latestPrivIepAdjustDate)
-
-    // When
-    whenever(currentDateUtil.getCurrentDate()).thenReturn(LocalDate.now())
-    val renewalDate = VisitBalancesUtil(currentDateUtil).calculateVoRenewalDate(visitBalance)
-
-    // Then
-    Assertions.assertThat(renewalDate).isEqualTo(latestIepAdjustDate)
   }
 }

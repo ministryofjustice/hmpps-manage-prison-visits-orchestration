@@ -5,7 +5,7 @@ generic-service:
   replicaCount: 4
 
   image:
-    repository: quay.io/hmpps/hmpps-manage-prison-visits-orchestration
+    repository: ghcr.io/ministryofjustice/hmpps-manage-prison-visits-orchestration
     tag: app_version # override at deployment time
     port: 8080
 
@@ -38,7 +38,6 @@ generic-service:
     application-insights:
       APPLICATIONINSIGHTS_CONNECTION_STRING: "APPLICATIONINSIGHTS_CONNECTION_STRING"
     hmpps-manage-prison-visits-orchestration:
-      APPINSIGHTS_INSTRUMENTATIONKEY: "APPINSIGHTS_INSTRUMENTATIONKEY"
       SYSTEM_CLIENT_ID: "SYSTEM_CLIENT_ID"
       SYSTEM_CLIENT_SECRET: "SYSTEM_CLIENT_SECRET"
     hmpps-domain-events-topic:

@@ -1,6 +1,9 @@
 # HMPPS Manage Prison Visits Orchestration API
 
-[![CircleCI](https://circleci.com/gh/ministryofjustice/hmpps-manage-prison-visits-orchestration/tree/main.svg?style=shield)](https://app.circleci.com/pipelines/github/ministryofjustice/visit-scheduler)
+[![repo standards badge](https://img.shields.io/badge/endpoint.svg?&style=flat&logo=github&url=https%3A%2F%2Foperations-engineering-reports.cloud-platform.service.justice.gov.uk%2Fapi%2Fv1%2Fcompliant_public_repositories%2Fhmpps-manage-rison-visits-orchestration)](https://operations-engineering-reports.cloud-platform.service.justice.gov.uk/public-report/hmpps-manage-rison-visits-orchestration "Link to report")
+[![Docker Repository on ghcr](https://img.shields.io/badge/ghcr.io-repository-2496ED.svg?logo=docker)](https://ghcr.io/ministryofjustice/hmpps-manage-rison-visits-orchestration)
+[![API docs](https://img.shields.io/badge/API_docs_-view-85EA2D.svg?logo=swagger)](https://hmpps-manage-prison-visits-orchestration-dev.prison.service.justice.gov.uk/swagger-ui/index.html)
+[![GitHub Actions Pipeline](https://github.com/ministryofjustice/hmpps-manage-rison-visits-orchestration/actions/workflows/pipeline.yml/badge.svg)](https://github.com/ministryofjustice/hmpps-visit-allocation-api/actions/workflows/pipeline.yml)
 
 This is a Spring Boot application, written in Kotlin, used as an orchestration layer between the Visits front end and external API calls like visit-scheduler, prison-api, prisoner-search. Used by [Visits UI](https://github.com/ministryofjustice/book-a-prison-visit-staff-ui).
 

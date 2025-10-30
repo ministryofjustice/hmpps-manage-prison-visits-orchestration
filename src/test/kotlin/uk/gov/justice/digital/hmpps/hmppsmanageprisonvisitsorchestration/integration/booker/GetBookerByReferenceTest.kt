@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerDetailedInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.VisitBalancesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
@@ -54,10 +53,6 @@ class GetBookerByReferenceTest : IntegrationTestBase() {
 
   private final val permittedPrisonerB = PermittedPrisonerForBookerDto(prisoner2Id, true, "HEI", listOf(PermittedVisitorsForPermittedPrisonerBookerDto(2L, true)))
 
-  private val visitBalance1 = VisitBalancesDto(4, 3, LocalDate.now().plusDays(7), LocalDate.now().plusDays(2))
-
-  private val visitBalance2 = VisitBalancesDto(2, 3, LocalDate.now().plusDays(14), LocalDate.now().plusDays(7))
-
   private final val prisonDto = PrisonRegisterPrisonDto(prisonCode, "Hewell")
 
   @Test
@@ -81,8 +76,6 @@ class GetBookerByReferenceTest : IntegrationTestBase() {
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = permittedPrisonerB.prisonerId, contactsList = listOf(prisonerContact2, prisonerContact3))
     prisonOffenderSearchMockServer.stubGetPrisonerById(permittedPrisonerA.prisonerId, prisoner1Dto)
     prisonOffenderSearchMockServer.stubGetPrisonerById(permittedPrisonerB.prisonerId, prisoner2Dto)
-    prisonApiMockServer.stubGetVisitBalances(prisoner1Dto.prisonerNumber, visitBalance1)
-    prisonApiMockServer.stubGetVisitBalances(prisoner2Dto.prisonerNumber, visitBalance2)
     prisonRegisterMockServer.stubGetPrison(prisonCode, prisonDto)
 
     // When
@@ -122,8 +115,6 @@ class GetBookerByReferenceTest : IntegrationTestBase() {
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = permittedPrisonerB.prisonerId, contactsList = null, httpStatus = HttpStatus.NOT_FOUND)
     prisonOffenderSearchMockServer.stubGetPrisonerById(permittedPrisonerA.prisonerId, prisoner1Dto)
     prisonOffenderSearchMockServer.stubGetPrisonerById(permittedPrisonerB.prisonerId, prisoner2Dto)
-    prisonApiMockServer.stubGetVisitBalances(prisoner1Dto.prisonerNumber, visitBalance1)
-    prisonApiMockServer.stubGetVisitBalances(prisoner2Dto.prisonerNumber, visitBalance2)
     prisonRegisterMockServer.stubGetPrison(prisonCode, prisonDto)
 
     // When
@@ -164,8 +155,6 @@ class GetBookerByReferenceTest : IntegrationTestBase() {
     prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = permittedPrisonerB.prisonerId, contactsList = listOf(prisonerContact2, prisonerContact3))
     prisonOffenderSearchMockServer.stubGetPrisonerById(permittedPrisonerA.prisonerId, null, httpStatus = HttpStatus.NOT_FOUND)
     prisonOffenderSearchMockServer.stubGetPrisonerById(permittedPrisonerB.prisonerId, prisoner2Dto)
-    prisonApiMockServer.stubGetVisitBalances(prisoner1Dto.prisonerNumber, visitBalance1)
-    prisonApiMockServer.stubGetVisitBalances(prisoner2Dto.prisonerNumber, visitBalance2)
     prisonRegisterMockServer.stubGetPrison(prisonCode, prisonDto)
 
     // When

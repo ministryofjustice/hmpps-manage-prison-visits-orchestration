@@ -15,7 +15,7 @@ import kotlin.jvm.optionals.getOrNull
 
 @Component
 class BookerPrisonerInfoClient(
-  private val prisonApiClient: PrisonApiClient,
+  private val visitAllocationApiClient: VisitAllocationApiClient,
   private val prisonRegisterClient: PrisonRegisterClient,
   private val prisonerSearchClient: PrisonerSearchClient,
   private val visitBalancesUtil: VisitBalancesUtil,
@@ -32,12 +32,12 @@ class BookerPrisonerInfoClient(
     val prisonerId = bookerPrisoner.prisonerId
 
     val offenderSearchPrisonerDtoMono = prisonerSearchClient.getPrisonerByIdAsMonoEmptyIfNotFound(prisonerId)
-    val visitBalancesDtoMono = prisonApiClient.getVisitBalancesAsMono(prisonerId)
+    val prisonerVOBalanceMono = visitAllocationApiClient.getPrisonerVOBalanceAsMono(prisonerId)
     val registeredPrisonMono = prisonRegisterClient.getPrisonAsMonoEmptyIfNotFound(prisonCode)
 
-    Mono.zip(offenderSearchPrisonerDtoMono, visitBalancesDtoMono, registeredPrisonMono).block(apiTimeout).also { bookerPrisonerInfoMonos ->
+    Mono.zip(offenderSearchPrisonerDtoMono, prisonerVOBalanceMono, registeredPrisonMono).block(apiTimeout).also { bookerPrisonerInfoMonos ->
       val offenderSearchPrisoner = bookerPrisonerInfoMonos?.t1
-      val visitBalancesDto = bookerPrisonerInfoMonos?.t2?.getOrNull()
+      val voBalancesDto = bookerPrisonerInfoMonos?.t2?.getOrNull()
       val registeredPrison = getRegisteredPrison(prisonCode, bookerPrisonerInfoMonos?.t3?.getOrNull())
 
       return if (offenderSearchPrisoner == null) {
@@ -46,8 +46,8 @@ class BookerPrisonerInfoClient(
       } else {
         return BookerPrisonerInfoDto(
           offenderSearchPrisoner,
-          visitBalancesUtil.calculateAvailableVos(visitBalancesDto),
-          visitBalancesUtil.calculateVoRenewalDate(visitBalancesDto),
+          visitBalancesUtil.calculateAvailableVoAndPvoCount(voBalancesDto),
+          visitBalancesUtil.calculateRenewalDate(voBalancesDto),
           registeredPrison,
         )
       }
