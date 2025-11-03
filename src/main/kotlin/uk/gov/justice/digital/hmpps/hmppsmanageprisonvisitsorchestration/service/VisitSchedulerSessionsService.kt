@@ -28,6 +28,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.IsExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.PrisonerScheduledEventDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.SessionDateConflictDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.SessionsAndScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.VisitSessionV2Dto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.VisitSessionsAndScheduleDto
@@ -486,21 +487,36 @@ class VisitSchedulerSessionsService(
   ): SessionsAndScheduleDto {
     LOG.debug("getSessionsAndScheduleDataForDate: {}", sessionDate)
     val visitSessionsForDate = visitSessions?.filter { it.startTimestamp.toLocalDate() == sessionDate }?.map { VisitSessionV2Dto(it) } ?: emptyList()
-    val sessionDateConflicts: MutableList<SessionDateConflict> = mutableListOf()
+    val sessionDateConflicts: MutableList<SessionDateConflictDto> = mutableListOf()
     var prisonerScheduleForDate: List<PrisonerScheduledEventDto> = emptyList()
 
     // check if the date range is outside the booking window
     if (isOutsideBookingWindow(sessionDate, prisonDateRange)) {
-      sessionDateConflicts.add(SessionDateConflict.OUTSIDE_BOOKING_WINDOW)
+      sessionDateConflicts.add(SessionDateConflictDto(SessionDateConflict.OUTSIDE_BOOKING_WINDOW))
     } else {
       // only populate schedules if sessions are available
       if (visitSessionsForDate.isNotEmpty()) {
         prisonerScheduleForDate = prisonerSchedules.filter { it.eventDate == sessionDate }.map { PrisonerScheduledEventDto(it) }
-        sessionDateConflicts.addAll(visitSessionsForDate.map { it.sessionConflicts }.toList().flatten().mapNotNull { sessionConflict -> SessionDateConflict.get(sessionConflict.sessionConflict) })
+        sessionDateConflicts.addAll(getSessionDateConflicts(visitSessionsForDate))
       }
     }
-    return SessionsAndScheduleDto(sessionDate, visitSessionsForDate, prisonerScheduleForDate, sessionDateConflicts.toSet())
+
+    return if (sessionDateConflicts.isNotEmpty()) {
+      // if there are session date conflicts - do not return the sessions associated
+      SessionsAndScheduleDto(sessionDate, emptyList(), emptyList(), sessionDateConflicts.toList())
+    } else {
+      SessionsAndScheduleDto(sessionDate, visitSessionsForDate, prisonerScheduleForDate)
+    }
   }
 
   private fun isOutsideBookingWindow(date: LocalDate, prisonDateRange: DateRange): Boolean = (date.isBefore(prisonDateRange.fromDate) || date.isAfter(prisonDateRange.toDate))
+
+  private fun getSessionDateConflicts(visitSessionsForDate: List<VisitSessionV2Dto>): List<SessionDateConflictDto> = visitSessionsForDate.map { it.sessionConflicts }
+    .toList()
+    .flatten()
+    .mapNotNull { sessionConflictDto ->
+      SessionDateConflict.get(sessionConflictDto.sessionConflict)?.let {
+        SessionDateConflictDto(it, sessionConflictDto.additionalAttributes)
+      }
+    }
 }

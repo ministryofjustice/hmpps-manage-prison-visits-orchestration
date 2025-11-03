@@ -47,7 +47,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.AdditionalSessionConflictInfoDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.AdditionalConflictInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.SessionConflictDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventAttributeDto
@@ -369,7 +369,7 @@ abstract class IntegrationTestBase {
     )
   }
 
-  private fun createSessionConflictDto(sessionConflict: SessionConflict, additionalAttributes: List<List<AdditionalSessionConflictInfoDto>> = emptyList()) = SessionConflictDto(
+  private fun createSessionConflictDto(sessionConflict: SessionConflict, additionalAttributes: List<List<AdditionalConflictInfoDto>> = emptyList()) = SessionConflictDto(
     sessionConflict = sessionConflict,
     additionalAttributes = additionalAttributes,
   )

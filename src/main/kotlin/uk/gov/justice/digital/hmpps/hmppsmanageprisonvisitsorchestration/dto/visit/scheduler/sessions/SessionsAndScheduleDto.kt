@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionDateConflict
 import java.time.LocalDate
 
 class SessionsAndScheduleDto(
@@ -17,5 +16,5 @@ class SessionsAndScheduleDto(
   val scheduledEvents: List<PrisonerScheduledEventDto>,
 
   @Schema(description = "Conflicts for session date", required = true)
-  val sessionDateConflicts: Set<SessionDateConflict>,
+  val sessionDateConflicts: List<SessionDateConflictDto> = emptyList(),
 )

@@ -195,12 +195,14 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(sessionsAndScheduleDto.scheduledEventsAvailable).isTrue
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule.size).isEqualTo(13)
 
-    var sessionDateConflicts = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto1.startTimestamp.toLocalDate() }.sessionDateConflicts
-    assertThat(sessionDateConflicts.size).isEqualTo(1)
-    assertThat(sessionDateConflicts.first()).isEqualTo(SessionDateConflict.NON_ASSOCIATION)
+    var visitSessionWithDateConflict = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto1.startTimestamp.toLocalDate() }
+    assertThat(visitSessionWithDateConflict.sessionDateConflicts.size).isEqualTo(1)
+    assertThat(visitSessionWithDateConflict.sessionDateConflicts.first().sessionDateConflict).isEqualTo(SessionDateConflict.NON_ASSOCIATION)
+    assertThat(visitSessionWithDateConflict.visitSessions).isEmpty()
 
-    sessionDateConflicts = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto2.startTimestamp.toLocalDate() }.sessionDateConflicts
-    assertThat(sessionDateConflicts.size).isEqualTo(0)
+    val visitSessionWithNoDateConflict = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto2.startTimestamp.toLocalDate() }
+    assertThat(visitSessionWithNoDateConflict.sessionDateConflicts).isEmpty()
+    assertThat(visitSessionWithNoDateConflict.visitSessions).isNotEmpty
 
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
     verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
@@ -226,11 +228,14 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     val sessionsAndScheduleDto = getResults(returnResult)
     assertThat(sessionsAndScheduleDto.scheduledEventsAvailable).isTrue
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule.size).isEqualTo(13)
-    var sessionDateConflicts = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto1.startTimestamp.toLocalDate() }.sessionDateConflicts
-    assertThat(sessionDateConflicts.size).isEqualTo(1)
-    assertThat(sessionDateConflicts.first()).isEqualTo(SessionDateConflict.PRISON_DATE_BLOCKED)
-    sessionDateConflicts = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto2.startTimestamp.toLocalDate() }.sessionDateConflicts
-    assertThat(sessionDateConflicts.size).isEqualTo(0)
+    val visitSessionWithDateConflict = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto1.startTimestamp.toLocalDate() }
+    assertThat(visitSessionWithDateConflict.sessionDateConflicts.size).isEqualTo(1)
+    assertThat(visitSessionWithDateConflict.visitSessions).isEmpty()
+    assertThat(visitSessionWithDateConflict.sessionDateConflicts.first().sessionDateConflict).isEqualTo(SessionDateConflict.PRISON_DATE_BLOCKED)
+
+    val visitSessionWithNoDateConflict = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto2.startTimestamp.toLocalDate() }
+    assertThat(visitSessionWithNoDateConflict.sessionDateConflicts).isEmpty()
+    assertThat(visitSessionWithNoDateConflict.visitSessions).isNotEmpty
 
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
     verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
@@ -255,17 +260,24 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule.size).isEqualTo(5)
     // today - out of booking window
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[0].sessionDateConflicts.size).isEqualTo(1)
-    assertThat(sessionsAndScheduleDto.sessionsAndSchedule[0].sessionDateConflicts.first()).isEqualTo(SessionDateConflict.OUTSIDE_BOOKING_WINDOW)
+    assertThat(sessionsAndScheduleDto.sessionsAndSchedule[0].sessionDateConflicts.first().sessionDateConflict).isEqualTo(SessionDateConflict.OUTSIDE_BOOKING_WINDOW)
+    assertThat(sessionsAndScheduleDto.sessionsAndSchedule[0].visitSessions).isEmpty()
+
     // today + 1 - out of booking window
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[1].sessionDateConflicts.size).isEqualTo(1)
-    assertThat(sessionsAndScheduleDto.sessionsAndSchedule[1].sessionDateConflicts.first()).isEqualTo(SessionDateConflict.OUTSIDE_BOOKING_WINDOW)
+    assertThat(sessionsAndScheduleDto.sessionsAndSchedule[1].sessionDateConflicts.first().sessionDateConflict).isEqualTo(SessionDateConflict.OUTSIDE_BOOKING_WINDOW)
+    assertThat(sessionsAndScheduleDto.sessionsAndSchedule[1].visitSessions).isEmpty()
+
     // today + 2 - out of booking window
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[2].sessionDateConflicts.size).isEqualTo(1)
-    assertThat(sessionsAndScheduleDto.sessionsAndSchedule[2].sessionDateConflicts.first()).isEqualTo(SessionDateConflict.OUTSIDE_BOOKING_WINDOW)
+    assertThat(sessionsAndScheduleDto.sessionsAndSchedule[2].sessionDateConflicts.first().sessionDateConflict).isEqualTo(SessionDateConflict.OUTSIDE_BOOKING_WINDOW)
+    assertThat(sessionsAndScheduleDto.sessionsAndSchedule[2].visitSessions).isEmpty()
+
     // today + 3 - not out of booking window
-    assertThat(sessionsAndScheduleDto.sessionsAndSchedule[3].sessionDateConflicts.size).isEqualTo(0)
+    assertThat(sessionsAndScheduleDto.sessionsAndSchedule[3].sessionDateConflicts).isEmpty()
+
     // today + 4 - not out of booking window
-    assertThat(sessionsAndScheduleDto.sessionsAndSchedule[4].sessionDateConflicts.size).isEqualTo(0)
+    assertThat(sessionsAndScheduleDto.sessionsAndSchedule[4].sessionDateConflicts).isEmpty()
 
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
     verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(4))

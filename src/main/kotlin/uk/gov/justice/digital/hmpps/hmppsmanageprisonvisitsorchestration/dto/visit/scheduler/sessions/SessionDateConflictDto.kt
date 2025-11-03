@@ -2,12 +2,12 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionConflict
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionDateConflict
 
-data class SessionConflictDto(
-  @Schema(description = "Session Conflict", example = "NON_ASSOCIATION", required = true)
+data class SessionDateConflictDto(
+  @Schema(description = "Session Date Conflict", example = "NON_ASSOCIATION", required = true)
   @field:NotNull
-  val sessionConflict: SessionConflict,
+  val sessionDateConflict: SessionDateConflict,
 
   @Schema(description = "Session Conflict attributes", required = false)
   val additionalAttributes: List<List<AdditionalConflictInfoDto>> = emptyList(),
