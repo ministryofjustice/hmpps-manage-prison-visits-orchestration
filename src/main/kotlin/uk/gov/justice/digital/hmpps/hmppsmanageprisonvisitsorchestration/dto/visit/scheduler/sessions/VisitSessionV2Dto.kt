@@ -2,11 +2,9 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
-import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionConflict
 import java.time.LocalTime
 
 data class VisitSessionV2Dto(
@@ -41,7 +39,7 @@ data class VisitSessionV2Dto(
   val endTime: LocalTime,
 
   @Schema(description = "Session conflicts", required = false)
-  val sessionConflicts: Set<@Valid SessionConflict>? = setOf(),
+  val sessionConflicts: List<SessionConflictDto> = listOf(),
 ) {
   constructor(visitSessionDto: VisitSessionDto) : this (
     sessionTemplateReference = visitSessionDto.sessionTemplateReference,

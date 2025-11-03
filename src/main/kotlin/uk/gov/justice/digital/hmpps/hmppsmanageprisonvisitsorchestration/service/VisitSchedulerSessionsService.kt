@@ -496,7 +496,7 @@ class VisitSchedulerSessionsService(
       // only populate schedules if sessions are available
       if (visitSessionsForDate.isNotEmpty()) {
         prisonerScheduleForDate = prisonerSchedules.filter { it.eventDate == sessionDate }.map { PrisonerScheduledEventDto(it) }
-        sessionDateConflicts.addAll(visitSessionsForDate.mapNotNull { it.sessionConflicts }.toList().flatten().mapNotNull { sessionConflict -> SessionDateConflict.get(sessionConflict) })
+        sessionDateConflicts.addAll(visitSessionsForDate.map { it.sessionConflicts }.toList().flatten().mapNotNull { sessionConflict -> SessionDateConflict.get(sessionConflict.sessionConflict) })
       }
     }
     return SessionsAndScheduleDto(sessionDate, visitSessionsForDate, prisonerScheduleForDate, sessionDateConflicts.toSet())
