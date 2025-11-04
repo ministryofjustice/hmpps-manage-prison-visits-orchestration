@@ -10,6 +10,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.UNLINK_VISITOR
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_UNLINK_VISITOR_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
 @DisplayName("Delete - Unlink visitor from booker prisoner - $UNLINK_VISITOR")
@@ -66,7 +67,7 @@ class UnlinkVisitorFromBookerPrisonerTest : IntegrationTestBase() {
   fun `when booker registry is called without token then UNAUTHORIZED status is returned`() {
     // Given
 
-    val uri = UNLINK_VISITOR
+    val uri = PUBLIC_BOOKER_UNLINK_VISITOR_CONTROLLER_PATH
       .replace("{bookerReference}", bookerReference)
       .replace("{prisonerId}", prisonerId)
       .replace("{visitorId}", visitorId)
@@ -85,7 +86,7 @@ class UnlinkVisitorFromBookerPrisonerTest : IntegrationTestBase() {
     webTestClient: WebTestClient,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
-    val uri = UNLINK_VISITOR
+    val uri = PUBLIC_BOOKER_UNLINK_VISITOR_CONTROLLER_PATH
       .replace("{bookerReference}", bookerReference)
       .replace("{prisonerId}", prisonerNumber)
       .replace("{visitorId}", visitorId)
