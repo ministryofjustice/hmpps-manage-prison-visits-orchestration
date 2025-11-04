@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PERMITTED_VISITORS
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.REGISTER_PRISONER
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.SEARCH_FOR_BOOKER
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.UNLINK_VISITOR
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VALIDATE_PRISONER
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerRegistrationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerValidationErrorResponse
@@ -156,6 +157,23 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
           } else {
             responseBuilder.withStatus(httpStatus.value())
           },
+        ),
+    )
+  }
+
+  fun stubUnlinkVisitor(bookerReference: String, prisonerId: String, visitorId: String, httpStatus: HttpStatus = HttpStatus.OK) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    val uri = UNLINK_VISITOR
+      .replace("{bookerReference}", bookerReference)
+      .replace("{prisonerId}", prisonerId)
+      .replace("{visitorId}", visitorId)
+
+    stubFor(
+      WireMock.delete(uri)
+        .willReturn(
+          responseBuilder
+            .withStatus(httpStatus.value()),
         ),
     )
   }
