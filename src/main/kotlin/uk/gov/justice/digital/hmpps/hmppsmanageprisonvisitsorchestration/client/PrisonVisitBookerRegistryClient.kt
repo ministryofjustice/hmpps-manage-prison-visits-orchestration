@@ -32,12 +32,14 @@ import java.time.Duration
 
 const val PUBLIC_BOOKER_CONTROLLER_PATH: String = "/public/booker"
 
-const val PERMITTED_PRISONERS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/permitted/prisoners"
-const val PERMITTED_VISITORS: String = "$PERMITTED_PRISONERS/{prisonerId}/permitted/visitors"
-const val VALIDATE_PRISONER: String = "$PERMITTED_PRISONERS/{prisonerId}/validate"
-const val REGISTER_PRISONER: String = "$PERMITTED_PRISONERS/register"
-
 const val BOOKER_REGISTRY_AUDIT_HISTORY: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/audit"
+
+const val PERMITTED_PRISONERS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/permitted/prisoners"
+const val REGISTER_PRISONER: String = "$PERMITTED_PRISONERS/register"
+const val VALIDATE_PRISONER: String = "$PERMITTED_PRISONERS/{prisonerId}/validate"
+
+const val PERMITTED_VISITORS: String = "$PERMITTED_PRISONERS/{prisonerId}/permitted/visitors"
+const val UNLINK_VISITOR: String = "$PERMITTED_VISITORS/{visitorId}"
 
 const val SEARCH_FOR_BOOKER: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/config/search"
 const val GET_BOOKER_BY_BOOKING_REFERENCE: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/config/{bookerReference}"
@@ -195,4 +197,26 @@ class PrisonVisitBookerRegistryClient(
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono<List<BookerAuditDto>>()
+
+  fun unlinkBookerPrisonerVisitor(bookerReference: String, prisonerNumber: String, visitorId: String) {
+    val uri = UNLINK_VISITOR
+      .replace("{bookerReference}", bookerReference)
+      .replace("{prisonerId}", prisonerNumber)
+      .replace("{visitorId}", visitorId)
+
+    webClient.delete()
+      .uri(uri)
+      .retrieve()
+      .toBodilessEntity()
+      .onErrorResume { e ->
+        if (!ClientUtils.isNotFoundError(e)) {
+          logger.error("unlinkBookerPrisonerVisitor Failed to complete delete request $uri")
+          Mono.error(e)
+        } else {
+          logger.error("unlinkBookerPrisonerVisitor NOT_FOUND on delete request $uri, returning 200")
+          Mono.empty()
+        }
+      }
+      .block(apiTimeout)
+  }
 }
