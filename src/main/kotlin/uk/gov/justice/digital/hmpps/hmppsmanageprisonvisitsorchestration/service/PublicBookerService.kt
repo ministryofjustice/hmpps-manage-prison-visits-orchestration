@@ -132,7 +132,7 @@ class PublicBookerService(
   }
 
   fun registerVisitorForBookerPrisoner(bookerReference: String, prisonerId: String, registerVisitorForBookerPrisonerDto: RegisterVisitorForBookerPrisonerDto): PermittedVisitorsForPermittedPrisonerBookerDto {
-    logger.trace("register visitor ${registerVisitorForBookerPrisonerDto.visitorId} for booker prisoner $prisonerId with booker reference $bookerReference")
+    logger.info("register visitor ${registerVisitorForBookerPrisonerDto.visitorId} for booker prisoner $prisonerId with booker reference $bookerReference")
     return prisonVisitBookerRegistryClient.registerVisitorForBookerPrisoner(bookerReference, prisonerId, registerVisitorForBookerPrisonerDto)
   }
 
