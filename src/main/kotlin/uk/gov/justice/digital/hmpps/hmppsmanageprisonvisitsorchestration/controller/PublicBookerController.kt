@@ -24,7 +24,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerHistoryAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterPrisonerForBookerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterVisitorForBookerPrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerDetailedInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
@@ -41,7 +43,7 @@ const val PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_
 const val PUBLIC_BOOKER_REGISTER_PRISONER_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH/register"
 const val PUBLIC_BOOKER_VALIDATE_PRISONER_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH/{prisonerId}/validate"
 
-const val PUBLIC_BOOKER_GET_VISITORS_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH/{prisonerId}/permitted/visitors"
+const val PUBLIC_BOOKER_VISITORS_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH/{prisonerId}/permitted/visitors"
 const val PUBLIC_BOOKER_UNLINK_VISITOR_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH/{prisonerId}/permitted/visitors/{visitorId}"
 
 const val PUBLIC_BOOKER_SEARCH = "$PUBLIC_BOOKER_CONTROLLER_PATH/search"
@@ -120,7 +122,7 @@ class PublicBookerController(
   ): List<BookerPrisonerInfoDto> = publicBookerService.getPermittedPrisonersForBooker(bookerReference)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
-  @GetMapping(PUBLIC_BOOKER_GET_VISITORS_CONTROLLER_PATH)
+  @GetMapping(PUBLIC_BOOKER_VISITORS_CONTROLLER_PATH)
   @Operation(
     summary = "Get permitted visitors for a prisoner associated with that booker.",
     description = "Get permitted visitors for a prisoner associated with that booker.",
@@ -158,6 +160,40 @@ class PublicBookerController(
     @NotBlank
     prisonerId: String,
   ): List<VisitorInfoDto> = publicBookerService.getPermittedVisitorsForPermittedPrisonerAndBooker(bookerReference, prisonerId)
+
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @PostMapping(PUBLIC_BOOKER_VISITORS_CONTROLLER_PATH)
+  @ResponseStatus(HttpStatus.OK)
+  @Operation(
+    summary = "Register visitor, for a booker's prisoner",
+    description = "Register visitor, for a booker's prisoner",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Registration successful",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to register a visitor, for a booker's prisoner",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions for this action",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun registerVisitor(
+    @PathVariable(value = "bookerReference", required = true)
+    @NotBlank
+    bookerReference: String,
+    @PathVariable(value = "prisonerId", required = true)
+    @NotBlank
+    prisonerId: String,
+    @RequestBody
+    registerVisitorForBookerPrisonerDto: RegisterVisitorForBookerPrisonerDto,
+  ): PermittedVisitorsForPermittedPrisonerBookerDto = publicBookerService.registerVisitorForBookerPrisoner(bookerReference, prisonerId, registerVisitorForBookerPrisonerDto)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(PUBLIC_BOOKER_VALIDATE_PRISONER_CONTROLLER_PATH)
