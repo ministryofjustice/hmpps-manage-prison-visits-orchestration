@@ -154,6 +154,12 @@ class PublicBookerService(
     prisonVisitBookerRegistryClient.registerPrisoner(bookerReference, registerPrisonerForBookerDto)
   }
 
+  fun unlinkBookerPrisonerVisitor(bookerReference: String, prisonerNumber: String, visitorId: String) {
+    logger.trace("Entered PublicBookerService - unlinkBookerPrisonerVisitor - for booker $bookerReference, prisoner $prisonerNumber, visitor $visitorId")
+
+    prisonVisitBookerRegistryClient.unlinkBookerPrisonerVisitor(bookerReference, prisonerNumber, visitorId)
+  }
+
   private fun isPrisonSupportedOnVisits(prisonId: String): Boolean = visitSchedulerClient.getSupportedPrisons(PUBLIC).map { it.uppercase() }.contains(prisonId.uppercase())
 
   private fun getValidVisitors(bookerReference: String, prisonerNumber: String): List<VisitorInfoDto> {

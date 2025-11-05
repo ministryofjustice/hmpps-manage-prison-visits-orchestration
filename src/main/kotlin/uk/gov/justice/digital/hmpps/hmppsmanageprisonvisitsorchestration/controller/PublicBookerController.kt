@@ -7,8 +7,10 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -32,15 +34,20 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PublicBookerService
 
 const val PUBLIC_BOOKER_CONTROLLER_PATH: String = "/public/booker"
-const val PUBLIC_BOOKER_CREATE_AUTH_DETAILS_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/register/auth"
+
+const val PUBLIC_BOOKER_DETAILS = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}"
+const val PUBLIC_BOOKER_GET_BOOKER_AUDIT_PATH: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/audit"
+
 const val PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/permitted/prisoners"
 const val PUBLIC_BOOKER_REGISTER_PRISONER_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH/register"
-const val PUBLIC_BOOKER_GET_VISITORS_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH/{prisonerId}/permitted/visitors"
 const val PUBLIC_BOOKER_VALIDATE_PRISONER_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH/{prisonerId}/validate"
-const val PUBLIC_BOOKER_GET_BOOKER_AUDIT_PATH: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/audit"
-const val PUBLIC_BOOKER_SEARCH = "$PUBLIC_BOOKER_CONTROLLER_PATH/search"
-const val PUBLIC_BOOKER_DETAILS = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}"
 const val PUBLIC_BOOKER_GET_UNLINKED_VISITORS_BY_PRISONER_PATH = "$PUBLIC_BOOKER_DETAILS/prisoners/{prisonerId}/unlinked-visitors"
+
+const val PUBLIC_BOOKER_GET_VISITORS_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH/{prisonerId}/permitted/visitors"
+const val PUBLIC_BOOKER_UNLINK_VISITOR_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH/{prisonerId}/permitted/visitors/{visitorId}"
+
+const val PUBLIC_BOOKER_SEARCH = "$PUBLIC_BOOKER_CONTROLLER_PATH/search"
+const val PUBLIC_BOOKER_CREATE_AUTH_DETAILS_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/register/auth"
 
 @RestController
 class PublicBookerController(
@@ -334,6 +341,46 @@ class PublicBookerController(
     @NotBlank
     bookerReference: String,
   ): BookerDetailedInfoDto = publicBookerService.getBookerDetails(bookerReference)
+
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @DeleteMapping(PUBLIC_BOOKER_UNLINK_VISITOR_CONTROLLER_PATH)
+  @ResponseStatus(HttpStatus.OK)
+  @Operation(
+    summary = "unlink booker prisoner visitor",
+    description = "unlink booker prisoner visitor",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Successfully unlinked booker prisoner visitor",
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions for this action",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "visitor not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun unlinkBookerPrisonerVisitor(
+    @PathVariable(value = "bookerReference", required = true)
+    @NotBlank
+    bookerReference: String,
+    @PathVariable(value = "prisonerId", required = true)
+    @NotBlank
+    prisonerId: String,
+    @PathVariable(value = "visitorId", required = true)
+    @NotNull
+    visitorId: String,
+  ) = publicBookerService.unlinkBookerPrisonerVisitor(bookerReference, prisonerId, visitorId)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(PUBLIC_BOOKER_GET_UNLINKED_VISITORS_BY_PRISONER_PATH)
