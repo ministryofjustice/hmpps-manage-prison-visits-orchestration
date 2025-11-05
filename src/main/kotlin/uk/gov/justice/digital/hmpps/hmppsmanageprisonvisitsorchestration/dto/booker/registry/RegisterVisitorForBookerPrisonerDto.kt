@@ -16,4 +16,9 @@ data class RegisterVisitorForBookerPrisonerDto(
   @Schema(description = "Active / Inactive permitted visitor", example = "true", required = true)
   @NotNull
   val active: Boolean,
+
+  @JsonProperty("notifyBookerFlag")
+  @Schema(description = "Flag to determine if the booker should be notified of the registration", example = "true", required = false)
+  @NotNull
+  val notifyBookerFlag: Boolean? = false,
 )
