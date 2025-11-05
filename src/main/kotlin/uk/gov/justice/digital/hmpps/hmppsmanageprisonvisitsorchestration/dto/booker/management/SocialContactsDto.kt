@@ -4,8 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import java.time.LocalDate
 
-@Schema(description = "Visitor details")
-data class UnlinkedVisitorDto(
+@Schema(description = "Social Contact")
+data class SocialContactsDto(
   @Schema(description = "Identifier for this contact (Person in NOMIS)", example = "5871791", required = true)
   val visitorId: Long,
 

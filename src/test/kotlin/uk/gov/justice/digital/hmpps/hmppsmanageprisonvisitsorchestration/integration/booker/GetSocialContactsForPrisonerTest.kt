@@ -15,8 +15,8 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_UNLINKED_VISITORS_BY_PRISONER_PATH
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.management.UnlinkedVisitorDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_SOCIAL_CONTACTS_BY_PRISONER_PATH
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.management.SocialContactsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
@@ -24,8 +24,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-@DisplayName("Get unlinked visitors for for booker and prisoner")
-class GetUnlinkedVisitorsForPrisonerTest : IntegrationTestBase() {
+@DisplayName("Get social contacts not registered for booker and prisoner")
+class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
   @MockitoSpyBean
   lateinit var prisonVisitBookerRegistryClientSpy: PrisonVisitBookerRegistryClient
 
@@ -92,7 +92,7 @@ class GetUnlinkedVisitorsForPrisonerTest : IntegrationTestBase() {
     prisonerContactRegistryMockServer.stubGetApprovedPrisonerContacts(prisonerId, withAddress = false, hasDateOfBirth = null, contactsList)
 
     // When
-    val responseSpec = callGetUnlinkedVisitorsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, bookerReference, prisonerId)
+    val responseSpec = callGetSocialContactsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, bookerReference, prisonerId)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -100,9 +100,9 @@ class GetUnlinkedVisitorsForPrisonerTest : IntegrationTestBase() {
 
     // only the unlinked visitors will be returned
     Assertions.assertThat(prisonerDetailsList.size).isEqualTo(3)
-    assertUnlinkedVisitors(prisonerDetailsList[0], visitor1, null)
-    assertUnlinkedVisitors(prisonerDetailsList[1], visitor2, null)
-    assertUnlinkedVisitors(prisonerDetailsList[2], visitor5, null)
+    assertSocialContacts(prisonerDetailsList[0], visitor1, null)
+    assertSocialContacts(prisonerDetailsList[1], visitor2, null)
+    assertSocialContacts(prisonerDetailsList[2], visitor5, null)
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(bookerReference)
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersApprovedSocialContacts(prisonerId, withAddress = false, hasDateOfBirth = null)
@@ -131,7 +131,7 @@ class GetUnlinkedVisitorsForPrisonerTest : IntegrationTestBase() {
     prisonerContactRegistryMockServer.stubGetApprovedPrisonerContacts(prisonerId, withAddress = false, hasDateOfBirth = null, contactsList)
 
     // When
-    val responseSpec = callGetUnlinkedVisitorsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, bookerReference, prisonerId)
+    val responseSpec = callGetSocialContactsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, bookerReference, prisonerId)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -139,11 +139,11 @@ class GetUnlinkedVisitorsForPrisonerTest : IntegrationTestBase() {
 
     // all visitors will be returned as none of them are linked so far
     Assertions.assertThat(prisonerDetailsList.size).isEqualTo(5)
-    assertUnlinkedVisitors(prisonerDetailsList[0], visitor1, null)
-    assertUnlinkedVisitors(prisonerDetailsList[1], visitor2, null)
-    assertUnlinkedVisitors(prisonerDetailsList[2], visitor3, null)
-    assertUnlinkedVisitors(prisonerDetailsList[3], visitor4, null)
-    assertUnlinkedVisitors(prisonerDetailsList[4], visitor5, null)
+    assertSocialContacts(prisonerDetailsList[0], visitor1, null)
+    assertSocialContacts(prisonerDetailsList[1], visitor2, null)
+    assertSocialContacts(prisonerDetailsList[2], visitor3, null)
+    assertSocialContacts(prisonerDetailsList[3], visitor4, null)
+    assertSocialContacts(prisonerDetailsList[4], visitor5, null)
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(bookerReference)
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersApprovedSocialContacts(prisonerId, withAddress = false, hasDateOfBirth = null)
@@ -157,7 +157,7 @@ class GetUnlinkedVisitorsForPrisonerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(bookerReference, null, HttpStatus.NOT_FOUND)
 
     // When
-    val responseSpec = callGetUnlinkedVisitorsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, incorrectBookerReference, prisonerId)
+    val responseSpec = callGetSocialContactsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, incorrectBookerReference, prisonerId)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -191,7 +191,7 @@ class GetUnlinkedVisitorsForPrisonerTest : IntegrationTestBase() {
     prisonerContactRegistryMockServer.stubGetApprovedPrisonerContacts(prisonerId, withAddress = false, hasDateOfBirth = null, contactsList)
 
     // When
-    val responseSpec = callGetUnlinkedVisitorsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, bookerReference, incorrectPrisonerId)
+    val responseSpec = callGetSocialContactsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, bookerReference, incorrectPrisonerId)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -208,7 +208,7 @@ class GetUnlinkedVisitorsForPrisonerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(bookerReference, null, HttpStatus.INTERNAL_SERVER_ERROR)
 
     // When
-    val responseSpec = callGetUnlinkedVisitorsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, bookerReference, prisonerId)
+    val responseSpec = callGetSocialContactsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, bookerReference, prisonerId)
 
     // Then
     responseSpec.expectStatus().is5xxServerError
@@ -237,7 +237,7 @@ class GetUnlinkedVisitorsForPrisonerTest : IntegrationTestBase() {
     prisonerContactRegistryMockServer.stubGetApprovedPrisonerContacts(prisonerId, withAddress = false, hasDateOfBirth = null, null, HttpStatus.NOT_FOUND)
 
     // When
-    val responseSpec = callGetUnlinkedVisitorsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, bookerReference, prisonerId)
+    val responseSpec = callGetSocialContactsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, bookerReference, prisonerId)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -270,7 +270,7 @@ class GetUnlinkedVisitorsForPrisonerTest : IntegrationTestBase() {
     prisonerContactRegistryMockServer.stubGetApprovedPrisonerContacts(prisonerId, withAddress = false, hasDateOfBirth = null, null, HttpStatus.INTERNAL_SERVER_ERROR)
 
     // When
-    val responseSpec = callGetUnlinkedVisitorsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, bookerReference, prisonerId)
+    val responseSpec = callGetSocialContactsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, bookerReference, prisonerId)
 
     // Then
     responseSpec.expectStatus().is5xxServerError
@@ -284,19 +284,19 @@ class GetUnlinkedVisitorsForPrisonerTest : IntegrationTestBase() {
     val bookerReference = "abc-def-ghi"
 
     // When
-    val responseSpec = webTestClient.get().uri(PUBLIC_BOOKER_GET_UNLINKED_VISITORS_BY_PRISONER_PATH.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId))
+    val responseSpec = webTestClient.get().uri(PUBLIC_BOOKER_GET_SOCIAL_CONTACTS_BY_PRISONER_PATH.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId))
       .exchange()
 
     // Then
     responseSpec.expectStatus().isUnauthorized
   }
 
-  private fun assertUnlinkedVisitors(unlinkedVisitorDto: UnlinkedVisitorDto, visitor: VisitorDetails, lastApprovedVisitDate: LocalDate?) {
-    Assertions.assertThat(unlinkedVisitorDto.visitorId).isEqualTo(visitor.personId)
-    Assertions.assertThat(unlinkedVisitorDto.firstName).isEqualTo(visitor.firstName)
-    Assertions.assertThat(unlinkedVisitorDto.lastName).isEqualTo(visitor.lastName)
-    Assertions.assertThat(unlinkedVisitorDto.dateOfBirth).isEqualTo(visitor.dateOfBirth)
-    Assertions.assertThat(unlinkedVisitorDto.lastApprovedForVisitDate).isEqualTo(lastApprovedVisitDate)
+  private fun assertSocialContacts(socialContactsDto: SocialContactsDto, visitor: VisitorDetails, lastApprovedVisitDate: LocalDate?) {
+    Assertions.assertThat(socialContactsDto.visitorId).isEqualTo(visitor.personId)
+    Assertions.assertThat(socialContactsDto.firstName).isEqualTo(visitor.firstName)
+    Assertions.assertThat(socialContactsDto.lastName).isEqualTo(visitor.lastName)
+    Assertions.assertThat(socialContactsDto.dateOfBirth).isEqualTo(visitor.dateOfBirth)
+    Assertions.assertThat(socialContactsDto.lastApprovedForVisitDate).isEqualTo(lastApprovedVisitDate)
   }
 
   private fun assertErrorResult(
@@ -312,14 +312,14 @@ class GetUnlinkedVisitorsForPrisonerTest : IntegrationTestBase() {
     }
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<UnlinkedVisitorDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<UnlinkedVisitorDto>::class.java).toList()
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<SocialContactsDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<SocialContactsDto>::class.java).toList()
 
-  fun callGetUnlinkedVisitorsByBookersPrisoner(
+  fun callGetSocialContactsByBookersPrisoner(
     webTestClient: WebTestClient,
     authHttpHeaders: (HttpHeaders) -> Unit,
     bookerReference: String,
     prisonerId: String,
-  ): WebTestClient.ResponseSpec = webTestClient.get().uri(PUBLIC_BOOKER_GET_UNLINKED_VISITORS_BY_PRISONER_PATH.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId))
+  ): WebTestClient.ResponseSpec = webTestClient.get().uri(PUBLIC_BOOKER_GET_SOCIAL_CONTACTS_BY_PRISONER_PATH.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId))
     .headers(authHttpHeaders)
     .exchange()
 }

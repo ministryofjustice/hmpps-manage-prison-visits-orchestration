@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.management.UnlinkedVisitorDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.management.SocialContactsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerHistoryAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerInfoDto
@@ -88,8 +88,8 @@ class PublicBookerService(
     )
   }
 
-  fun getUnlinkedVisitors(bookerReference: String, prisonerId: String): List<UnlinkedVisitorDto> {
-    logger.info("PublicBookerService - getUnlinkedVisitors called for bookerReference : $bookerReference, prisonerId: $prisonerId")
+  fun getSocialContacts(bookerReference: String, prisonerId: String): List<SocialContactsDto> {
+    logger.info("PublicBookerService - getSocialContacts called for bookerReference : $bookerReference, prisonerId: $prisonerId")
 
     // Get booker and prisoner and visitor details
     val booker = prisonVisitBookerRegistryClient.getBookerByBookerReference(bookerReference)
@@ -99,17 +99,17 @@ class PublicBookerService(
     // TODO - might need to change to all visitors including approved ones after a while
     // Get all approved visitors for prisoner except the ones already on the permittedVisitors list
 
-    val unlinkedVisitors = try {
+    val socialContactsNotRegistered = try {
       prisonerContactService.getPrisonersApprovedContacts(prisonerId).filterNot { approvedVisitor ->
         permittedPrisoner.permittedVisitors.map { it.visitorId }.contains(approvedVisitor.personId)
-      }.map { unlinkedVisitor -> UnlinkedVisitorDto(unlinkedVisitor) }
+      }.map { visitorNotRegistered -> SocialContactsDto(visitorNotRegistered) }
     } catch (_: NotFoundException) {
       logger.info("No approved visitors found for $prisonerId - $prisonerId, returning an empty list")
       emptyList()
     }
 
-    // TODO - set the last visit approved visit date for each unlinked visitor.
-    return unlinkedVisitors
+    // TODO - set the last visit approved visit date for each unregistered visitor.
+    return socialContactsNotRegistered
   }
 
   fun bookerAuthorisation(createBookerAuthDetail: AuthDetailDto): BookerReference = prisonVisitBookerRegistryClient.bookerAuthorisation(createBookerAuthDetail) ?: throw BookerAuthFailureException("Failed to authorise booker with details - $createBookerAuthDetail")
