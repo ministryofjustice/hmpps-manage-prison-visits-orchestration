@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterPrisonerForBookerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterVisitorForBookerPrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.SearchBookerDto
@@ -40,9 +41,11 @@ const val VALIDATE_PRISONER: String = "$PERMITTED_PRISONERS/{prisonerId}/validat
 
 const val PERMITTED_VISITORS: String = "$PERMITTED_PRISONERS/{prisonerId}/permitted/visitors"
 
+// Admin endpoints
 const val BOOKER_ADMIN_ENDPOINT = "$PUBLIC_BOOKER_CONTROLLER_PATH/config"
 const val SEARCH_FOR_BOOKER: String = "$BOOKER_ADMIN_ENDPOINT/search"
 const val GET_BOOKER_BY_BOOKING_REFERENCE: String = "$BOOKER_ADMIN_ENDPOINT/{bookerReference}"
+const val LINK_VISITOR: String = "$BOOKER_ADMIN_ENDPOINT/{bookerReference}/prisoner/{prisonerId}/visitor"
 const val UNLINK_VISITOR: String = "$BOOKER_ADMIN_ENDPOINT/{bookerReference}/prisoner/{prisonerId}/visitor/{visitorId}"
 
 @Component
@@ -128,6 +131,20 @@ class PrisonVisitBookerRegistryClient(
         }
       }
       .block(apiTimeout)
+  }
+
+  fun registerVisitorForBookerPrisoner(bookerReference: String, prisonerId: String, registerVisitorForBookerPrisonerDto: RegisterVisitorForBookerPrisonerDto): PermittedVisitorsForPermittedPrisonerBookerDto {
+    val uri = LINK_VISITOR
+      .replace("{bookerReference}", bookerReference)
+      .replace("{prisonerId}", prisonerId)
+
+    return webClient.post()
+      .uri(uri)
+      .body(BodyInserters.fromValue(registerVisitorForBookerPrisonerDto))
+      .retrieve()
+      .bodyToMono<PermittedVisitorsForPermittedPrisonerBookerDto>()
+      .blockOptional(apiTimeout)
+      .orElseThrow { IllegalStateException("Empty response from registerVisitorForBookerPrisoner call with URL $uri") }
   }
 
   fun searchForBooker(searchBookerDto: SearchBookerDto): List<BookerSearchResultsDto> = webClient.post()
