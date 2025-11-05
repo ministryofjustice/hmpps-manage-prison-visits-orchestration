@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.management.UnlinkedVisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerHistoryAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerInfoDto
@@ -39,6 +40,7 @@ const val PUBLIC_BOOKER_VALIDATE_PRISONER_CONTROLLER_PATH: String = "$PUBLIC_BOO
 const val PUBLIC_BOOKER_GET_BOOKER_AUDIT_PATH: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/audit"
 const val PUBLIC_BOOKER_SEARCH = "$PUBLIC_BOOKER_CONTROLLER_PATH/search"
 const val PUBLIC_BOOKER_DETAILS = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}"
+const val PUBLIC_BOOKER_GET_UNLINKED_VISITORS_BY_PRISONER_PATH = "$PUBLIC_BOOKER_DETAILS/prisoners/{prisonerId}/unlinked-visitors"
 
 @RestController
 class PublicBookerController(
@@ -332,4 +334,45 @@ class PublicBookerController(
     @NotBlank
     bookerReference: String,
   ): BookerDetailedInfoDto = publicBookerService.getBookerDetails(bookerReference)
+
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @GetMapping(PUBLIC_BOOKER_GET_UNLINKED_VISITORS_BY_PRISONER_PATH)
+  @Operation(
+    summary = "Get visitors (not already linked) for a prisoner associated with that booker.",
+    description = "Returns unlinked visitors given a prison number and booker reference.",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Return visitors (not already linked) for a prisoner associated with that booker",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to get unlinked visitors for a prisoner associated with that booker",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Booker not authorised / not found.",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to get visitor details",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getUnlinkedVisitorsForPrisoner(
+    @PathVariable(value = "bookerReference", required = true)
+    @NotBlank
+    bookerReference: String,
+    @PathVariable(value = "prisonerId", required = true)
+    @NotBlank
+    prisonerId: String,
+  ): List<UnlinkedVisitorDto> = publicBookerService.getUnlinkedVisitors(bookerReference, prisonerId)
 }
