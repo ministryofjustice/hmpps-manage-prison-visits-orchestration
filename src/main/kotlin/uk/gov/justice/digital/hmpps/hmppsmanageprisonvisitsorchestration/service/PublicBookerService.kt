@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.management.SocialContactsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerHistoryAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerInfoDto
@@ -87,6 +88,33 @@ class PublicBookerService(
     )
   }
 
+  fun getSocialContacts(bookerReference: String, prisonerId: String): List<SocialContactsDto> {
+    logger.info("PublicBookerService - getSocialContacts called for bookerReference : $bookerReference, prisonerId: $prisonerId")
+
+    // Get booker and prisoner and visitor details
+    val booker = prisonVisitBookerRegistryClient.getBookerByBookerReference(bookerReference)
+
+    val permittedPrisoner = booker.permittedPrisoners.firstOrNull { it.prisonerId == prisonerId } ?: throw NotFoundException("Prisoner with number - $prisonerId not found for booker reference - $bookerReference")
+
+    // TODO - might need to change to all visitors including approved ones after a while
+    // Get all approved visitors for prisoner except the ones already on the permittedVisitors list
+
+    val socialContactsNotRegistered = try {
+      prisonerContactService.getPrisonersApprovedContacts(prisonerId).filterNot { approvedVisitor ->
+        permittedPrisoner.permittedVisitors.map { it.visitorId }.contains(approvedVisitor.personId)
+      }.map { visitorNotRegistered -> SocialContactsDto(visitorNotRegistered) }
+    } catch (_: NotFoundException) {
+      logger.info("No approved visitors found for $prisonerId - $prisonerId, returning an empty list")
+      emptyList()
+    }
+
+    // set the last approved dates for each visitoe
+    if (socialContactsNotRegistered.isNotEmpty()) {
+      setLastApprovedDate(prisonerId, socialContactsNotRegistered)
+    }
+    return socialContactsNotRegistered
+  }
+
   fun bookerAuthorisation(createBookerAuthDetail: AuthDetailDto): BookerReference = prisonVisitBookerRegistryClient.bookerAuthorisation(createBookerAuthDetail) ?: throw BookerAuthFailureException("Failed to authorise booker with details - $createBookerAuthDetail")
 
   fun getPermittedPrisonersForBooker(bookerReference: String): List<BookerPrisonerInfoDto> {
@@ -116,7 +144,7 @@ class PublicBookerService(
     // run the booker-registry checks
     prisonVisitBookerRegistryClient.validatePrisoner(bookerReference, prisonerNumber)
 
-    // finally check if the prisoner's prison is supported on Visits
+    // finally, check if the prisoner's prison is supported on Visits
     prisonerSearchClient.getPrisonerById(prisonerNumber).prisonId?.let { prisonId ->
       if (!isPrisonSupportedOnVisits(prisonId)) {
         throw BookerPrisonerValidationException(REGISTERED_PRISON_NOT_SUPPORTED)
@@ -206,4 +234,14 @@ class PublicBookerService(
   private fun isRestrictionApplicableForDate(restrictionEndDate: LocalDate?, date: LocalDate): Boolean = (restrictionEndDate == null || (date <= restrictionEndDate))
 
   fun getBookerAudit(bookerReference: String): List<BookerHistoryAuditDto> = bookerAuditHistoryClient.getBookerAuditHistory(bookerReference)
+
+  private fun setLastApprovedDate(prisonerId: String, socialContacts: List<SocialContactsDto>) {
+    val socialContactsNomisPersonIds = socialContacts.map { it.visitorId }.toSet().toList()
+    val lastApprovedDates = visitSchedulerClient.findLastApprovedDateForVisitor(prisonerId, socialContactsNomisPersonIds)
+    if (lastApprovedDates != null && lastApprovedDates.isNotEmpty()) {
+      socialContacts.forEach { socialContact ->
+        socialContact.lastApprovedForVisitDate = lastApprovedDates.firstOrNull { it.nomisPersonId == socialContact.visitorId }?.lastApprovedVisitDate
+      }
+    }
+  }
 }

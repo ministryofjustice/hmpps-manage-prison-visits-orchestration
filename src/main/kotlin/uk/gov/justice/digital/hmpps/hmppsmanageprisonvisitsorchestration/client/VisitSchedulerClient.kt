@@ -15,6 +15,7 @@ import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isNotFoundError
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isUnprocessableEntityError
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient.Companion.logger
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ApplicationValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ApproveVisitRequestBodyDto
@@ -52,6 +53,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorApprovedUnapprovedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionUpsertedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitor.VisitorLastApprovedDateRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitor.VisitorLastApprovedDatesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.ApplicationValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
@@ -89,6 +92,7 @@ const val GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/b
 const val GET_VISIT_EVENTS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/events"
 
 const val POST_VISIT_FROM_EXTERNAL_SYSTEM: String = "$VISIT_CONTROLLER_PATH/external-system"
+const val FIND_LAST_APPROVED_DATE_FOR_VISITORS_BY_PRISONER: String = "/visits/prisoner/{prisonerNumber}/visitors/last-approved-date"
 
 @Component
 class VisitSchedulerClient(
@@ -612,6 +616,22 @@ class VisitSchedulerClient(
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono<List<EventAuditDto>>()
+
+  fun findLastApprovedDateForVisitor(prisonerId: String, nomisPersonIds: List<Long>): List<VisitorLastApprovedDatesDto>? = webClient.post()
+    .uri(FIND_LAST_APPROVED_DATE_FOR_VISITORS_BY_PRISONER.replace("{prisonerNumber}", prisonerId))
+    .body(BodyInserters.fromValue(VisitorLastApprovedDateRequestDto(nomisPersonIds)))
+    .retrieve()
+    .bodyToMono<List<VisitorLastApprovedDatesDto>>()
+    .onErrorResume { e ->
+      if (!isNotFoundError(e)) {
+        logger.error("findLastApprovedDateForVisitor - failed with unrecoverable error, visitors with NOMIS person ids - $nomisPersonIds, prisoner - $prisonerId")
+        Mono.error(e)
+      } else {
+        logger.error("findLastApprovedDateForVisitor - failed with NOT_FOUND error, visitors with NOMIS person ids - $nomisPersonIds, prisoner - $prisonerId")
+        Mono.empty()
+      }
+    }
+    .block(apiTimeout)
 
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParamIfPresent("prisonId", Optional.ofNullable(visitSearchRequestFilter.prisonCode))

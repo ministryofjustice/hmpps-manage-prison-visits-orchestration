@@ -10,6 +10,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.http.RequestMethod
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import org.springframework.http.HttpStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.FIND_LAST_APPROVED_DATE_FOR_VISITORS_BY_PRISONER
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
@@ -42,6 +43,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitor.VisitorLastApprovedDateRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitor.VisitorLastApprovedDatesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase.Companion.getVisitsQueryParams
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.createJsonResponseBuilder
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.getJsonString
@@ -919,5 +922,29 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     }
     queryParams.add("userType=${userType.name}")
     return queryParams
+  }
+
+  fun stubGetVisitorsLastApprovedDates(
+    prisonerId: String,
+    visitorIds: List<Long>,
+    lastApprovedDatesList: List<VisitorLastApprovedDatesDto>?,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val visitorLastApprovedDateRequestDto = VisitorLastApprovedDateRequestDto(visitorIds)
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      post(FIND_LAST_APPROVED_DATE_FOR_VISITORS_BY_PRISONER.replace("{prisonerNumber}", prisonerId))
+        .withRequestBody(equalToJson(getJsonString(visitorLastApprovedDateRequestDto)))
+        .willReturn(
+          if (lastApprovedDatesList == null) {
+            responseBuilder
+              .withStatus(httpStatus.value())
+          } else {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(lastApprovedDatesList))
+          },
+        ),
+    )
   }
 }
