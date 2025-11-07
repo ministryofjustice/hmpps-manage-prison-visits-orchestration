@@ -108,7 +108,10 @@ class PublicBookerService(
       emptyList()
     }
 
-    // TODO - set the last visit approved visit date for each unregistered visitor.
+    // set the last approved dates for each visitoe
+    if (socialContactsNotRegistered.isNotEmpty()) {
+      setLastApprovedDate(prisonerId, socialContactsNotRegistered)
+    }
     return socialContactsNotRegistered
   }
 
@@ -141,7 +144,7 @@ class PublicBookerService(
     // run the booker-registry checks
     prisonVisitBookerRegistryClient.validatePrisoner(bookerReference, prisonerNumber)
 
-    // finally check if the prisoner's prison is supported on Visits
+    // finally, check if the prisoner's prison is supported on Visits
     prisonerSearchClient.getPrisonerById(prisonerNumber).prisonId?.let { prisonId ->
       if (!isPrisonSupportedOnVisits(prisonId)) {
         throw BookerPrisonerValidationException(REGISTERED_PRISON_NOT_SUPPORTED)
@@ -231,4 +234,14 @@ class PublicBookerService(
   private fun isRestrictionApplicableForDate(restrictionEndDate: LocalDate?, date: LocalDate): Boolean = (restrictionEndDate == null || (date <= restrictionEndDate))
 
   fun getBookerAudit(bookerReference: String): List<BookerHistoryAuditDto> = bookerAuditHistoryClient.getBookerAuditHistory(bookerReference)
+
+  private fun setLastApprovedDate(prisonerId: String, socialContacts: List<SocialContactsDto>) {
+    val socialContactsNomisPersonIds = socialContacts.map { it.visitorId }.toSet().toList()
+    val lastApprovedDates = visitSchedulerClient.findLastApprovedDateForVisitor(prisonerId, socialContactsNomisPersonIds)
+    if (lastApprovedDates != null && lastApprovedDates.isNotEmpty()) {
+      socialContacts.forEach { socialContact ->
+        socialContact.lastApprovedForVisitDate = lastApprovedDates.firstOrNull { it.nomisPersonId == socialContact.visitorId }?.lastApprovedVisitDate
+      }
+    }
+  }
 }
