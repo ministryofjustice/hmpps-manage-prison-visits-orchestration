@@ -19,7 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterVisitorForBookerPrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
@@ -83,12 +83,12 @@ class PrisonVisitBookerRegistryClient(
       .blockOptional(apiTimeout).orElseThrow { NotFoundException("Prisoners for booker reference - $bookerReference not found on public-visits-booker-registry") }
   }
 
-  fun getPermittedVisitorsForBookersAssociatedPrisoner(bookerReference: String, prisonerNumber: String): List<PermittedVisitorsForPermittedPrisonerBookerDto> {
+  fun getPermittedVisitorsForBookersAssociatedPrisoner(bookerReference: String, prisonerNumber: String): List<PermittedVisitorForPermittedPrisonerBookerDto> {
     val uri = PERMITTED_VISITORS.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerNumber) + "?active=true"
     return webClient.get()
       .uri(uri)
       .retrieve()
-      .bodyToMono<List<PermittedVisitorsForPermittedPrisonerBookerDto>>()
+      .bodyToMono<List<PermittedVisitorForPermittedPrisonerBookerDto>>()
       .onErrorResume { e ->
         if (!ClientUtils.isNotFoundError(e)) {
           logger.error("getPermittedVisitorsForBookersAssociatedPrisoner Failed for get request $uri")
@@ -133,7 +133,7 @@ class PrisonVisitBookerRegistryClient(
       .block(apiTimeout)
   }
 
-  fun registerVisitorForBookerPrisoner(bookerReference: String, prisonerId: String, registerVisitorForBookerPrisonerDto: RegisterVisitorForBookerPrisonerDto): PermittedVisitorsForPermittedPrisonerBookerDto {
+  fun registerVisitorForBookerPrisoner(bookerReference: String, prisonerId: String, registerVisitorForBookerPrisonerDto: RegisterVisitorForBookerPrisonerDto): PermittedVisitorForPermittedPrisonerBookerDto {
     val uri = LINK_VISITOR
       .replace("{bookerReference}", bookerReference)
       .replace("{prisonerId}", prisonerId)
@@ -142,7 +142,7 @@ class PrisonVisitBookerRegistryClient(
       .uri(uri)
       .body(BodyInserters.fromValue(registerVisitorForBookerPrisonerDto))
       .retrieve()
-      .bodyToMono<PermittedVisitorsForPermittedPrisonerBookerDto>()
+      .bodyToMono<PermittedVisitorForPermittedPrisonerBookerDto>()
       .blockOptional(apiTimeout)
       .orElseThrow { IllegalStateException("Empty response from registerVisitorForBookerPrisoner call with URL $uri") }
   }

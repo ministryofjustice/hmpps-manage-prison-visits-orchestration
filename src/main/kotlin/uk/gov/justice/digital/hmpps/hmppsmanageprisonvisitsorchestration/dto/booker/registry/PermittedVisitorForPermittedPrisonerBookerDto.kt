@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull
 
 @Schema(description = "Permitted visitor associated with the permitted prisoner.")
-data class PermittedVisitorsForPermittedPrisonerBookerDto(
+data class PermittedVisitorForPermittedPrisonerBookerDto(
   @JsonProperty("visitorId")
   @Schema(description = "Identifier for this contact (Person in NOMIS)", example = "5871791", required = true)
   @NotNull

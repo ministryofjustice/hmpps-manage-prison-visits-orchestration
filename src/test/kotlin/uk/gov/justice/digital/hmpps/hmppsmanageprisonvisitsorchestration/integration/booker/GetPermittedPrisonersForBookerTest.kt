@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisteredPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.CurrentIncentive
@@ -85,8 +85,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, true, PRISON_CODE, listOf(PermittedVisitorsForPermittedPrisonerBookerDto(1L, true))),
-        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, true, PRISON_CODE, listOf(PermittedVisitorsForPermittedPrisonerBookerDto(1L, true))),
+        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, true, PRISON_CODE, listOf(PermittedVisitorForPermittedPrisonerBookerDto(1L, true))),
+        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, true, PRISON_CODE, listOf(PermittedVisitorForPermittedPrisonerBookerDto(1L, true))),
       ),
     )
     visitAllocationApiMockServer.stubGetPrisonerVOBalance(prisoner1Dto.prisonerNumber, visitBalance1)

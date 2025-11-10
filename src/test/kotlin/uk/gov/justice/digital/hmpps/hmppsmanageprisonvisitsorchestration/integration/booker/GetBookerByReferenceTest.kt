@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_DETAILS
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerDetailedInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
@@ -49,9 +49,9 @@ class GetBookerByReferenceTest : IntegrationTestBase() {
     convictedStatus = "Convicted",
   )
 
-  private final val permittedPrisonerA = PermittedPrisonerForBookerDto(prisoner1Id, true, "HEI", listOf(PermittedVisitorsForPermittedPrisonerBookerDto(1L, true)))
+  private final val permittedPrisonerA = PermittedPrisonerForBookerDto(prisoner1Id, true, "HEI", listOf(PermittedVisitorForPermittedPrisonerBookerDto(1L, true)))
 
-  private final val permittedPrisonerB = PermittedPrisonerForBookerDto(prisoner2Id, true, "HEI", listOf(PermittedVisitorsForPermittedPrisonerBookerDto(2L, true)))
+  private final val permittedPrisonerB = PermittedPrisonerForBookerDto(prisoner2Id, true, "HEI", listOf(PermittedVisitorForPermittedPrisonerBookerDto(2L, true)))
 
   private final val prisonDto = PrisonRegisterPrisonDto(prisonCode, "Hewell")
 

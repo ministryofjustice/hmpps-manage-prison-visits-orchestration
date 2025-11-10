@@ -15,7 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_VISITORS_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.RestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorRestrictionDto
@@ -129,8 +129,8 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId, true),
+        PermittedVisitorForPermittedPrisonerBookerDto(adultVisitor.personId, true),
+        PermittedVisitorForPermittedPrisonerBookerDto(childVisitor.personId, true),
       ),
     )
 
@@ -161,13 +161,13 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(indefinitelyBannedVisitor.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(bannedVisitorForNext3Weeks.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(bannedVisitorForNext6Weeks.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(multipleBansVisitor.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(expiredBanVisitor.personId, true),
+        PermittedVisitorForPermittedPrisonerBookerDto(adultVisitor.personId, true),
+        PermittedVisitorForPermittedPrisonerBookerDto(childVisitor.personId, true),
+        PermittedVisitorForPermittedPrisonerBookerDto(indefinitelyBannedVisitor.personId, true),
+        PermittedVisitorForPermittedPrisonerBookerDto(bannedVisitorForNext3Weeks.personId, true),
+        PermittedVisitorForPermittedPrisonerBookerDto(bannedVisitorForNext6Weeks.personId, true),
+        PermittedVisitorForPermittedPrisonerBookerDto(multipleBansVisitor.personId, true),
+        PermittedVisitorForPermittedPrisonerBookerDto(expiredBanVisitor.personId, true),
       ),
     )
 
@@ -221,7 +221,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        PermittedVisitorsForPermittedPrisonerBookerDto(visitorWithIndefiniteBan.personId, true),
+        PermittedVisitorForPermittedPrisonerBookerDto(visitorWithIndefiniteBan.personId, true),
       ),
     )
 
@@ -259,7 +259,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        PermittedVisitorsForPermittedPrisonerBookerDto(visitorWithBan.personId, true),
+        PermittedVisitorForPermittedPrisonerBookerDto(visitorWithBan.personId, true),
       ),
     )
 
@@ -297,7 +297,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        PermittedVisitorsForPermittedPrisonerBookerDto(visitorWithBan.personId, true),
+        PermittedVisitorForPermittedPrisonerBookerDto(visitorWithBan.personId, true),
       ),
     )
 
@@ -423,8 +423,8 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId, true),
+        PermittedVisitorForPermittedPrisonerBookerDto(adultVisitor.personId, true),
+        PermittedVisitorForPermittedPrisonerBookerDto(childVisitor.personId, true),
       ),
     )
 
@@ -454,8 +454,8 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId, true),
+        PermittedVisitorForPermittedPrisonerBookerDto(adultVisitor.personId, true),
+        PermittedVisitorForPermittedPrisonerBookerDto(childVisitor.personId, true),
       ),
     )
 

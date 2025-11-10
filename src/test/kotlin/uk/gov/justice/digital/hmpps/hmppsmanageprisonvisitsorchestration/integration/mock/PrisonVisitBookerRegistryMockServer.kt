@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterVisitorForBookerPrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
@@ -91,7 +91,7 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
     )
   }
 
-  fun stubGetBookersPrisonerVisitors(bookerReference: String, prisonerNumber: String, visitors: List<PermittedVisitorsForPermittedPrisonerBookerDto>?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
+  fun stubGetBookersPrisonerVisitors(bookerReference: String, prisonerNumber: String, visitors: List<PermittedVisitorForPermittedPrisonerBookerDto>?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
       WireMock.get(PERMITTED_VISITORS.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerNumber) + "?active=true")
@@ -144,7 +144,7 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
     )
   }
 
-  fun stubRegisterVisitorForBookerPrisoner(bookerReference: String, prisonerId: String, registerVisitorForBookerPrisonerDto: RegisterVisitorForBookerPrisonerDto, visitorsForPermittedPrisonerBookerDto: PermittedVisitorsForPermittedPrisonerBookerDto, httpStatus: HttpStatus = HttpStatus.OK) {
+  fun stubRegisterVisitorForBookerPrisoner(bookerReference: String, prisonerId: String, registerVisitorForBookerPrisonerDto: RegisterVisitorForBookerPrisonerDto, visitorsForPermittedPrisonerBookerDto: PermittedVisitorForPermittedPrisonerBookerDto, httpStatus: HttpStatus = HttpStatus.OK) {
     val responseBuilder = createJsonResponseBuilder()
     val uri = LINK_VISITOR.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId)
     stubFor(

@@ -19,7 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_SOCIAL_CONTACTS_BY_PRISONER_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.management.SocialContactsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitor.VisitorLastApprovedDatesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
@@ -79,8 +79,8 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
       true,
       prisonCode,
       listOf(
-        PermittedVisitorsForPermittedPrisonerBookerDto(visitor3.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(visitor4.personId, true),
+        PermittedVisitorForPermittedPrisonerBookerDto(visitor3.personId, true),
+        PermittedVisitorForPermittedPrisonerBookerDto(visitor4.personId, true),
       ),
     )
 

@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_VISITORS_CONTROLLER_PATH
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterVisitorForBookerPrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
@@ -26,7 +26,7 @@ class RegisterPermittedVisitorForBookerPrisonerTest : IntegrationTestBase() {
       active,
       sendNotificationFlag = true,
     )
-    val registerResponse = PermittedVisitorsForPermittedPrisonerBookerDto(visitorId, active)
+    val registerResponse = PermittedVisitorForPermittedPrisonerBookerDto(visitorId, active)
 
     prisonVisitBookerRegistryMockServer.stubRegisterVisitorForBookerPrisoner(bookerReference = bookerReference, prisonerId, registerVisitorForBookerPrisonerDto, registerResponse, HttpStatus.OK)
 
@@ -52,7 +52,7 @@ class RegisterPermittedVisitorForBookerPrisonerTest : IntegrationTestBase() {
       active,
       sendNotificationFlag = true,
     )
-    val registerResponse = PermittedVisitorsForPermittedPrisonerBookerDto(visitorId, active)
+    val registerResponse = PermittedVisitorForPermittedPrisonerBookerDto(visitorId, active)
 
     prisonVisitBookerRegistryMockServer.stubRegisterVisitorForBookerPrisoner(bookerReference = bookerReference, prisonerId, registerVisitorForBookerPrisonerDto, registerResponse, HttpStatus.INTERNAL_SERVER_ERROR)
 
@@ -84,7 +84,7 @@ class RegisterPermittedVisitorForBookerPrisonerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
   }
 
-  fun getResponse(responseSpec: WebTestClient.ResponseSpec): PermittedVisitorsForPermittedPrisonerBookerDto = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, PermittedVisitorsForPermittedPrisonerBookerDto::class.java)
+  fun getResponse(responseSpec: WebTestClient.ResponseSpec): PermittedVisitorForPermittedPrisonerBookerDto = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, PermittedVisitorForPermittedPrisonerBookerDto::class.java)
 
   fun callRegisterVisitorForBookerPrisoner(
     bookerReference: String,
