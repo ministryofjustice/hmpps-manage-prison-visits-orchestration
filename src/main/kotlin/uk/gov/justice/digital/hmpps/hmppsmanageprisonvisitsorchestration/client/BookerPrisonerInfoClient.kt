@@ -19,7 +19,7 @@ class BookerPrisonerInfoClient(
   private val prisonRegisterClient: PrisonRegisterClient,
   private val prisonerSearchClient: PrisonerSearchClient,
   private val visitBalancesUtil: VisitBalancesUtil,
-  @Value("\${prisoner.profile.timeout:10s}") private val apiTimeout: Duration,
+  @param:Value("\${prisoner.profile.timeout:10s}") private val apiTimeout: Duration,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)

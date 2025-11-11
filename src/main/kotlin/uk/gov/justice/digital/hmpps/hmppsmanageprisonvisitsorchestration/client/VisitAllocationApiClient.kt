@@ -16,8 +16,8 @@ import java.util.Optional
 
 @Component
 class VisitAllocationApiClient(
-  @Qualifier("visitAllocationApiWebClient") private val webClient: WebClient,
-  @Value("\${visit-allocation.api.timeout:10s}") private val apiTimeout: Duration,
+  @param:Qualifier("visitAllocationApiWebClient") private val webClient: WebClient,
+  @param:Value("\${visit-allocation.api.timeout:10s}") private val apiTimeout: Duration,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)

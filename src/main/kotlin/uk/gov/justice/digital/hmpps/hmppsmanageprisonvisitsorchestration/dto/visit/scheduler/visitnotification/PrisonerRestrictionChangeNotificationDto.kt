@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter
 data class PrisonerRestrictionChangeNotificationDto(
   @NotBlank
   val prisonerNumber: String,
-  @NotNull
+  @field:NotNull
   val validFromDate: LocalDate,
   @JsonInclude(Include.NON_NULL)
   val validToDate: LocalDate? = null,

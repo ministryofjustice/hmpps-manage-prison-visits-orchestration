@@ -10,10 +10,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 @Schema(description = "Visit")
 class VisitHistoryDetailsDto(
 
-  @Schema(description = "The visit details", required = true)
+  @param:Schema(description = "The visit details", required = true)
   val eventsAudit: List<EventAuditOrchestrationDto> = listOf(),
 
-  @Schema(description = "The visit details", required = true)
+  @param:Schema(description = "The visit details", required = true)
   @field:NotNull
   val visit: VisitDto,
 )

@@ -13,7 +13,7 @@ data class PersonRestrictionUpsertedNotificationDto(
   val prisonerNumber: String,
   @NotBlank
   val visitorId: String,
-  @NotNull
+  @field:NotNull
   val validFromDate: LocalDate,
   @JsonInclude(Include.NON_NULL)
   val validToDate: LocalDate? = null,

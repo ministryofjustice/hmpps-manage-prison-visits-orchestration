@@ -10,7 +10,7 @@ data class NonAssociationChangedNotificationDto(
   val prisonerNumber: String,
   @NotBlank
   val nonAssociationPrisonerNumber: String,
-  @NotNull
+  @field:NotNull
   val type: NonAssociationDomainEventType,
 
 ) {

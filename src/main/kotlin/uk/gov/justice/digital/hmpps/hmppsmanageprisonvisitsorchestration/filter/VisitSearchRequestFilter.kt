@@ -34,7 +34,7 @@ data class VisitSearchRequestFilter(
     description = "Filter results by visit status",
     example = "BOOKED",
   )
-  @NotNull
+  @field:NotNull
   @NotEmpty
   val visitStatusList: List<String>,
 

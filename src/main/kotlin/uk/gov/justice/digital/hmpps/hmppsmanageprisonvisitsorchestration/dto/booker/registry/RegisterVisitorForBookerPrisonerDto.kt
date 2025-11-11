@@ -6,15 +6,15 @@ import jakarta.validation.constraints.NotNull
 
 @Schema(description = "Details to register a visitor to a booker's prisoner.")
 data class RegisterVisitorForBookerPrisonerDto(
-  @Schema(description = "Visitor Id", example = "12345", required = true)
+  @param:Schema(description = "Visitor Id", example = "12345", required = true)
   @field:NotBlank
   val visitorId: Long,
 
-  @Schema(description = "Active / Inactive permitted visitor", example = "true", required = true)
-  @NotNull
+  @param:Schema(description = "Active / Inactive permitted visitor", example = "true", required = true)
+  @field:NotNull
   val active: Boolean,
 
-  @Schema(description = "Flag to determine if the booker should be notified of the registration", example = "true", required = false)
-  @NotNull
+  @param:Schema(description = "Flag to determine if the booker should be notified of the registration", example = "true", required = false)
+  @field:NotNull
   val sendNotificationFlag: Boolean? = false,
 )

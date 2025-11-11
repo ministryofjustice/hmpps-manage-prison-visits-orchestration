@@ -9,10 +9,10 @@ data class PrisonerReceivedNotificationDto(
   @NotBlank
   val prisonerNumber: String,
 
-  @NotNull
+  @field:NotNull
   val prisonCode: String,
 
-  @NotNull
+  @field:NotNull
   val reason: PrisonerReceivedReasonType,
 ) {
 

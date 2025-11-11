@@ -21,7 +21,7 @@ import java.util.function.BiPredicate
 @Service
 class ManageUsersService(
   private val manageUsersApiClient: ManageUsersApiClient,
-  @Value("\${hmpps.auth.timeout:10s}") private val apiTimeout: Duration,
+  @param:Value("\${hmpps.auth.timeout:10s}") private val apiTimeout: Duration,
 ) {
   companion object {
     const val NOT_KNOWN = "NOT_KNOWN"

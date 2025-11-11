@@ -12,7 +12,7 @@ data class VisitorRestrictionUpsertedNotificationDto(
   @NotBlank
   val visitorId: String,
 
-  @NotNull
+  @field:NotNull
   val validFromDate: LocalDate,
 
   @JsonInclude(Include.NON_NULL)

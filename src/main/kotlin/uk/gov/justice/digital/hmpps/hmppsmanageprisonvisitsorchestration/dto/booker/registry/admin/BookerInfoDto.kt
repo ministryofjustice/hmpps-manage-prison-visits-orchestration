@@ -9,20 +9,20 @@ import java.time.LocalDateTime
 
 @Schema(description = "Details of a found booker via booker search")
 data class BookerInfoDto(
-  @Schema(name = "reference", description = "This is the booker reference, unique per booker", required = true)
+  @param:Schema(name = "reference", description = "This is the booker reference, unique per booker", required = true)
   @field:NotBlank
   val reference: String,
 
-  @Schema(name = "email", description = "email registered to booker", required = true)
+  @param:Schema(name = "email", description = "email registered to booker", required = true)
   @field:NotBlank
   val email: String,
 
-  @Schema(name = "createdTimestamp", description = "The time the booker account was created", required = true)
+  @param:Schema(name = "createdTimestamp", description = "The time the booker account was created", required = true)
   @field:NotBlank
   val createdTimestamp: LocalDateTime,
 
   @JsonProperty("permittedPrisoners")
-  @Schema(description = "Permitted prisoners list", required = true)
+  @param:Schema(description = "Permitted prisoners list", required = true)
   @field:Valid
   val permittedPrisoners: List<PermittedPrisonerForBookerDto>,
 )

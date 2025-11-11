@@ -16,47 +16,47 @@ import java.time.LocalDateTime
 
 @Schema(description = "Visit")
 data class ApplicationDto(
-  @Schema(description = "reference", example = "v9-d7-ed-7u", required = true)
+  @param:Schema(description = "reference", example = "v9-d7-ed-7u", required = true)
   val reference: String,
-  @Schema(description = "session template Reference", example = "dfs-wjs-eqr", required = false)
+  @param:Schema(description = "session template Reference", example = "dfs-wjs-eqr", required = false)
   val sessionTemplateReference: String? = null,
-  @Schema(description = "Prisoner Id", example = "AF34567G", required = true)
+  @param:Schema(description = "Prisoner Id", example = "AF34567G", required = true)
   val prisonerId: String,
-  @Schema(description = "Prison Id", example = "MDI", required = true)
-  @JsonProperty("prisonId")
-  @JsonAlias("prisonCode")
+  @param:Schema(description = "Prison Id", example = "MDI", required = true)
+  @param:JsonProperty("prisonId")
+  @param:JsonAlias("prisonCode")
   val prisonCode: String,
-  @Schema(description = "Visit Type", example = "SOCIAL", required = true)
+  @param:Schema(description = "Visit Type", example = "SOCIAL", required = true)
   val visitType: VisitType,
-  @Schema(description = "Visit Restriction", example = "OPEN", required = true)
+  @param:Schema(description = "Visit Restriction", example = "OPEN", required = true)
   val visitRestriction: VisitRestriction,
-  @Schema(description = "The date and time of the visit", example = "2018-12-01T13:45:00", required = true)
+  @param:Schema(description = "The date and time of the visit", example = "2018-12-01T13:45:00", required = true)
   @field:NotNull
   val startTimestamp: LocalDateTime,
-  @Schema(description = "The finishing date and time of the visit", example = "2018-12-01T13:45:00", required = true)
+  @param:Schema(description = "The finishing date and time of the visit", example = "2018-12-01T13:45:00", required = true)
   @field:NotNull
   val endTimestamp: LocalDateTime,
-  @Schema(description = "Visit Notes", required = false)
+  @param:Schema(description = "Visit Notes", required = false)
   val visitNotes: List<VisitNoteDto> = listOf(),
-  @Schema(description = "Contact associated with the visit", required = false)
+  @param:Schema(description = "Contact associated with the visit", required = false)
   val visitContact: ContactDto? = null,
-  @Schema(description = "List of visitors associated with the visit", required = false)
+  @param:Schema(description = "List of visitors associated with the visit", required = false)
   val visitors: List<VisitorDto> = listOf(),
-  @Schema(description = "Additional support associated with the application", required = false)
+  @param:Schema(description = "Additional support associated with the application", required = false)
   val visitorSupport: VisitorSupportDto? = null,
-  @Schema(description = "The visit created date and time", example = "2018-12-01T13:45:00", required = true)
+  @param:Schema(description = "The visit created date and time", example = "2018-12-01T13:45:00", required = true)
   @field:NotNull
   val createdTimestamp: LocalDateTime,
-  @Schema(description = "The visit modified date and time", example = "2018-12-01T13:45:00", required = true)
+  @param:Schema(description = "The visit modified date and time", example = "2018-12-01T13:45:00", required = true)
   @field:NotNull
   val modifiedTimestamp: LocalDateTime,
-  @Schema(description = "Is the application reserved", example = "true", required = true)
+  @param:Schema(description = "Is the application reserved", example = "true", required = true)
   @field:NotNull
   val reserved: Boolean,
-  @Schema(description = "Status of the application", example = "IN_PROGRESS", required = true)
+  @param:Schema(description = "Status of the application", example = "IN_PROGRESS", required = true)
   @field:NotNull
   val applicationStatus: ApplicationStatus,
-  @Schema(description = "User type", example = "STAFF", required = true)
+  @param:Schema(description = "User type", example = "STAFF", required = true)
   @field:NotNull
   val userType: UserType,
 )

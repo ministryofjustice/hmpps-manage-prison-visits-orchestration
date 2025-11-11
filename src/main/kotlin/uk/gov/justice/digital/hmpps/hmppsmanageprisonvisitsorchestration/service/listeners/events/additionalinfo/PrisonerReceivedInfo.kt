@@ -14,7 +14,7 @@ data class PrisonerReceivedInfo(
   @JsonProperty("prisonId")
   val prisonCode: String,
 
-  @NotNull
+  @field:NotNull
   @JsonProperty("reason")
   val reason: PrisonerReceivedReasonType,
 ) : EventInfo

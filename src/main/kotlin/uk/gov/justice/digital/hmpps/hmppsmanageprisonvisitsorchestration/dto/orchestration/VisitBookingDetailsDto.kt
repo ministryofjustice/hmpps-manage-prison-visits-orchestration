@@ -24,38 +24,38 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 data class VisitBookingDetailsDto internal constructor(
-  @Schema(description = "Visit Reference", example = "v9-d7-ed-7u", required = true)
+  @param:Schema(description = "Visit Reference", example = "v9-d7-ed-7u", required = true)
   val reference: String,
-  @Schema(description = "Visit Room", example = "Visits Main Hall", required = true)
+  @param:Schema(description = "Visit Room", example = "Visits Main Hall", required = true)
   @field:NotBlank
   val visitRoom: String,
-  @Schema(description = "Visit Status", example = "RESERVED", required = true)
+  @param:Schema(description = "Visit Status", example = "RESERVED", required = true)
   val visitStatus: VisitStatus,
-  @Schema(description = "Visit Sub Status", example = "AUTO_APPROVED", required = true)
+  @param:Schema(description = "Visit Sub Status", example = "AUTO_APPROVED", required = true)
   val visitSubStatus: VisitSubStatus,
-  @Schema(description = "Outcome Status", example = "VISITOR_CANCELLED", required = false)
+  @param:Schema(description = "Outcome Status", example = "VISITOR_CANCELLED", required = false)
   val outcomeStatus: OutcomeStatus?,
-  @Schema(description = "Visit Restriction", example = "OPEN", required = true)
+  @param:Schema(description = "Visit Restriction", example = "OPEN", required = true)
   val visitRestriction: VisitRestriction,
-  @Schema(description = "The date and time of the visit", example = "2018-12-01T13:45:00", required = true)
+  @param:Schema(description = "The date and time of the visit", example = "2018-12-01T13:45:00", required = true)
   @field:NotBlank
   val startTimestamp: LocalDateTime,
-  @Schema(description = "The finishing date and time of the visit", example = "2018-12-01T13:45:00", required = true)
+  @param:Schema(description = "The finishing date and time of the visit", example = "2018-12-01T13:45:00", required = true)
   @field:NotBlank
   val endTimestamp: LocalDateTime,
-  @Schema(description = "Session Template Reference", example = "v9d.7ed.7u", required = false)
+  @param:Schema(description = "Session Template Reference", example = "v9d.7ed.7u", required = false)
   val sessionTemplateReference: String? = null,
-  @Schema(description = "Visit Notes", required = false)
+  @param:Schema(description = "Visit Notes", required = false)
   val visitNotes: List<VisitNoteDto>? = listOf(),
-  @Schema(description = "Contact associated with the visit", required = false)
+  @param:Schema(description = "Contact associated with the visit", required = false)
   val visitContact: VisitContactDto? = null,
-  @Schema(description = "Additional support associated with the visit", required = false)
+  @param:Schema(description = "Additional support associated with the visit", required = false)
   val visitorSupport: VisitorSupportDto? = null,
-  @Schema(description = "Prison code and name", required = true)
+  @param:Schema(description = "Prison code and name", required = true)
   val prison: PrisonRegisterPrisonDto,
-  @Schema(description = "Prisoner details", required = true)
+  @param:Schema(description = "Prisoner details", required = true)
   val prisoner: PrisonerDetailsDto,
-  @Schema(description = "Prisoner details", required = true)
+  @param:Schema(description = "Prisoner details", required = true)
   val visitors: List<VisitorDetailsDto>,
   val events: List<EventAuditOrchestrationDto>,
   val notifications: List<VisitNotificationDto>,
@@ -92,34 +92,34 @@ data class VisitBookingDetailsDto internal constructor(
 }
 
 data class PrisonerDetailsDto internal constructor(
-  @Schema(required = true, description = "Prisoner Number", example = "A1234AA")
+  @param:Schema(required = true, description = "Prisoner Number", example = "A1234AA")
   val prisonerNumber: String,
 
-  @Schema(required = true, description = "First Name", example = "Robert")
+  @param:Schema(required = true, description = "First Name", example = "Robert")
   val firstName: String,
 
-  @Schema(required = true, description = "Last name", example = "Larsen")
+  @param:Schema(required = true, description = "Last name", example = "Larsen")
   val lastName: String,
 
-  @Schema(required = true, description = "Date of Birth", example = "1975-04-02")
+  @param:Schema(required = true, description = "Date of Birth", example = "1975-04-02")
   val dateOfBirth: LocalDate,
 
-  @Schema(description = "Prison ID", example = "MDI")
+  @param:Schema(description = "Prison ID", example = "MDI")
   val prisonId: String?,
 
-  @Schema(description = "Prison Name", example = "HMP Leeds")
+  @param:Schema(description = "Prison Name", example = "HMP Leeds")
   val prisonName: String?,
 
-  @Schema(description = "In prison cell location", example = "A-1-002")
+  @param:Schema(description = "In prison cell location", example = "A-1-002")
   val cellLocation: String? = null,
 
-  @Schema(description = "current prison or outside with last movement information.", example = "Outside - released from Leeds")
+  @param:Schema(description = "current prison or outside with last movement information.", example = "Outside - released from Leeds")
   val locationDescription: String? = null,
 
-  @Schema(description = "Prisoner alerts")
+  @param:Schema(description = "Prisoner alerts")
   val prisonerAlerts: List<AlertDto> = emptyList(),
 
-  @Schema(description = "Prisoner restrictions")
+  @param:Schema(description = "Prisoner restrictions")
   val prisonerRestrictions: List<OffenderRestrictionDto> = emptyList(),
 ) {
   constructor(prisonerNumber: String, prisonerDto: PrisonerDto, prisonerAlerts: List<AlertDto>, prisonerRestrictions: List<OffenderRestrictionDto>) : this(
@@ -138,19 +138,19 @@ data class PrisonerDetailsDto internal constructor(
 
 @Schema(description = "Visitor details")
 data class VisitorDetailsDto internal constructor(
-  @Schema(description = "Identifier for this contact (Person in NOMIS)", example = "5871791")
+  @param:Schema(description = "Identifier for this contact (Person in NOMIS)", example = "5871791")
   val personId: Long? = null,
-  @Schema(description = "First name", example = "John", required = true)
+  @param:Schema(description = "First name", example = "John", required = true)
   val firstName: String,
-  @Schema(description = "Last name", example = "Smith", required = true)
+  @param:Schema(description = "Last name", example = "Smith", required = true)
   val lastName: String,
-  @Schema(description = "Date of birth", example = "1980-01-28", required = false)
+  @param:Schema(description = "Date of birth", example = "1980-01-28", required = false)
   val dateOfBirth: LocalDate? = null,
-  @Schema(description = "Description of relationship to Prisoner", example = "Responsible Officer", required = false)
+  @param:Schema(description = "Description of relationship to Prisoner", example = "Responsible Officer", required = false)
   val relationshipDescription: String? = null,
-  @Schema(description = "List of restrictions associated with the contact", required = false)
+  @param:Schema(description = "List of restrictions associated with the contact", required = false)
   val restrictions: List<RestrictionDto> = listOf(),
-  @Schema(description = "Primary address for the contact or the first address if no primary address available, null if address list is empty", required = false)
+  @param:Schema(description = "Primary address for the contact or the first address if no primary address available, null if address list is empty", required = false)
   val primaryAddress: AddressDto?,
 ) {
   constructor(prisonerContactDto: PrisonerContactDto) : this(
@@ -167,13 +167,13 @@ data class VisitorDetailsDto internal constructor(
 
 @Schema(description = "Visit notification details")
 data class VisitNotificationDto internal constructor(
-  @Schema(description = "notification event type")
+  @param:Schema(description = "notification event type")
   val type: NotificationEventType,
 
-  @Schema(description = "notification created at", example = "2018-12-01T13:45:00")
+  @param:Schema(description = "notification created at", example = "2018-12-01T13:45:00")
   val createdDateTime: LocalDateTime,
 
-  @Schema(description = "notification additional data")
+  @param:Schema(description = "notification additional data")
   val additionalData: List<VisitNotificationEventAttributeDto>,
 ) {
   constructor(visitNotificationEventDto: VisitNotificationEventDto) : this(
@@ -185,13 +185,13 @@ data class VisitNotificationDto internal constructor(
 
 @Schema(description = "Visit notification details")
 data class VisitContactDto internal constructor(
-  @Schema(description = "Main contact ID associated with the visit", example = "1234", required = false)
+  @param:Schema(description = "Main contact ID associated with the visit", example = "1234", required = false)
   val visitContactId: Long?,
-  @Schema(description = "Contact Name", example = "John Smith", required = true)
+  @param:Schema(description = "Contact Name", example = "John Smith", required = true)
   override val name: String,
-  @Schema(description = "Contact Phone Number", example = "01234 567890", required = false)
+  @param:Schema(description = "Contact Phone Number", example = "01234 567890", required = false)
   override val telephone: String? = null,
-  @Schema(description = "Contact Email Address", example = "email@example.com", required = false)
+  @param:Schema(description = "Contact Email Address", example = "email@example.com", required = false)
   override val email: String? = null,
 ) : ContactDto(name = name, telephone = telephone, email = email) {
   constructor(contactDto: ContactDto, visitContactId: Long?) : this(

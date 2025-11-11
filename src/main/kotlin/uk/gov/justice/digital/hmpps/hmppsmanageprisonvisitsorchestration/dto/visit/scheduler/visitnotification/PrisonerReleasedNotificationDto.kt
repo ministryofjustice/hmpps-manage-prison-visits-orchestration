@@ -12,7 +12,7 @@ data class PrisonerReleasedNotificationDto(
   @NotBlank
   val prisonCode: String,
 
-  @NotNull
+  @field:NotNull
   val reasonType: PrisonerReleaseReasonType,
 ) {
 

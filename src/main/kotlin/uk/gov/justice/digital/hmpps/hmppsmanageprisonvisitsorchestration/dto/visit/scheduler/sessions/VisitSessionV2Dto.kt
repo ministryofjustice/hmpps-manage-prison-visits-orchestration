@@ -10,37 +10,37 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import java.time.LocalTime
 
 data class VisitSessionV2Dto(
-  @Schema(description = "Session Template Reference", example = "v9d.7ed.7u", required = true)
+  @param:Schema(description = "Session Template Reference", example = "v9d.7ed.7u", required = true)
   @field:NotBlank
   val sessionTemplateReference: String,
 
-  @Schema(description = "Visit Room", example = "Visits Main Hall", required = true)
+  @param:Schema(description = "Visit Room", example = "Visits Main Hall", required = true)
   @field:NotBlank
   val visitRoom: String,
 
-  @Schema(description = "The number of concurrent visits which may take place within this session", example = "1", required = true)
+  @param:Schema(description = "The number of concurrent visits which may take place within this session", example = "1", required = true)
   @field:NotNull
   val openVisitCapacity: Int,
 
-  @Schema(description = "The count of open visit bookings already reserved or booked for this session", example = "1", required = false)
+  @param:Schema(description = "The count of open visit bookings already reserved or booked for this session", example = "1", required = false)
   var openVisitBookedCount: Int? = 0,
 
-  @Schema(description = "The number of closed visits which may take place within this session", example = "1", required = true)
+  @param:Schema(description = "The number of closed visits which may take place within this session", example = "1", required = true)
   @field:NotNull
   val closedVisitCapacity: Int,
 
-  @Schema(description = "The count of closed visit bookings already reserved or booked for this session", example = "1", required = false)
+  @param:Schema(description = "The count of closed visit bookings already reserved or booked for this session", example = "1", required = false)
   var closedVisitBookedCount: Int? = 0,
 
   @JsonFormat(pattern = "HH:mm", shape = JsonFormat.Shape.STRING)
-  @Schema(description = "The start time of the visit session", example = "10:30", required = true)
+  @param:Schema(description = "The start time of the visit session", example = "10:30", required = true)
   val startTime: LocalTime,
 
   @JsonFormat(pattern = "HH:mm", shape = JsonFormat.Shape.STRING)
-  @Schema(description = "The end time of the visit session", example = "11:30", required = true)
+  @param:Schema(description = "The end time of the visit session", example = "11:30", required = true)
   val endTime: LocalTime,
 
-  @Schema(description = "Session conflicts", required = false)
+  @param:Schema(description = "Session conflicts", required = false)
   val sessionConflicts: MutableSet<@Valid SessionConflict>? = mutableSetOf(),
 ) {
   constructor(visitSessionDto: VisitSessionDto) : this (
