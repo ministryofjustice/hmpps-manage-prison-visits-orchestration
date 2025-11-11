@@ -20,7 +20,7 @@ data class OrchestrationVisitDto(
   val prisonerFirstName: String?,
   @param:Schema(description = "Prisoner last name", example = "Smith", required = false)
   val prisonerLastName: String?,
-  @JsonProperty("prisonId")
+  @param:JsonProperty("prisonId")
   @param:Schema(description = "Prison Id", example = "MDI", required = true)
   val prisonCode: String,
   @param:Schema(description = "Visit Status", example = "BOOKED", required = true)

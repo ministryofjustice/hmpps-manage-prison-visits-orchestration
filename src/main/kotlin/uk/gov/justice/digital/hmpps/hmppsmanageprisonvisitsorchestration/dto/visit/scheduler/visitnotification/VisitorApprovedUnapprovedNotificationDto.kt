@@ -10,7 +10,7 @@ data class VisitorApprovedUnapprovedNotificationDto(
   val prisonerNumber: String,
 
   @param:Schema(description = "Visitor ID", example = "1246424", required = true)
-  @NotBlank
+  @field:NotBlank
   val visitorId: String,
 ) {
 

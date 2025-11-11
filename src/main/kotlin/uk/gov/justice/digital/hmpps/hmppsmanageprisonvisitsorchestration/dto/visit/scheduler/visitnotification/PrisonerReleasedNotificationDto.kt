@@ -6,10 +6,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerReleasedInfo
 
 data class PrisonerReleasedNotificationDto(
-  @NotBlank
+  @field:NotBlank
   val prisonerNumber: String,
 
-  @NotBlank
+  @field:NotBlank
   val prisonCode: String,
 
   @field:NotNull

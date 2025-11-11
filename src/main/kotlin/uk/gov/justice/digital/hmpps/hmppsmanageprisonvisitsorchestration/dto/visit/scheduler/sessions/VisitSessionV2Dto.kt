@@ -32,11 +32,11 @@ data class VisitSessionV2Dto(
   @param:Schema(description = "The count of closed visit bookings already reserved or booked for this session", example = "1", required = false)
   var closedVisitBookedCount: Int? = 0,
 
-  @JsonFormat(pattern = "HH:mm", shape = JsonFormat.Shape.STRING)
+  @param:JsonFormat(pattern = "HH:mm", shape = JsonFormat.Shape.STRING)
   @param:Schema(description = "The start time of the visit session", example = "10:30", required = true)
   val startTime: LocalTime,
 
-  @JsonFormat(pattern = "HH:mm", shape = JsonFormat.Shape.STRING)
+  @param:JsonFormat(pattern = "HH:mm", shape = JsonFormat.Shape.STRING)
   @param:Schema(description = "The end time of the visit session", example = "11:30", required = true)
   val endTime: LocalTime,
 

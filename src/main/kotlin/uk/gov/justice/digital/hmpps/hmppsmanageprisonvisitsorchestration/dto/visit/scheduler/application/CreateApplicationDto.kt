@@ -31,7 +31,7 @@ open class CreateApplicationDto(
   @field:NotEmpty
   var visitors: Set<@Valid VisitorDto>,
   @param:Schema(description = "additional support associated with the visit, if null support will not be updated", required = false)
-  @Valid
+  @field:Valid
   var visitorSupport: ApplicationSupportDto? = null,
   @param:Schema(description = "User type", example = "STAFF", required = true)
   @field:NotNull

@@ -9,7 +9,7 @@ import java.time.LocalDateTime
 /**
  * A visit's preview with minimum visit details.
  */
-data class VisitPreviewDto internal constructor(
+data class VisitPreviewDto(
   @param:Schema(required = true, description = "Prisoner Number", example = "A1234AA")
   @field:NotNull
   val prisonerId: String,

@@ -9,19 +9,19 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 data class VisitorRestrictionUpsertedNotificationDto(
-  @NotBlank
+  @field:NotBlank
   val visitorId: String,
 
   @field:NotNull
   val validFromDate: LocalDate,
 
-  @JsonInclude(Include.NON_NULL)
+  @param:JsonInclude(Include.NON_NULL)
   val validToDate: LocalDate? = null,
 
-  @NotBlank
+  @field:NotBlank
   val restrictionType: String,
 
-  @NotBlank
+  @field:NotBlank
   val restrictionId: String,
 ) {
 

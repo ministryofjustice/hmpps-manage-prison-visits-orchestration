@@ -37,6 +37,7 @@ jobs:
     secrets: inherit
     with:
       localstack-tag: "4"
+      java-version: '25'
   build:
     name: Build docker image from hmpps-github-actions
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/docker_build.yml@v2 # WORKFLOW_VERSION

@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.validat
 import java.time.LocalDateTime
 
 @Schema(description = "Event Audit with actioned by user's full name populated")
-data class EventAuditOrchestrationDto internal constructor(
+data class EventAuditOrchestrationDto(
 
   @param:Schema(description = "The type of event", required = true)
   @field:NotNull
@@ -29,7 +29,7 @@ data class EventAuditOrchestrationDto internal constructor(
   val userType: UserType,
 
   @param:Schema(description = "Notes added against the event", required = false)
-  @NullableNotBlank
+  @field:NullableNotBlank
   var text: String? = null,
 
   @param:Schema(description = "event creat date and time", example = "2018-12-01T13:45:00", required = true)

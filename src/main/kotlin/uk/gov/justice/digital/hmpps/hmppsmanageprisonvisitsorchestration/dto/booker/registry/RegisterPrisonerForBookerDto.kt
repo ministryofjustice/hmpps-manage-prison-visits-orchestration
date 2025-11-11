@@ -7,7 +7,7 @@ import java.time.LocalDate
 
 @Schema(description = "Details to register a prisoner to a booker.")
 data class RegisterPrisonerForBookerDto(
-  @JsonProperty("prisonerId")
+  @param:JsonProperty("prisonerId")
   @param:Schema(description = "Prisoner Id", example = "A1234AA", required = true)
   @field:NotBlank
   val prisonerId: String,
@@ -23,7 +23,7 @@ data class RegisterPrisonerForBookerDto(
   @param:Schema(description = "Prisoner date of birth", example = "1960-01-30", required = true)
   val prisonerDateOfBirth: LocalDate,
 
-  @JsonProperty("prisonId")
+  @param:JsonProperty("prisonId")
   @field:NotBlank
   @param:Schema(description = "Prison Id", example = "MDI", required = true)
   val prisonCode: String,

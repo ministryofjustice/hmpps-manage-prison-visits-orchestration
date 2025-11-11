@@ -8,12 +8,12 @@ import jakarta.validation.constraints.NotNull
 
 @Schema(description = "Permitted prisoner associated with the booker.")
 data class PermittedPrisonerForBookerDto(
-  @JsonProperty("prisonerId")
+  @param:JsonProperty("prisonerId")
   @param:Schema(description = "Prisoner Id", example = "A1234AA", required = true)
   @field:NotBlank
   val prisonerId: String,
 
-  @JsonProperty("active")
+  @param:JsonProperty("active")
   @param:Schema(description = "Active / Inactive permitted prisoner", example = "true", required = true)
   @field:NotNull
   val active: Boolean,
@@ -21,7 +21,7 @@ data class PermittedPrisonerForBookerDto(
   @param:Schema(description = "prison code", example = "MDI", required = true)
   val prisonCode: String,
 
-  @JsonProperty("permittedVisitors")
+  @param:JsonProperty("permittedVisitors")
   @param:Schema(description = "Permitted visitors", required = true)
   @field:Valid
   val permittedVisitors: List<PermittedVisitorsForPermittedPrisonerBookerDto>,

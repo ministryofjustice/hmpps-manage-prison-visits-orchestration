@@ -23,7 +23,7 @@ data class AlertResponseDto(
   val lastModifiedAt: LocalDateTime? = null,
 
   @param:Schema(description = "True / False based on alert status", example = "false", required = true)
-  @JsonProperty("isActive")
+  @param:JsonProperty("isActive")
   val active: Boolean,
 
   @param:Schema(description = "A comment / description of the alert", required = false)

@@ -23,7 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-data class VisitBookingDetailsDto internal constructor(
+data class VisitBookingDetailsDto(
   @param:Schema(description = "Visit Reference", example = "v9-d7-ed-7u", required = true)
   val reference: String,
   @param:Schema(description = "Visit Room", example = "Visits Main Hall", required = true)
@@ -91,7 +91,7 @@ data class VisitBookingDetailsDto internal constructor(
   )
 }
 
-data class PrisonerDetailsDto internal constructor(
+data class PrisonerDetailsDto(
   @param:Schema(required = true, description = "Prisoner Number", example = "A1234AA")
   val prisonerNumber: String,
 
@@ -137,7 +137,7 @@ data class PrisonerDetailsDto internal constructor(
 }
 
 @Schema(description = "Visitor details")
-data class VisitorDetailsDto internal constructor(
+data class VisitorDetailsDto(
   @param:Schema(description = "Identifier for this contact (Person in NOMIS)", example = "5871791")
   val personId: Long? = null,
   @param:Schema(description = "First name", example = "John", required = true)
@@ -166,7 +166,7 @@ data class VisitorDetailsDto internal constructor(
 }
 
 @Schema(description = "Visit notification details")
-data class VisitNotificationDto internal constructor(
+data class VisitNotificationDto(
   @param:Schema(description = "notification event type")
   val type: NotificationEventType,
 
@@ -184,7 +184,7 @@ data class VisitNotificationDto internal constructor(
 }
 
 @Schema(description = "Visit notification details")
-data class VisitContactDto internal constructor(
+data class VisitContactDto(
   @param:Schema(description = "Main contact ID associated with the visit", example = "1234", required = false)
   val visitContactId: Long?,
   @param:Schema(description = "Contact Name", example = "John Smith", required = true)

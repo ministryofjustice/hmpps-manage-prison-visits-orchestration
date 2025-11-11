@@ -21,7 +21,7 @@ data class BookerInfoDto(
   @field:NotBlank
   val createdTimestamp: LocalDateTime,
 
-  @JsonProperty("permittedPrisoners")
+  @param:JsonProperty("permittedPrisoners")
   @param:Schema(description = "Permitted prisoners list", required = true)
   @field:Valid
   val permittedPrisoners: List<PermittedPrisonerForBookerDto>,

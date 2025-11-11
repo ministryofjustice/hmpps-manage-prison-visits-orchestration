@@ -10,6 +10,6 @@ data class UserDetailsDto(
   val username: String,
 
   @param:Schema(description = "Full name", example = "John Smith", required = false)
-  @JsonProperty("name")
+  @param:JsonProperty("name")
   val fullName: String? = null,
 )
