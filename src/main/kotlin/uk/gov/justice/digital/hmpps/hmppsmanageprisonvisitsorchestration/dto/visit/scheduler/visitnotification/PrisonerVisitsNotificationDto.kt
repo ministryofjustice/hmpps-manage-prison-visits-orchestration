@@ -6,17 +6,17 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import java.time.LocalDate
 
 class PrisonerVisitsNotificationDto(
-  @Schema(description = "Prisoner Number", example = "AF34567G", required = true)
+  @param:Schema(description = "Prisoner Number", example = "AF34567G", required = true)
   @field:NotBlank
   val prisonerNumber: String,
-  @Schema(description = "username of the last user to action the visit booking (E.g. book, update)", example = "SMITH1", required = true)
+  @param:Schema(description = "username of the last user to action the visit booking (E.g. book, update)", example = "SMITH1", required = true)
   @field:NotBlank
   val lastActionedBy: ActionedByDto,
-  @Schema(description = "The date of the visit", example = "2023-11-08", required = true)
+  @param:Schema(description = "The date of the visit", example = "2023-11-08", required = true)
   @field:NotBlank
   val visitDate: LocalDate,
-  @Schema(description = "Visit Booking Reference", example = "v9-d7-ed-7u", required = true)
+  @param:Schema(description = "Visit Booking Reference", example = "v9-d7-ed-7u", required = true)
   val bookingReference: String,
-  @Schema(description = "A list of all notification attributes for a given visit", required = false)
+  @param:Schema(description = "A list of all notification attributes for a given visit", required = false)
   val notificationEventAttributes: List<VisitNotificationEventAttributeDto>,
 )

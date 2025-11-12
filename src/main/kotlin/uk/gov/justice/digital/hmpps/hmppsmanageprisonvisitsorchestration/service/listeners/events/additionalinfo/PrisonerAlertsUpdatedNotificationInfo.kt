@@ -4,13 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.NotBlank
 
 data class PrisonerAlertsUpdatedNotificationInfo(
-  @NotBlank
-  @JsonProperty("nomsNumber")
+  @field:NotBlank
+  @param:JsonProperty("nomsNumber")
   val nomsNumber: String,
 
-  @JsonProperty("alertsAdded")
+  @param:JsonProperty("alertsAdded")
   var alertsAdded: List<String>,
 
-  @JsonProperty("alertsRemoved")
+  @param:JsonProperty("alertsRemoved")
   var alertsRemoved: List<String>,
 ) : EventInfo

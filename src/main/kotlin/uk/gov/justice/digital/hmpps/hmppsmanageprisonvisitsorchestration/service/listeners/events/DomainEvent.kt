@@ -7,9 +7,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 data class DomainEvent(
   val eventType: String,
 
-  @JsonDeserialize(using = RawJsonDeserializer::class)
+  @param:JsonDeserialize(using = RawJsonDeserializer::class)
   val additionalInformation: String,
 
-  @JsonProperty("description")
+  @param:JsonProperty("description")
   val description: String? = null,
 )

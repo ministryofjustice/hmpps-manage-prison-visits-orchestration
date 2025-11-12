@@ -11,28 +11,28 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.validat
 import java.time.LocalDateTime
 
 @Schema(description = "Event Audit with actioned by user's full name populated")
-data class EventAuditOrchestrationDto internal constructor(
+data class EventAuditOrchestrationDto(
 
-  @Schema(description = "The type of event", required = true)
+  @param:Schema(description = "The type of event", required = true)
   @field:NotNull
   val type: EventAuditType,
 
-  @Schema(description = "What was the application method for this event", required = true)
+  @param:Schema(description = "What was the application method for this event", required = true)
   @field:NotNull
   val applicationMethodType: ApplicationMethodType,
 
-  @Schema(description = "Actioned by full name", example = "Aled Evans", required = false)
+  @param:Schema(description = "Actioned by full name", example = "Aled Evans", required = false)
   var actionedByFullName: String? = null,
 
-  @Schema(description = "User type", example = "STAFF", required = false)
+  @param:Schema(description = "User type", example = "STAFF", required = false)
   @field:NotNull
   val userType: UserType,
 
-  @Schema(description = "Notes added against the event", required = false)
-  @NullableNotBlank
+  @param:Schema(description = "Notes added against the event", required = false)
+  @field:NullableNotBlank
   var text: String? = null,
 
-  @Schema(description = "event creat date and time", example = "2018-12-01T13:45:00", required = true)
+  @param:Schema(description = "event creat date and time", example = "2018-12-01T13:45:00", required = true)
   @field:NotBlank
   val createTimestamp: LocalDateTime = LocalDateTime.now(),
 ) {

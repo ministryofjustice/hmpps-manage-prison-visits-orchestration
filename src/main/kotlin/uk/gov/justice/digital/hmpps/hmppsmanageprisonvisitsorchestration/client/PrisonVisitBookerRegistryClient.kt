@@ -50,8 +50,8 @@ const val UNLINK_VISITOR: String = "$BOOKER_ADMIN_ENDPOINT/{bookerReference}/pri
 
 @Component
 class PrisonVisitBookerRegistryClient(
-  @Qualifier("prisonVisitBookerRegistryWebClient") private val webClient: WebClient,
-  @Value("\${prison-visit-booker-registry.api.timeout:10s}") private val apiTimeout: Duration,
+  @param:Qualifier("prisonVisitBookerRegistryWebClient") private val webClient: WebClient,
+  @param:Value("\${prison-visit-booker-registry.api.timeout:10s}") private val apiTimeout: Duration,
   val objectMapper: ObjectMapper,
 ) {
   companion object {

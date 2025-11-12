@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 @Component
 class EventFeatureSwitch(
   private val environment: Environment,
-  @Value("\${hmpps.sqs.enabled:true}") private val allEventsEnabled: Boolean,
+  @param:Value("\${hmpps.sqs.enabled:true}") private val allEventsEnabled: Boolean,
 ) {
 
   private companion object {

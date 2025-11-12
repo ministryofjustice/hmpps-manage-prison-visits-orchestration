@@ -15,8 +15,8 @@ import java.time.LocalDate
 
 @Component
 class WhereAboutsApiClient(
-  @Qualifier("whereAboutsApiWebClient") private val webClient: WebClient,
-  @Value("\${whereabouts.api.timeout:10s}") private val apiTimeout: Duration,
+  @param:Qualifier("whereAboutsApiWebClient") private val webClient: WebClient,
+  @param:Value("\${whereabouts.api.timeout:10s}") private val apiTimeout: Duration,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)

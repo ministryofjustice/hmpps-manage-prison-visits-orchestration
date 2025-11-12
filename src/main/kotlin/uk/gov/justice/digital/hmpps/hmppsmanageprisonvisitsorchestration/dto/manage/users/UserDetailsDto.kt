@@ -5,11 +5,11 @@ import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull
 
 data class UserDetailsDto(
-  @Schema(description = "username", example = "DEMO_USER1", required = true)
+  @param:Schema(description = "username", example = "DEMO_USER1", required = true)
   @field:NotNull
   val username: String,
 
-  @Schema(description = "Full name", example = "John Smith", required = false)
-  @JsonProperty("name")
+  @param:Schema(description = "Full name", example = "John Smith", required = false)
+  @param:JsonProperty("name")
   val fullName: String? = null,
 )

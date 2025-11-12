@@ -97,8 +97,8 @@ const val FIND_LAST_APPROVED_DATE_FOR_VISITORS_BY_PRISONER: String = "/visits/pr
 @Component
 class VisitSchedulerClient(
   val objectMapper: ObjectMapper,
-  @Qualifier("visitSchedulerWebClient") private val webClient: WebClient,
-  @Value("\${visit-scheduler.api.timeout:10s}") val apiTimeout: Duration,
+  @param:Qualifier("visitSchedulerWebClient") private val webClient: WebClient,
+  @param:Value("\${visit-scheduler.api.timeout:10s}") val apiTimeout: Duration,
 ) {
 
   companion object {

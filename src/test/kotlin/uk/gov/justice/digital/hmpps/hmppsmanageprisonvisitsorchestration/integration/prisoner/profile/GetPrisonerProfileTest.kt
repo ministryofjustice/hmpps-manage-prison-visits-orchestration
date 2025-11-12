@@ -40,8 +40,8 @@ import java.time.temporal.TemporalAdjusters
 
 @DisplayName("Get Prisoner Profile")
 class GetPrisonerProfileTest(
-  @Value("\${prisoner.profile.past-visits.duration-in-months: -P3M}") private val pastVisitsPeriod: Period,
-  @Value("\${prisoner.profile.future-visits.duration-in-months: P2M}") private val futureVisitsPeriod: Period,
+  @param:Value("\${prisoner.profile.past-visits.duration-in-months: -P3M}") private val pastVisitsPeriod: Period,
+  @param:Value("\${prisoner.profile.future-visits.duration-in-months: P2M}") private val futureVisitsPeriod: Period,
 ) : IntegrationTestBase() {
   companion object {
     private const val PRISONER_ID = "AA112233B"

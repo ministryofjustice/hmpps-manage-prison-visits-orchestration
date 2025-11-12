@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.man
 
 @Component
 class ManageUsersApiClient(
-  @Qualifier("manageUsersApiWebClient") private val webClient: WebClient,
+  @param:Qualifier("manageUsersApiWebClient") private val webClient: WebClient,
 ) {
 
   companion object {
