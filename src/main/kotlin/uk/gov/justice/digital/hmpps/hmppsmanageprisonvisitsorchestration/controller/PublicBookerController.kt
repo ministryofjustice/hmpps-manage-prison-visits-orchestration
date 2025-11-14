@@ -464,7 +464,6 @@ class PublicBookerController(
     prisonerId: String,
   ): List<SocialContactsDto> = publicBookerService.getSocialContacts(bookerReference, prisonerId)
 
-  // TODO - does this need a new role specific to public booker client?
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @PostMapping(PUBLIC_BOOKER_VISITOR_REQUESTS_PATH)
   @ResponseStatus(HttpStatus.OK)
