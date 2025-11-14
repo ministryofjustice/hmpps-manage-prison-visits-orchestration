@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers
 
 import org.springframework.stereotype.Component
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.appointments.SupportedCourtVideoAppointmentCategoryCode
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.DomainEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.CourtVideoAppointmentInfo
 
@@ -15,6 +16,8 @@ class CourtVideoAppointmentCancelledNotifier : EventNotifier() {
     getVisitSchedulerService().processCourtVideoAppointmentCancelledDeleted(info)
   }
 
-  // TODO: VB-5754 - Add the eventCode to AdditionalInformation object, and filter to only process certain event codes (see JIRA for list).
-  override fun isProcessableEvent(domainEvent: DomainEvent): Boolean = true
+  override fun isProcessableEvent(domainEvent: DomainEvent): Boolean {
+    val info: CourtVideoAppointmentInfo = getAdditionalInfo(domainEvent, CourtVideoAppointmentInfo::class.java)
+    return SupportedCourtVideoAppointmentCategoryCode.entries.map { it.name }.toSet().contains(info.categoryCode.uppercase())
+  }
 }
