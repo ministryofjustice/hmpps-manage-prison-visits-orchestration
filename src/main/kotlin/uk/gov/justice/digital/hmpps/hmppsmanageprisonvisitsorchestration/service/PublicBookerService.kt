@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.management.SocialContactsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AddVisitorToBookerRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerHistoryAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerInfoDto
@@ -168,6 +169,11 @@ class PublicBookerService(
     logger.trace("Entered PublicBookerService - unlinkBookerPrisonerVisitor - for booker $bookerReference, prisoner $prisonerNumber, visitor $visitorId")
 
     prisonVisitBookerRegistryClient.unlinkBookerPrisonerVisitor(bookerReference, prisonerNumber, visitorId)
+  }
+
+  fun createAddVisitorRequest(bookerReference: String, prisonerNumber: String, addVisitorToBookerRequestDto: AddVisitorToBookerRequestDto) {
+    logger.info("Entered PublicBookerService - addVisitorToBookerPrisoner - for booker {}, prisoner {}, addVisitorToBookerRequestDto {}", bookerReference, prisonerNumber, addVisitorToBookerRequestDto)
+    prisonVisitBookerRegistryClient.createAddVisitorRequest(bookerReference, prisonerNumber, addVisitorToBookerRequestDto)
   }
 
   private fun isPrisonSupportedOnVisits(prisonId: String): Boolean = visitSchedulerClient.getSupportedPrisons(PUBLIC).map { it.uppercase() }.contains(prisonId.uppercase())
