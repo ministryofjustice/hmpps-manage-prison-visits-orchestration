@@ -9,6 +9,7 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.management.SocialContactsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AddVisitorToBookerRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerHistoryAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerInfoDto
@@ -50,6 +52,9 @@ const val PUBLIC_BOOKER_UNLINK_VISITOR_CONTROLLER_PATH: String = "$PUBLIC_BOOKER
 
 const val PUBLIC_BOOKER_SEARCH = "$PUBLIC_BOOKER_CONTROLLER_PATH/search"
 const val PUBLIC_BOOKER_CREATE_AUTH_DETAILS_CONTROLLER_PATH: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/register/auth"
+
+// booker - visitor requests
+const val PUBLIC_BOOKER_VISITOR_REQUESTS_PATH: String = "$PUBLIC_BOOKER_VISITORS_CONTROLLER_PATH/request"
 
 @RestController
 class PublicBookerController(
@@ -458,4 +463,41 @@ class PublicBookerController(
     @NotBlank
     prisonerId: String,
   ): List<SocialContactsDto> = publicBookerService.getSocialContacts(bookerReference, prisonerId)
+
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @PostMapping(PUBLIC_BOOKER_VISITOR_REQUESTS_PATH)
+  @ResponseStatus(HttpStatus.OK)
+  @Operation(
+    summary = "Submit a request to add a visitor given a prisoner and booker reference.",
+    description = "Submit a visitor request to add a visitor given a prisoner and booker reference.",
+    responses = [
+      ApiResponse(
+        responseCode = "201",
+        description = "Visitor request submitted successfully",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to submit a visitor request",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions for this action",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun createAddVisitorRequest(
+    @PathVariable(value = "bookerReference", required = true)
+    @NotBlank
+    bookerReference: String,
+    @PathVariable(value = "prisonerId", required = true)
+    @NotBlank
+    prisonerId: String,
+    @RequestBody
+    addVisitorToBookerRequestDto: AddVisitorToBookerRequestDto,
+  ): ResponseEntity<String> {
+    publicBookerService.createAddVisitorRequest(bookerReference, prisonerId, addVisitorToBookerRequestDto)
+    return ResponseEntity.status(HttpStatus.CREATED.value()).build()
+  }
 }

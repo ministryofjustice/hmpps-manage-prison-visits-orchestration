@@ -15,6 +15,7 @@ import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isUnprocessableEntityError
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient.Companion.LOG
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerValidationErrorResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AddVisitorToBookerRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
@@ -40,6 +41,9 @@ const val REGISTER_PRISONER: String = "$PERMITTED_PRISONERS/register"
 const val VALIDATE_PRISONER: String = "$PERMITTED_PRISONERS/{prisonerId}/validate"
 
 const val PERMITTED_VISITORS: String = "$PERMITTED_PRISONERS/{prisonerId}/permitted/visitors"
+
+// visitor request endpoints
+const val ADD_VISITOR_REQUEST: String = "$PERMITTED_VISITORS/request"
 
 // Admin endpoints
 const val BOOKER_ADMIN_ENDPOINT = "$PUBLIC_BOOKER_CONTROLLER_PATH/config"
@@ -235,6 +239,16 @@ class PrisonVisitBookerRegistryClient(
           Mono.empty()
         }
       }
+      .block(apiTimeout)
+  }
+
+  fun createAddVisitorRequest(bookerReference: String, prisonerId: String, addVisitorToBookerRequestDto: AddVisitorToBookerRequestDto) {
+    webClient.post()
+      .uri(ADD_VISITOR_REQUEST.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId))
+      .body(BodyInserters.fromValue(addVisitorToBookerRequestDto))
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .toBodilessEntity()
       .block(apiTimeout)
   }
 }

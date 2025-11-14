@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import org.springframework.http.HttpStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ADD_VISITOR_REQUEST
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_BOOKER_BY_BOOKING_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.LINK_VISITOR
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PERMITTED_PRISONERS
@@ -14,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VALIDATE_PRISONER
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerRegistrationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerValidationErrorResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AddVisitorToBookerRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
@@ -187,6 +189,19 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
 
     stubFor(
       WireMock.delete(uri)
+        .willReturn(
+          responseBuilder
+            .withStatus(httpStatus.value()),
+        ),
+    )
+  }
+
+  fun stubAddVisitorRequest(bookerReference: String, prisonerId: String, addVisitorToBookerRequestDto: AddVisitorToBookerRequestDto, httpStatus: HttpStatus = HttpStatus.OK) {
+    val responseBuilder = createJsonResponseBuilder()
+    val uri = ADD_VISITOR_REQUEST.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId)
+    stubFor(
+      WireMock.post(uri)
+        .withRequestBody(equalToJson(getJsonString(addVisitorToBookerRequestDto)))
         .willReturn(
           responseBuilder
             .withStatus(httpStatus.value()),
