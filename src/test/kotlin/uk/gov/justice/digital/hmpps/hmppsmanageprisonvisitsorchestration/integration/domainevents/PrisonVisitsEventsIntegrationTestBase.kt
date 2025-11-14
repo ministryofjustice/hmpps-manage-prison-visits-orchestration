@@ -290,10 +290,12 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
 
   fun createCourtVideoAppointmentAdditionalInformationJson(
     appointmentInstanceId: String,
+    categoryCode: String,
   ): String {
     val jsonValues = HashMap<String, Any>()
 
     jsonValues["appointmentInstanceId"] = appointmentInstanceId
+    jsonValues["categoryCode"] = categoryCode
 
     return createAdditionalInformationJson(jsonValues)
   }
