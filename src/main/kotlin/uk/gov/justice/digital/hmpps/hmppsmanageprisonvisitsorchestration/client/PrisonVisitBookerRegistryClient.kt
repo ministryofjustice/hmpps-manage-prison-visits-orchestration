@@ -43,7 +43,7 @@ const val VALIDATE_PRISONER: String = "$PERMITTED_PRISONERS/{prisonerId}/validat
 const val PERMITTED_VISITORS: String = "$PERMITTED_PRISONERS/{prisonerId}/permitted/visitors"
 
 // visitor request endpoints
-const val ADD_VISITOR_REQUEST: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/prisoners/{prisonerId}/visitors/request"
+const val ADD_VISITOR_REQUEST: String = "$PERMITTED_VISITORS/request"
 
 // Admin endpoints
 const val BOOKER_ADMIN_ENDPOINT = "$PUBLIC_BOOKER_CONTROLLER_PATH/config"
