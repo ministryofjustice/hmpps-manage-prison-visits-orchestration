@@ -466,7 +466,7 @@ class PublicBookerController(
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @PostMapping(PUBLIC_BOOKER_VISITOR_REQUESTS_PATH)
-  @ResponseStatus(HttpStatus.OK)
+  @ResponseStatus(HttpStatus.CREATED)
   @Operation(
     summary = "Submit a request to add a visitor given a prisoner and booker reference.",
     description = "Submit a visitor request to add a visitor given a prisoner and booker reference.",
