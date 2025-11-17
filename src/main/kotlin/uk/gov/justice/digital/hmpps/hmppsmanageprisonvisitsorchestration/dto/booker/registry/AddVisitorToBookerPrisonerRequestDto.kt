@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import java.time.LocalDate
 
-data class AddVisitorToBookerRequestDto(
+data class AddVisitorToBookerPrisonerRequestDto(
   @param:Schema(name = "visitors first name", description = "First name of the visitor in request", required = true)
   @field:NotBlank
   val firstName: String,

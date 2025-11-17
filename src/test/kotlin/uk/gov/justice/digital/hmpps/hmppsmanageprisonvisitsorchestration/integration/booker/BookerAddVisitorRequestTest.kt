@@ -11,7 +11,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_VISITOR_REQUESTS_PATH
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AddVisitorToBookerRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 
@@ -27,17 +27,17 @@ class BookerAddVisitorRequestTest : IntegrationTestBase() {
     webTestClient: WebTestClient,
     bookerReference: String,
     prisonerId: String,
-    addVisitorToBookerRequestDto: AddVisitorToBookerRequestDto,
+    addVisitorToBookerPrisonerRequestDto: AddVisitorToBookerPrisonerRequestDto,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec = webTestClient.post().uri(PUBLIC_BOOKER_VISITOR_REQUESTS_PATH.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId))
-    .body(BodyInserters.fromValue(addVisitorToBookerRequestDto))
+    .body(BodyInserters.fromValue(addVisitorToBookerPrisonerRequestDto))
     .headers(authHttpHeaders)
     .exchange()
 
   @Test
   fun `when call to booker registry is successful a CREATED response code is returned`() {
     // Given
-    val addVisitorRequest = AddVisitorToBookerRequestDto("Test", "User", LocalDate.of(2000, 1, 1))
+    val addVisitorRequest = AddVisitorToBookerPrisonerRequestDto("Test", "User", LocalDate.of(2000, 1, 1))
     prisonVisitBookerRegistryMockServer.stubAddVisitorRequest(bookerReference, prisonerId, addVisitorRequest, HttpStatus.CREATED)
 
     // When
@@ -51,7 +51,7 @@ class BookerAddVisitorRequestTest : IntegrationTestBase() {
   @Test
   fun `when call to booker registry is unsuccessful the failure error code is returned`() {
     // Given
-    val addVisitorRequest = AddVisitorToBookerRequestDto("Test", "User", LocalDate.of(2000, 1, 1))
+    val addVisitorRequest = AddVisitorToBookerPrisonerRequestDto("Test", "User", LocalDate.of(2000, 1, 1))
     prisonVisitBookerRegistryMockServer.stubAddVisitorRequest(bookerReference, prisonerId, addVisitorRequest, HttpStatus.INTERNAL_SERVER_ERROR)
 
     // When
@@ -65,7 +65,7 @@ class BookerAddVisitorRequestTest : IntegrationTestBase() {
   @Test
   fun `when booker authorisation is called without correct role then FORBIDDEN status is returned`() {
     // When
-    val addVisitorRequest = AddVisitorToBookerRequestDto("Test", "User", LocalDate.of(2000, 1, 1))
+    val addVisitorRequest = AddVisitorToBookerPrisonerRequestDto("Test", "User", LocalDate.of(2000, 1, 1))
     prisonVisitBookerRegistryMockServer.stubAddVisitorRequest(bookerReference, prisonerId, addVisitorRequest, HttpStatus.CREATED)
 
     // When

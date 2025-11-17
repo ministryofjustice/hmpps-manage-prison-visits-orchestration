@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.management.SocialContactsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AddVisitorToBookerRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerHistoryAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerInfoDto
@@ -470,6 +470,14 @@ class PublicBookerController(
   @Operation(
     summary = "Submit a request to add a visitor given a prisoner and booker reference.",
     description = "Submit a visitor request to add a visitor given a prisoner and booker reference.",
+    requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
+      content = [
+        Content(
+          mediaType = "application/json",
+          schema = Schema(implementation = AddVisitorToBookerPrisonerRequestDto::class),
+        ),
+      ],
+    ),
     responses = [
       ApiResponse(
         responseCode = "201",
@@ -495,9 +503,9 @@ class PublicBookerController(
     @NotBlank
     prisonerId: String,
     @RequestBody
-    addVisitorToBookerRequestDto: AddVisitorToBookerRequestDto,
+    addVisitorToBookerPrisonerRequestDto: AddVisitorToBookerPrisonerRequestDto,
   ): ResponseEntity<String> {
-    publicBookerService.createAddVisitorRequest(bookerReference, prisonerId, addVisitorToBookerRequestDto)
+    publicBookerService.createAddVisitorRequest(bookerReference, prisonerId, addVisitorToBookerPrisonerRequestDto)
     return ResponseEntity.status(HttpStatus.CREATED.value()).build()
   }
 }
