@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ADD_VISITOR_REQUEST
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_AWAITING_REVIEW_VISITOR_REQUESTS
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_BOOKER_BY_BOOKING_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.LINK_VISITOR
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PERMITTED_PRISONERS
@@ -18,6 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerVisitorRequestValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerAuditDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
@@ -219,6 +221,26 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
           responseBuilder
             .withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
             .withBody(getJsonString(errorResponse)),
+        ),
+    )
+  }
+
+  fun stubGetAwaitingVisitorRequestsForBooker(
+    bookerReference: String,
+    awaitingVisitorRequests: List<BookerPrisonerVisitorRequestDto>? = null,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val uri = GET_AWAITING_REVIEW_VISITOR_REQUESTS.replace("{bookerReference}", bookerReference)
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      WireMock.get(uri)
+        .willReturn(
+          if (awaitingVisitorRequests != null) {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(awaitingVisitorRequests))
+          } else {
+            responseBuilder.withStatus(httpStatus.value())
+          },
         ),
     )
   }

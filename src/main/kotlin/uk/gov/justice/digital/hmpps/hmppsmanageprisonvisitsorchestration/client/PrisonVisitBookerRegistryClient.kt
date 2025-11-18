@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerAuditDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
@@ -46,6 +47,7 @@ const val PERMITTED_VISITORS: String = "$PERMITTED_PRISONERS/{prisonerId}/permit
 
 // visitor request endpoints
 const val ADD_VISITOR_REQUEST: String = "$PERMITTED_VISITORS/request"
+const val GET_AWAITING_REVIEW_VISITOR_REQUESTS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/permitted/visitors/requests"
 
 // Admin endpoints
 const val BOOKER_ADMIN_ENDPOINT = "$PUBLIC_BOOKER_CONTROLLER_PATH/config"
@@ -230,6 +232,25 @@ class PrisonVisitBookerRegistryClient(
           Mono.error(exception)
         } else {
           Mono.error(e)
+        }
+      }
+      .block(apiTimeout)
+  }
+
+  fun getAwaitingVisitorRequests(bookerReference: String): List<BookerPrisonerVisitorRequestDto>? {
+    val uri = GET_AWAITING_REVIEW_VISITOR_REQUESTS.replace("{bookerReference}", bookerReference)
+    return webClient.get()
+      .uri(uri)
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<List<BookerPrisonerVisitorRequestDto>>()
+      .onErrorResume { e ->
+        if (!ClientUtils.isNotFoundError(e)) {
+          logger.error("getAwaitingVisitorRequests Failed for get request $uri")
+          Mono.error(e)
+        } else {
+          logger.error("getAwaitingVisitorRequests NOT_FOUND for get request $uri")
+          Mono.empty()
         }
       }
       .block(apiTimeout)
