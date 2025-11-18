@@ -538,11 +538,6 @@ class PublicBookerController(
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
-        responseCode = "404",
-        description = "Booker not authorised / not found.",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
         responseCode = "401",
         description = "Unauthorized to access this endpoint",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
