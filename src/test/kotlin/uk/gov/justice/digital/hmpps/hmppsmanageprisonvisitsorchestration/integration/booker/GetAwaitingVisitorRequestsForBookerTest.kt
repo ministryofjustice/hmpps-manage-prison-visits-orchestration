@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
@@ -85,6 +86,32 @@ class GetAwaitingVisitorRequestsForBookerTest : IntegrationTestBase() {
     val responseSpec = callGetAwaitingVisitorRequestsForBooker(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, bookerReference)
     responseSpec.expectStatus().is5xxServerError
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getAwaitingVisitorRequests(bookerReference)
+  }
+
+  @Test
+  fun `when get awaiting visitor requests is called without correct role then FORBIDDEN status is returned`() {
+    // When
+    val invalidRoleHeaders = setAuthorisation(roles = listOf("ROLE_INVALID"))
+    val responseSpec = callGetAwaitingVisitorRequestsForBooker(webTestClient, invalidRoleHeaders, "test")
+
+    // Then
+    responseSpec.expectStatus().isForbidden
+
+    // And
+    verify(prisonVisitBookerRegistryClientSpy, times(0)).getAwaitingVisitorRequests(any())
+  }
+
+  @Test
+  fun `when get awaiting visitor requests is called without correct role then UNAUTHORIZED status is returned`() {
+    // When
+    val url = PUBLIC_BOOKER_GET_VISITOR_REQUESTS_PATH.replace("{bookerReference}", "bookerReference")
+    val responseSpec = webTestClient.put().uri(url).exchange()
+
+    // Then
+    responseSpec.expectStatus().isUnauthorized
+
+    // And
+    verify(prisonVisitBookerRegistryClientSpy, times(0)).getAwaitingVisitorRequests(any())
   }
 
   private fun assertVisitorRequestDetails(bookerPrisonerVisitorRequestDto: BookerPrisonerVisitorRequestDto, requestedVisitorRequestDto: BookerPrisonerVisitorRequestDto) {
