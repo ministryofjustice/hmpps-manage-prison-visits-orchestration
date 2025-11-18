@@ -11,13 +11,15 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.HandlerMethodValidationException
 import org.springframework.web.reactive.function.client.WebClientException
 import org.springframework.web.reactive.function.client.WebClientResponseException
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.BookerPrisonerRegistrationErrorCodes
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.BookerPrisonerValidationErrorCodes
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestValidationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationValidationErrorCodes
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.BookerPrisonerRegistrationErrorCodes
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.BookerPrisonerValidationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.ApplicationValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerAuthFailureException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerPrisonerRegistrationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerPrisonerValidationException
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerVisitorRequestValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 
@@ -164,6 +166,20 @@ class OrchestrationExceptionHandler {
     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error)
   }
 
+  @ExceptionHandler(BookerVisitorRequestValidationException::class)
+  fun handleBookerVisitorRequestValidationException(e: BookerVisitorRequestValidationException): ResponseEntity<ValidationErrorResponse> {
+    log.debug("Create visitor request failed with exception: {}, {}", e.message, e.errorCode)
+    val message = e.localizedMessage
+    val error = BookerVisitorRequestValidationErrorResponse(
+      status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+      userMessage = "Prisoner registration failed",
+      developerMessage = message,
+      validationError = e.errorCode,
+    )
+
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error)
+  }
+
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
@@ -213,4 +229,12 @@ data class BookerPrisonerRegistrationErrorResponse(
   override val userMessage: String? = null,
   override val developerMessage: String? = null,
   val validationError: BookerPrisonerRegistrationErrorCodes,
+) : ValidationErrorResponse(status, errorCode, userMessage, developerMessage)
+
+data class BookerVisitorRequestValidationErrorResponse(
+  override val status: Int,
+  override val errorCode: Int? = null,
+  override val userMessage: String? = null,
+  override val developerMessage: String? = null,
+  val validationError: VisitorRequestValidationErrorCodes,
 ) : ValidationErrorResponse(status, errorCode, userMessage, developerMessage)
