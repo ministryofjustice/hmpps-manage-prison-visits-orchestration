@@ -153,7 +153,7 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
     val responseBuilder = createJsonResponseBuilder()
     val uri = LINK_VISITOR.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId)
     stubFor(
-      WireMock.post(uri)
+      WireMock.put(uri)
         .withRequestBody(equalToJson(getJsonString(registerVisitorForBookerPrisonerDto)))
         .willReturn(
           responseBuilder

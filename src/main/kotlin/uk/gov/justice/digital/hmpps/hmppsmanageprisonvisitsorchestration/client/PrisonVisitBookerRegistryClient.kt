@@ -146,7 +146,7 @@ class PrisonVisitBookerRegistryClient(
       .replace("{bookerReference}", bookerReference)
       .replace("{prisonerId}", prisonerId)
 
-    return webClient.post()
+    return webClient.put()
       .uri(uri)
       .body(BodyInserters.fromValue(registerVisitorForBookerPrisonerDto))
       .retrieve()
