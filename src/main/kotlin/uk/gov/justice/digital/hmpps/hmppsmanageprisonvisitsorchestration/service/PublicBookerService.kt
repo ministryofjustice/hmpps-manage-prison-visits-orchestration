@@ -177,9 +177,9 @@ class PublicBookerService(
     prisonVisitBookerRegistryClient.createAddVisitorRequest(bookerReference, prisonerNumber, addVisitorToBookerPrisonerRequestDto)
   }
 
-  fun getAwaitingVisitorRequests(bookerReference: String): List<BookerPrisonerVisitorRequestDto> {
-    logger.info("Entered PublicBookerService - getAwaitingVisitorRequests - for booker {}", bookerReference)
-    return prisonVisitBookerRegistryClient.getAwaitingVisitorRequests(bookerReference) ?: emptyList()
+  fun getActiveVisitorRequestsForBooker(bookerReference: String): List<BookerPrisonerVisitorRequestDto> {
+    logger.info("Entered PublicBookerService - getActiveVisitorRequestsForBooker - for booker {}", bookerReference)
+    return prisonVisitBookerRegistryClient.getActiveVisitorRequestsForBooker(bookerReference) ?: emptyList()
   }
 
   private fun isPrisonSupportedOnVisits(prisonId: String): Boolean = visitSchedulerClient.getSupportedPrisons(PUBLIC).map { it.uppercase() }.contains(prisonId.uppercase())

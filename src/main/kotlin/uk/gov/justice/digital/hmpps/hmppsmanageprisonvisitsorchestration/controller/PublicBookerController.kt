@@ -525,16 +525,16 @@ class PublicBookerController(
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(PUBLIC_BOOKER_GET_VISITOR_REQUESTS_PATH)
   @Operation(
-    summary = "Get all awaiting visitor requests for a booker.",
-    description = "Returns all awaiting visitor requests for a booker, empty if none found.",
+    summary = "Get all active visitor requests for a booker.",
+    description = "Returns all active visitor requests for a booker, empty if none found.",
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "Returns all awaiting visitor requests for a booker, empty if none found.",
+        description = "Returns all active visitor requests for a booker, empty if none found.",
       ),
       ApiResponse(
         responseCode = "400",
-        description = "Incorrect request to get awaiting visitor requests for a booker",
+        description = "Incorrect request to get active visitor requests for a booker",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
@@ -544,14 +544,14 @@ class PublicBookerController(
       ),
       ApiResponse(
         responseCode = "403",
-        description = "Incorrect permissions to get awaiting visitor requests",
+        description = "Incorrect permissions to get active visitor requests",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
   )
-  fun getRequestsAwaitingReviewForBooker(
+  fun getActiveVisitorRequestsForBooker(
     @PathVariable(value = "bookerReference", required = true)
     @NotBlank
     bookerReference: String,
-  ): List<BookerPrisonerVisitorRequestDto> = publicBookerService.getAwaitingVisitorRequests(bookerReference)
+  ): List<BookerPrisonerVisitorRequestDto> = publicBookerService.getActiveVisitorRequestsForBooker(bookerReference)
 }

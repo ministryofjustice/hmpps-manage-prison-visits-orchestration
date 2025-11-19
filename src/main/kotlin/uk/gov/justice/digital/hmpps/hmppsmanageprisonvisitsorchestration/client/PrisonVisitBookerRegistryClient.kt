@@ -47,7 +47,7 @@ const val PERMITTED_VISITORS: String = "$PERMITTED_PRISONERS/{prisonerId}/permit
 
 // visitor request endpoints
 const val ADD_VISITOR_REQUEST: String = "$PERMITTED_VISITORS/request"
-const val GET_AWAITING_REVIEW_VISITOR_REQUESTS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/permitted/visitors/requests"
+const val GET_ACTIVE_VISITOR_REVIEW_REQUESTS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/permitted/visitors/requests"
 
 // Admin endpoints
 const val BOOKER_ADMIN_ENDPOINT = "$PUBLIC_BOOKER_CONTROLLER_PATH/config"
@@ -237,8 +237,8 @@ class PrisonVisitBookerRegistryClient(
       .block(apiTimeout)
   }
 
-  fun getAwaitingVisitorRequests(bookerReference: String): List<BookerPrisonerVisitorRequestDto>? {
-    val uri = GET_AWAITING_REVIEW_VISITOR_REQUESTS.replace("{bookerReference}", bookerReference)
+  fun getActiveVisitorRequestsForBooker(bookerReference: String): List<BookerPrisonerVisitorRequestDto>? {
+    val uri = GET_ACTIVE_VISITOR_REVIEW_REQUESTS.replace("{bookerReference}", bookerReference)
     return webClient.get()
       .uri(uri)
       .accept(MediaType.APPLICATION_JSON)
@@ -246,10 +246,10 @@ class PrisonVisitBookerRegistryClient(
       .bodyToMono<List<BookerPrisonerVisitorRequestDto>>()
       .onErrorResume { e ->
         if (!ClientUtils.isNotFoundError(e)) {
-          logger.error("getAwaitingVisitorRequests Failed for get request $uri")
+          logger.error("getActiveVisitorRequestsForBooker Failed for get request $uri")
           Mono.error(e)
         } else {
-          logger.error("getAwaitingVisitorRequests NOT_FOUND for get request $uri")
+          logger.error("getActiveVisitorRequestsForBooker NOT_FOUND for get request $uri")
           Mono.empty()
         }
       }
