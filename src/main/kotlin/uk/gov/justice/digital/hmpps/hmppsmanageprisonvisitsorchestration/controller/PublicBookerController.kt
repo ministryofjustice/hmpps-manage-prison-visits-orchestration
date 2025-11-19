@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerHistoryAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerInfoDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterPrisonerForBookerDto
@@ -56,6 +57,7 @@ const val PUBLIC_BOOKER_CREATE_AUTH_DETAILS_CONTROLLER_PATH: String = "$PUBLIC_B
 
 // booker - visitor requests
 const val PUBLIC_BOOKER_VISITOR_REQUESTS_PATH: String = "$PUBLIC_BOOKER_VISITORS_CONTROLLER_PATH/request"
+const val PUBLIC_BOOKER_GET_VISITOR_REQUESTS_PATH: String = "$PUBLIC_BOOKER_DETAILS/permitted/visitors/requests"
 
 @RestController
 class PublicBookerController(
@@ -519,4 +521,37 @@ class PublicBookerController(
     publicBookerService.createAddVisitorRequest(bookerReference, prisonerId, addVisitorToBookerPrisonerRequestDto)
     return ResponseEntity.status(HttpStatus.CREATED.value()).build()
   }
+
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @GetMapping(PUBLIC_BOOKER_GET_VISITOR_REQUESTS_PATH)
+  @Operation(
+    summary = "Get all active visitor requests for a booker.",
+    description = "Returns all active visitor requests for a booker, empty if none found.",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Returns all active visitor requests for a booker, empty if none found.",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to get active visitor requests for a booker",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to get active visitor requests",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getActiveVisitorRequestsForBooker(
+    @PathVariable(value = "bookerReference", required = true)
+    @NotBlank
+    bookerReference: String,
+  ): List<BookerPrisonerVisitorRequestDto> = publicBookerService.getActiveVisitorRequestsForBooker(bookerReference)
 }
