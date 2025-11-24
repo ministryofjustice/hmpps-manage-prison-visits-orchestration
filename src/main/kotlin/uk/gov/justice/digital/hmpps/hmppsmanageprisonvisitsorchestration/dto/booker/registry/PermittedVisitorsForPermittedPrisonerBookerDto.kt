@@ -10,9 +10,4 @@ data class PermittedVisitorsForPermittedPrisonerBookerDto(
   @param:Schema(description = "Identifier for this contact (Person in NOMIS)", example = "5871791", required = true)
   @field:NotNull
   val visitorId: Long,
-
-  @param:JsonProperty("active")
-  @param:Schema(description = "Active / Inactive permitted visitor", example = "true", required = true)
-  @field:NotNull
-  val active: Boolean,
 )
