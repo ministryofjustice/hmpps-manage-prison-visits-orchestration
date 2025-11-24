@@ -2,7 +2,7 @@ plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "9.1.4"
   kotlin("plugin.spring") version "2.2.21"
   id("org.jetbrains.kotlin.plugin.noarg") version "2.2.21"
-  id("org.owasp.dependencycheck") version "12.1.8"
+  id("org.owasp.dependencycheck") version "12.1.9"
 }
 
 configurations {
@@ -27,7 +27,7 @@ dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8")
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.21.0")
 
-  implementation("org.springframework.data:spring-data-commons:3.5.5")
+  implementation("org.springframework.data:spring-data-commons:3.5.6")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14")
 
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
