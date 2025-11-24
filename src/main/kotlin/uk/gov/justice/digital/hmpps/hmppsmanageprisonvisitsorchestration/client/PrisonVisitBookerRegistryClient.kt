@@ -15,9 +15,11 @@ import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isUnprocessableEntityError
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient.Companion.LOG
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerValidationErrorResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerVisitorRequestValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerAuditDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
@@ -26,9 +28,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.SearchBookerDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.BookerPrisonerRegistrationErrorCodes
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.BookerPrisonerRegistrationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerPrisonerRegistrationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerPrisonerValidationException
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerVisitorRequestValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import java.time.Duration
 
@@ -44,6 +47,7 @@ const val PERMITTED_VISITORS: String = "$PERMITTED_PRISONERS/{prisonerId}/permit
 
 // visitor request endpoints
 const val ADD_VISITOR_REQUEST: String = "$PERMITTED_VISITORS/request"
+const val GET_ACTIVE_VISITOR_REVIEW_REQUESTS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/permitted/visitors/requests"
 
 // Admin endpoints
 const val BOOKER_ADMIN_ENDPOINT = "$PUBLIC_BOOKER_CONTROLLER_PATH/config"
@@ -142,7 +146,7 @@ class PrisonVisitBookerRegistryClient(
       .replace("{bookerReference}", bookerReference)
       .replace("{prisonerId}", prisonerId)
 
-    return webClient.post()
+    return webClient.put()
       .uri(uri)
       .body(BodyInserters.fromValue(registerVisitorForBookerPrisonerDto))
       .retrieve()
@@ -187,33 +191,6 @@ class PrisonVisitBookerRegistryClient(
       .orElseThrow { NotFoundException("booker not found on booker-registry for booker reference - $bookerReference") }
   }
 
-  private fun getPrisonerValidationErrorResponse(e: Throwable): Throwable {
-    if (e is WebClientResponseException && isUnprocessableEntityError(e)) {
-      try {
-        val errorResponse = objectMapper.readValue(e.responseBodyAsString, BookerPrisonerValidationErrorResponse::class.java)
-        return BookerPrisonerValidationException(errorResponse.validationError)
-      } catch (jsonProcessingException: Exception) {
-        LOG.error("An error occurred processing the booker prisoner validation error response - ${e.stackTraceToString()}")
-        throw jsonProcessingException
-      }
-    }
-
-    return e
-  }
-
-  private fun getPrisonerRegistrationErrorResponse(e: Throwable): Throwable {
-    if (e is WebClientResponseException && isUnprocessableEntityError(e)) {
-      try {
-        return BookerPrisonerRegistrationException(BookerPrisonerRegistrationErrorCodes.FAILED_REGISTRATION)
-      } catch (jsonProcessingException: Exception) {
-        LOG.error("An error occurred processing the booker prisoner registration error response - ${e.stackTraceToString()}")
-        throw jsonProcessingException
-      }
-    }
-
-    return e
-  }
-
   fun getBookerAuditHistoryAsMono(bookerReference: String): Mono<List<BookerAuditDto>> = webClient.get()
     .uri(BOOKER_REGISTRY_AUDIT_HISTORY.replace("{bookerReference}", bookerReference))
     .accept(MediaType.APPLICATION_JSON)
@@ -249,6 +226,74 @@ class PrisonVisitBookerRegistryClient(
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .toBodilessEntity()
+      .onErrorResume { e ->
+        if (isUnprocessableEntityError(e)) {
+          val exception = getBookerVisitorRequestValidationErrorResponse(e)
+          Mono.error(exception)
+        } else {
+          Mono.error(e)
+        }
+      }
       .block(apiTimeout)
+  }
+
+  fun getActiveVisitorRequestsForBooker(bookerReference: String): List<BookerPrisonerVisitorRequestDto>? {
+    val uri = GET_ACTIVE_VISITOR_REVIEW_REQUESTS.replace("{bookerReference}", bookerReference)
+    return webClient.get()
+      .uri(uri)
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<List<BookerPrisonerVisitorRequestDto>>()
+      .onErrorResume { e ->
+        if (!ClientUtils.isNotFoundError(e)) {
+          logger.error("getActiveVisitorRequestsForBooker Failed for get request $uri")
+          Mono.error(e)
+        } else {
+          logger.error("getActiveVisitorRequestsForBooker NOT_FOUND for get request $uri")
+          Mono.empty()
+        }
+      }
+      .block(apiTimeout)
+  }
+
+  private fun getPrisonerValidationErrorResponse(e: Throwable): Throwable {
+    if (e is WebClientResponseException && isUnprocessableEntityError(e)) {
+      try {
+        val errorResponse = objectMapper.readValue(e.responseBodyAsString, BookerPrisonerValidationErrorResponse::class.java)
+        return BookerPrisonerValidationException(errorResponse.validationError)
+      } catch (jsonProcessingException: Exception) {
+        LOG.error("An error occurred processing the booker prisoner validation error response - ${e.stackTraceToString()}")
+        throw jsonProcessingException
+      }
+    }
+
+    return e
+  }
+
+  private fun getPrisonerRegistrationErrorResponse(e: Throwable): Throwable {
+    if (e is WebClientResponseException && isUnprocessableEntityError(e)) {
+      try {
+        return BookerPrisonerRegistrationException(BookerPrisonerRegistrationErrorCodes.FAILED_REGISTRATION)
+      } catch (jsonProcessingException: Exception) {
+        LOG.error("An error occurred processing the booker prisoner registration error response - ${e.stackTraceToString()}")
+        throw jsonProcessingException
+      }
+    }
+
+    return e
+  }
+
+  private fun getBookerVisitorRequestValidationErrorResponse(e: Throwable): Throwable {
+    if (e is WebClientResponseException && isUnprocessableEntityError(e)) {
+      try {
+        val errorResponse = objectMapper.readValue(e.responseBodyAsString, BookerVisitorRequestValidationErrorResponse::class.java)
+        return BookerVisitorRequestValidationException(errorResponse.validationError)
+      } catch (jsonProcessingException: Exception) {
+        LOG.error("An error occurred submitting an add visitor request, error response - ${e.stackTraceToString()}")
+        throw jsonProcessingException
+      }
+    }
+
+    return e
   }
 }

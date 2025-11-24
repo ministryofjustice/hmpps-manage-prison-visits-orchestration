@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.booker
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.times
@@ -10,8 +11,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerVisitorRequestValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_VISITOR_REQUESTS_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AddVisitorToBookerPrisonerRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestValidationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 
@@ -49,7 +52,38 @@ class BookerAddVisitorRequestTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when call to booker registry is unsuccessful the failure error code is returned`() {
+  fun `when call to booker registry throws a validation error then validation error is returned`() {
+    // Given
+    val addVisitorRequest = AddVisitorToBookerPrisonerRequestDto("Test", "User", LocalDate.of(2000, 1, 1))
+    val bookerVisitorRequestValidationErrorResponse = BookerVisitorRequestValidationErrorResponse(status = HttpStatus.UNPROCESSABLE_ENTITY.value(), validationError = VisitorRequestValidationErrorCodes.VISITOR_ALREADY_EXISTS)
+    prisonVisitBookerRegistryMockServer.stubAddVisitorRequestValidationFailure(bookerReference, prisonerId, bookerVisitorRequestValidationErrorResponse)
+
+    // When
+    val responseSpec = callAddVisitorRequest(webTestClient, bookerReference, prisonerId, addVisitorRequest, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+    val errorResponse = getValidationErrorResponse(responseSpec)
+    assertThat(errorResponse.validationError).isEqualTo(VisitorRequestValidationErrorCodes.VISITOR_ALREADY_EXISTS)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).createAddVisitorRequest(bookerReference, prisonerId, addVisitorRequest)
+  }
+
+  @Test
+  fun `when call to booker registry fails with a NOT_FOUND error then NOT_FOUND error code is returned`() {
+    // Given
+    val addVisitorRequest = AddVisitorToBookerPrisonerRequestDto("Test", "User", LocalDate.of(2000, 1, 1))
+    prisonVisitBookerRegistryMockServer.stubAddVisitorRequest(bookerReference, prisonerId, addVisitorRequest, HttpStatus.NOT_FOUND)
+
+    // When
+    val responseSpec = callAddVisitorRequest(webTestClient, bookerReference, prisonerId, addVisitorRequest, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isNotFound
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).createAddVisitorRequest(bookerReference, prisonerId, addVisitorRequest)
+  }
+
+  @Test
+  fun `when call to booker registry fails with an INTERNAL_SERVER_ERROR error then INTERNAL_SERVER_ERROR error code is returned`() {
     // Given
     val addVisitorRequest = AddVisitorToBookerPrisonerRequestDto("Test", "User", LocalDate.of(2000, 1, 1))
     prisonVisitBookerRegistryMockServer.stubAddVisitorRequest(bookerReference, prisonerId, addVisitorRequest, HttpStatus.INTERNAL_SERVER_ERROR)
@@ -92,4 +126,6 @@ class BookerAddVisitorRequestTest : IntegrationTestBase() {
     // And
     verify(prisonVisitBookerRegistryClientSpy, times(0)).createAddVisitorRequest(any(), any(), any())
   }
+
+  fun getValidationErrorResponse(responseSpec: WebTestClient.ResponseSpec): BookerVisitorRequestValidationErrorResponse = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerVisitorRequestValidationErrorResponse::class.java)
 }
