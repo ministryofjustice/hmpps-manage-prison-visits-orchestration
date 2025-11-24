@@ -10,10 +10,6 @@ data class RegisterVisitorForBookerPrisonerDto(
   @field:NotBlank
   val visitorId: Long,
 
-  @param:Schema(description = "Active / Inactive permitted visitor", example = "true", required = true)
-  @field:NotNull
-  val active: Boolean,
-
   @param:Schema(description = "Flag to determine if the booker should be notified of the registration", example = "true", required = false)
   @field:NotNull
   val sendNotificationFlag: Boolean? = false,
