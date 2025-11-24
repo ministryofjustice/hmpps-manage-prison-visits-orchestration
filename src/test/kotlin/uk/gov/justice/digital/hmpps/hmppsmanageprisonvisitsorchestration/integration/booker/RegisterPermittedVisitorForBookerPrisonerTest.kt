@@ -23,7 +23,6 @@ class RegisterPermittedVisitorForBookerPrisonerTest : IntegrationTestBase() {
     val active = true
     val registerVisitorForBookerPrisonerDto = RegisterVisitorForBookerPrisonerDto(
       visitorId,
-      active,
       sendNotificationFlag = true,
     )
     val registerResponse = PermittedVisitorsForPermittedPrisonerBookerDto(visitorId, active)
@@ -49,7 +48,6 @@ class RegisterPermittedVisitorForBookerPrisonerTest : IntegrationTestBase() {
     val active = true
     val registerVisitorForBookerPrisonerDto = RegisterVisitorForBookerPrisonerDto(
       visitorId,
-      active,
       sendNotificationFlag = true,
     )
     val registerResponse = PermittedVisitorsForPermittedPrisonerBookerDto(visitorId, active)
@@ -73,7 +71,6 @@ class RegisterPermittedVisitorForBookerPrisonerTest : IntegrationTestBase() {
     val active = true
     val registerVisitorForBookerPrisonerDto = RegisterVisitorForBookerPrisonerDto(
       visitorId,
-      active,
       sendNotificationFlag = true,
     )
 
