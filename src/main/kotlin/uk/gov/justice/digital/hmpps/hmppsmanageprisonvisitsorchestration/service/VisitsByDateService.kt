@@ -53,10 +53,12 @@ class VisitsByDateService(
     }
 
     var prisonerDetailsList = emptyList<PrisonerDto>()
+    var prisonerIds = emptyList<String>()
     try {
-      prisonerDetailsList = prisonerSearchClient.getPrisonersByPrisonerIds(visits.map { it.prisonerId }.distinct().toList())?.toList() ?: emptyList()
+      prisonerIds = visits.map { it.prisonerId }.distinct().toList()
+      prisonerDetailsList = prisonerSearchClient.getPrisonersByPrisonerIds(prisonerIds)?.toList() ?: emptyList()
     } catch (e: Exception) {
-      LOG.debug("Unable to load prisoner details - $e")
+      LOG.error("Unable to load prisoner details for prisoners - $prisonerIds, exception - $e")
     }
 
     visits.forEach { visit ->
