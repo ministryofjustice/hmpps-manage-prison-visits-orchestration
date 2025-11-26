@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.AttributeSearchPrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
@@ -52,11 +52,11 @@ class VisitsByDateService(
       return visits
     }
 
-    var prisonerDetailsList = emptyList<PrisonerDto>()
+    var prisonerDetailsList = emptyList<AttributeSearchPrisonerDto>()
     var prisonerIds = emptyList<String>()
     try {
       prisonerIds = visits.map { it.prisonerId }.distinct().toList()
-      prisonerDetailsList = prisonerSearchClient.getPrisonersByPrisonerIds(prisonerIds)?.toList() ?: emptyList()
+      prisonerDetailsList = prisonerSearchClient.getPrisonersByPrisonerIdsAttributeSearch(prisonerIds)?.toList() ?: emptyList()
     } catch (e: Exception) {
       LOG.error("Unable to load prisoner details for prisoners - $prisonerIds, exception - $e")
     }
