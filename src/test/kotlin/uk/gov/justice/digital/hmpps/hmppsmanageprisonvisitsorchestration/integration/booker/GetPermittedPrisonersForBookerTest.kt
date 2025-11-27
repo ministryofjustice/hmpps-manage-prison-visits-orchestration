@@ -85,8 +85,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, true, PRISON_CODE, listOf(PermittedVisitorsForPermittedPrisonerBookerDto(1L, true))),
-        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, true, PRISON_CODE, listOf(PermittedVisitorsForPermittedPrisonerBookerDto(1L, true))),
+        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, PRISON_CODE, listOf(PermittedVisitorsForPermittedPrisonerBookerDto(1L))),
+        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, PRISON_CODE, listOf(PermittedVisitorsForPermittedPrisonerBookerDto(1L))),
       ),
     )
     visitAllocationApiMockServer.stubGetPrisonerVOBalance(prisoner1Dto.prisonerNumber, visitBalance1)
@@ -148,8 +148,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, true, PRISON_CODE, listOf()),
-        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, true, PRISON_CODE, listOf()),
+        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, PRISON_CODE, listOf()),
+        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, PRISON_CODE, listOf()),
       ),
     )
     visitAllocationApiMockServer.stubGetPrisonerVOBalance(prisoner1Dto.prisonerNumber, visitBalance1)
@@ -182,8 +182,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, true, PRISON_CODE, listOf()),
-        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, true, PRISON_CODE, listOf()),
+        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, PRISON_CODE, listOf()),
+        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, PRISON_CODE, listOf()),
       ),
     )
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisoner1Dto.prisonerNumber, null)
@@ -257,13 +257,13 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when NOT_FOUND  is returned from prisoner search then empty list is returned`() {
+  fun `when NOT_FOUND is returned from prisoner search then empty list is returned`() {
     // Given
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, true, PRISON_CODE, listOf()),
-        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, true, PRISON_CODE, listOf()),
+        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, PRISON_CODE, listOf()),
+        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, PRISON_CODE, listOf()),
       ),
     )
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisoner1Dto.prisonerNumber, null, HttpStatus.NOT_FOUND)
@@ -293,8 +293,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, true, PRISON_CODE, listOf()),
-        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, true, PRISON_CODE, listOf()),
+        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, PRISON_CODE, listOf()),
+        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, PRISON_CODE, listOf()),
       ),
     )
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisoner1Dto.prisonerNumber, null, HttpStatus.INTERNAL_SERVER_ERROR)
@@ -313,8 +313,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, true, PRISON_CODE, listOf()),
-        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, true, PRISON_CODE, listOf()),
+        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, PRISON_CODE, listOf()),
+        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, PRISON_CODE, listOf()),
       ),
     )
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisoner1Dto.prisonerNumber, prisoner1Dto)
@@ -346,8 +346,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, true, PRISON_CODE, listOf()),
-        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, true, PRISON_CODE, listOf()),
+        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, PRISON_CODE, listOf()),
+        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, PRISON_CODE, listOf()),
       ),
     )
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisoner1Dto.prisonerNumber, prisoner1Dto)
@@ -383,8 +383,8 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(
       BOOKER_REFERENCE,
       listOf(
-        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, true, PRISON_CODE, listOf()),
-        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, true, PRISON_CODE, listOf()),
+        PermittedPrisonerForBookerDto(prisoner1Dto.prisonerNumber, PRISON_CODE, listOf()),
+        PermittedPrisonerForBookerDto(prisoner2Dto.prisonerNumber, PRISON_CODE, listOf()),
       ),
     )
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisoner1Dto.prisonerNumber, prisoner1Dto)

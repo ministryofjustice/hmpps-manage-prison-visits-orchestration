@@ -29,7 +29,7 @@ data class EventAuditDto(
   var sessionTemplateReference: String? = null,
 
   @param:Schema(description = "Notes added against the event", required = false)
-  @NullableNotBlank
+  @field:NullableNotBlank
   var text: String? = null,
 
   @param:Schema(description = "event creat date and time", example = "2018-12-01T13:45:00", required = true)

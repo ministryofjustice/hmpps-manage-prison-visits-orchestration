@@ -49,9 +49,9 @@ class GetBookerByReferenceTest : IntegrationTestBase() {
     convictedStatus = "Convicted",
   )
 
-  private final val permittedPrisonerA = PermittedPrisonerForBookerDto(prisoner1Id, true, "HEI", listOf(PermittedVisitorsForPermittedPrisonerBookerDto(1L, true)))
+  private final val permittedPrisonerA = PermittedPrisonerForBookerDto(prisoner1Id, "HEI", listOf(PermittedVisitorsForPermittedPrisonerBookerDto(1L)))
 
-  private final val permittedPrisonerB = PermittedPrisonerForBookerDto(prisoner2Id, true, "HEI", listOf(PermittedVisitorsForPermittedPrisonerBookerDto(2L, true)))
+  private final val permittedPrisonerB = PermittedPrisonerForBookerDto(prisoner2Id, "HEI", listOf(PermittedVisitorsForPermittedPrisonerBookerDto(2L)))
 
   private final val prisonDto = PrisonRegisterPrisonDto(prisonCode, "Hewell")
 

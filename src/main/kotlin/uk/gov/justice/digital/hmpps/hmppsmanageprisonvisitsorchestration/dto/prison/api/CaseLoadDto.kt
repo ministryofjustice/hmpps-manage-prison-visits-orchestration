@@ -10,7 +10,7 @@ class CaseLoadDto(
   @param:Schema(required = true, description = "Full description of the case load", example = "Moorland Closed (HMP & YOI)")
   val description: String,
 
-  @Schema(
+  @param:Schema(
     required = true,
     description = "Type of case load. Note: Reference Code CSLD_TYPE",
     example = "INST",
@@ -18,14 +18,14 @@ class CaseLoadDto(
   )
   val type: String,
 
-  @Schema(
+  @param:Schema(
     description = "Functional Use of the case load",
     example = "GENERAL",
     allowableValues = ["GENERAL", "ADMIN"],
   )
   val caseloadFunction: String? = null,
 
-  @Schema(
+  @param:Schema(
     required = true,
     description = "Indicates that this caseload in the context of a staff member is the current active",
     example = "false",

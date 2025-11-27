@@ -20,12 +20,11 @@ class RegisterPermittedVisitorForBookerPrisonerTest : IntegrationTestBase() {
     val bookerReference = "booker-reference"
     val prisonerId = "AA12345"
     val visitorId = 123L
-    val active = true
     val registerVisitorForBookerPrisonerDto = RegisterVisitorForBookerPrisonerDto(
       visitorId,
       sendNotificationFlag = true,
     )
-    val registerResponse = PermittedVisitorsForPermittedPrisonerBookerDto(visitorId, active)
+    val registerResponse = PermittedVisitorsForPermittedPrisonerBookerDto(visitorId)
 
     prisonVisitBookerRegistryMockServer.stubRegisterVisitorForBookerPrisoner(bookerReference = bookerReference, prisonerId, registerVisitorForBookerPrisonerDto, registerResponse, HttpStatus.OK)
 
@@ -36,7 +35,6 @@ class RegisterPermittedVisitorForBookerPrisonerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isOk
     val response = getResponse(responseSpec)
     assertThat(response.visitorId).isEqualTo(visitorId)
-    assertThat(response.active).isEqualTo(active)
   }
 
   @Test
@@ -45,12 +43,11 @@ class RegisterPermittedVisitorForBookerPrisonerTest : IntegrationTestBase() {
     val bookerReference = "booker-reference"
     val prisonerId = "AA12345"
     val visitorId = 123L
-    val active = true
     val registerVisitorForBookerPrisonerDto = RegisterVisitorForBookerPrisonerDto(
       visitorId,
       sendNotificationFlag = true,
     )
-    val registerResponse = PermittedVisitorsForPermittedPrisonerBookerDto(visitorId, active)
+    val registerResponse = PermittedVisitorsForPermittedPrisonerBookerDto(visitorId)
 
     prisonVisitBookerRegistryMockServer.stubRegisterVisitorForBookerPrisoner(bookerReference = bookerReference, prisonerId, registerVisitorForBookerPrisonerDto, registerResponse, HttpStatus.INTERNAL_SERVER_ERROR)
 
@@ -68,7 +65,6 @@ class RegisterPermittedVisitorForBookerPrisonerTest : IntegrationTestBase() {
     val bookerReference = "booker-reference"
     val prisonerId = "AA12345"
     val visitorId = 123L
-    val active = true
     val registerVisitorForBookerPrisonerDto = RegisterVisitorForBookerPrisonerDto(
       visitorId,
       sendNotificationFlag = true,
