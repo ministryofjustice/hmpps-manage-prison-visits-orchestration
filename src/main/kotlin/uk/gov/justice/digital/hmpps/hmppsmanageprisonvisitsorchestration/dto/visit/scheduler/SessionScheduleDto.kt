@@ -20,7 +20,7 @@ data class SessionScheduleDto(
   @field:NotNull
   val sessionDateRange: SessionDateRangeDto,
 
-  @Schema(
+  @param:Schema(
     description = "The capacity for the session",
     required = true,
   )

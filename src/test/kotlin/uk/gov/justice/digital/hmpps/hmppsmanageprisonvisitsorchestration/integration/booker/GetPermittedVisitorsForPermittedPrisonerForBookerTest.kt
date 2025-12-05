@@ -44,7 +44,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
     private const val PRISONER_ID = "AA112233B"
   }
 
-  val bookerRegistryPrisonerDto = PermittedPrisonerForBookerDto(PRISONER_ID, true, PRISON_CODE, listOf())
+  val bookerRegistryPrisonerDto = PermittedPrisonerForBookerDto(PRISONER_ID, PRISON_CODE, listOf())
 
   private val adultVisitor = createVisitor(
     firstName = "First",
@@ -129,8 +129,8 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId),
       ),
     )
 
@@ -161,13 +161,13 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(indefinitelyBannedVisitor.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(bannedVisitorForNext3Weeks.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(bannedVisitorForNext6Weeks.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(multipleBansVisitor.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(expiredBanVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(indefinitelyBannedVisitor.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(bannedVisitorForNext3Weeks.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(bannedVisitorForNext6Weeks.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(multipleBansVisitor.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(expiredBanVisitor.personId),
       ),
     )
 
@@ -221,7 +221,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        PermittedVisitorsForPermittedPrisonerBookerDto(visitorWithIndefiniteBan.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(visitorWithIndefiniteBan.personId),
       ),
     )
 
@@ -259,7 +259,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        PermittedVisitorsForPermittedPrisonerBookerDto(visitorWithBan.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(visitorWithBan.personId),
       ),
     )
 
@@ -297,7 +297,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        PermittedVisitorsForPermittedPrisonerBookerDto(visitorWithBan.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(visitorWithBan.personId),
       ),
     )
 
@@ -423,8 +423,8 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId),
       ),
     )
 
@@ -454,8 +454,8 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId),
       ),
     )
 

@@ -76,11 +76,10 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     // Given
     val prisoner1Dto = PermittedPrisonerForBookerDto(
       prisonerId,
-      true,
       prisonCode,
       listOf(
-        PermittedVisitorsForPermittedPrisonerBookerDto(visitor3.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(visitor4.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(visitor3.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(visitor4.personId),
       ),
     )
 
@@ -125,7 +124,6 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     // Given
     val prisoner1Dto = PermittedPrisonerForBookerDto(
       prisonerId,
-      true,
       prisonCode,
       emptyList(),
     )
@@ -197,7 +195,6 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
 
     val prisoner1Dto = PermittedPrisonerForBookerDto(
       prisonerId,
-      true,
       prisonCode,
       emptyList(),
     )
@@ -247,7 +244,6 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     // Given
     val prisoner1Dto = PermittedPrisonerForBookerDto(
       prisonerId,
-      true,
       prisonCode,
       emptyList(),
     )
@@ -281,7 +277,6 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     // Given
     val prisoner1Dto = PermittedPrisonerForBookerDto(
       prisonerId,
-      true,
       prisonCode,
       emptyList(),
     )
@@ -309,7 +304,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
   @Test
   fun `when visit scheduler returns NOT_FOUND error then no visitor details are returned`() {
     // Given
-    val prisoner1Dto = PermittedPrisonerForBookerDto(prisonerId, true, prisonCode, emptyList())
+    val prisoner1Dto = PermittedPrisonerForBookerDto(prisonerId, prisonCode, emptyList())
 
     val booker = BookerInfoDto(
       reference = bookerReference,
@@ -352,7 +347,6 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     // Given
     val prisoner1Dto = PermittedPrisonerForBookerDto(
       prisonerId,
-      true,
       prisonCode,
       emptyList(),
     )

@@ -47,7 +47,7 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
   fun stubGetBookersPrisoners(bookerReference: String, bookerPrisoners: List<PermittedPrisonerForBookerDto>?, httpStatus: HttpStatus = HttpStatus.OK) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
-      WireMock.get(PERMITTED_PRISONERS.replace("{bookerReference}", bookerReference) + "?active=true")
+      WireMock.get(PERMITTED_PRISONERS.replace("{bookerReference}", bookerReference))
         .willReturn(
           if (bookerPrisoners == null) {
             responseBuilder
@@ -99,7 +99,7 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
   fun stubGetBookersPrisonerVisitors(bookerReference: String, prisonerNumber: String, visitors: List<PermittedVisitorsForPermittedPrisonerBookerDto>?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
-      WireMock.get(PERMITTED_VISITORS.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerNumber) + "?active=true")
+      WireMock.get(PERMITTED_VISITORS.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerNumber))
         .willReturn(
           if (visitors == null) {
             responseBuilder
