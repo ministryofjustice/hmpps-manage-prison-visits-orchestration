@@ -49,7 +49,7 @@ const val PERMITTED_VISITORS: String = "$PERMITTED_PRISONERS/{prisonerId}/permit
 
 // visitor request endpoints
 const val ADD_VISITOR_REQUEST: String = "$PERMITTED_VISITORS/request"
-const val GET_ACTIVE_VISITOR_REVIEW_REQUESTS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/permitted/visitors/requests"
+const val GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/permitted/visitors/requests"
 
 // Admin endpoints
 const val BOOKER_ADMIN_ENDPOINT = "$PUBLIC_BOOKER_CONTROLLER_PATH/config"
@@ -240,7 +240,7 @@ class PrisonVisitBookerRegistryClient(
   }
 
   fun getActiveVisitorRequestsForBooker(bookerReference: String): List<BookerPrisonerVisitorRequestDto>? {
-    val uri = GET_ACTIVE_VISITOR_REVIEW_REQUESTS.replace("{bookerReference}", bookerReference)
+    val uri = GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference)
     return webClient.get()
       .uri(uri)
       .accept(MediaType.APPLICATION_JSON)
