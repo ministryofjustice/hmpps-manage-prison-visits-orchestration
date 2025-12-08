@@ -59,7 +59,7 @@ const val PUBLIC_BOOKER_CREATE_AUTH_DETAILS_CONTROLLER_PATH: String = "$PUBLIC_B
 
 // booker - visitor requests
 const val PUBLIC_BOOKER_VISITOR_REQUESTS_PATH: String = "$PUBLIC_BOOKER_VISITORS_CONTROLLER_PATH/request"
-const val PUBLIC_BOOKER_GET_VISITOR_REQUESTS_PATH: String = "$PUBLIC_BOOKER_DETAILS/permitted/visitors/requests"
+const val GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE_AND_PRISONER_ID: String = "$PUBLIC_BOOKER_DETAILS/permitted/visitors/requests"
 
 const val PUBLIC_BOOKER_GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests/count"
 
@@ -528,7 +528,7 @@ class PublicBookerController(
   }
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
-  @GetMapping(PUBLIC_BOOKER_GET_VISITOR_REQUESTS_PATH)
+  @GetMapping(GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE_AND_PRISONER_ID)
   @Operation(
     summary = "Get all active visitor requests for a booker.",
     description = "Returns all active visitor requests for a booker, empty if none found.",
