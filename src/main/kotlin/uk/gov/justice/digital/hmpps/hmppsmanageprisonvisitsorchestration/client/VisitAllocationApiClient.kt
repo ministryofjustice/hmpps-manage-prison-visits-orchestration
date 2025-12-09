@@ -13,7 +13,6 @@ import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import java.time.Duration
 import java.time.LocalDate
 import java.util.Optional
@@ -55,15 +54,6 @@ class VisitAllocationApiClient(
       }
       .retrieve()
       .bodyToMono<List<VisitOrderHistoryDto>>()
-      .onErrorResume { e ->
-        if (!ClientUtils.isNotFoundError(e)) {
-          LOG.error("getPrisonerVisitOrderHistory Failed for get request $uri")
-          Mono.error(e)
-        } else {
-          LOG.error("getPrisonerVisitOrderHistory NOT_FOUND for get request $uri")
-          Mono.error { NotFoundException("No visit order history found for Prisoner - $prisonerId on visit-allocation-api") }
-        }
-      }
       .blockOptional(apiTimeout)
       .orElse(emptyList())
   }
