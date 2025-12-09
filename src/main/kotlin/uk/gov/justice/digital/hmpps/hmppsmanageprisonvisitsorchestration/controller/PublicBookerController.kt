@@ -33,11 +33,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterVisitorForBookerPrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorInfoDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerDetailedInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.SearchBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.BookerPrisonerRegistrationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PublicBookerService
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PublicBookerVisitorRequestsService
 
 const val PUBLIC_BOOKER_CONTROLLER_PATH: String = "/public/booker"
 
@@ -57,11 +59,14 @@ const val PUBLIC_BOOKER_CREATE_AUTH_DETAILS_CONTROLLER_PATH: String = "$PUBLIC_B
 
 // booker - visitor requests
 const val PUBLIC_BOOKER_VISITOR_REQUESTS_PATH: String = "$PUBLIC_BOOKER_VISITORS_CONTROLLER_PATH/request"
-const val PUBLIC_BOOKER_GET_VISITOR_REQUESTS_PATH: String = "$PUBLIC_BOOKER_DETAILS/permitted/visitors/requests"
+const val GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE: String = "$PUBLIC_BOOKER_DETAILS/permitted/visitors/requests"
+
+const val PUBLIC_BOOKER_GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests/count"
 
 @RestController
 class PublicBookerController(
   private val publicBookerService: PublicBookerService,
+  private val publicBookerVisitorRequestsService: PublicBookerVisitorRequestsService,
 ) {
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
@@ -518,12 +523,12 @@ class PublicBookerController(
     @RequestBody
     addVisitorToBookerPrisonerRequestDto: AddVisitorToBookerPrisonerRequestDto,
   ): ResponseEntity<String> {
-    publicBookerService.createAddVisitorRequest(bookerReference, prisonerId, addVisitorToBookerPrisonerRequestDto)
+    publicBookerVisitorRequestsService.createAddVisitorRequest(bookerReference, prisonerId, addVisitorToBookerPrisonerRequestDto)
     return ResponseEntity.status(HttpStatus.CREATED.value()).build()
   }
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
-  @GetMapping(PUBLIC_BOOKER_GET_VISITOR_REQUESTS_PATH)
+  @GetMapping(GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE)
   @Operation(
     summary = "Get all active visitor requests for a booker.",
     description = "Returns all active visitor requests for a booker, empty if none found.",
@@ -553,5 +558,38 @@ class PublicBookerController(
     @PathVariable(value = "bookerReference", required = true)
     @NotBlank
     bookerReference: String,
-  ): List<BookerPrisonerVisitorRequestDto> = publicBookerService.getActiveVisitorRequestsForBooker(bookerReference)
+  ): List<BookerPrisonerVisitorRequestDto> = publicBookerVisitorRequestsService.getActiveVisitorRequestsForBooker(bookerReference)
+
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @GetMapping(PUBLIC_BOOKER_GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE)
+  @Operation(
+    summary = "Get a count of all visitor requests for a prison via prison code",
+    description = "Get a count of all visitor requests for a prison via prison code",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Count successfully returned",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to get count of visitor requests for prison.",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to get count of visitor requests for prison",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getVisitorRequestsCountByPrisonCode(
+    @PathVariable(value = "prisonCode", required = true)
+    @NotBlank
+    prisonCode: String,
+  ): VisitorRequestsCountByPrisonCodeDto = publicBookerVisitorRequestsService.getCountVisitorRequestsForPrison(prisonCode)
 }
