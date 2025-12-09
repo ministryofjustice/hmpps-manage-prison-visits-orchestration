@@ -30,4 +30,9 @@ class PublicBookerVisitorRequestsService(
     LOG.info("Entered PublicBookerVisitorRequestsService - getCountVisitorRequestsForPrison - for prison $prisonCode")
     return prisonVisitBookerRegistryClient.getVisitorRequestsCountByPrisonCode(prisonCode)
   }
+
+  fun getVisitorRequestsForPrison(prisonCode: String): List<BookerPrisonerVisitorRequestDto> {
+    LOG.info("Entered PublicBookerVisitorRequestsService - getVisitorRequestsForPrison - for prison $prisonCode")
+    return prisonVisitBookerRegistryClient.getVisitorRequestsByPrisonCode(prisonCode)
+  }
 }
