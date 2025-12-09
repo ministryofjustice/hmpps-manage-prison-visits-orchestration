@@ -4,8 +4,10 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.createJsonResponseBuilder
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.getJsonString
+import java.time.LocalDate
 
 class VisitAllocationApiMockServer : WireMockServer(8101) {
 
@@ -25,6 +27,28 @@ class VisitAllocationApiMockServer : WireMockServer(8101) {
             responseBuilder
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(prisonerVOBalanceDto))
+          },
+        ),
+    )
+  }
+
+  fun stubGetVisitOrderHistory(
+    prisonerId: String,
+    fromDate: LocalDate,
+    visitOrderHistoryList: List<VisitOrderHistoryDto>?,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      WireMock.get("/visits/allocation/prisoner/$prisonerId/visit-order-history?fromDate=$fromDate")
+        .willReturn(
+          if (visitOrderHistoryList == null) {
+            responseBuilder
+              .withStatus(httpStatus.value())
+          } else {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(visitOrderHistoryList))
           },
         ),
     )
