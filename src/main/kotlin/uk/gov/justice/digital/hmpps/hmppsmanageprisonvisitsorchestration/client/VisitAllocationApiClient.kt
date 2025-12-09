@@ -9,9 +9,13 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.bodyToMono
+import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import java.time.Duration
+import java.time.LocalDate
 import java.util.Optional
 
 @Component
@@ -21,12 +25,14 @@ class VisitAllocationApiClient(
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
+    const val VISIT_ORDER_HISTORY_URI = "/visits/allocation/prisoner/{prisonerId}/visit-order-history"
+    const val VO_DETAILED_BALANCE_URI = "/visits/allocation/prisoner/{prisonerId}/balance/detailed"
   }
 
   fun getPrisonerVOBalance(prisonerId: String): Optional<PrisonerVOBalanceDto>? = getPrisonerVOBalanceAsMono(prisonerId).block(apiTimeout)
 
   fun getPrisonerVOBalanceAsMono(prisonerId: String): Mono<Optional<PrisonerVOBalanceDto>> {
-    val uri = "/visits/allocation/prisoner/$prisonerId/balance/detailed"
+    val uri = VO_DETAILED_BALANCE_URI.replace("{prisonerId}", prisonerId)
     return webClient.get()
       .uri(uri)
       .retrieve()
@@ -39,5 +45,35 @@ class VisitAllocationApiClient(
           Mono.error(e)
         }
       }
+  }
+
+  fun getPrisonerVisitOrderHistory(prisonerId: String, fromDate: LocalDate): List<VisitOrderHistoryDto> {
+    val uri = VISIT_ORDER_HISTORY_URI.replace("{prisonerId}", prisonerId)
+    return webClient.get()
+      .uri(uri) {
+        visitOrderHistoryUriBuilder(fromDate, it).build()
+      }
+      .retrieve()
+      .bodyToMono<List<VisitOrderHistoryDto>>()
+      .onErrorResume { e ->
+        if (!ClientUtils.isNotFoundError(e)) {
+          LOG.error("getPrisonerVisitOrderHistory Failed for get request $uri")
+          Mono.error(e)
+        } else {
+          LOG.error("getPrisonerVisitOrderHistory NOT_FOUND for get request $uri")
+          Mono.error { NotFoundException("No visit order history found for Prisoner - $prisonerId on visit-allocation-api") }
+        }
+      }
+      .blockOptional(apiTimeout)
+      .orElse(emptyList())
+  }
+
+  private fun visitOrderHistoryUriBuilder(
+    fromDate: LocalDate,
+    uriBuilder: UriBuilder,
+  ): UriBuilder {
+    uriBuilder.queryParam("fromDate", fromDate)
+
+    return uriBuilder
   }
 }
