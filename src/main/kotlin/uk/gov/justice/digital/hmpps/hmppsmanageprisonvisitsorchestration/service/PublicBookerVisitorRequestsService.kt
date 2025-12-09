@@ -7,11 +7,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.SingleVisitorRequestForReviewDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorRequestsCountByPrisonCodeDto
 
 @Service
 class PublicBookerVisitorRequestsService(
   private val prisonVisitBookerRegistryClient: PrisonVisitBookerRegistryClient,
+  private val publicBookerService: PublicBookerService,
 ) {
   companion object {
     private val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -25,6 +27,15 @@ class PublicBookerVisitorRequestsService(
   fun getActiveVisitorRequestsForBooker(bookerReference: String): List<BookerPrisonerVisitorRequestDto> {
     LOG.info("Entered PublicBookerVisitorRequestsService - getActiveVisitorRequestsForBooker - for booker $bookerReference")
     return prisonVisitBookerRegistryClient.getActiveVisitorRequestsForBooker(bookerReference) ?: emptyList()
+  }
+
+  fun getVisitorRequestForReview(bookerReference: String, prisonerId: String, requestReference: String): SingleVisitorRequestForReviewDto {
+    LOG.info("Entered PublicBookerVisitorRequestsService - getVisitorRequestForReview - for booker $bookerReference, prisoner $prisonerId, requestReference $requestReference")
+
+    val visitorRequest = prisonVisitBookerRegistryClient.getSingleVisitorRequest(bookerReference, prisonerId, requestReference)
+    val socialContacts = publicBookerService.getSocialContacts(bookerReference, prisonerId)
+
+    return SingleVisitorRequestForReviewDto(visitorRequest, socialContacts)
   }
 
   fun getCountVisitorRequestsForPrison(prisonCode: String): VisitorRequestsCountByPrisonCodeDto {

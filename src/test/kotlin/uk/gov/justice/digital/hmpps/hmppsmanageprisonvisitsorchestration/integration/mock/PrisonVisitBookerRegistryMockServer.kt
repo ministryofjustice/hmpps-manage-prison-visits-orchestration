@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ADD_VISITOR_REQUEST
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_BOOKER_BY_BOOKING_REFERENCE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_SINGLE_VISITOR_REQUEST
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.LINK_VISITOR
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PERMITTED_PRISONERS
@@ -282,6 +283,32 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
           if (visitorRequestsList != null) {
             responseBuilder.withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(visitorRequestsList))
+          } else {
+            responseBuilder.withStatus(httpStatus.value())
+          },
+        ),
+    )
+  }
+
+  fun stubGetSingleVisitorRequest(
+    bookerReference: String,
+    prisonerId: String,
+    requestReference: String,
+    visitorRequest: PrisonVisitorRequestDto? = null,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val uri = GET_SINGLE_VISITOR_REQUEST
+      .replace("{bookerReference}", bookerReference)
+      .replace("{prisonerId}", prisonerId)
+      .replace("{requestReference}", requestReference)
+
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      WireMock.get(uri)
+        .willReturn(
+          if (visitorRequest != null) {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(visitorRequest))
           } else {
             responseBuilder.withStatus(httpStatus.value())
           },
