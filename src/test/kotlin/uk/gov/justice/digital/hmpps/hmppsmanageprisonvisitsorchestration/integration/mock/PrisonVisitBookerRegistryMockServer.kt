@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterVisitorForBookerPrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
@@ -270,7 +271,7 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
 
   fun stubGetVisitorRequestsForPrison(
     prisonCode: String,
-    visitorRequestsList: List<BookerPrisonerVisitorRequestDto>? = null,
+    visitorRequestsList: List<PrisonVisitorRequestDto>? = null,
     httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
   ) {
     val uri = PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_PRISON_CODE.replace("{prisonCode}", prisonCode)
