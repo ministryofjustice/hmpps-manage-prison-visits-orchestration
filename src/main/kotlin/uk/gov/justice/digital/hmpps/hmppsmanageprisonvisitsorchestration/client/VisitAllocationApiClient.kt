@@ -55,13 +55,8 @@ class VisitAllocationApiClient(
       .retrieve()
       .bodyToMono<List<VisitOrderHistoryDto>>()
       .onErrorResume { e ->
-        if (!ClientUtils.isNotFoundError(e)) {
-          LOG.error("getPrisonerVisitOrderHistory Failed for get request $uri")
-          Mono.error(e)
-        } else {
-          LOG.error("getPrisonerVisitOrderHistory NOT_FOUND for get request $uri")
-          Mono.empty()
-        }
+        LOG.error("getPrisonerVisitOrderHistory Failed for get request $uri")
+        Mono.error(e)
       }
       .blockOptional(apiTimeout)
       .orElse(emptyList())

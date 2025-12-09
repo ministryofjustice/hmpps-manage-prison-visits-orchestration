@@ -90,10 +90,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
 
     // When
     val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, LocalDate.now().minusDays(10))
-    val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val activeResultsList = getResults(returnResult)
-    assertThat(activeResultsList.size).isEqualTo(0)
-
+    responseSpec.expectStatus().isNotFound
     verify(visitAllocationApiClientSpy, times(1)).getPrisonerVisitOrderHistory(prisonerId, fromDate)
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
   }
