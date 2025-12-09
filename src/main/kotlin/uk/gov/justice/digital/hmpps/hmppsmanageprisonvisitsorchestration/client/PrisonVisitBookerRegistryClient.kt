@@ -23,8 +23,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterVisitorForBookerPrisonerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.SearchBookerDto
@@ -47,7 +49,10 @@ const val PERMITTED_VISITORS: String = "$PERMITTED_PRISONERS/{prisonerId}/permit
 
 // visitor request endpoints
 const val ADD_VISITOR_REQUEST: String = "$PERMITTED_VISITORS/request"
-const val GET_ACTIVE_VISITOR_REVIEW_REQUESTS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/permitted/visitors/requests"
+const val GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/permitted/visitors/requests"
+
+const val PUBLIC_BOOKER_GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests/count"
+const val PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests"
 
 // Admin endpoints
 const val BOOKER_ADMIN_ENDPOINT = "$PUBLIC_BOOKER_CONTROLLER_PATH/config"
@@ -238,7 +243,7 @@ class PrisonVisitBookerRegistryClient(
   }
 
   fun getActiveVisitorRequestsForBooker(bookerReference: String): List<BookerPrisonerVisitorRequestDto>? {
-    val uri = GET_ACTIVE_VISITOR_REVIEW_REQUESTS.replace("{bookerReference}", bookerReference)
+    val uri = GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference)
     return webClient.get()
       .uri(uri)
       .accept(MediaType.APPLICATION_JSON)
@@ -254,6 +259,34 @@ class PrisonVisitBookerRegistryClient(
         }
       }
       .block(apiTimeout)
+  }
+
+  fun getVisitorRequestsCountByPrisonCode(prisonCode: String): VisitorRequestsCountByPrisonCodeDto {
+    val uri = PUBLIC_BOOKER_GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE.replace("{prisonCode}", prisonCode)
+    return webClient.get()
+      .uri(uri)
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<VisitorRequestsCountByPrisonCodeDto>()
+      .onErrorResume { e ->
+        logger.error("getVisitorRequestsCountByPrisonCode Failed for get request $uri")
+        Mono.error(e)
+      }
+      .block(apiTimeout) ?: throw IllegalStateException("timeout response from prison-visit-booker-registry for getVisitorRequestsCountByPrisonCode with code $prisonCode")
+  }
+
+  fun getVisitorRequestsByPrisonCode(prisonCode: String): List<PrisonVisitorRequestDto> {
+    val uri = PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_PRISON_CODE.replace("{prisonCode}", prisonCode)
+    return webClient.get()
+      .uri(uri)
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<List<PrisonVisitorRequestDto>>()
+      .onErrorResume { e ->
+        logger.error("getVisitorRequestsByPrisonCode Failed for get request $uri")
+        Mono.error(e)
+      }
+      .block(apiTimeout) ?: throw IllegalStateException("timeout response from prison-visit-booker-registry for getVisitorRequestsByPrisonCode with code $prisonCode")
   }
 
   private fun getPrisonerValidationErrorResponse(e: Throwable): Throwable {
