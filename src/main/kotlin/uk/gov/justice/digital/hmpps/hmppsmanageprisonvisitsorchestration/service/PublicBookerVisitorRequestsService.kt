@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorRequestsCountByPrisonCodeDto
 
 @Service
@@ -31,7 +32,7 @@ class PublicBookerVisitorRequestsService(
     return prisonVisitBookerRegistryClient.getVisitorRequestsCountByPrisonCode(prisonCode)
   }
 
-  fun getVisitorRequestsForPrison(prisonCode: String): List<BookerPrisonerVisitorRequestDto> {
+  fun getVisitorRequestsForPrison(prisonCode: String): List<PrisonVisitorRequestDto> {
     LOG.info("Entered PublicBookerVisitorRequestsService - getVisitorRequestsForPrison - for prison $prisonCode")
     return prisonVisitBookerRegistryClient.getVisitorRequestsByPrisonCode(prisonCode)
   }

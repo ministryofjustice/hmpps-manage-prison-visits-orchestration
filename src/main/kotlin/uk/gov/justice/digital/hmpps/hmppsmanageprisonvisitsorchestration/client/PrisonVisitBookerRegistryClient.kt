@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterVisitorForBookerPrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorRequestsCountByPrisonCodeDto
@@ -274,13 +275,13 @@ class PrisonVisitBookerRegistryClient(
       .block(apiTimeout) ?: throw IllegalStateException("timeout response from prison-visit-booker-registry for getVisitorRequestsCountByPrisonCode with code $prisonCode")
   }
 
-  fun getVisitorRequestsByPrisonCode(prisonCode: String): List<BookerPrisonerVisitorRequestDto> {
+  fun getVisitorRequestsByPrisonCode(prisonCode: String): List<PrisonVisitorRequestDto> {
     val uri = PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_PRISON_CODE.replace("{prisonCode}", prisonCode)
     return webClient.get()
       .uri(uri)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono<List<BookerPrisonerVisitorRequestDto>>()
+      .bodyToMono<List<PrisonVisitorRequestDto>>()
       .onErrorResume { e ->
         logger.error("getVisitorRequestsByPrisonCode Failed for get request $uri")
         Mono.error(e)
