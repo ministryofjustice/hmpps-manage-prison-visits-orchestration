@@ -62,6 +62,7 @@ const val PUBLIC_BOOKER_VISITOR_REQUESTS_PATH: String = "$PUBLIC_BOOKER_VISITORS
 const val GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE: String = "$PUBLIC_BOOKER_DETAILS/permitted/visitors/requests"
 
 const val PUBLIC_BOOKER_GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests/count"
+const val PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests"
 
 @RestController
 class PublicBookerController(
@@ -592,4 +593,37 @@ class PublicBookerController(
     @NotBlank
     prisonCode: String,
   ): VisitorRequestsCountByPrisonCodeDto = publicBookerVisitorRequestsService.getCountVisitorRequestsForPrison(prisonCode)
+
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @GetMapping(PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_PRISON_CODE)
+  @Operation(
+    summary = "Get a list of all active visitor requests for a prison via prison code",
+    description = "Get a list of all active visitor requests for a prison via prison code",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "List successfully returned",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to get list of active visitor requests for prison.",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to get list of active visitor requests for prison",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getVisitorRequestsByPrisonCode(
+    @PathVariable(value = "prisonCode", required = true)
+    @NotBlank
+    prisonCode: String,
+  ): List<BookerPrisonerVisitorRequestDto> = publicBookerVisitorRequestsService.getVisitorRequestsForPrison(prisonCode)
 }

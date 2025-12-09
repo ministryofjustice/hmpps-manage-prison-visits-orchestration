@@ -15,7 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.control
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
-@DisplayName("Get active visitor requests for booker")
+@DisplayName("GET active visitor requests count for prison - $PUBLIC_BOOKER_GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE")
 class GetCountVisitorRequestsForPrisonTest : IntegrationTestBase() {
 
   @MockitoSpyBean
@@ -66,7 +66,7 @@ class GetCountVisitorRequestsForPrisonTest : IntegrationTestBase() {
   fun `when get count visitor requests for prison is called without role then UNAUTHORIZED status is returned`() {
     // When
     val url = PUBLIC_BOOKER_GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE.replace("{prisonCode}", "HEI")
-    val responseSpec = webTestClient.put().uri(url).exchange()
+    val responseSpec = webTestClient.get().uri(url).exchange()
 
     // Then
     responseSpec.expectStatus().isUnauthorized
