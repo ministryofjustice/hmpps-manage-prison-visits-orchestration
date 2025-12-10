@@ -51,6 +51,8 @@ const val PERMITTED_VISITORS: String = "$PERMITTED_PRISONERS/{prisonerId}/permit
 const val ADD_VISITOR_REQUEST: String = "$PERMITTED_VISITORS/request"
 const val GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/permitted/visitors/requests"
 
+const val GET_SINGLE_VISITOR_REQUEST = "/visitor-requests/{requestReference}"
+
 const val PUBLIC_BOOKER_GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests/count"
 const val PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests"
 
@@ -259,6 +261,26 @@ class PrisonVisitBookerRegistryClient(
         }
       }
       .block(apiTimeout)
+  }
+
+  fun getSingleVisitorRequest(requestReference: String): PrisonVisitorRequestDto {
+    val uri = GET_SINGLE_VISITOR_REQUEST.replace("{requestReference}", requestReference)
+
+    return webClient.get()
+      .uri(uri)
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono<PrisonVisitorRequestDto>()
+      .onErrorResume { e ->
+        if (!ClientUtils.isNotFoundError(e)) {
+          logger.error("getSingleVisitorRequest Failed for get request $uri")
+          Mono.error(e)
+        } else {
+          logger.error("getSingleVisitorRequest NOT_FOUND for get request $uri")
+          Mono.empty()
+        }
+      }
+      .block(apiTimeout) ?: throw NotFoundException("timeout response from prison-visit-booker-registry for getSingleVisitorRequest")
   }
 
   fun getVisitorRequestsCountByPrisonCode(prisonCode: String): VisitorRequestsCountByPrisonCodeDto {

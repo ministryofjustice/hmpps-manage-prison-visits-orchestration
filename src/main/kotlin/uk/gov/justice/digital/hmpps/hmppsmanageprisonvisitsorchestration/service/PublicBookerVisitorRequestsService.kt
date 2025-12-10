@@ -4,14 +4,18 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.SingleVisitorRequestForReviewDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorRequestsCountByPrisonCodeDto
 
 @Service
 class PublicBookerVisitorRequestsService(
   private val prisonVisitBookerRegistryClient: PrisonVisitBookerRegistryClient,
+  private val publicBookerService: PublicBookerService,
+  private val prisonerSearchClient: PrisonerSearchClient,
 ) {
   companion object {
     private val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -25,6 +29,16 @@ class PublicBookerVisitorRequestsService(
   fun getActiveVisitorRequestsForBooker(bookerReference: String): List<BookerPrisonerVisitorRequestDto> {
     LOG.info("Entered PublicBookerVisitorRequestsService - getActiveVisitorRequestsForBooker - for booker $bookerReference")
     return prisonVisitBookerRegistryClient.getActiveVisitorRequestsForBooker(bookerReference) ?: emptyList()
+  }
+
+  fun getVisitorRequestForReview(requestReference: String): SingleVisitorRequestForReviewDto {
+    LOG.info("Entered PublicBookerVisitorRequestsService - getVisitorRequestForReview - requestReference $requestReference")
+
+    val visitorRequest = prisonVisitBookerRegistryClient.getSingleVisitorRequest(requestReference)
+    val socialContacts = publicBookerService.getSocialContacts(visitorRequest.bookerReference, visitorRequest.prisonerId)
+    val prisonerInfo = prisonerSearchClient.getPrisonerById(visitorRequest.prisonerId)
+
+    return SingleVisitorRequestForReviewDto(visitorRequest, prisonerInfo, socialContacts)
   }
 
   fun getCountVisitorRequestsForPrison(prisonCode: String): VisitorRequestsCountByPrisonCodeDto {
