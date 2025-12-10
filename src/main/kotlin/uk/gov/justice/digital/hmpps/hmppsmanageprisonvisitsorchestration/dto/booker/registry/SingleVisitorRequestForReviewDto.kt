@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.bo
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.management.SocialContactsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import java.time.LocalDate
 
 data class SingleVisitorRequestForReviewDto(
@@ -22,6 +23,14 @@ data class SingleVisitorRequestForReviewDto(
   @field:NotBlank
   val prisonerId: String,
 
+  @param:Schema(description = "Prisoner first name", example = "John", required = true)
+  @field:NotBlank
+  val prisonerFirstName: String,
+
+  @param:Schema(description = "Prisoner last name", example = "Smith", required = true)
+  @field:NotBlank
+  val prisonerLastName: String,
+
   @param:Schema(description = "First Name, as entered on visitor request", example = "John", required = true)
   @field:NotBlank
   val firstName: String,
@@ -39,11 +48,13 @@ data class SingleVisitorRequestForReviewDto(
   @param:Schema(description = "Date request was submitted", example = "2025-10-28", required = true)
   val socialContacts: List<SocialContactsDto>,
 ) {
-  constructor(request: PrisonVisitorRequestDto, contacts: List<SocialContactsDto>) : this(
+  constructor(request: PrisonVisitorRequestDto, prisonerInfo: PrisonerDto, contacts: List<SocialContactsDto>) : this(
     reference = request.reference,
     bookerReference = request.bookerReference,
     bookerEmail = request.bookerEmail,
     prisonerId = request.prisonerId,
+    prisonerFirstName = prisonerInfo.firstName,
+    prisonerLastName = prisonerInfo.lastName,
     firstName = request.firstName,
     lastName = request.lastName,
     dateOfBirth = request.dateOfBirth,

@@ -4,6 +4,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
@@ -14,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 class PublicBookerVisitorRequestsService(
   private val prisonVisitBookerRegistryClient: PrisonVisitBookerRegistryClient,
   private val publicBookerService: PublicBookerService,
+  private val prisonerSearchClient: PrisonerSearchClient,
 ) {
   companion object {
     private val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -34,8 +36,9 @@ class PublicBookerVisitorRequestsService(
 
     val visitorRequest = prisonVisitBookerRegistryClient.getSingleVisitorRequest(requestReference)
     val socialContacts = publicBookerService.getSocialContacts(visitorRequest.bookerReference, visitorRequest.prisonerId)
+    val prisonerInfo = prisonerSearchClient.getPrisonerById(visitorRequest.prisonerId)
 
-    return SingleVisitorRequestForReviewDto(visitorRequest, socialContacts)
+    return SingleVisitorRequestForReviewDto(visitorRequest, prisonerInfo, socialContacts)
   }
 
   fun getCountVisitorRequestsForPrison(prisonCode: String): VisitorRequestsCountByPrisonCodeDto {

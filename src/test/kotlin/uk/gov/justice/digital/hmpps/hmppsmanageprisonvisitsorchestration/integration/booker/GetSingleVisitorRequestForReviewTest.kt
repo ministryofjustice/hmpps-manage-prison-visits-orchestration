@@ -13,6 +13,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.GET_SINGLE_VISITOR_REQUEST
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
@@ -31,6 +32,9 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var prisonerContactRegistryClient: PrisonerContactRegistryClient
+
+  @MockitoSpyBean
+  lateinit var prisonerSearchClient: PrisonerSearchClient
 
   @Test
   fun `when call to get single visitor request for review then request returned with prisoners approved contacts list`() {
@@ -86,6 +90,8 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
 
     visitSchedulerMockServer.stubGetVisitorsLastApprovedDates(prisonerId, listOf(contact1.personId, contact2.personId), lastApprovedDatesList)
 
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, createPrisoner(prisonerId, firstName = "First", lastName = "Last", dateOfBirth = LocalDate.now(), convictedStatus = "Convicted"))
+
     // When
     val responseSpec = callGetSingleVisitorRequestForReview(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, requestReference)
 
@@ -97,6 +103,73 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(any())
     verify(prisonerContactRegistryClient, times(1)).getPrisonersApprovedSocialContacts(any(), any(), isNull())
+  }
+
+  @Test
+  fun `when prisoner search returns INTERNAL_ERROR then INTERNAL_ERROR is returned`() {
+    // Given
+    val bookerReference = "booker-ref"
+    val prisonerId = "AA123456"
+    val requestReference = "abc-def-ghi"
+
+    val prisoner1Dto = PermittedPrisonerForBookerDto(
+      prisonerId,
+      "HEI",
+      emptyList(),
+    )
+
+    val contact1 = createVisitor(
+      firstName = "First",
+      lastName = "VisitorA",
+      dateOfBirth = LocalDate.of(1980, 1, 1),
+    )
+
+    val contact2 = createVisitor(
+      firstName = "Second",
+      lastName = "VisitorB",
+      dateOfBirth = LocalDate.of(1990, 1, 1),
+    )
+
+    val booker = BookerInfoDto(
+      reference = bookerReference,
+      email = "test@test.com",
+      createdTimestamp = LocalDateTime.now().minusMonths(1),
+      permittedPrisoners = listOf(prisoner1Dto),
+    )
+
+    // visitor 4 is not on the list returned
+    val lastApprovedDatesList = mapOf(
+      contact1.personId to LocalDate.now().minusMonths(1),
+      contact2.personId to LocalDate.now().minusMonths(2),
+    ).map { VisitorLastApprovedDatesDto(it.key, it.value) }
+
+    prisonVisitBookerRegistryMockServer.stubGetSingleVisitorRequest(
+      requestReference,
+      visitorRequest = PrisonVisitorRequestDto(requestReference, booker.reference, booker.email, prisonerId, "firstName", "lastName", LocalDate.now().minusYears(21), LocalDate.now()),
+    )
+
+    prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(booker.reference, booker = booker)
+
+    prisonerContactRegistryMockServer.stubGetApprovedPrisonerContacts(
+      prisonerId,
+      withAddress = false,
+      hasDateOfBirth = null,
+      contactsList = createContactsList(listOf(contact1, contact2)),
+    )
+
+    visitSchedulerMockServer.stubGetVisitorsLastApprovedDates(prisonerId, listOf(contact1.personId, contact2.personId), lastApprovedDatesList)
+
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, null, HttpStatus.INTERNAL_SERVER_ERROR)
+
+    // When
+    val responseSpec = callGetSingleVisitorRequestForReview(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, requestReference)
+
+    responseSpec.expectStatus().is5xxServerError
+
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any())
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(any())
+    verify(prisonerContactRegistryClient, times(1)).getPrisonersApprovedSocialContacts(any(), any(), isNull())
+    verify(prisonerSearchClient, times(1)).getPrisonerById(any())
   }
 
   @Test
@@ -142,6 +215,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(any())
     verify(prisonerContactRegistryClient, times(1)).getPrisonersApprovedSocialContacts(any(), any(), isNull())
+    verify(prisonerSearchClient, times(0)).getPrisonerById(any())
   }
 
   @Test
@@ -162,6 +236,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getBookerByBookerReference(any())
     verify(prisonerContactRegistryClient, times(0)).getPrisonersApprovedSocialContacts(any(), any(), any())
+    verify(prisonerSearchClient, times(0)).getPrisonerById(any())
   }
 
   @Test
@@ -181,6 +256,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getBookerByBookerReference(any())
     verify(prisonerContactRegistryClient, times(0)).getPrisonersApprovedSocialContacts(any(), any(), any())
+    verify(prisonerSearchClient, times(0)).getPrisonerById(any())
   }
 
   @Test
@@ -196,6 +272,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getBookerByBookerReference(any())
     verify(prisonerContactRegistryClient, times(0)).getPrisonersApprovedSocialContacts(any(), any(), any())
+    verify(prisonerSearchClient, times(0)).getPrisonerById(any())
   }
 
   @Test
@@ -212,6 +289,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getBookerByBookerReference(any())
     verify(prisonerContactRegistryClient, times(0)).getPrisonersApprovedSocialContacts(any(), any(), any())
+    verify(prisonerSearchClient, times(0)).getPrisonerById(any())
   }
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): SingleVisitorRequestForReviewDto = objectMapper.readValue(returnResult.returnResult().responseBody, SingleVisitorRequestForReviewDto::class.java)
