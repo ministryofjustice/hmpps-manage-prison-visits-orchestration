@@ -55,7 +55,7 @@ class PublicBookerVisitorRequestsService(
     try {
       prisonerDetailsList = prisonerSearchClient.getPrisonersByPrisonerIdsAttributeSearch(requests.map { it.prisonerId })?.toList() ?: emptyList()
     } catch (e: Exception) {
-      LOG.error("Unable to load prisoner details for prisoners - exception - $e")
+      LOG.error("Unable to load prisoner details - exception - $e")
     }
 
     val requestList: MutableList<PrisonVisitorRequestListEntryDto> = mutableListOf()

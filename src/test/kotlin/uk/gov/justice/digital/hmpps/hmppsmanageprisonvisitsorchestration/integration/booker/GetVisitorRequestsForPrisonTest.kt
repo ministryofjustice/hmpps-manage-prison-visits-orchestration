@@ -45,7 +45,7 @@ class GetVisitorRequestsForPrisonTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when call to get list of active visitor requests for prison, but prisoner-search doesn't find prison, then unknown is set for prisoner name`() {
+  fun `when call to get list of active visitor requests for prison, but prisoner-search doesn't find prisoners, then unknown is set for prisoner name`() {
     // Given
     val prisonCode = "HEI"
     val prisonerId = "AA123456"
