@@ -53,7 +53,7 @@ class PublicBookerVisitorRequestsService(
 
     var prisonerDetailsList = emptyList<AttributeSearchPrisonerDto>()
     try {
-      prisonerDetailsList = prisonerSearchClient.getPrisonersByPrisonerIdsAttributeSearch(requests.map { it.prisonerId })?.toList() ?: emptyList()
+      prisonerDetailsList = prisonerSearchClient.getPrisonersByPrisonerIdsAttributeSearch(requests.map { it.prisonerId }.distinct())?.toList() ?: emptyList()
     } catch (e: Exception) {
       LOG.error("Unable to load prisoner details - exception - $e")
     }
