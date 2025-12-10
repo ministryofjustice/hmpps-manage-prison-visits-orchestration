@@ -15,10 +15,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_PRISON_CODE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestListEntryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 
-@DisplayName("Get active visitor requests for booker")
+@DisplayName("Get list of visitor requests for prison - $PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_PRISON_CODE")
 class GetVisitorRequestsForPrisonTest : IntegrationTestBase() {
 
   @MockitoSpyBean
@@ -28,7 +29,10 @@ class GetVisitorRequestsForPrisonTest : IntegrationTestBase() {
   fun `when call to get list of active visitor requests for prison, then count is returned`() {
     // Given
     val prisonCode = "HEI"
-    prisonVisitBookerRegistryMockServer.stubGetVisitorRequestsForPrison(prisonCode, listOf(PrisonVisitorRequestDto(reference = "abc-def-ghi", bookerReference = "xyz-rhf-sjd", bookerEmail = "test@test.com", prisonerId = "A11", firstName = "VisitorTwo", lastName = "Second", dateOfBirth = LocalDate.of(1990, 2, 2), requestedOn = LocalDate.now())))
+    val prisonerId = "AA123456"
+
+    prisonVisitBookerRegistryMockServer.stubGetVisitorRequestsForPrison(prisonCode, listOf(PrisonVisitorRequestDto(reference = "abc-def-ghi", bookerReference = "xyz-rhf-sjd", bookerEmail = "test@test.com", prisonerId, firstName = "VisitorTwo", lastName = "Second", dateOfBirth = LocalDate.of(1990, 2, 2), requestedOn = LocalDate.now())))
+    prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(listOf(prisonerId), listOf(createPrisoner(prisonerId, "John", "Smith", LocalDate.now().minusYears(21), prisonCode, convictedStatus = "Convicted")))
 
     // When
     val responseSpec = callGetVisitorRequestsByPrisonCode(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonCode)
@@ -36,6 +40,27 @@ class GetVisitorRequestsForPrisonTest : IntegrationTestBase() {
     val responseDto = getResults(returnResult)
 
     assertThat(responseDto.size).isEqualTo(1)
+
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getVisitorRequestsByPrisonCode(prisonCode)
+  }
+
+  @Test
+  fun `when call to get list of active visitor requests for prison, but prisoner-search doesn't find prisoners, then unknown is set for prisoner name`() {
+    // Given
+    val prisonCode = "HEI"
+    val prisonerId = "AA123456"
+
+    prisonVisitBookerRegistryMockServer.stubGetVisitorRequestsForPrison(prisonCode, listOf(PrisonVisitorRequestDto(reference = "abc-def-ghi", bookerReference = "xyz-rhf-sjd", bookerEmail = "test@test.com", prisonerId, firstName = "VisitorTwo", lastName = "Second", dateOfBirth = LocalDate.of(1990, 2, 2), requestedOn = LocalDate.now())))
+    prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(listOf(prisonerId), null, HttpStatus.NOT_FOUND)
+
+    // When
+    val responseSpec = callGetVisitorRequestsByPrisonCode(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonCode)
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val responseDto = getResults(returnResult)
+
+    assertThat(responseDto.size).isEqualTo(1)
+    assertThat(responseDto[0].prisonerFirstName).isEqualTo("Unknown")
+    assertThat(responseDto[0].prisonerLastName).isEqualTo("Unknown")
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getVisitorRequestsByPrisonCode(prisonCode)
   }
@@ -78,7 +103,7 @@ class GetVisitorRequestsForPrisonTest : IntegrationTestBase() {
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getVisitorRequestsByPrisonCode(any())
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<PrisonVisitorRequestDto> = objectMapper.readValue(returnResult.returnResult().responseBody, object : TypeReference<List<PrisonVisitorRequestDto>>() {})
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<PrisonVisitorRequestListEntryDto> = objectMapper.readValue(returnResult.returnResult().responseBody, object : TypeReference<List<PrisonVisitorRequestListEntryDto>>() {})
 
   fun callGetVisitorRequestsByPrisonCode(
     webTestClient: WebTestClient,

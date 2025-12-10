@@ -7,9 +7,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorRequestDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestListEntryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.SingleVisitorRequestForReviewDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorRequestsCountByPrisonCodeDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.AttributeSearchPrisonerDto
 
 @Service
 class PublicBookerVisitorRequestsService(
@@ -46,8 +47,24 @@ class PublicBookerVisitorRequestsService(
     return prisonVisitBookerRegistryClient.getVisitorRequestsCountByPrisonCode(prisonCode)
   }
 
-  fun getVisitorRequestsForPrison(prisonCode: String): List<PrisonVisitorRequestDto> {
+  fun getVisitorRequestsForPrison(prisonCode: String): List<PrisonVisitorRequestListEntryDto> {
     LOG.info("Entered PublicBookerVisitorRequestsService - getVisitorRequestsForPrison - for prison $prisonCode")
-    return prisonVisitBookerRegistryClient.getVisitorRequestsByPrisonCode(prisonCode)
+    val requests = prisonVisitBookerRegistryClient.getVisitorRequestsByPrisonCode(prisonCode)
+
+    var prisonerDetailsList = emptyList<AttributeSearchPrisonerDto>()
+    try {
+      prisonerDetailsList = prisonerSearchClient.getPrisonersByPrisonerIdsAttributeSearch(requests.map { it.prisonerId }.distinct())?.toList() ?: emptyList()
+    } catch (e: Exception) {
+      LOG.error("Unable to load prisoner details - exception - $e")
+    }
+
+    val requestList: MutableList<PrisonVisitorRequestListEntryDto> = mutableListOf()
+    requests.forEach { request ->
+      val prisonerDetails = prisonerDetailsList.firstOrNull { request.prisonerId == it.prisonerNumber }
+
+      requestList.add(PrisonVisitorRequestListEntryDto(request, prisonerDetails))
+    }
+
+    return requestList
   }
 }
