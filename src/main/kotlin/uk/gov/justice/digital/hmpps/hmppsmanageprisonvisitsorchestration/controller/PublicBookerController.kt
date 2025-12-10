@@ -61,8 +61,10 @@ const val PUBLIC_BOOKER_CREATE_AUTH_DETAILS_CONTROLLER_PATH: String = "$PUBLIC_B
 
 // booker - visitor requests
 const val PUBLIC_BOOKER_VISITOR_REQUESTS_PATH: String = "$PUBLIC_BOOKER_VISITORS_CONTROLLER_PATH/request"
-const val GET_SINGLE_VISITOR_REQUEST = "$PUBLIC_BOOKER_VISITOR_REQUESTS_PATH/{requestReference}"
+
 const val GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE: String = "$PUBLIC_BOOKER_DETAILS/permitted/visitors/requests"
+
+const val GET_SINGLE_VISITOR_REQUEST = "/visitor-requests/{requestReference}"
 
 const val PUBLIC_BOOKER_GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests/count"
 const val PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests"
@@ -597,16 +599,10 @@ class PublicBookerController(
     ],
   )
   fun getSingleVisitorRequestForReview(
-    @PathVariable(value = "bookerReference", required = true)
-    @NotBlank
-    bookerReference: String,
-    @PathVariable(value = "prisonerId", required = true)
-    @NotBlank
-    prisonerId: String,
     @PathVariable(value = "requestReference", required = true)
     @NotBlank
     requestReference: String,
-  ): SingleVisitorRequestForReviewDto = publicBookerVisitorRequestsService.getVisitorRequestForReview(bookerReference, prisonerId, requestReference)
+  ): SingleVisitorRequestForReviewDto = publicBookerVisitorRequestsService.getVisitorRequestForReview(requestReference)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(PUBLIC_BOOKER_GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE)

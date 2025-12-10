@@ -71,8 +71,6 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
     ).map { VisitorLastApprovedDatesDto(it.key, it.value) }
 
     prisonVisitBookerRegistryMockServer.stubGetSingleVisitorRequest(
-      bookerReference,
-      prisonerId,
       requestReference,
       visitorRequest = PrisonVisitorRequestDto(requestReference, booker.reference, booker.email, prisonerId, "firstName", "lastName", LocalDate.now().minusYears(21), LocalDate.now()),
     )
@@ -89,14 +87,14 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetVisitorsLastApprovedDates(prisonerId, listOf(contact1.personId, contact2.personId), lastApprovedDatesList)
 
     // When
-    val responseSpec = callGetSingleVisitorRequestForReview(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, bookerReference, prisonerId, requestReference)
+    val responseSpec = callGetSingleVisitorRequestForReview(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, requestReference)
 
     responseSpec.expectStatus().isOk
     val response = getResults(responseSpec.expectBody())
 
     assertThat(response.reference).isEqualTo(requestReference)
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any(), any(), any())
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(any())
     verify(prisonerContactRegistryClient, times(1)).getPrisonersApprovedSocialContacts(any(), any(), isNull())
   }
@@ -122,8 +120,6 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
     )
 
     prisonVisitBookerRegistryMockServer.stubGetSingleVisitorRequest(
-      bookerReference,
-      prisonerId,
       requestReference,
       visitorRequest = PrisonVisitorRequestDto(requestReference, booker.reference, booker.email, prisonerId, "firstName", "lastName", LocalDate.now().minusYears(21), LocalDate.now()),
     )
@@ -139,11 +135,11 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
     )
 
     // When
-    val responseSpec = callGetSingleVisitorRequestForReview(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, bookerReference, prisonerId, requestReference)
+    val responseSpec = callGetSingleVisitorRequestForReview(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, requestReference)
 
     responseSpec.expectStatus().is5xxServerError
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any(), any(), any())
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(any())
     verify(prisonerContactRegistryClient, times(1)).getPrisonersApprovedSocialContacts(any(), any(), isNull())
   }
@@ -156,14 +152,14 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
     val requestReference = "abc-def-ghi"
 
     //
-    prisonVisitBookerRegistryMockServer.stubGetSingleVisitorRequest(bookerReference, prisonerId, requestReference, null, HttpStatus.NOT_FOUND)
+    prisonVisitBookerRegistryMockServer.stubGetSingleVisitorRequest(requestReference, null, HttpStatus.NOT_FOUND)
 
     // When
-    val responseSpec = callGetSingleVisitorRequestForReview(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, bookerReference, prisonerId, requestReference)
+    val responseSpec = callGetSingleVisitorRequestForReview(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, requestReference)
 
     responseSpec.expectStatus().isNotFound
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any(), any(), any())
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getBookerByBookerReference(any())
     verify(prisonerContactRegistryClient, times(0)).getPrisonersApprovedSocialContacts(any(), any(), any())
   }
@@ -175,14 +171,14 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
     val prisonerId = "AA123456"
     val requestReference = "abc-def-ghi"
 
-    prisonVisitBookerRegistryMockServer.stubGetSingleVisitorRequest(bookerReference, prisonerId, requestReference, null, HttpStatus.INTERNAL_SERVER_ERROR)
+    prisonVisitBookerRegistryMockServer.stubGetSingleVisitorRequest(requestReference, null, HttpStatus.INTERNAL_SERVER_ERROR)
 
     // When
-    val responseSpec = callGetSingleVisitorRequestForReview(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, bookerReference, prisonerId, requestReference)
+    val responseSpec = callGetSingleVisitorRequestForReview(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, requestReference)
 
     responseSpec.expectStatus().is5xxServerError
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any(), any(), any())
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getBookerByBookerReference(any())
     verify(prisonerContactRegistryClient, times(0)).getPrisonersApprovedSocialContacts(any(), any(), any())
   }
@@ -191,13 +187,13 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
   fun `when get single visitor request for review is called without correct role then FORBIDDEN status is returned`() {
     // When
     val invalidRoleHeaders = setAuthorisation(roles = listOf("ROLE_INVALID"))
-    val responseSpec = callGetSingleVisitorRequestForReview(webTestClient, invalidRoleHeaders, "test", "test", "test")
+    val responseSpec = callGetSingleVisitorRequestForReview(webTestClient, invalidRoleHeaders, "test")
 
     // Then
     responseSpec.expectStatus().isForbidden
 
     // And
-    verify(prisonVisitBookerRegistryClientSpy, times(0)).getSingleVisitorRequest(any(), any(), any())
+    verify(prisonVisitBookerRegistryClientSpy, times(0)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getBookerByBookerReference(any())
     verify(prisonerContactRegistryClient, times(0)).getPrisonersApprovedSocialContacts(any(), any(), any())
   }
@@ -205,10 +201,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
   @Test
   fun `when get a single visitor request is called without correct role then UNAUTHORIZED status is returned`() {
     // When
-    val url = GET_SINGLE_VISITOR_REQUEST
-      .replace("{bookerReference}", "bookerReference")
-      .replace("{prisonerId}", "prisonerId")
-      .replace("{requestReference}", "requestReference")
+    val url = GET_SINGLE_VISITOR_REQUEST.replace("{requestReference}", "requestReference")
 
     val responseSpec = webTestClient.put().uri(url).exchange()
 
@@ -216,7 +209,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
     responseSpec.expectStatus().isUnauthorized
 
     // And
-    verify(prisonVisitBookerRegistryClientSpy, times(0)).getSingleVisitorRequest(any(), any(), any())
+    verify(prisonVisitBookerRegistryClientSpy, times(0)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getBookerByBookerReference(any())
     verify(prisonerContactRegistryClient, times(0)).getPrisonersApprovedSocialContacts(any(), any(), any())
   }
@@ -226,14 +219,9 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
   fun callGetSingleVisitorRequestForReview(
     webTestClient: WebTestClient,
     authHttpHeaders: (HttpHeaders) -> Unit,
-    bookerReference: String,
-    prisonerId: String,
     requestReference: String,
   ): WebTestClient.ResponseSpec = webTestClient.get().uri(
-    GET_SINGLE_VISITOR_REQUEST
-      .replace("{bookerReference}", bookerReference)
-      .replace("{prisonerId}", prisonerId)
-      .replace("{requestReference}", requestReference),
+    GET_SINGLE_VISITOR_REQUEST.replace("{requestReference}", requestReference),
   )
     .headers(authHttpHeaders)
     .exchange()

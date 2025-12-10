@@ -291,16 +291,11 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
   }
 
   fun stubGetSingleVisitorRequest(
-    bookerReference: String,
-    prisonerId: String,
     requestReference: String,
     visitorRequest: PrisonVisitorRequestDto? = null,
     httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
   ) {
-    val uri = GET_SINGLE_VISITOR_REQUEST
-      .replace("{bookerReference}", bookerReference)
-      .replace("{prisonerId}", prisonerId)
-      .replace("{requestReference}", requestReference)
+    val uri = GET_SINGLE_VISITOR_REQUEST.replace("{requestReference}", requestReference)
 
     val responseBuilder = createJsonResponseBuilder()
     stubFor(

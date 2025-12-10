@@ -50,7 +50,8 @@ const val PERMITTED_VISITORS: String = "$PERMITTED_PRISONERS/{prisonerId}/permit
 // visitor request endpoints
 const val ADD_VISITOR_REQUEST: String = "$PERMITTED_VISITORS/request"
 const val GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/permitted/visitors/requests"
-const val GET_SINGLE_VISITOR_REQUEST = "$ADD_VISITOR_REQUEST/{requestReference}"
+
+const val GET_SINGLE_VISITOR_REQUEST = "/visitor-requests/{requestReference}"
 
 const val PUBLIC_BOOKER_GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests/count"
 const val PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests"
@@ -262,11 +263,8 @@ class PrisonVisitBookerRegistryClient(
       .block(apiTimeout)
   }
 
-  fun getSingleVisitorRequest(bookerReference: String, prisonerId: String, requestReference: String): PrisonVisitorRequestDto {
-    val uri = GET_SINGLE_VISITOR_REQUEST
-      .replace("{bookerReference}", bookerReference)
-      .replace("{prisonerId}", prisonerId)
-      .replace("{requestReference}", requestReference)
+  fun getSingleVisitorRequest(requestReference: String): PrisonVisitorRequestDto {
+    val uri = GET_SINGLE_VISITOR_REQUEST.replace("{requestReference}", requestReference)
 
     return webClient.get()
       .uri(uri)

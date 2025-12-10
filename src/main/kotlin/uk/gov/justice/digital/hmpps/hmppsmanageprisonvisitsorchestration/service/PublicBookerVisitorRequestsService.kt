@@ -29,11 +29,11 @@ class PublicBookerVisitorRequestsService(
     return prisonVisitBookerRegistryClient.getActiveVisitorRequestsForBooker(bookerReference) ?: emptyList()
   }
 
-  fun getVisitorRequestForReview(bookerReference: String, prisonerId: String, requestReference: String): SingleVisitorRequestForReviewDto {
-    LOG.info("Entered PublicBookerVisitorRequestsService - getVisitorRequestForReview - for booker $bookerReference, prisoner $prisonerId, requestReference $requestReference")
+  fun getVisitorRequestForReview(requestReference: String): SingleVisitorRequestForReviewDto {
+    LOG.info("Entered PublicBookerVisitorRequestsService - getVisitorRequestForReview - requestReference $requestReference")
 
-    val visitorRequest = prisonVisitBookerRegistryClient.getSingleVisitorRequest(bookerReference, prisonerId, requestReference)
-    val socialContacts = publicBookerService.getSocialContacts(bookerReference, prisonerId)
+    val visitorRequest = prisonVisitBookerRegistryClient.getSingleVisitorRequest(requestReference)
+    val socialContacts = publicBookerService.getSocialContacts(visitorRequest.bookerReference, visitorRequest.prisonerId)
 
     return SingleVisitorRequestForReviewDto(visitorRequest, socialContacts)
   }
