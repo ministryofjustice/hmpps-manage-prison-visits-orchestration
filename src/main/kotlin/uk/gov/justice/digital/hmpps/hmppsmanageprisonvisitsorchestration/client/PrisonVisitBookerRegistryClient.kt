@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerVisitorRequestValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AddVisitorToBookerPrisonerRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.ApproveVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorRequestDto
@@ -52,6 +53,8 @@ const val ADD_VISITOR_REQUEST: String = "$PERMITTED_VISITORS/request"
 const val GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/permitted/visitors/requests"
 
 const val GET_SINGLE_VISITOR_REQUEST = "/visitor-requests/{requestReference}"
+
+const val APPROVE_VISITOR_REQUEST: String = "/visitor-requests/{requestReference}/approve"
 
 const val PUBLIC_BOOKER_GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests/count"
 const val PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests"
@@ -309,6 +312,21 @@ class PrisonVisitBookerRegistryClient(
         Mono.error(e)
       }
       .block(apiTimeout) ?: throw IllegalStateException("timeout response from prison-visit-booker-registry for getVisitorRequestsByPrisonCode with code $prisonCode")
+  }
+
+  fun approveAndLinkVisitorRequest(requestReference: String, approveVisitorRequestDto: ApproveVisitorRequestDto) {
+    val uri = APPROVE_VISITOR_REQUEST.replace("{requestReference}", requestReference)
+
+    webClient.put()
+      .uri(uri)
+      .body(BodyInserters.fromValue(approveVisitorRequestDto))
+      .retrieve()
+      .toBodilessEntity()
+      .onErrorResume { e ->
+        logger.error("approveAndLinkVisitorRequest Failed for get request $uri")
+        Mono.error(e)
+      }
+      .block(apiTimeout)
   }
 
   private fun getPrisonerValidationErrorResponse(e: Throwable): Throwable {

@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ADD_VISITOR_REQUEST
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.APPROVE_VISITOR_REQUEST
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_BOOKER_BY_BOOKING_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_SINGLE_VISITOR_REQUEST
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE
@@ -308,6 +309,14 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
             responseBuilder.withStatus(httpStatus.value())
           },
         ),
+    )
+  }
+
+  fun stubApproveVisitorRequest(requestReference: String, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      WireMock.put(APPROVE_VISITOR_REQUEST.replace("{requestReference}", requestReference))
+        .willReturn(responseBuilder.withStatus(httpStatus.value())),
     )
   }
 }
