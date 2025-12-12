@@ -312,11 +312,20 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
     )
   }
 
-  fun stubApproveVisitorRequest(requestReference: String, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
+  fun stubApproveVisitorRequest(requestReference: String, response: PrisonVisitorRequestDto? = null, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
+    val uri = APPROVE_VISITOR_REQUEST.replace("{requestReference}", requestReference)
+
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
-      WireMock.put(APPROVE_VISITOR_REQUEST.replace("{requestReference}", requestReference))
-        .willReturn(responseBuilder.withStatus(httpStatus.value())),
+      WireMock.put(uri)
+        .willReturn(
+          if (response != null) {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(response))
+          } else {
+            responseBuilder.withStatus(httpStatus.value())
+          },
+        ),
     )
   }
 }

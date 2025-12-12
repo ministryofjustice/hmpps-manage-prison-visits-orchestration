@@ -314,19 +314,20 @@ class PrisonVisitBookerRegistryClient(
       .block(apiTimeout) ?: throw IllegalStateException("timeout response from prison-visit-booker-registry for getVisitorRequestsByPrisonCode with code $prisonCode")
   }
 
-  fun approveAndLinkVisitorRequest(requestReference: String, approveVisitorRequestDto: ApproveVisitorRequestDto) {
+  fun approveAndLinkVisitorRequest(requestReference: String, approveVisitorRequestDto: ApproveVisitorRequestDto): PrisonVisitorRequestDto {
     val uri = APPROVE_VISITOR_REQUEST.replace("{requestReference}", requestReference)
 
-    webClient.put()
+    return webClient.put()
       .uri(uri)
       .body(BodyInserters.fromValue(approveVisitorRequestDto))
       .retrieve()
-      .toBodilessEntity()
+      .bodyToMono<PrisonVisitorRequestDto>()
       .onErrorResume { e ->
         logger.error("approveAndLinkVisitorRequest Failed for get request $uri")
         Mono.error(e)
       }
-      .block(apiTimeout)
+      .blockOptional(apiTimeout)
+      .orElseThrow { NotFoundException("Booker, prisoner or request not found for visitor request - $requestReference") }
   }
 
   private fun getPrisonerValidationErrorResponse(e: Throwable): Throwable {

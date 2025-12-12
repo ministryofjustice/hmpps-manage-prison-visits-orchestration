@@ -13,6 +13,8 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.APPROVE_VISITOR_REQUEST
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.ApproveVisitorRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
+import java.time.LocalDate
 
 @DisplayName("PUT Approve visitor request tests - $APPROVE_VISITOR_REQUEST")
 class ApproveVisitorRequestTest : IntegrationTestBase() {
@@ -26,8 +28,18 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
   fun `when call to approve visitor request on booker-registry is successful a successful response code is returned`() {
     // Given
     val approveVisitorRequestDto = ApproveVisitorRequestDto(visitorId = 123456L)
+    val approveVisitorRequestResponse = PrisonVisitorRequestDto(
+      requestReference,
+      bookerReference = "abc-def-ghi",
+      bookerEmail = "test@test.com",
+      prisonerId = "AA123456",
+      firstName = "John",
+      lastName = "Smith",
+      dateOfBirth = LocalDate.now().minusYears(21),
+      requestedOn = LocalDate.now(),
+    )
 
-    prisonVisitBookerRegistryMockServer.stubApproveVisitorRequest(requestReference, HttpStatus.CREATED)
+    prisonVisitBookerRegistryMockServer.stubApproveVisitorRequest(requestReference, approveVisitorRequestResponse, HttpStatus.CREATED)
 
     // When
     val responseSpec = callApproveVisitorRequest(webTestClient, requestReference, approveVisitorRequestDto, roleVSIPOrchestrationServiceHttpHeaders)
@@ -43,7 +55,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     // Given
     val approveVisitorRequestDto = ApproveVisitorRequestDto(visitorId = 123456L)
 
-    prisonVisitBookerRegistryMockServer.stubApproveVisitorRequest(requestReference, HttpStatus.NOT_FOUND)
+    prisonVisitBookerRegistryMockServer.stubApproveVisitorRequest(requestReference, null, HttpStatus.NOT_FOUND)
 
     // When
     val responseSpec = callApproveVisitorRequest(webTestClient, requestReference, approveVisitorRequestDto, roleVSIPOrchestrationServiceHttpHeaders)
@@ -57,8 +69,9 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
   fun `when call to approve visitor request on booker-registry fails with an INTERNAL_SERVER_ERROR error, then INTERNAL_SERVER_ERROR error code is returned`() {
     // Given
     val approveVisitorRequestDto = ApproveVisitorRequestDto(visitorId = 123456L)
+    val approveVisitorRequestResponse = PrisonVisitorRequestDto(requestReference, bookerReference = "abc-def-ghi", bookerEmail = "test@test.com", prisonerId = "AA123456", firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), requestedOn = LocalDate.now())
 
-    prisonVisitBookerRegistryMockServer.stubApproveVisitorRequest(requestReference, HttpStatus.INTERNAL_SERVER_ERROR)
+    prisonVisitBookerRegistryMockServer.stubApproveVisitorRequest(requestReference, null, HttpStatus.INTERNAL_SERVER_ERROR)
 
     // When
     val responseSpec = callApproveVisitorRequest(webTestClient, requestReference, approveVisitorRequestDto, roleVSIPOrchestrationServiceHttpHeaders)
