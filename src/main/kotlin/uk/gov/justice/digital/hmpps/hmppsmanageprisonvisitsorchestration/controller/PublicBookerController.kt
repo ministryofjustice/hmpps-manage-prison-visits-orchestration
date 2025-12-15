@@ -724,7 +724,7 @@ class PublicBookerController(
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "Visitor request reject and booker informed",
+        description = "Visitor request rejected and booker informed",
       ),
       ApiResponse(
         responseCode = "400",
