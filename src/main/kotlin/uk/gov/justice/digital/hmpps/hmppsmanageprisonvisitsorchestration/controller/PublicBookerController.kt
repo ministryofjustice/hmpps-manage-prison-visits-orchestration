@@ -35,6 +35,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestListEntryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterVisitorForBookerPrisonerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RejectVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.SingleVisitorRequestForReviewDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorRequestsCountByPrisonCodeDto
@@ -751,5 +752,7 @@ class PublicBookerController(
   fun rejectVisitorRequest(
     @PathVariable
     requestReference: String,
-  ): PrisonVisitorRequestDto = publicBookerVisitorRequestsService.rejectVisitorRequest(requestReference)
+    @RequestBody
+    rejectVisitorRequestDto: RejectVisitorRequestDto,
+  ): PrisonVisitorRequestDto = publicBookerVisitorRequestsService.rejectVisitorRequest(requestReference, rejectVisitorRequestDto)
 }

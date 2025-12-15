@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterVisitorForBookerPrisonerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RejectVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
@@ -331,11 +332,12 @@ class PrisonVisitBookerRegistryClient(
       .orElseThrow { NotFoundException("Booker, prisoner or request not found for visitor request - $requestReference") }
   }
 
-  fun rejectVisitorRequest(requestReference: String): PrisonVisitorRequestDto {
+  fun rejectVisitorRequest(requestReference: String, rejectVisitorRequestDto: RejectVisitorRequestDto): PrisonVisitorRequestDto {
     val uri = REJECT_VISITOR_REQUEST.replace("{requestReference}", requestReference)
 
     return webClient.put()
       .uri(uri)
+      .body(BodyInserters.fromValue(rejectVisitorRequestDto))
       .retrieve()
       .bodyToMono<PrisonVisitorRequestDto>()
       .onErrorResume { e ->
