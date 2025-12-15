@@ -71,4 +71,6 @@ class PublicBookerVisitorRequestsService(
   }
 
   fun approveAndLinkVisitorRequest(requestReference: String, approveVisitorRequestDto: ApproveVisitorRequestDto): PrisonVisitorRequestDto = prisonVisitBookerRegistryClient.approveAndLinkVisitorRequest(requestReference, approveVisitorRequestDto)
+
+  fun rejectVisitorRequest(requestReference: String): PrisonVisitorRequestDto = prisonVisitBookerRegistryClient.rejectVisitorRequest(requestReference)
 }

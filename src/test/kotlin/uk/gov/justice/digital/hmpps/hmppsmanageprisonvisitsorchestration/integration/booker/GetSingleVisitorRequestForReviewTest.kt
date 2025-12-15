@@ -14,7 +14,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.GET_SINGLE_VISITOR_REQUEST
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_SINGLE_VISITOR_REQUEST
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.SingleVisitorRequestForReviewDto
@@ -24,7 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-@DisplayName("Get single visitor request for review - $GET_SINGLE_VISITOR_REQUEST")
+@DisplayName("Get single visitor request for review - $PUBLIC_BOOKER_GET_SINGLE_VISITOR_REQUEST")
 class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
 
   @MockitoSpyBean
@@ -278,7 +278,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
   @Test
   fun `when get a single visitor request is called without correct role then UNAUTHORIZED status is returned`() {
     // When
-    val url = GET_SINGLE_VISITOR_REQUEST.replace("{requestReference}", "requestReference")
+    val url = PUBLIC_BOOKER_GET_SINGLE_VISITOR_REQUEST.replace("{requestReference}", "requestReference")
 
     val responseSpec = webTestClient.put().uri(url).exchange()
 
@@ -299,7 +299,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
     authHttpHeaders: (HttpHeaders) -> Unit,
     requestReference: String,
   ): WebTestClient.ResponseSpec = webTestClient.get().uri(
-    GET_SINGLE_VISITOR_REQUEST.replace("{requestReference}", requestReference),
+    PUBLIC_BOOKER_GET_SINGLE_VISITOR_REQUEST.replace("{requestReference}", requestReference),
   )
     .headers(authHttpHeaders)
     .exchange()
