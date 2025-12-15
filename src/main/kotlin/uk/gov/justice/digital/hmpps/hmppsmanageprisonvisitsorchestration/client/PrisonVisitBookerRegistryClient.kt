@@ -323,7 +323,7 @@ class PrisonVisitBookerRegistryClient(
       .retrieve()
       .bodyToMono<PrisonVisitorRequestDto>()
       .onErrorResume { e ->
-        logger.error("approveAndLinkVisitorRequest Failed for get request $uri")
+        logger.error("approveAndLinkVisitorRequest Failed for put request $uri")
         Mono.error(e)
       }
       .blockOptional(apiTimeout)
