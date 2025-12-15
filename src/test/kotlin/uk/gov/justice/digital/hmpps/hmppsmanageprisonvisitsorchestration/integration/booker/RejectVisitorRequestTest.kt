@@ -46,7 +46,7 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
     prisonVisitBookerRegistryMockServer.stubRejectVisitorRequest(requestReference, rejectVisitorRequestResponse, HttpStatus.OK)
 
     // When
-    val responseSpec = callRejectVisitorRequest(webTestClient, requestReference, rejectVisitorRequestDto,roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callRejectVisitorRequest(webTestClient, requestReference, rejectVisitorRequestDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().is2xxSuccessful
