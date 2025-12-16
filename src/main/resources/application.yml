@@ -113,6 +113,10 @@ prison-visit-booker-registry:
   api:
     timeout: 10s
 
+visit-allocation:
+  api:
+    timeout: 10s
+
 cache:
   evict:
     bank-holidays:
