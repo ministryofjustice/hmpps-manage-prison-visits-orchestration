@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration
+package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.booker
 
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -11,12 +11,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.APPROVE_VISITOR_REQUEST
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_APPROVE_VISITOR_REQUEST
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.ApproveVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 
-@DisplayName("PUT Approve visitor request tests - $APPROVE_VISITOR_REQUEST")
+@DisplayName("PUT Approve visitor request tests - $PUBLIC_BOOKER_APPROVE_VISITOR_REQUEST")
 class ApproveVisitorRequestTest : IntegrationTestBase() {
 
   private val requestReference = "abc-def-ghi"
@@ -39,7 +40,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
       requestedOn = LocalDate.now(),
     )
 
-    prisonVisitBookerRegistryMockServer.stubApproveVisitorRequest(requestReference, approveVisitorRequestResponse, HttpStatus.CREATED)
+    prisonVisitBookerRegistryMockServer.stubApproveVisitorRequest(requestReference, approveVisitorRequestResponse, HttpStatus.OK)
 
     // When
     val responseSpec = callApproveVisitorRequest(webTestClient, requestReference, approveVisitorRequestDto, roleVSIPOrchestrationServiceHttpHeaders)
@@ -69,7 +70,16 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
   fun `when call to approve visitor request on booker-registry fails with an INTERNAL_SERVER_ERROR error, then INTERNAL_SERVER_ERROR error code is returned`() {
     // Given
     val approveVisitorRequestDto = ApproveVisitorRequestDto(visitorId = 123456L)
-    val approveVisitorRequestResponse = PrisonVisitorRequestDto(requestReference, bookerReference = "abc-def-ghi", bookerEmail = "test@test.com", prisonerId = "AA123456", firstName = "John", lastName = "Smith", dateOfBirth = LocalDate.now().minusYears(21), requestedOn = LocalDate.now())
+    val approveVisitorRequestResponse = PrisonVisitorRequestDto(
+      requestReference,
+      bookerReference = "abc-def-ghi",
+      bookerEmail = "test@test.com",
+      prisonerId = "AA123456",
+      firstName = "John",
+      lastName = "Smith",
+      dateOfBirth = LocalDate.now().minusYears(21),
+      requestedOn = LocalDate.now(),
+    )
 
     prisonVisitBookerRegistryMockServer.stubApproveVisitorRequest(requestReference, null, HttpStatus.INTERNAL_SERVER_ERROR)
 
@@ -97,7 +107,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
   @Test
   fun `when call to approve visitor request is made without token then UNAUTHORIZED status is returned`() {
     // Given
-    val url = APPROVE_VISITOR_REQUEST.replace("{requestReference}", requestReference)
+    val url = PUBLIC_BOOKER_APPROVE_VISITOR_REQUEST.replace("{requestReference}", requestReference)
 
     // When
     val responseSpec = webTestClient.put().uri(url).exchange()
@@ -113,7 +123,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     approveVisitorRequestDto: ApproveVisitorRequestDto,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec = webTestClient.put()
-    .uri(APPROVE_VISITOR_REQUEST.replace("{requestReference}", requestReference))
+    .uri(PUBLIC_BOOKER_APPROVE_VISITOR_REQUEST.replace("{requestReference}", requestReference))
     .body(BodyInserters.fromValue(approveVisitorRequestDto))
     .headers(authHttpHeaders)
     .exchange()

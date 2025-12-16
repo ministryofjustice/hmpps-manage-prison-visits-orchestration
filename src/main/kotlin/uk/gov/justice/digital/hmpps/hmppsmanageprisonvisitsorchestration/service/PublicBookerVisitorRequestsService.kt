@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestListEntryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RejectVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.SingleVisitorRequestForReviewDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.AttributeSearchPrisonerDto
@@ -71,4 +72,6 @@ class PublicBookerVisitorRequestsService(
   }
 
   fun approveAndLinkVisitorRequest(requestReference: String, approveVisitorRequestDto: ApproveVisitorRequestDto): PrisonVisitorRequestDto = prisonVisitBookerRegistryClient.approveAndLinkVisitorRequest(requestReference, approveVisitorRequestDto)
+
+  fun rejectVisitorRequest(requestReference: String, rejectVisitorRequestDto: RejectVisitorRequestDto): PrisonVisitorRequestDto = prisonVisitBookerRegistryClient.rejectVisitorRequest(requestReference, rejectVisitorRequestDto)
 }

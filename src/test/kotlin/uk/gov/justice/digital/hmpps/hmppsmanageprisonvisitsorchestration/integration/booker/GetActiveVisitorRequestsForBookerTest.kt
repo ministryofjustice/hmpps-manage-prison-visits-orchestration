@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
@@ -104,7 +104,7 @@ class GetActiveVisitorRequestsForBookerTest : IntegrationTestBase() {
   @Test
   fun `when get active visitor requests is called without correct role then UNAUTHORIZED status is returned`() {
     // When
-    val url = GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE.replace("{bookerReference}", "bookerReference")
+    val url = PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE.replace("{bookerReference}", "bookerReference")
     val responseSpec = webTestClient.put().uri(url).exchange()
 
     // Then
@@ -127,7 +127,7 @@ class GetActiveVisitorRequestsForBookerTest : IntegrationTestBase() {
     webTestClient: WebTestClient,
     authHttpHeaders: (HttpHeaders) -> Unit,
     bookerReference: String,
-  ): WebTestClient.ResponseSpec = webTestClient.get().uri(GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
+  ): WebTestClient.ResponseSpec = webTestClient.get().uri(PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference))
     .headers(authHttpHeaders)
     .exchange()
 }

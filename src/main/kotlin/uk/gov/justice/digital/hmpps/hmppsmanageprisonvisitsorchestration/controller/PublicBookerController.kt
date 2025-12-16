@@ -31,9 +31,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestListEntryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterVisitorForBookerPrisonerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RejectVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.SingleVisitorRequestForReviewDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorRequestsCountByPrisonCodeDto
@@ -63,11 +65,12 @@ const val PUBLIC_BOOKER_CREATE_AUTH_DETAILS_CONTROLLER_PATH: String = "$PUBLIC_B
 // booker - visitor requests
 const val PUBLIC_BOOKER_VISITOR_REQUESTS_PATH: String = "$PUBLIC_BOOKER_VISITORS_CONTROLLER_PATH/request"
 
-const val GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE: String = "$PUBLIC_BOOKER_DETAILS/permitted/visitors/requests"
+const val PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE: String = "$PUBLIC_BOOKER_DETAILS/permitted/visitors/requests"
 
-const val GET_SINGLE_VISITOR_REQUEST = "/visitor-requests/{requestReference}"
+const val PUBLIC_BOOKER_GET_SINGLE_VISITOR_REQUEST = "/visitor-requests/{requestReference}"
 
-const val APPROVE_VISITOR_REQUEST: String = "/visitor-requests/{requestReference}/approve"
+const val PUBLIC_BOOKER_APPROVE_VISITOR_REQUEST: String = "/visitor-requests/{requestReference}/approve"
+const val PUBLIC_BOOKER_REJECT_VISITOR_REQUEST: String = "/visitor-requests/{requestReference}/reject"
 
 const val PUBLIC_BOOKER_GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests/count"
 const val PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests"
@@ -537,7 +540,7 @@ class PublicBookerController(
   }
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
-  @GetMapping(GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE)
+  @GetMapping(PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE)
   @Operation(
     summary = "Get all active visitor requests for a booker.",
     description = "Returns all active visitor requests for a booker, empty if none found.",
@@ -570,7 +573,7 @@ class PublicBookerController(
   ): List<BookerPrisonerVisitorRequestDto> = publicBookerVisitorRequestsService.getActiveVisitorRequestsForBooker(bookerReference)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
-  @GetMapping(GET_SINGLE_VISITOR_REQUEST)
+  @GetMapping(PUBLIC_BOOKER_GET_SINGLE_VISITOR_REQUEST)
   @Operation(
     summary = "Get a single visitor request for review",
     description = "Returns a single visitor request, with prisoner's approved visitor list",
@@ -674,15 +677,15 @@ class PublicBookerController(
   ): List<PrisonVisitorRequestListEntryDto> = publicBookerVisitorRequestsService.getVisitorRequestsForPrison(prisonCode)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
-  @PutMapping(APPROVE_VISITOR_REQUEST)
-  @ResponseStatus(HttpStatus.CREATED)
+  @PutMapping(PUBLIC_BOOKER_APPROVE_VISITOR_REQUEST)
+  @ResponseStatus(HttpStatus.OK)
   @Operation(
     summary = "Approve visitor request and link visitor to booker's prisoner.",
     description = "Approve visitor request and link visitor to booker's prisoner.",
     responses = [
       ApiResponse(
-        responseCode = "201",
-        description = "Visit request approved and visitor linked to booker's prisoner",
+        responseCode = "200",
+        description = "Visitor request approved and visitor linked to booker's prisoner",
       ),
       ApiResponse(
         responseCode = "400",
@@ -712,4 +715,44 @@ class PublicBookerController(
     @RequestBody
     approveVisitorRequestDto: ApproveVisitorRequestDto,
   ) = publicBookerVisitorRequestsService.approveAndLinkVisitorRequest(requestReference, approveVisitorRequestDto)
+
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @PutMapping(PUBLIC_BOOKER_REJECT_VISITOR_REQUEST)
+  @ResponseStatus(HttpStatus.OK)
+  @Operation(
+    summary = "Reject visitor request and notify them of the outcome.",
+    description = "Reject visitor request and notify them of the outcome.",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Visitor request rejected and booker informed",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to reject visitor request",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to reject visitor request",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Booker or visitor request not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun rejectVisitorRequest(
+    @PathVariable
+    requestReference: String,
+    @RequestBody
+    rejectVisitorRequestDto: RejectVisitorRequestDto,
+  ): PrisonVisitorRequestDto = publicBookerVisitorRequestsService.rejectVisitorRequest(requestReference, rejectVisitorRequestDto)
 }

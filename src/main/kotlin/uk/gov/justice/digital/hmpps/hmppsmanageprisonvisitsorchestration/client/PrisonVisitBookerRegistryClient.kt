@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterVisitorForBookerPrisonerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RejectVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
@@ -55,6 +56,7 @@ const val GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE: String = "$PUBLIC_BOOKER_CON
 const val GET_SINGLE_VISITOR_REQUEST = "/visitor-requests/{requestReference}"
 
 const val APPROVE_VISITOR_REQUEST: String = "/visitor-requests/{requestReference}/approve"
+const val REJECT_VISITOR_REQUEST: String = "/visitor-requests/{requestReference}/reject"
 
 const val PUBLIC_BOOKER_GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests/count"
 const val PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_PRISON_CODE: String = "/prison/{prisonCode}/visitor-requests"
@@ -324,6 +326,22 @@ class PrisonVisitBookerRegistryClient(
       .bodyToMono<PrisonVisitorRequestDto>()
       .onErrorResume { e ->
         logger.error("approveAndLinkVisitorRequest Failed for put request $uri")
+        Mono.error(e)
+      }
+      .blockOptional(apiTimeout)
+      .orElseThrow { NotFoundException("Booker, prisoner or request not found for visitor request - $requestReference") }
+  }
+
+  fun rejectVisitorRequest(requestReference: String, rejectVisitorRequestDto: RejectVisitorRequestDto): PrisonVisitorRequestDto {
+    val uri = REJECT_VISITOR_REQUEST.replace("{requestReference}", requestReference)
+
+    return webClient.put()
+      .uri(uri)
+      .body(BodyInserters.fromValue(rejectVisitorRequestDto))
+      .retrieve()
+      .bodyToMono<PrisonVisitorRequestDto>()
+      .onErrorResume { e ->
+        logger.error("rejectVisitorRequest Failed for put request $uri")
         Mono.error(e)
       }
       .blockOptional(apiTimeout)

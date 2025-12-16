@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_PRISON_CODE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PUBLIC_BOOKER_GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.REGISTER_PRISONER
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.REJECT_VISITOR_REQUEST
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.SEARCH_FOR_BOOKER
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.UNLINK_VISITOR
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VALIDATE_PRISONER
@@ -314,6 +315,23 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
 
   fun stubApproveVisitorRequest(requestReference: String, response: PrisonVisitorRequestDto? = null, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
     val uri = APPROVE_VISITOR_REQUEST.replace("{requestReference}", requestReference)
+
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      WireMock.put(uri)
+        .willReturn(
+          if (response != null) {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(response))
+          } else {
+            responseBuilder.withStatus(httpStatus.value())
+          },
+        ),
+    )
+  }
+
+  fun stubRejectVisitorRequest(requestReference: String, response: PrisonVisitorRequestDto? = null, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
+    val uri = REJECT_VISITOR_REQUEST.replace("{requestReference}", requestReference)
 
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
