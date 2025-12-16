@@ -334,7 +334,6 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       dateOfBirth = LocalDate.of(1990, 4, 1),
     )
 
-    // this s
     val visitor3 = createVisitor(
       firstName = "a",
       lastName = "c",
