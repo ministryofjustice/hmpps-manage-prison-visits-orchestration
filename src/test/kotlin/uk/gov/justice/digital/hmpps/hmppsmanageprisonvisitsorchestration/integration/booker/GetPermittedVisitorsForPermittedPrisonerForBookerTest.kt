@@ -320,6 +320,63 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
   }
 
   @Test
+  fun `when booker's prisoners has multiple visitors then they are returned in appropriate sort order`() {
+    // Given
+    val visitor1 = createVisitor(
+      firstName = "c",
+      lastName = "c",
+      dateOfBirth = LocalDate.of(1990, 4, 1),
+    )
+
+    val visitor2 = createVisitor(
+      firstName = "B",
+      lastName = "c",
+      dateOfBirth = LocalDate.of(1990, 4, 1),
+    )
+
+    // this s
+    val visitor3 = createVisitor(
+      firstName = "a",
+      lastName = "c",
+      dateOfBirth = LocalDate.of(1990, 4, 1),
+    )
+
+    val visitor4 = createVisitor(
+      firstName = "A",
+      lastName = "A",
+      dateOfBirth = LocalDate.of(1990, 4, 1),
+    )
+
+    val contacts = createContactsList(listOf(visitor1, visitor2, visitor3, visitor4))
+
+    prisonerContactRegistryMockServer.stubGetApprovedPrisonerContacts(PRISONER_ID, withAddress = false, hasDateOfBirth = true, contacts)
+    prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(BOOKER_REFERENCE, listOf(bookerRegistryPrisonerDto))
+    prisonVisitBookerRegistryMockServer.stubGetBookersPrisonerVisitors(
+      BOOKER_REFERENCE,
+      PRISONER_ID,
+      listOf(
+        PermittedVisitorsForPermittedPrisonerBookerDto(visitor1.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(visitor2.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(visitor3.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(visitor4.personId),
+      ),
+    )
+
+    // When
+    val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, BOOKER_REFERENCE, PRISONER_ID)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val prisonerDetailsList = getResults(returnResult)
+
+    Assertions.assertThat(prisonerDetailsList.size).isEqualTo(4)
+    assertVisitorContactBasicDetails(prisonerDetailsList[0], visitor4)
+    assertVisitorContactBasicDetails(prisonerDetailsList[1], visitor3)
+    assertVisitorContactBasicDetails(prisonerDetailsList[2], visitor2)
+    assertVisitorContactBasicDetails(prisonerDetailsList[3], visitor1)
+  }
+
+  @Test
   fun `when booker's prisoners has no valid visitors then no visitors are returned`() {
     // Given
     prisonerContactRegistryMockServer.stubGetApprovedPrisonerContacts(PRISONER_ID, withAddress = false, hasDateOfBirth = true, contactsList)
