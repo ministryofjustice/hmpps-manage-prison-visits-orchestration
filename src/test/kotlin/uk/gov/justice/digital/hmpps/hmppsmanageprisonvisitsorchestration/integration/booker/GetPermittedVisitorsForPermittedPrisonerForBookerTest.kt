@@ -189,14 +189,16 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
     assertVisitorContactBasicDetails(prisonerDetailsList[3], bannedVisitorForNext3Weeks)
     Assertions.assertThat(prisonerDetailsList[3].visitorRestrictions.size).isEqualTo(1)
     assertVisitorRestriction(prisonerDetailsList[3].visitorRestrictions.toList()[0], VisitorRestrictionType.BAN, EXPIRING_IN_3_WEEKS_BANNED_RESTRICTION.expiryDate)
-    assertVisitorContactBasicDetails(prisonerDetailsList[4], bannedVisitorForNext6Weeks)
+
+    // sorted by last name and first name
+    assertVisitorContactBasicDetails(prisonerDetailsList[4], multipleBansVisitor)
     Assertions.assertThat(prisonerDetailsList[4].visitorRestrictions.size).isEqualTo(1)
     assertVisitorRestriction(prisonerDetailsList[4].visitorRestrictions.toList()[0], VisitorRestrictionType.BAN, EXPIRING_IN_6_WEEKS_BANNED_RESTRICTION.expiryDate)
-    assertVisitorContactBasicDetails(prisonerDetailsList[5], multipleBansVisitor)
-    Assertions.assertThat(prisonerDetailsList[5].visitorRestrictions.size).isEqualTo(1)
-    assertVisitorRestriction(prisonerDetailsList[5].visitorRestrictions.toList()[0], VisitorRestrictionType.BAN, EXPIRING_IN_6_WEEKS_BANNED_RESTRICTION.expiryDate)
-    assertVisitorContactBasicDetails(prisonerDetailsList[6], expiredBanVisitor)
-    Assertions.assertThat(prisonerDetailsList[6].visitorRestrictions).isEmpty()
+    assertVisitorContactBasicDetails(prisonerDetailsList[5], expiredBanVisitor)
+    Assertions.assertThat(prisonerDetailsList[5].visitorRestrictions).isEmpty()
+    assertVisitorContactBasicDetails(prisonerDetailsList[6], bannedVisitorForNext6Weeks)
+    Assertions.assertThat(prisonerDetailsList[6].visitorRestrictions.size).isEqualTo(1)
+    assertVisitorRestriction(prisonerDetailsList[6].visitorRestrictions.toList()[0], VisitorRestrictionType.BAN, EXPIRING_IN_6_WEEKS_BANNED_RESTRICTION.expiryDate)
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
@@ -315,6 +317,62 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
     verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersApprovedSocialContacts(PRISONER_ID, withAddress = false, hasDateOfBirth = true)
+  }
+
+  @Test
+  fun `when booker's prisoners has multiple visitors then they are returned in appropriate sort order`() {
+    // Given
+    val visitor1 = createVisitor(
+      firstName = "c",
+      lastName = "c",
+      dateOfBirth = LocalDate.of(1990, 4, 1),
+    )
+
+    val visitor2 = createVisitor(
+      firstName = "B",
+      lastName = "c",
+      dateOfBirth = LocalDate.of(1990, 4, 1),
+    )
+
+    val visitor3 = createVisitor(
+      firstName = "a",
+      lastName = "c",
+      dateOfBirth = LocalDate.of(1990, 4, 1),
+    )
+
+    val visitor4 = createVisitor(
+      firstName = "A",
+      lastName = "A",
+      dateOfBirth = LocalDate.of(1990, 4, 1),
+    )
+
+    val contacts = createContactsList(listOf(visitor1, visitor2, visitor3, visitor4))
+
+    prisonerContactRegistryMockServer.stubGetApprovedPrisonerContacts(PRISONER_ID, withAddress = false, hasDateOfBirth = true, contacts)
+    prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(BOOKER_REFERENCE, listOf(bookerRegistryPrisonerDto))
+    prisonVisitBookerRegistryMockServer.stubGetBookersPrisonerVisitors(
+      BOOKER_REFERENCE,
+      PRISONER_ID,
+      listOf(
+        PermittedVisitorsForPermittedPrisonerBookerDto(visitor1.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(visitor2.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(visitor3.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(visitor4.personId),
+      ),
+    )
+
+    // When
+    val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, BOOKER_REFERENCE, PRISONER_ID)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val prisonerDetailsList = getResults(returnResult)
+
+    Assertions.assertThat(prisonerDetailsList.size).isEqualTo(4)
+    assertVisitorContactBasicDetails(prisonerDetailsList[0], visitor4)
+    assertVisitorContactBasicDetails(prisonerDetailsList[1], visitor3)
+    assertVisitorContactBasicDetails(prisonerDetailsList[2], visitor2)
+    assertVisitorContactBasicDetails(prisonerDetailsList[3], visitor1)
   }
 
   @Test
