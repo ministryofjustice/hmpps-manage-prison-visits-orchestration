@@ -136,7 +136,7 @@ class PublicBookerService(
       .firstOrNull { it.prisonerId == prisonerNumber }
       ?: throw NotFoundException("Prisoner with number - $prisonerNumber not found for booker reference - $bookerReference")
 
-    return getValidVisitors(bookerReference, prisonerNumber)
+    return getValidVisitors(bookerReference, prisonerNumber).sortedWith(compareBy(VisitorInfoDto::lastName, VisitorInfoDto::firstName))
   }
 
   fun validatePrisoner(bookerReference: String, prisonerNumber: String) {

@@ -189,14 +189,16 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
     assertVisitorContactBasicDetails(prisonerDetailsList[3], bannedVisitorForNext3Weeks)
     Assertions.assertThat(prisonerDetailsList[3].visitorRestrictions.size).isEqualTo(1)
     assertVisitorRestriction(prisonerDetailsList[3].visitorRestrictions.toList()[0], VisitorRestrictionType.BAN, EXPIRING_IN_3_WEEKS_BANNED_RESTRICTION.expiryDate)
-    assertVisitorContactBasicDetails(prisonerDetailsList[4], bannedVisitorForNext6Weeks)
+
+    // sorted by last name and first name
+    assertVisitorContactBasicDetails(prisonerDetailsList[4], multipleBansVisitor)
     Assertions.assertThat(prisonerDetailsList[4].visitorRestrictions.size).isEqualTo(1)
     assertVisitorRestriction(prisonerDetailsList[4].visitorRestrictions.toList()[0], VisitorRestrictionType.BAN, EXPIRING_IN_6_WEEKS_BANNED_RESTRICTION.expiryDate)
-    assertVisitorContactBasicDetails(prisonerDetailsList[5], multipleBansVisitor)
-    Assertions.assertThat(prisonerDetailsList[5].visitorRestrictions.size).isEqualTo(1)
-    assertVisitorRestriction(prisonerDetailsList[5].visitorRestrictions.toList()[0], VisitorRestrictionType.BAN, EXPIRING_IN_6_WEEKS_BANNED_RESTRICTION.expiryDate)
-    assertVisitorContactBasicDetails(prisonerDetailsList[6], expiredBanVisitor)
-    Assertions.assertThat(prisonerDetailsList[6].visitorRestrictions).isEmpty()
+    assertVisitorContactBasicDetails(prisonerDetailsList[5], expiredBanVisitor)
+    Assertions.assertThat(prisonerDetailsList[5].visitorRestrictions).isEmpty()
+    assertVisitorContactBasicDetails(prisonerDetailsList[6], bannedVisitorForNext6Weeks)
+    Assertions.assertThat(prisonerDetailsList[6].visitorRestrictions.size).isEqualTo(1)
+    assertVisitorRestriction(prisonerDetailsList[6].visitorRestrictions.toList()[0], VisitorRestrictionType.BAN, EXPIRING_IN_6_WEEKS_BANNED_RESTRICTION.expiryDate)
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
