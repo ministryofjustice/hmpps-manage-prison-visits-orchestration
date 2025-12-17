@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.bo
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestsStatus
 import java.time.LocalDate
 
 data class PrisonVisitorRequestDto(
@@ -34,4 +35,7 @@ data class PrisonVisitorRequestDto(
 
   @param:Schema(description = "Date request was submitted", example = "2025-10-28", required = true)
   val requestedOn: LocalDate,
+
+  @param:Schema(description = "The current status of the request", example = "REQUESTED", required = true)
+  val status: VisitorRequestsStatus,
 )
