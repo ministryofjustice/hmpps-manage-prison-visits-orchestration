@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_APPROVE_VISITOR_REQUEST
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.ApproveVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestsStatus.APPROVED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 
@@ -38,6 +39,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
       lastName = "Smith",
       dateOfBirth = LocalDate.now().minusYears(21),
       requestedOn = LocalDate.now(),
+      status = APPROVED,
     )
 
     prisonVisitBookerRegistryMockServer.stubApproveVisitorRequest(requestReference, approveVisitorRequestResponse, HttpStatus.OK)
@@ -70,7 +72,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
   fun `when call to approve visitor request on booker-registry fails with an INTERNAL_SERVER_ERROR error, then INTERNAL_SERVER_ERROR error code is returned`() {
     // Given
     val approveVisitorRequestDto = ApproveVisitorRequestDto(visitorId = 123456L)
-    val approveVisitorRequestResponse = PrisonVisitorRequestDto(
+    PrisonVisitorRequestDto(
       requestReference,
       bookerReference = "abc-def-ghi",
       bookerEmail = "test@test.com",
@@ -79,6 +81,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
       lastName = "Smith",
       dateOfBirth = LocalDate.now().minusYears(21),
       requestedOn = LocalDate.now(),
+      status = APPROVED,
     )
 
     prisonVisitBookerRegistryMockServer.stubApproveVisitorRequest(requestReference, null, HttpStatus.INTERNAL_SERVER_ERROR)

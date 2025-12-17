@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.control
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestListEntryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestsStatus.REQUESTED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 
@@ -31,7 +32,7 @@ class GetVisitorRequestsForPrisonTest : IntegrationTestBase() {
     val prisonCode = "HEI"
     val prisonerId = "AA123456"
 
-    prisonVisitBookerRegistryMockServer.stubGetVisitorRequestsForPrison(prisonCode, listOf(PrisonVisitorRequestDto(reference = "abc-def-ghi", bookerReference = "xyz-rhf-sjd", bookerEmail = "test@test.com", prisonerId, firstName = "VisitorTwo", lastName = "Second", dateOfBirth = LocalDate.of(1990, 2, 2), requestedOn = LocalDate.now())))
+    prisonVisitBookerRegistryMockServer.stubGetVisitorRequestsForPrison(prisonCode, listOf(PrisonVisitorRequestDto(reference = "abc-def-ghi", bookerReference = "xyz-rhf-sjd", bookerEmail = "test@test.com", prisonerId, firstName = "VisitorTwo", lastName = "Second", dateOfBirth = LocalDate.of(1990, 2, 2), requestedOn = LocalDate.now(), status = REQUESTED)))
     prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(listOf(prisonerId), listOf(createPrisoner(prisonerId, "John", "Smith", LocalDate.now().minusYears(21), prisonCode, convictedStatus = "Convicted")))
 
     // When
@@ -50,7 +51,7 @@ class GetVisitorRequestsForPrisonTest : IntegrationTestBase() {
     val prisonCode = "HEI"
     val prisonerId = "AA123456"
 
-    prisonVisitBookerRegistryMockServer.stubGetVisitorRequestsForPrison(prisonCode, listOf(PrisonVisitorRequestDto(reference = "abc-def-ghi", bookerReference = "xyz-rhf-sjd", bookerEmail = "test@test.com", prisonerId, firstName = "VisitorTwo", lastName = "Second", dateOfBirth = LocalDate.of(1990, 2, 2), requestedOn = LocalDate.now())))
+    prisonVisitBookerRegistryMockServer.stubGetVisitorRequestsForPrison(prisonCode, listOf(PrisonVisitorRequestDto(reference = "abc-def-ghi", bookerReference = "xyz-rhf-sjd", bookerEmail = "test@test.com", prisonerId, firstName = "VisitorTwo", lastName = "Second", dateOfBirth = LocalDate.of(1990, 2, 2), requestedOn = LocalDate.now(), status = REQUESTED)))
     prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(listOf(prisonerId), null, HttpStatus.NOT_FOUND)
 
     // When

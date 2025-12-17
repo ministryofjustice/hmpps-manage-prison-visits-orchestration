@@ -19,6 +19,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.SingleVisitorRequestForReviewDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestsStatus.APPROVED
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestsStatus.REJECTED
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestsStatus.REQUESTED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitor.VisitorLastApprovedDatesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
@@ -76,7 +79,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
 
     prisonVisitBookerRegistryMockServer.stubGetSingleVisitorRequest(
       requestReference,
-      visitorRequest = PrisonVisitorRequestDto(requestReference, booker.reference, booker.email, prisonerId, "firstName", "lastName", LocalDate.now().minusYears(21), LocalDate.now()),
+      visitorRequest = PrisonVisitorRequestDto(requestReference, booker.reference, booker.email, prisonerId, "firstName", "lastName", LocalDate.now().minusYears(21), LocalDate.now(), status = REQUESTED),
     )
 
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(booker.reference, booker = booker)
@@ -145,7 +148,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
 
     prisonVisitBookerRegistryMockServer.stubGetSingleVisitorRequest(
       requestReference,
-      visitorRequest = PrisonVisitorRequestDto(requestReference, booker.reference, booker.email, prisonerId, "firstName", "lastName", LocalDate.now().minusYears(21), LocalDate.now()),
+      visitorRequest = PrisonVisitorRequestDto(requestReference, booker.reference, booker.email, prisonerId, "firstName", "lastName", LocalDate.now().minusYears(21), LocalDate.now(), status = APPROVED),
     )
 
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(booker.reference, booker = booker)
@@ -194,7 +197,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
 
     prisonVisitBookerRegistryMockServer.stubGetSingleVisitorRequest(
       requestReference,
-      visitorRequest = PrisonVisitorRequestDto(requestReference, booker.reference, booker.email, prisonerId, "firstName", "lastName", LocalDate.now().minusYears(21), LocalDate.now()),
+      visitorRequest = PrisonVisitorRequestDto(requestReference, booker.reference, booker.email, prisonerId, "firstName", "lastName", LocalDate.now().minusYears(21), LocalDate.now(), status = REJECTED),
     )
 
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(booker.reference, booker = booker)

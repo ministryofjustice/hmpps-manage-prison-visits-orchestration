@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.control
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RejectVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestRejectionReason
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestsStatus.REJECTED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 
@@ -41,6 +42,7 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
       lastName = "Smith",
       dateOfBirth = LocalDate.now().minusYears(21),
       requestedOn = LocalDate.now(),
+      status = REJECTED,
     )
 
     prisonVisitBookerRegistryMockServer.stubRejectVisitorRequest(requestReference, rejectVisitorRequestResponse, HttpStatus.OK)
