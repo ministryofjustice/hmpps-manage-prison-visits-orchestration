@@ -14,7 +14,9 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ManageUsersApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitAllocationApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.VISIT_ORDER_HISTORY_FOR_PRISONER
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryAttributesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.enums.VisitOrderHistoryAttributeType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -33,13 +35,13 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     // Given
     val prisonerId = "ABC123"
     val fromDate = LocalDate.now().minusDays(10)
-    val visitOrderHistory1 = VisitOrderHistoryDto(prisonerId, "MIGRATION", LocalDateTime.now().minusDays(10), 10, null, 3, null, userName = "user1")
-    val visitOrderHistory2 = VisitOrderHistoryDto(prisonerId, "PRISONER_BALANCE_RESET", LocalDateTime.now().minusDays(9), 0, null, 0, null, userName = "user2")
-    val visitOrderHistory3 = VisitOrderHistoryDto(prisonerId, "VISIT_BOOKED", LocalDateTime.now().minusDays(8), -1, null, 0, null, userName = "SYSTEM")
+    val visitOrderHistory1 = VisitOrderHistoryDto(prisonerId, "MIGRATION", LocalDateTime.now().minusDays(10), 10, null, 3, null, userName = "user1", attributes = emptyList())
+    val visitOrderHistory2 = VisitOrderHistoryDto(prisonerId, "PRISONER_BALANCE_RESET", LocalDateTime.now().minusDays(9), 0, null, 0, null, userName = "user2", attributes = emptyList())
+    val visitOrderHistory3 = VisitOrderHistoryDto(prisonerId, "VISIT_BOOKED", LocalDateTime.now().minusDays(8), -1, null, 0, null, userName = "SYSTEM", attributes = listOf(VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd")))
 
     // this entry needs to be ignored as balance does not change
-    val visitOrderHistory4 = VisitOrderHistoryDto(prisonerId, "SYNC_FROM_NOMIS", LocalDateTime.now().minusDays(7), -1, null, 0, null, userName = "SYSTEM")
-    val visitOrderHistory5 = VisitOrderHistoryDto(prisonerId, "VO_AND_PVO_ALLOCATION", LocalDateTime.now().minusDays(6), 4, null, 2, null, userName = "user3")
+    val visitOrderHistory4 = VisitOrderHistoryDto(prisonerId, "SYNC_FROM_NOMIS", LocalDateTime.now().minusDays(7), -1, null, 0, null, userName = "SYSTEM", attributes = emptyList())
+    val visitOrderHistory5 = VisitOrderHistoryDto(prisonerId, "VO_AND_PVO_ALLOCATION", LocalDateTime.now().minusDays(6), 4, null, 2, null, userName = "user3", attributes = emptyList())
     visitAllocationApiMockServer.stubGetVisitOrderHistory(prisonerId, fromDate, listOf(visitOrderHistory1, visitOrderHistory2, visitOrderHistory3, visitOrderHistory4, visitOrderHistory5))
     manageUsersApiMockServer.stubGetUserDetails("user1", "John Smith")
     manageUsersApiMockServer.stubGetUserDetails("user2", "Sarah Jones")
