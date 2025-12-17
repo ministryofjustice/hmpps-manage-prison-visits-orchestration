@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation
 
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.enums.VisitOrderHistoryAttributeType
 import java.time.LocalDateTime
 
 data class VisitOrderHistoryDto(
@@ -32,5 +33,5 @@ data class VisitOrderHistoryDto(
   val comment: String? = null,
 
   @param:Schema(description = "Key, value combination of attributes", required = true)
-  val attributes: Map<String, String> = mapOf(),
+  val attributes: Map<VisitOrderHistoryAttributeType, String> = mapOf(),
 )
