@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.getJsonString
 
 class PrisonApiMockServer : WireMockServer(8093) {
-  fun stubGetInmateDetails(prisonerId: String, inmateDetail: InmateDetailDto?) {
+  fun stubGetInmateDetails(prisonerId: String, inmateDetail: InmateDetailDto?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
     val responseBuilder = createJsonResponseBuilder()
 
     stubFor(
@@ -17,7 +17,7 @@ class PrisonApiMockServer : WireMockServer(8093) {
         .willReturn(
           if (inmateDetail == null) {
             responseBuilder
-              .withStatus(HttpStatus.NOT_FOUND.value())
+              .withStatus(httpStatus.value())
           } else {
             responseBuilder
               .withStatus(HttpStatus.OK.value())

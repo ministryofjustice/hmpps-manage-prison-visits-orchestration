@@ -12,7 +12,9 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
 import java.time.Duration
 import java.time.LocalDate
 import java.util.Optional
@@ -21,6 +23,8 @@ import java.util.Optional
 class VisitAllocationApiClient(
   @param:Qualifier("visitAllocationApiWebClient") private val webClient: WebClient,
   @param:Value("\${visit-allocation.api.timeout:10s}") private val apiTimeout: Duration,
+  private val prisonerSearchClient: PrisonerSearchClient,
+  private val prisonApiClient: PrisonApiClient,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -46,7 +50,31 @@ class VisitAllocationApiClient(
       }
   }
 
-  fun getPrisonerVisitOrderHistory(prisonerId: String, fromDate: LocalDate): List<VisitOrderHistoryDto> {
+  fun getVisitOrderHistoryDetails(prisonerId: String, fromDate: LocalDate): VisitOrderHistoryDetailsDto? {
+    PrisonerProfileClient.Companion.LOG.trace("getVisitOrderHistory - for prisoner {} from date {}", prisonerId, fromDate)
+    val prisonerMono = prisonerSearchClient.getPrisonerByIdAsMono(prisonerId)
+    val inmateDetailMono = prisonApiClient.getInmateDetailsAsMono(prisonerId)
+    val visitOrderHistoryListMono = getPrisonerVisitOrderHistoryAsMono(prisonerId, fromDate)
+    return Mono.zip(prisonerMono, inmateDetailMono, visitOrderHistoryListMono)
+      .map { visitOrderHistoryMonos ->
+        val prisoner = visitOrderHistoryMonos.t1 ?: throw InvalidPrisonerProfileException("Unable to retrieve offender details from Prisoner Search API")
+        val inmateDetails = visitOrderHistoryMonos.t2 ?: throw InvalidPrisonerProfileException("Unable to retrieve inmate details from Prison API")
+
+        val visitOrderHistoryList = visitOrderHistoryMonos.t3.sortedBy { it.createdTimeStamp }
+        VisitOrderHistoryDetailsDto(
+          prisonerId = prisonerId,
+          firstName = prisoner.firstName,
+          lastName = prisoner.lastName,
+          category = inmateDetails.category,
+          convictedStatus = prisoner.convictedStatus,
+          incentiveLevel = prisoner.currentIncentive?.level?.description,
+          visitOrderHistoryList = visitOrderHistoryList,
+        )
+      }
+      .block(apiTimeout)
+  }
+
+  private fun getPrisonerVisitOrderHistoryAsMono(prisonerId: String, fromDate: LocalDate): Mono<List<VisitOrderHistoryDto>> {
     val uri = VISIT_ORDER_HISTORY_URI.replace("{prisonerId}", prisonerId)
     return webClient.get()
       .uri(uri) {
@@ -58,8 +86,6 @@ class VisitAllocationApiClient(
         LOG.error("getPrisonerVisitOrderHistory Failed for get request $uri")
         Mono.error(e)
       }
-      .blockOptional(apiTimeout)
-      .orElse(emptyList())
   }
 
   private fun visitOrderHistoryUriBuilder(
