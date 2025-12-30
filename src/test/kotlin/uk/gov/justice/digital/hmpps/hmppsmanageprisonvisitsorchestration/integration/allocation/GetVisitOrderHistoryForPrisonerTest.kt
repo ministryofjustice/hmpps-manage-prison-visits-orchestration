@@ -67,7 +67,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, LocalDate.now().minusDays(10))
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val visitOrderHistoryDetailsDto = getResults(returnResult)
-    val visitOrderHistory = visitOrderHistoryDetailsDto.visitOrderHistoryList
+    val visitOrderHistory = visitOrderHistoryDetailsDto.visitOrderHistory
 
     assertThat(visitOrderHistory.size).isEqualTo(4)
     assertVisitOrderHistory(visitOrderHistory[0], visitOrderHistory1, null, null, "John Smith")
@@ -96,7 +96,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, LocalDate.now().minusDays(10))
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val visitOrderHistoryDetailsDto = getResults(returnResult)
-    val visitOrderHistory = visitOrderHistoryDetailsDto.visitOrderHistoryList
+    val visitOrderHistory = visitOrderHistoryDetailsDto.visitOrderHistory
 
     assertThat(visitOrderHistory.size).isEqualTo(0)
     verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerId, fromDate)

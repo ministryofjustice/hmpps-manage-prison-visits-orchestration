@@ -22,5 +22,5 @@ class VisitOrderHistoryDetailsDto(
   val category: String?,
 
   @param:Schema(description = "List of Visit Order History")
-  var visitOrderHistoryList: List<VisitOrderHistoryDto>,
+  var visitOrderHistory: List<VisitOrderHistoryDto>,
 )

@@ -68,7 +68,7 @@ class VisitAllocationApiClient(
           category = inmateDetails.category,
           convictedStatus = prisoner.convictedStatus,
           incentiveLevel = prisoner.currentIncentive?.level?.description,
-          visitOrderHistoryList = visitOrderHistoryList,
+          visitOrderHistory = visitOrderHistoryList,
         )
       }
       .block(apiTimeout)

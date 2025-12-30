@@ -39,11 +39,11 @@ class VisitAllocationService(
   fun getVisitOrderHistoryDetails(prisonerId: String, fromDate: LocalDate): VisitOrderHistoryDetailsDto? {
     logger.trace("Getting visit order history details for prisoner {}, starting from date {}", prisonerId, fromDate)
     return visitAllocationApiClient.getVisitOrderHistoryDetails(prisonerId, fromDate)?.also {
-      if (it.visitOrderHistoryList.isNotEmpty()) {
-        setVisitOrderHistoryUserNames(it.visitOrderHistoryList)
-        setVisitOrderHistoryBalanceChange(it.visitOrderHistoryList)
+      if (it.visitOrderHistory.isNotEmpty()) {
+        setVisitOrderHistoryUserNames(it.visitOrderHistory)
+        setVisitOrderHistoryBalanceChange(it.visitOrderHistory)
       }
-      it.visitOrderHistoryList = it.visitOrderHistoryList.filterNot { visitOrderHistoryWithoutBalanceChange.test(it) }
+      it.visitOrderHistory = it.visitOrderHistory.filterNot { visitOrderHistoryWithoutBalanceChange.test(it) }
     }
   }
 
