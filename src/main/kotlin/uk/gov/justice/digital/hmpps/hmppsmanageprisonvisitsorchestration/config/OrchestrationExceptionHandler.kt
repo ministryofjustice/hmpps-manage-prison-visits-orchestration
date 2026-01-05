@@ -172,7 +172,7 @@ class OrchestrationExceptionHandler {
     val message = e.localizedMessage
     val error = BookerVisitorRequestValidationErrorResponse(
       status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
-      userMessage = "Prisoner registration failed",
+      userMessage = "Create visitor request failed",
       developerMessage = message,
       validationError = e.errorCode,
     )
