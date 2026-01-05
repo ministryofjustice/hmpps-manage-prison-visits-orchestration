@@ -20,13 +20,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisteredPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.CurrentIncentive
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.IncentiveLevel
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 @DisplayName("Get permitted prisoners for booker")
 class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
@@ -443,11 +440,6 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
     Assertions.assertThat(prisonerBasicInfo.availableVos).isEqualTo(availableVOs)
     Assertions.assertThat(prisonerBasicInfo.nextAvailableVoDate).isAfter(LocalDate.now())
     Assertions.assertThat(prisonerBasicInfo.registeredPrison).isEqualTo(registeredPrisonDto)
-  }
-
-  private fun createCurrentIncentive(): CurrentIncentive {
-    val incentiveLevel = IncentiveLevel("S", "Standard")
-    return CurrentIncentive(incentiveLevel, LocalDateTime.now())
   }
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerPrisonerInfoDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<BookerPrisonerInfoDto>::class.java).toList()
