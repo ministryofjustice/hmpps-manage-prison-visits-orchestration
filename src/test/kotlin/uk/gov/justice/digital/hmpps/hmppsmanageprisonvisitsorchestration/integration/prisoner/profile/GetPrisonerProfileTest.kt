@@ -24,8 +24,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.ale
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitBalancesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.InmateDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.CurrentIncentive
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.IncentiveLevel
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
@@ -838,11 +836,6 @@ class GetPrisonerProfileTest(
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): PrisonerProfileDto = objectMapper.readValue(returnResult.returnResult().responseBody, PrisonerProfileDto::class.java)
 
-  private fun createInmateDetails(
-    prisonerId: String,
-    category: String? = null,
-  ): InmateDetailDto = InmateDetailDto(offenderNo = prisonerId, category = category)
-
   private fun createPrisonerVoBalanceDto(): PrisonerVOBalanceDto = PrisonerVOBalanceDto(
     prisonerId = "prisonerId",
     availableVos = 8,
@@ -857,11 +850,6 @@ class GetPrisonerProfileTest(
     lastPvoAllocatedDate = LocalDate.now(),
     nextPvoAllocationDate = LocalDate.now().plusDays(28),
   )
-
-  private fun createCurrentIncentive(): CurrentIncentive {
-    val incentiveLevel = IncentiveLevel("S", "Standard")
-    return CurrentIncentive(incentiveLevel, LocalDateTime.now())
-  }
 
   private fun stubGetVisits(visits: List<VisitDto>) {
     visitSchedulerMockServer.stubGetVisits(

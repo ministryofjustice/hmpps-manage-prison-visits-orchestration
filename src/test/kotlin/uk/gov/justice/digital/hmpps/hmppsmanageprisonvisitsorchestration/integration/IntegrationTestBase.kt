@@ -23,9 +23,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.con
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.RestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitorDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.InmateDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonNameDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.CurrentIncentive
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.IncentiveLevel
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
@@ -819,4 +821,14 @@ abstract class IntegrationTestBase {
   ) = VisitNotificationEventDto(type, notificationEventReference, createdDateTime, additionalData)
 
   protected fun generateRandomUUID(length: Int = 8): String = UUID.randomUUID().toString().substring(0, length)
+
+  protected fun createCurrentIncentive(): CurrentIncentive {
+    val incentiveLevel = IncentiveLevel("S", "Standard")
+    return CurrentIncentive(incentiveLevel, LocalDateTime.now())
+  }
+
+  protected fun createInmateDetails(
+    prisonerId: String,
+    category: String? = null,
+  ): InmateDetailDto = InmateDetailDto(offenderNo = prisonerId, category = category)
 }

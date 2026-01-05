@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitAllocationService
 import java.time.LocalDate
 
@@ -57,5 +57,5 @@ class VisitOrdersController(
     prisonerId: String,
     @RequestParam
     fromDate: LocalDate,
-  ): List<VisitOrderHistoryDto> = visitAllocationService.getVisitOrderHistory(prisonerId, fromDate)
+  ): VisitOrderHistoryDetailsDto? = visitAllocationService.getVisitOrderHistoryDetails(prisonerId, fromDate)
 }
