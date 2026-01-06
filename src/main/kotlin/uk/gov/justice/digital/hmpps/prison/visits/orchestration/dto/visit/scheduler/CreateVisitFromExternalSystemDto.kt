@@ -1,0 +1,50 @@
+package uk.gov.justice.digital.hmpps.prison.visits.orchestration.dto.visit.scheduler
+
+import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.Valid
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
+import uk.gov.justice.digital.hmpps.prison.visits.orchestration.dto.visit.scheduler.enums.VisitRestriction
+import uk.gov.justice.digital.hmpps.prison.visits.orchestration.dto.visit.scheduler.enums.VisitType
+import java.time.LocalDateTime
+
+data class CreateVisitFromExternalSystemDto(
+  @param:Schema(description = "Prisoner Id", example = "AF34567G", required = true)
+  @field:NotBlank
+  val prisonerId: String,
+  @param:Schema(description = "Prison Id", example = "3-character code, example = MDI", required = true)
+  @field:NotBlank
+  val prisonId: String,
+  @param:Schema(description = "Client name", example = "client_name", required = true)
+  @field:NotBlank
+  val clientName: String,
+  @param:Schema(description = "Client visit reference", example = "Reference ID in the client system", required = true)
+  @field:NotBlank
+  val clientVisitReference: String,
+  @param:Schema(description = "Visit Room", example = "A1", required = true)
+  @field:NotBlank
+  val visitRoom: String,
+  @param:Schema(description = "Visit Type", example = "SOCIAL", required = true)
+  @field:NotNull
+  val visitType: VisitType,
+  @param:Schema(description = "Visit Restriction", example = "OPEN", required = true)
+  @field:NotNull
+  val visitRestriction: VisitRestriction,
+  @param:Schema(description = "The date and time of the visit", example = "2018-12-01T13:45:00", required = true)
+  @field:NotNull
+  val startTimestamp: LocalDateTime,
+  @param:Schema(description = "The finishing date and time of the visit", example = "2018-12-01T13:45:00", required = true)
+  @field:NotNull
+  val endTimestamp: LocalDateTime,
+  @param:Schema(description = "Visit Notes")
+  val visitNotes: List<VisitNoteDto> = emptyList(),
+  @param:Schema(description = "Contact associated with the visit", required = true)
+  @field:NotNull
+  val visitContact: ContactDto,
+  @param:Schema(description = "The date and time of when the visit was created in NEXUS", example = "2018-12-01T13:45:00", required = false)
+  val createDateTime: LocalDateTime,
+  @param:Schema(description = "List of visitors associated with the visit", required = false)
+  val visitors: Set<@Valid VisitorDto>? = setOf(),
+  @param:Schema(description = "Additional support associated with the visit")
+  val visitorSupport: VisitorSupportDto? = null,
+)
