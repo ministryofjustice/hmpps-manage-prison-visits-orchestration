@@ -5,19 +5,22 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
+import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Mono
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceAdjustmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
 import java.time.Duration
 import java.time.LocalDate
-import java.util.Optional
+import java.util.*
 
 @Component
 class VisitAllocationApiClient(
@@ -29,7 +32,24 @@ class VisitAllocationApiClient(
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
     const val VISIT_ORDER_HISTORY_URI = "/visits/allocation/prisoner/{prisonerId}/visit-order-history"
-    const val VO_DETAILED_BALANCE_URI = "/visits/allocation/prisoner/{prisonerId}/balance/detailed"
+    const val VO_BALANCE_ENDPOINT = "/visits/allocation/prisoner/{prisonerId}/balance"
+    const val VO_DETAILED_BALANCE_URI = "$VO_BALANCE_ENDPOINT/detailed"
+  }
+
+  fun adjustPrisonersVisitOrderBalanceAsMono(prisonerId: String, prisonerBalanceAdjustmentDto: PrisonerBalanceAdjustmentDto) {
+    val uri = VO_BALANCE_ENDPOINT.replace("{prisonerId}", prisonerId)
+
+    webClient.put()
+      .uri(uri)
+      .body(BodyInserters.fromValue(prisonerBalanceAdjustmentDto))
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .toBodilessEntity()
+      .onErrorResume { e ->
+        LOG.error("Could not manually adjust prisoner's balance due to exception when calling visit allocation api:", e)
+        Mono.error(e)
+      }
+      .block(apiTimeout)
   }
 
   fun getPrisonerVOBalance(prisonerId: String): Optional<PrisonerVOBalanceDto>? = getPrisonerVOBalanceAsMono(prisonerId).block(apiTimeout)

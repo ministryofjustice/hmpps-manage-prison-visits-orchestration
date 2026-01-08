@@ -4,6 +4,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitAllocationApiClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceAdjustmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDto
 import java.time.LocalDate
@@ -18,6 +19,23 @@ class VisitAllocationService(
     const val SYSTEM_USER_NAME = "SYSTEM"
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
   }
+
+  fun adjustPrisonerVisitOrderBalance(prisonerId: String, prisonerBalanceAdjustmentDto: PrisonerBalanceAdjustmentDto) {
+    logger.info("Entered VisitAllocationService - adjustPrisonerVisitOrderBalance, adjust prisonerId $prisonerId's balance with dto $prisonerBalanceAdjustmentDto")
+    visitAllocationApiClient.adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
+  }
+
+  fun getVisitOrderHistoryDetails(prisonerId: String, fromDate: LocalDate): VisitOrderHistoryDetailsDto? {
+    logger.trace("Getting visit order history details for prisoner {}, starting from date {}", prisonerId, fromDate)
+    return visitAllocationApiClient.getVisitOrderHistoryDetails(prisonerId, fromDate)?.also {
+      if (it.visitOrderHistory.isNotEmpty()) {
+        setVisitOrderHistoryUserNames(it.visitOrderHistory)
+        setVisitOrderHistoryBalanceChange(it.visitOrderHistory)
+      }
+      it.visitOrderHistory = it.visitOrderHistory.filterNot { visitOrderHistoryWithoutBalanceChange.test(it) }
+    }
+  }
+
   private fun setVisitOrderHistoryUserNames(visitOrderHistoryList: List<VisitOrderHistoryDto>) {
     val userNames = visitOrderHistoryList.map { it.userName }.toSet()
     val userFullNames = getUserFullNames(userNames)
@@ -33,17 +51,6 @@ class VisitAllocationService(
     visitOrderHistoryList.forEach { visitOrderHistory ->
       setBalanceChange(visitOrderHistory, previousVisitOrderHistory)
       previousVisitOrderHistory = visitOrderHistory
-    }
-  }
-
-  fun getVisitOrderHistoryDetails(prisonerId: String, fromDate: LocalDate): VisitOrderHistoryDetailsDto? {
-    logger.trace("Getting visit order history details for prisoner {}, starting from date {}", prisonerId, fromDate)
-    return visitAllocationApiClient.getVisitOrderHistoryDetails(prisonerId, fromDate)?.also {
-      if (it.visitOrderHistory.isNotEmpty()) {
-        setVisitOrderHistoryUserNames(it.visitOrderHistory)
-        setVisitOrderHistoryBalanceChange(it.visitOrderHistory)
-      }
-      it.visitOrderHistory = it.visitOrderHistory.filterNot { visitOrderHistoryWithoutBalanceChange.test(it) }
     }
   }
 

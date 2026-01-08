@@ -2,7 +2,9 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integr
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.client.WireMock.put
 import org.springframework.http.HttpStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceAdjustmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.createJsonResponseBuilder
@@ -49,6 +51,22 @@ class VisitAllocationApiMockServer : WireMockServer(8101) {
             responseBuilder
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(visitOrderHistoryList))
+          },
+        ),
+    )
+  }
+
+  fun stubAdjustPrisonersVisitOrderBalance(prisonerId: String, prisonerBalanceAdjustmentDto: PrisonerBalanceAdjustmentDto?, httpStatus: HttpStatus = HttpStatus.OK) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      put("/visits/allocation/prisoner/$prisonerId/balance")
+        .willReturn(
+          if (prisonerBalanceAdjustmentDto == null) {
+            responseBuilder.withStatus(httpStatus.value())
+          } else {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(prisonerBalanceAdjustmentDto))
           },
         ),
     )
