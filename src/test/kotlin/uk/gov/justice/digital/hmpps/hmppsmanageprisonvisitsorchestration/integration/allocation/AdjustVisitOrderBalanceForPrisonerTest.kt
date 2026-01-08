@@ -24,7 +24,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
   lateinit var visitAllocationApiClientSpy: VisitAllocationApiClient
 
   @Test
-  fun `when prisoner has multiple visit order history then all results are returned with balance set`() {
+  fun `when visit allocation is called, with a valid request to adjust balance for a prisoner, then OK is returned`() {
     // Given
     val prisonerBalanceAdjustmentDto = PrisonerBalanceAdjustmentDto(
       voAmount = 5,
