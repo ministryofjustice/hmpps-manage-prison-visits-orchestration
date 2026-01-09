@@ -70,7 +70,7 @@ class VisitOrdersController(
     @Schema(description = "Visit order history starting from date", example = "2025-01-01", required = true)
     @RequestParam
     fromDate: LocalDate,
-    @Schema(description = "Maximum number of results to return, if null, returns all result from date", example = "100", required = false)
+    @Schema(description = "Maximum number of results to return, if null, returns all results from date", example = "100", required = false)
     @RequestParam
     maxResults: Int? = null,
   ): VisitOrderHistoryDetailsDto? = visitAllocationService.getVisitOrderHistoryDetails(prisonId = prisonId, prisonerId = prisonerId, fromDate, maxResults)
