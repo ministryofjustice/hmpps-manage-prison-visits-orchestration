@@ -1,10 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 
+import jakarta.validation.ValidationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitAllocationApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceAdjustmentDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDto
 import java.time.LocalDate
@@ -14,14 +16,35 @@ import java.util.function.Predicate
 class VisitAllocationService(
   private val visitAllocationApiClient: VisitAllocationApiClient,
   private val manageUsersService: ManageUsersService,
+  private val prisonerSearchService: PrisonerSearchService,
 ) {
   companion object {
     const val SYSTEM_USER_NAME = "SYSTEM"
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun adjustPrisonerVisitOrderBalance(prisonerId: String, prisonerBalanceAdjustmentDto: PrisonerBalanceAdjustmentDto) {
+  fun getPrisonerVisitOrderBalance(prisonerId: String, staffPrisonId: String): PrisonerBalanceDto {
+    logger.info("Entered VisitAllocationService - getPrisonerVisitOrderBalance for prisonerId $prisonerId and staff prisonId $staffPrisonId")
+
+    val prisoner = prisonerSearchService.getPrisoner(prisonerId)
+    validatePrisonerLocationAgainstStaffCaseload(prisoner.prisonId!!, staffPrisonId)
+
+    val visitOrderBalance = visitAllocationApiClient.getPrisonerVOBalance(prisonerId)
+
+    return PrisonerBalanceDto(
+      prisonerId = prisoner.prisonerNumber,
+      voBalance = visitOrderBalance.voBalance,
+      pvoBalance = visitOrderBalance.pvoBalance,
+      firstName = prisoner.firstName,
+      lastName = prisoner.lastName,
+    )
+  }
+
+  fun adjustPrisonerVisitOrderBalance(prisonerId: String, staffPrisonId: String, prisonerBalanceAdjustmentDto: PrisonerBalanceAdjustmentDto) {
     logger.info("Entered VisitAllocationService - adjustPrisonerVisitOrderBalance, adjust prisonerId $prisonerId's balance with dto $prisonerBalanceAdjustmentDto")
+    val prisoner = prisonerSearchService.getPrisoner(prisonerId)
+    validatePrisonerLocationAgainstStaffCaseload(prisoner.prisonId!!, staffPrisonId)
+
     visitAllocationApiClient.adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
   }
 
@@ -86,5 +109,11 @@ class VisitAllocationService(
     }
 
     return userNameMap
+  }
+
+  private fun validatePrisonerLocationAgainstStaffCaseload(prisonerPrisonId: String, staffPrisonId: String) {
+    if (prisonerPrisonId != staffPrisonId) {
+      throw ValidationException("Prisoner's prison ID - $prisonerPrisonId does not match staff prisonId caseload - $staffPrisonId. Prisoner visit order balance cannot be retrieved for a prisoner from a different prison.")
+    }
   }
 }

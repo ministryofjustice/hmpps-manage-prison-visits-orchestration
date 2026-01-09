@@ -5,30 +5,52 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceAdjustmentDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDetailedDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderPrisonerBalanceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.createJsonResponseBuilder
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.getJsonString
 import java.time.LocalDate
 
 class VisitAllocationApiMockServer : WireMockServer(8101) {
 
-  fun stubGetPrisonerVOBalance(
+  fun stubGetPrisonerVOBalanceDetailed(
     prisonerId: String,
-    prisonerVOBalanceDto: PrisonerVOBalanceDto?,
+    prisonerVOBalanceDetailedDto: PrisonerVOBalanceDetailedDto?,
     httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
   ) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
       WireMock.get("/visits/allocation/prisoner/$prisonerId/balance/detailed")
         .willReturn(
-          if (prisonerVOBalanceDto == null) {
+          if (prisonerVOBalanceDetailedDto == null) {
             responseBuilder
               .withStatus(httpStatus.value())
           } else {
             responseBuilder
               .withStatus(HttpStatus.OK.value())
-              .withBody(getJsonString(prisonerVOBalanceDto))
+              .withBody(getJsonString(prisonerVOBalanceDetailedDto))
+          },
+        ),
+    )
+  }
+
+  fun stubGetPrisonerVOBalance(
+    prisonerId: String,
+    prisonerBalance: VisitOrderPrisonerBalanceDto?,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      WireMock.get("/visits/allocation/prisoner/$prisonerId/balance")
+        .willReturn(
+          if (prisonerBalance == null) {
+            responseBuilder
+              .withStatus(httpStatus.value())
+          } else {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(prisonerBalance))
           },
         ),
     )
