@@ -30,5 +30,5 @@ data class VisitOrderHistoryDto(
   val comment: String? = null,
 
   @param:Schema(description = "Key, value combination of attributes", required = true)
-  var attributes: List<VisitOrderHistoryAttributesDto>,
+  val attributes: List<VisitOrderHistoryAttributesDto>,
 )
