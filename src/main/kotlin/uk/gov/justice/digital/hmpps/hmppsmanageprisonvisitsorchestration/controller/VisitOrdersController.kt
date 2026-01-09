@@ -23,10 +23,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitAllocationService
 import java.time.LocalDate
 
-const val VISIT_ORDERS_CONTROLLER_PATH: String = "/visit-orders"
-const val VISIT_ORDER_HISTORY_FOR_PRISONER = "$VISIT_ORDERS_CONTROLLER_PATH/{prisonerId}/history"
+const val VISIT_ORDER_PRISONER_CONTROLLER_PATH: String = "prison/{prisonId}/prisoners/{prisonerId}/visit-orders"
+const val VISIT_ORDER_HISTORY_FOR_PRISONER = "$VISIT_ORDER_PRISONER_CONTROLLER_PATH/history"
 
-const val VISIT_ORDER_PRISONER_BALANCE_ENDPOINT = "/prison/{prisonId}/prisoners/{prisonerId}/visit-orders/balance"
+const val VISIT_ORDER_PRISONER_BALANCE_ENDPOINT = "$VISIT_ORDER_PRISONER_CONTROLLER_PATH/balance"
 
 @RestController
 class VisitOrdersController(
@@ -60,6 +60,9 @@ class VisitOrdersController(
     ],
   )
   fun getVisitOrderHistoryForPrisoner(
+    @PathVariable(value = "prisonId", required = true)
+    @NotBlank
+    prisonId: String,
     @PathVariable(value = "prisonerId", required = true)
     @NotBlank
     @Length(min = 3, max = 50)
@@ -68,7 +71,7 @@ class VisitOrdersController(
     fromDate: LocalDate,
     @RequestParam
     maxResults: Int? = null,
-  ): VisitOrderHistoryDetailsDto? = visitAllocationService.getVisitOrderHistoryDetails(prisonerId, fromDate, maxResults)
+  ): VisitOrderHistoryDetailsDto? = visitAllocationService.getVisitOrderHistoryDetails(prisonId = prisonId, prisonerId = prisonerId, fromDate, maxResults)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(VISIT_ORDER_PRISONER_BALANCE_ENDPOINT)

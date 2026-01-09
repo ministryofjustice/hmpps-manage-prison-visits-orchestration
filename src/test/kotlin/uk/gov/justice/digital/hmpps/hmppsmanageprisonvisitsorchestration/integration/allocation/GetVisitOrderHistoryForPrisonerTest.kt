@@ -14,6 +14,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.IncentivesApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ManageUsersApiClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitAllocationApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.VISIT_ORDER_HISTORY_FOR_PRISONER
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.incentives.IncentiveLevelDto
@@ -29,6 +30,7 @@ import java.time.LocalDateTime
 @DisplayName("Get visit order history for a prisoner")
 class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
   val prisonerId = "ABC123"
+  val prisonId = "MDI"
 
   private final val prisonerDto = createPrisoner(
     prisonerId = prisonerId,
@@ -49,6 +51,9 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var incentivesApiClientSpy: IncentivesApiClient
+
+  @MockitoSpyBean
+  lateinit var prisonerSearchClientSpy: PrisonerSearchClient
 
   @Test
   fun `when prisoner has multiple visit order history then all results are returned with balance change populated`() {
@@ -71,7 +76,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     incentivesApiMockServer.stubGetAllIncentiveLevels(incentiveLevels)
 
     // When
-    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, LocalDate.now().minusDays(10))
+    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonId, prisonerId, LocalDate.now().minusDays(10))
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val visitOrderHistoryDetailsDto = getResults(returnResult)
     val visitOrderHistory = visitOrderHistoryDetailsDto.visitOrderHistory
@@ -89,7 +94,8 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     assertVisitOrderHistory(visitOrderHistory[3], visitOrderHistory1, 0, 0, "John Smith")
     assertVisitOrderHistoryAttributes(visitOrderHistory1.attributes, emptyList())
 
-    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerId, fromDate)
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
     verify(manageUsersApiClientSpy, times(1)).getUserDetails("user1")
     verify(manageUsersApiClientSpy, times(1)).getUserDetails("user2")
     verify(manageUsersApiClientSpy, times(1)).getUserDetails("user3")
@@ -107,13 +113,14 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     visitAllocationApiMockServer.stubGetVisitOrderHistory(prisonerId, fromDate, emptyList())
 
     // When
-    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, LocalDate.now().minusDays(10))
+    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonId, prisonerId, LocalDate.now().minusDays(10))
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val visitOrderHistoryDetailsDto = getResults(returnResult)
     val visitOrderHistory = visitOrderHistoryDetailsDto.visitOrderHistory
 
     assertThat(visitOrderHistory.size).isEqualTo(0)
-    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerId, fromDate)
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
     verify(incentivesApiClientSpy, times(0)).getAllIncentiveLevels()
   }
@@ -140,7 +147,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
 
     // When
     // maxResults expected is 2
-    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, LocalDate.now().minusDays(10), maxResults = 2)
+    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonId, prisonerId, LocalDate.now().minusDays(10), maxResults = 2)
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val visitOrderHistoryDetailsDto = getResults(returnResult)
     val visitOrderHistory = visitOrderHistoryDetailsDto.visitOrderHistory
@@ -152,7 +159,8 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     assertVisitOrderHistory(visitOrderHistory[1], visitOrderHistory3, -1, 0, "SYSTEM")
     assertVisitOrderHistoryAttributes(visitOrderHistory3.attributes, listOf(Pair(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd")))
 
-    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerId, fromDate)
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
     verify(manageUsersApiClientSpy, times(1)).getUserDetails("user3")
     verify(manageUsersApiClientSpy, times(1)).getUserDetails(any())
     verify(incentivesApiClientSpy, times(0)).getAllIncentiveLevels()
@@ -180,7 +188,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
 
     // When
     // maxResults expected is 21 - greater than returned results
-    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, LocalDate.now().minusDays(10), maxResults = 21)
+    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonId, prisonerId, LocalDate.now().minusDays(10), maxResults = 21)
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val visitOrderHistoryDetailsDto = getResults(returnResult)
     val visitOrderHistory = visitOrderHistoryDetailsDto.visitOrderHistory
@@ -198,7 +206,8 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     assertVisitOrderHistory(visitOrderHistory[3], visitOrderHistory1, 0, 0, "John Smith")
     assertVisitOrderHistoryAttributes(visitOrderHistory1.attributes, emptyList())
 
-    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerId, fromDate)
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
     verify(manageUsersApiClientSpy, times(3)).getUserDetails(any())
     verify(incentivesApiClientSpy, times(0)).getAllIncentiveLevels()
   }
@@ -225,7 +234,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
 
     // When
     // maxResults expected is 0 - invalid hence all results returned
-    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, LocalDate.now().minusDays(10), maxResults = 0)
+    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonId, prisonerId, LocalDate.now().minusDays(10), maxResults = 0)
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val visitOrderHistoryDetailsDto = getResults(returnResult)
     val visitOrderHistory = visitOrderHistoryDetailsDto.visitOrderHistory
@@ -243,7 +252,8 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     assertVisitOrderHistory(visitOrderHistory[3], visitOrderHistory1, 0, 0, "John Smith")
     assertVisitOrderHistoryAttributes(visitOrderHistory1.attributes, emptyList())
 
-    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerId, fromDate)
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
     verify(manageUsersApiClientSpy, times(3)).getUserDetails(any())
     verify(incentivesApiClientSpy, times(0)).getAllIncentiveLevels()
   }
@@ -270,7 +280,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
 
     // When
     // maxResults expected is -5 - invalid hence all results returned
-    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, LocalDate.now().minusDays(10), maxResults = -5)
+    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonId, prisonerId, LocalDate.now().minusDays(10), maxResults = -5)
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val visitOrderHistoryDetailsDto = getResults(returnResult)
     val visitOrderHistory = visitOrderHistoryDetailsDto.visitOrderHistory
@@ -288,7 +298,8 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     assertVisitOrderHistory(visitOrderHistory[3], visitOrderHistory1, 0, 0, "John Smith")
     assertVisitOrderHistoryAttributes(visitOrderHistory1.attributes, emptyList())
 
-    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerId, fromDate)
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
     verify(manageUsersApiClientSpy, times(3)).getUserDetails(any())
     verify(incentivesApiClientSpy, times(0)).getAllIncentiveLevels()
   }
@@ -322,7 +333,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     incentivesApiMockServer.stubGetAllIncentiveLevels(incentiveLevels)
 
     // When
-    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, LocalDate.now().minusDays(10))
+    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonId, prisonerId, LocalDate.now().minusDays(10))
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val visitOrderHistoryDetailsDto = getResults(returnResult)
     val visitOrderHistory = visitOrderHistoryDetailsDto.visitOrderHistory
@@ -337,12 +348,43 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     assertVisitOrderHistory(visitOrderHistory[2], visitOrderHistory1, 0, 0, "John Smith")
     assertVisitOrderHistoryAttributes(visitOrderHistory[2].attributes, listOf(Pair(VisitOrderHistoryAttributeType.INCENTIVE_LEVEL, "Standard")))
 
-    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerId, fromDate)
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
     verify(manageUsersApiClientSpy, times(1)).getUserDetails("user1")
     verify(manageUsersApiClientSpy, times(1)).getUserDetails("user2")
     verify(manageUsersApiClientSpy, times(1)).getUserDetails("user3")
     verify(manageUsersApiClientSpy, times(3)).getUserDetails(any())
     verify(incentivesApiClientSpy, times(1)).getAllIncentiveLevels()
+  }
+
+  @Test
+  fun `when incorrect prison ID passed then a BAD_REQUEST is returned`() {
+    // Given
+    val fromDate = LocalDate.now().minusDays(10)
+    val incentiveLevels = listOf(IncentiveLevelDto("STD", "Standard"), IncentiveLevelDto("ENH", "Enhanced"))
+    val visitOrderHistory1 = VisitOrderHistoryDto(VisitOrderHistoryType.MIGRATION, LocalDateTime.now().minusDays(10), 10, null, 3, null, userName = "user1", attributes = emptyList())
+    val visitOrderHistory2 = VisitOrderHistoryDto(VisitOrderHistoryType.PRISONER_BALANCE_RESET, LocalDateTime.now().minusDays(9), 0, null, 0, null, userName = "user2", attributes = emptyList())
+    val visitOrderHistory3 = VisitOrderHistoryDto(VisitOrderHistoryType.ALLOCATION_USED_BY_VISIT, LocalDateTime.now().minusDays(8), -1, null, 0, null, userName = "SYSTEM", attributes = listOf(VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd")))
+
+    // this entry needs to be ignored as balance does not change
+    val visitOrderHistory4 = VisitOrderHistoryDto(VisitOrderHistoryType.SYNC_FROM_NOMIS, LocalDateTime.now().minusDays(7), -1, null, 0, null, userName = "SYSTEM", attributes = emptyList())
+    val visitOrderHistory5 = VisitOrderHistoryDto(VisitOrderHistoryType.VO_AND_PVO_ALLOCATION, LocalDateTime.now().minusDays(6), 4, null, 2, null, userName = "user3", attributes = emptyList())
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetails)
+    visitAllocationApiMockServer.stubGetVisitOrderHistory(prisonerId, fromDate, listOf(visitOrderHistory1, visitOrderHistory2, visitOrderHistory3, visitOrderHistory4, visitOrderHistory5))
+    manageUsersApiMockServer.stubGetUserDetails("user1", "John Smith")
+    manageUsersApiMockServer.stubGetUserDetails("user2", "Sarah Jones")
+    manageUsersApiMockServer.stubGetUserDetailsFailure("user3")
+    incentivesApiMockServer.stubGetAllIncentiveLevels(incentiveLevels)
+
+    // When
+    // incorrect prison passed - prisoner is in MDI but XYZ passed
+    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, "XYZ", prisonerId, LocalDate.now().minusDays(10))
+    responseSpec.expectStatus().isBadRequest
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(visitAllocationApiClientSpy, times(0)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
+    verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
+    verify(incentivesApiClientSpy, times(0)).getAllIncentiveLevels()
   }
 
   @Test
@@ -374,7 +416,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     incentivesApiMockServer.stubGetAllIncentiveLevels(incentiveLevels, NOT_FOUND)
 
     // When
-    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, LocalDate.now().minusDays(10))
+    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonId, prisonerId, LocalDate.now().minusDays(10))
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val visitOrderHistoryDetailsDto = getResults(returnResult)
     val visitOrderHistory = visitOrderHistoryDetailsDto.visitOrderHistory
@@ -389,7 +431,8 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     assertVisitOrderHistory(visitOrderHistory[2], visitOrderHistory1, 0, 0, "John Smith")
     assertVisitOrderHistoryAttributes(visitOrderHistory[2].attributes, listOf(Pair(VisitOrderHistoryAttributeType.INCENTIVE_LEVEL, "STD")))
 
-    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerId, fromDate)
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
     verify(manageUsersApiClientSpy, times(1)).getUserDetails("user1")
     verify(manageUsersApiClientSpy, times(1)).getUserDetails("user2")
     verify(manageUsersApiClientSpy, times(1)).getUserDetails("user3")
@@ -426,7 +469,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     incentivesApiMockServer.stubGetAllIncentiveLevels(incentiveLevels, NOT_FOUND)
 
     // When
-    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, LocalDate.now().minusDays(10))
+    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonId, prisonerId, LocalDate.now().minusDays(10))
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val visitOrderHistoryDetailsDto = getResults(returnResult)
     val visitOrderHistory = visitOrderHistoryDetailsDto.visitOrderHistory
@@ -441,7 +484,8 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     assertVisitOrderHistory(visitOrderHistory[2], visitOrderHistory1, 0, 0, "John Smith")
     assertVisitOrderHistoryAttributes(visitOrderHistory[2].attributes, listOf(Pair(VisitOrderHistoryAttributeType.INCENTIVE_LEVEL, "STD")))
 
-    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerId, fromDate)
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
     verify(manageUsersApiClientSpy, times(1)).getUserDetails("user1")
     verify(manageUsersApiClientSpy, times(1)).getUserDetails("user2")
     verify(manageUsersApiClientSpy, times(1)).getUserDetails("user3")
@@ -459,9 +503,10 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     visitAllocationApiMockServer.stubGetVisitOrderHistory(prisonerId, fromDate, emptyList())
 
     // When
-    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, LocalDate.now().minusDays(10))
+    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonId, prisonerId, LocalDate.now().minusDays(10))
     responseSpec.expectStatus().isNotFound
-    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerId, fromDate)
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(visitAllocationApiClientSpy, times(0)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
   }
 
@@ -475,10 +520,11 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     visitAllocationApiMockServer.stubGetVisitOrderHistory(prisonerId, fromDate, emptyList())
 
     // When
-    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, LocalDate.now().minusDays(10))
+    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonId, prisonerId, LocalDate.now().minusDays(10))
     responseSpec.expectStatus().is5xxServerError
 
-    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerId, fromDate)
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(visitAllocationApiClientSpy, times(0)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
   }
 
@@ -492,9 +538,10 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     visitAllocationApiMockServer.stubGetVisitOrderHistory(prisonerId, fromDate, emptyList())
 
     // When
-    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, LocalDate.now().minusDays(10))
+    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonId, prisonerId, LocalDate.now().minusDays(10))
     responseSpec.expectStatus().isNotFound
-    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerId, fromDate)
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
   }
 
@@ -508,10 +555,11 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     visitAllocationApiMockServer.stubGetVisitOrderHistory(prisonerId, fromDate, emptyList())
 
     // When
-    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, LocalDate.now().minusDays(10))
+    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonId, prisonerId, LocalDate.now().minusDays(10))
     responseSpec.expectStatus().is5xxServerError
 
-    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerId, fromDate)
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
   }
 
@@ -525,9 +573,10 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     visitAllocationApiMockServer.stubGetVisitOrderHistory(prisonerId, fromDate, null, NOT_FOUND)
 
     // When
-    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, LocalDate.now().minusDays(10))
+    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonId, prisonerId, LocalDate.now().minusDays(10))
     responseSpec.expectStatus().isNotFound
-    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerId, fromDate)
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
   }
 
@@ -541,10 +590,11 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     visitAllocationApiMockServer.stubGetVisitOrderHistory(prisonerId, fromDate, null, INTERNAL_SERVER_ERROR)
 
     // When
-    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, LocalDate.now().minusDays(10))
+    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonId, prisonerId, LocalDate.now().minusDays(10))
     responseSpec.expectStatus().is5xxServerError
 
-    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerId, fromDate)
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
   }
 
@@ -552,12 +602,13 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
   fun `when get visit order history is called without correct role then FORBIDDEN status is returned`() {
     // When
     val invalidRoleHeaders = setAuthorisation(roles = listOf("ROLE_INVALID"))
-    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, invalidRoleHeaders, "test", LocalDate.now().minusDays(10))
+    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, invalidRoleHeaders, "test", prisonerId = "test", LocalDate.now().minusDays(10))
 
     // Then
     responseSpec.expectStatus().isForbidden
 
     // And
+    verify(prisonerSearchClientSpy, times(0)).getPrisonerById(prisonerId)
     verify(visitAllocationApiClientSpy, times(0)).getVisitOrderHistoryDetails(any(), any())
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
   }
@@ -565,13 +616,14 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
   @Test
   fun `when get visit order history is called without correct headers then UNAUTHORIZED status is returned`() {
     // When
-    val url = VISIT_ORDER_HISTORY_FOR_PRISONER.replace("{prisonerId}", "prisonerId")
+    val url = VISIT_ORDER_HISTORY_FOR_PRISONER.replace("{prisonerId}", "prisonerId").replace("{prisonId}", "ABC")
     val responseSpec = webTestClient.put().uri(url).exchange()
 
     // Then
     responseSpec.expectStatus().isUnauthorized
 
     // And
+    verify(prisonerSearchClientSpy, times(0)).getPrisonerById(prisonerId)
     verify(visitAllocationApiClientSpy, times(0)).getVisitOrderHistoryDetails(any(), any())
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
   }
@@ -601,11 +653,15 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
   fun callVisitOrderHistoryForPrisoner(
     webTestClient: WebTestClient,
     authHttpHeaders: (HttpHeaders) -> Unit,
+    prisonId: String,
     prisonerId: String,
     fromDate: LocalDate,
     maxResults: Int? = null,
   ): WebTestClient.ResponseSpec {
-    var uri = "$VISIT_ORDER_HISTORY_FOR_PRISONER?fromDate=$fromDate".replace("{prisonerId}", prisonerId)
+    var uri = "$VISIT_ORDER_HISTORY_FOR_PRISONER?fromDate=$fromDate"
+      .replace("{prisonerId}", prisonerId)
+      .replace("{prisonId}", prisonId)
+
     if (maxResults != null) {
       uri = uri.plus("&maxResults=$maxResults")
     }

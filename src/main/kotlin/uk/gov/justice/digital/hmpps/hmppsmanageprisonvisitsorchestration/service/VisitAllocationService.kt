@@ -61,9 +61,12 @@ class VisitAllocationService(
     visitAllocationApiClient.adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
   }
 
-  fun getVisitOrderHistoryDetails(prisonerId: String, fromDate: LocalDate, maxResults: Int?): VisitOrderHistoryDetailsDto? {
-    logger.trace("Getting visit order history details for prisoner {}, starting from date {}", prisonerId, fromDate)
-    return visitAllocationApiClient.getVisitOrderHistoryDetails(prisonerId, fromDate)?.also { visitOrderHistoryDetailsDto ->
+  fun getVisitOrderHistoryDetails(prisonId: String, prisonerId: String, fromDate: LocalDate, maxResults: Int?): VisitOrderHistoryDetailsDto? {
+    logger.info("Getting visit order history details for prisoner {} at prison {}, starting from date {}", prisonerId, prisonId, fromDate)
+    val prisoner = prisonerSearchService.getPrisoner(prisonerId)
+    validatePrisonerLocationAgainstStaffCaseload(prisoner.prisonId!!, prisonId)
+
+    return visitAllocationApiClient.getVisitOrderHistoryDetails(prisoner, fromDate)?.also { visitOrderHistoryDetailsDto ->
       var filteredVisitOrderHistoryList = visitOrderHistoryDetailsDto.visitOrderHistory.also { visitOrderHistoryList ->
         // set balance change
         setVisitOrderHistoryBalanceChange(visitOrderHistoryList)
