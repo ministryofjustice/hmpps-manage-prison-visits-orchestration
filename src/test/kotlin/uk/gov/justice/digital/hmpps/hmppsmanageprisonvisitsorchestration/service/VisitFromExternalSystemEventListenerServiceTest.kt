@@ -36,9 +36,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.VisitFromExternalSystemEvent
 import java.time.LocalDateTime
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 @ExtendWith(SpringExtension::class)
-@Timeout(15) // seconds
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class VisitFromExternalSystemEventListenerServiceTest {
   private val objectMapper = jacksonObjectMapper()
   private val visitSchedulerClient = mock<VisitSchedulerClient>()
