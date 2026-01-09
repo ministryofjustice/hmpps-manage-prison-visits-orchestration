@@ -70,9 +70,6 @@ class VisitAllocationService(
       var filteredVisitOrderHistoryList = visitOrderHistoryDetailsDto.visitOrderHistory.also { visitOrderHistoryList ->
         // set balance change
         setVisitOrderHistoryBalanceChange(visitOrderHistoryList)
-      }.filterNot { visitOrderHistoryDto ->
-        // remove any entries that do not have a balance change
-        visitOrderHistoryWithoutBalanceChange.test(visitOrderHistoryDto)
       }.sortedByDescending {
         it.createdTimeStamp
       }
@@ -122,10 +119,6 @@ class VisitAllocationService(
         visitOrderHistory.userName = userFullNames.getOrDefault(visitOrderHistory.userName, visitOrderHistory.userName)
       }
     }
-  }
-
-  private val visitOrderHistoryWithoutBalanceChange: Predicate<VisitOrderHistoryDto> = Predicate { visitOrderHistoryDto ->
-    (visitOrderHistoryDto.voBalanceChange == 0 && visitOrderHistoryDto.pvoBalanceChange == 0)
   }
 
   private fun getUserFullNames(userNames: Set<String>): Map<String, String> {
