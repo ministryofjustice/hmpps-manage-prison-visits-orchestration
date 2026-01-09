@@ -59,6 +59,10 @@ visit-allocation:
   api:
     url: http://localhost:8101
 
+incentives:
+  api:
+    url: http://localhost:8102
+
 hmpps:
   auth:
     url: http://localhost:8090/auth

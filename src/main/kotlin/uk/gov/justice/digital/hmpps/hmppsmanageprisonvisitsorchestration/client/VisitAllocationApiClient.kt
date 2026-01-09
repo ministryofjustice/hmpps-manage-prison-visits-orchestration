@@ -14,6 +14,7 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient.Companion.logger
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceAdjustmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDetailedDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDetailsDto
@@ -29,7 +30,6 @@ import java.util.*
 class VisitAllocationApiClient(
   @param:Qualifier("visitAllocationApiWebClient") private val webClient: WebClient,
   @param:Value("\${visit-allocation.api.timeout:10s}") private val apiTimeout: Duration,
-  private val prisonerSearchClient: PrisonerSearchClient,
   private val prisonApiClient: PrisonApiClient,
 ) {
   companion object {
@@ -85,17 +85,16 @@ class VisitAllocationApiClient(
       }
   }
 
-  fun getVisitOrderHistoryDetails(prisonerId: String, fromDate: LocalDate): VisitOrderHistoryDetailsDto? {
-    PrisonerProfileClient.Companion.LOG.trace("getVisitOrderHistory - for prisoner {} from date {}", prisonerId, fromDate)
-    val prisonerMono = prisonerSearchClient.getPrisonerByIdAsMono(prisonerId)
+  fun getVisitOrderHistoryDetails(prisoner: PrisonerDto, fromDate: LocalDate): VisitOrderHistoryDetailsDto? {
+    val prisonerId = prisoner.prisonerNumber
+    LOG.trace("getVisitOrderHistory - for prisoner {} from date {}", prisonerId, fromDate)
     val inmateDetailMono = prisonApiClient.getInmateDetailsAsMono(prisonerId)
     val visitOrderHistoryListMono = getPrisonerVisitOrderHistoryAsMono(prisonerId, fromDate)
-    return Mono.zip(prisonerMono, inmateDetailMono, visitOrderHistoryListMono)
+    return Mono.zip(inmateDetailMono, visitOrderHistoryListMono)
       .map { visitOrderHistoryMonos ->
-        val prisoner = visitOrderHistoryMonos.t1 ?: throw InvalidPrisonerProfileException("Unable to retrieve offender details from Prisoner Search API")
-        val inmateDetails = visitOrderHistoryMonos.t2 ?: throw InvalidPrisonerProfileException("Unable to retrieve inmate details from Prison API")
+        val inmateDetails = visitOrderHistoryMonos.t1 ?: throw InvalidPrisonerProfileException("Unable to retrieve inmate details from Prison API")
 
-        val visitOrderHistoryList = visitOrderHistoryMonos.t3.sortedBy { it.createdTimeStamp }
+        val visitOrderHistoryList = visitOrderHistoryMonos.t2.sortedBy { it.createdTimeStamp }
         VisitOrderHistoryDetailsDto(
           prisonerId = prisonerId,
           firstName = prisoner.firstName,

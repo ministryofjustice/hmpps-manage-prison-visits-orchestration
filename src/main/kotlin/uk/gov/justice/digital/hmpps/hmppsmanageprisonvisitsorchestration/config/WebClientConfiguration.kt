@@ -45,6 +45,9 @@ class WebClientConfiguration(
   @param:Value("\${visit-allocation.api.url}")
   private val visitAllocationApiUrl: String,
 
+  @param:Value("\${incentives.api.url}")
+  private val incentivesApiUrl: String,
+
   @param:Value("\${api.timeout:10s}")
   private val apiTimeout: Duration,
 
@@ -65,6 +68,7 @@ class WebClientConfiguration(
     PRISON_VISIT_BOOKER_REGISTRY_API_CLIENT("other-hmpps-apis"),
     ALERTS_API("other-hmpps-apis"),
     VISIT_ALLOCATION_API_CLIENT("other-hmpps-apis"),
+    INCENTIVES_API_CLIENT("other-hmpps-apis"),
   }
 
   @Bean
@@ -136,8 +140,15 @@ class WebClientConfiguration(
   @Bean
   fun prisonVisitBookerRegistryHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(prisonVisitBookerRegistryApiUrl, healthTimeout)
 
+  @Bean
   fun visitAllocationApiHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(prisonVisitBookerRegistryApiUrl, healthTimeout)
 
   @Bean
   fun govUKWebClient(): WebClient = WebClient.builder().baseUrl(govUKApiUrl).build()
+
+  @Bean
+  fun incentivesApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient = builder.authorisedWebClient(authorizedClientManager, registrationId = HmppsAuthClientRegistrationId.INCENTIVES_API_CLIENT.clientRegistrationId, url = incentivesApiUrl, apiTimeout)
+
+  @Bean
+  fun incentivesHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(incentivesApiUrl, healthTimeout)
 }

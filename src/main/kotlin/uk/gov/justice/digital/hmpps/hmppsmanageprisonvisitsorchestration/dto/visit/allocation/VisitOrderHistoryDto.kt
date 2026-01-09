@@ -5,9 +5,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import java.time.LocalDateTime
 
 data class VisitOrderHistoryDto(
-  @param:Schema(description = "nomsNumber of the prisoner", example = "AA123456", required = true)
-  val prisonerId: String,
-
   @param:Schema(description = "Visit Order History Type", example = "VO_ALLOCATION", required = true)
   val visitOrderHistoryType: VisitOrderHistoryType,
 

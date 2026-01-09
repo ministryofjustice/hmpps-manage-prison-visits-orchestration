@@ -4,23 +4,36 @@ import jakarta.validation.ValidationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.IncentivesApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitAllocationApiClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.incentives.IncentiveLevelDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceAdjustmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryAttributesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.enums.VisitOrderHistoryAttributeType
 import java.time.LocalDate
 import java.util.function.Predicate
 
 @Service
 class VisitAllocationService(
-  private val visitAllocationApiClient: VisitAllocationApiClient,
   private val manageUsersService: ManageUsersService,
   private val prisonerSearchService: PrisonerSearchService,
+  private val visitAllocationApiClient: VisitAllocationApiClient,
+  private val incentivesApiClient: IncentivesApiClient,
 ) {
   companion object {
     const val SYSTEM_USER_NAME = "SYSTEM"
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
+  }
+
+  private val hasAttributesWithIncentiveLevel: Predicate<VisitOrderHistoryDto> = Predicate {
+    it.attributes.any { attribute -> hasIncentiveLevel.test(attribute) }
+  }
+
+  private val hasIncentiveLevel: Predicate<VisitOrderHistoryAttributesDto> = Predicate {
+    it.attributeType == VisitOrderHistoryAttributeType.INCENTIVE_LEVEL
   }
 
   fun getPrisonerVisitOrderBalance(prisonerId: String, staffPrisonId: String): PrisonerBalanceDto {
@@ -48,23 +61,40 @@ class VisitAllocationService(
     visitAllocationApiClient.adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
   }
 
-  fun getVisitOrderHistoryDetails(prisonerId: String, fromDate: LocalDate): VisitOrderHistoryDetailsDto? {
-    logger.trace("Getting visit order history details for prisoner {}, starting from date {}", prisonerId, fromDate)
-    return visitAllocationApiClient.getVisitOrderHistoryDetails(prisonerId, fromDate)?.also {
-      if (it.visitOrderHistory.isNotEmpty()) {
-        setVisitOrderHistoryUserNames(it.visitOrderHistory)
-        setVisitOrderHistoryBalanceChange(it.visitOrderHistory)
+  fun getVisitOrderHistoryDetails(prisonId: String, prisonerId: String, fromDate: LocalDate, maxResults: Int?): VisitOrderHistoryDetailsDto? {
+    logger.info("Getting visit order history details for prisoner {} at prison {}, starting from date {}", prisonerId, prisonId, fromDate)
+    val prisoner = prisonerSearchService.getPrisoner(prisonerId)
+    validatePrisonerLocationAgainstStaffCaseload(prisoner.prisonId!!, prisonId)
+
+    return visitAllocationApiClient.getVisitOrderHistoryDetails(prisoner, fromDate)?.also { visitOrderHistoryDetailsDto ->
+      var filteredVisitOrderHistoryList = visitOrderHistoryDetailsDto.visitOrderHistory.also { visitOrderHistoryList ->
+        // set balance change
+        setVisitOrderHistoryBalanceChange(visitOrderHistoryList)
+      }.sortedByDescending {
+        it.createdTimeStamp
       }
-      it.visitOrderHistory = it.visitOrderHistory.filterNot { visitOrderHistoryWithoutBalanceChange.test(it) }
+
+      filteredVisitOrderHistoryList = getVisitOrderHistoryMaxElements(filteredVisitOrderHistoryList, maxResults).also { visitOrderHistoryList ->
+        // set username and incentive levels
+        setVisitOrderHistoryUserNames(visitOrderHistoryList)
+        setIncentiveLevels(visitOrderHistoryList)
+      }.also { visitOrderHistoryList ->
+        // finally set balance change to zero if null
+        setBalanceChangeToZeroIfNull(visitOrderHistoryList)
+      }
+
+      visitOrderHistoryDetailsDto.visitOrderHistory = filteredVisitOrderHistoryList
     }
   }
 
   private fun setVisitOrderHistoryUserNames(visitOrderHistoryList: List<VisitOrderHistoryDto>) {
-    val userNames = visitOrderHistoryList.map { it.userName }.toSet()
-    val userFullNames = getUserFullNames(userNames)
+    if (visitOrderHistoryList.isNotEmpty()) {
+      val userNames = visitOrderHistoryList.map { it.userName }.toSet()
+      val userFullNames = getUserFullNames(userNames)
 
-    visitOrderHistoryList.forEach { visitOrderHistory ->
-      setUsername(visitOrderHistory, userFullNames = userFullNames)
+      visitOrderHistoryList.forEach { visitOrderHistory ->
+        setUsername(visitOrderHistory, userFullNames = userFullNames)
+      }
     }
   }
 
@@ -91,10 +121,6 @@ class VisitAllocationService(
     }
   }
 
-  private val visitOrderHistoryWithoutBalanceChange: Predicate<VisitOrderHistoryDto> = Predicate<VisitOrderHistoryDto> { visitOrderHistoryDto ->
-    (visitOrderHistoryDto.voBalanceChange == 0 && visitOrderHistoryDto.pvoBalanceChange == 0)
-  }
-
   private fun getUserFullNames(userNames: Set<String>): Map<String, String> {
     // TODO - see if manage users can return multiple user names in a single API call, if they do replace this with the new API call as this will slow down the process
     val userNameMap = mutableMapOf<String, String>()
@@ -109,6 +135,53 @@ class VisitAllocationService(
     }
 
     return userNameMap
+  }
+
+  private fun setIncentiveLevels(visitOrderHistoryList: List<VisitOrderHistoryDto>) {
+    if (visitOrderHistoryList.isNotEmpty()) {
+      val visitOrderHistoryWithIncentiveLevel = visitOrderHistoryList.filter { hasAttributesWithIncentiveLevel.test(it) }
+      if (visitOrderHistoryWithIncentiveLevel.isNotEmpty()) {
+        // get all incentive levels only if there are entries with INCENTIVE LEVEL
+        val incentiveLevels = getAllIncentiveLevelsOrEmptyListIfNull()
+        if (incentiveLevels.isNotEmpty()) {
+          visitOrderHistoryWithIncentiveLevel.forEach { visitOrderHistory ->
+            setIncentiveLevel(visitOrderHistory, incentiveLevels)
+          }
+        }
+      }
+    }
+  }
+
+  private fun setIncentiveLevel(visitOrderHistory: VisitOrderHistoryDto, incentiveLevels: List<IncentiveLevelDto>) {
+    visitOrderHistory.attributes.filter { attribute -> hasIncentiveLevel.test(attribute) }.forEach { attr ->
+      incentiveLevels.firstOrNull { it.code == attr.attributeValue }?.let { incentiveLevel ->
+        attr.attributeValue = incentiveLevel.name
+      }
+    }
+  }
+
+  private fun setBalanceChangeToZeroIfNull(visitOrderHistoryList: List<VisitOrderHistoryDto>) {
+    visitOrderHistoryList.filter { it.voBalanceChange == null || it.pvoBalanceChange == null }.forEach { visitOrderHistoryDto ->
+      if (visitOrderHistoryDto.voBalanceChange == null) {
+        visitOrderHistoryDto.voBalanceChange = 0
+      }
+      if (visitOrderHistoryDto.pvoBalanceChange == null) {
+        visitOrderHistoryDto.pvoBalanceChange = 0
+      }
+    }
+  }
+
+  private fun getVisitOrderHistoryMaxElements(visitOrderHistoryList: List<VisitOrderHistoryDto>, maxResults: Int?): List<VisitOrderHistoryDto> = if (maxResults != null && maxResults > 0) {
+    visitOrderHistoryList.take(maxResults)
+  } else {
+    visitOrderHistoryList
+  }
+
+  private fun getAllIncentiveLevelsOrEmptyListIfNull(): List<IncentiveLevelDto> = try {
+    incentivesApiClient.getAllIncentiveLevels() ?: emptyList()
+  } catch (e: Exception) {
+    logger.info("Error getting all incentive levels, returning empty list", e)
+    emptyList()
   }
 
   private fun validatePrisonerLocationAgainstStaffCaseload(prisonerPrisonId: String, staffPrisonId: String) {

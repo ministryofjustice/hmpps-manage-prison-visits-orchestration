@@ -39,4 +39,6 @@ prison-visit-booker-registry.api.url: https://hmpps-prison-visit-booker-registry
 
 visit-allocation.api.url: https://hmpps-visit-allocation-api-dev.prison.service.justice.gov.uk
 
+incentives.api.url: https://incentives-api-dev.hmpps.service.justice.gov.uk
+
 hmpps.sqs.enabled: true

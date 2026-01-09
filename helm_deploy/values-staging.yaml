@@ -19,6 +19,7 @@ generic-service:
     WHEREABOUTS_API_URL: https://whereabouts-api-dev.service.justice.gov.uk
     PRISON-VISIT-BOOKER-REGISTRY_API_URL: https://hmpps-prison-visit-booker-registry-staging.prison.service.justice.gov.uk
     VISIT-ALLOCATION_API_URL: https://hmpps-visit-allocation-api-staging.prison.service.justice.gov.uk
+    INCENTIVES_API_URL: https://incentives-api-dev.hmpps.service.justice.gov.uk
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
 
   scheduledDowntime:
