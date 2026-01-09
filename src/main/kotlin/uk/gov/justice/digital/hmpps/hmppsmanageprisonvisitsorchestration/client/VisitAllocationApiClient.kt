@@ -13,11 +13,14 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Mono
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient.Companion.logger
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceAdjustmentDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDetailedDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderPrisonerBalanceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import java.time.Duration
 import java.time.LocalDate
 import java.util.*
@@ -52,14 +55,26 @@ class VisitAllocationApiClient(
       .block(apiTimeout)
   }
 
-  fun getPrisonerVOBalance(prisonerId: String): Optional<PrisonerVOBalanceDto>? = getPrisonerVOBalanceAsMono(prisonerId).block(apiTimeout)
+  fun getPrisonerVOBalance(prisonerId: String): VisitOrderPrisonerBalanceDto {
+    val uri = VO_BALANCE_ENDPOINT.replace("{prisonerId}", prisonerId)
+    return webClient.get()
+      .uri(uri)
+      .retrieve()
+      .bodyToMono<VisitOrderPrisonerBalanceDto>()
+      .onErrorResume { e ->
+        logger.error("getPrisonerVOBalance failed for get request $uri, $e")
+        Mono.error(e)
+      }
+      .blockOptional(apiTimeout)
+      .orElseThrow { NotFoundException("Prisoner not found for request $uri") }
+  }
 
-  fun getPrisonerVOBalanceAsMono(prisonerId: String): Mono<Optional<PrisonerVOBalanceDto>> {
+  fun getPrisonerVOBalanceDetailedAsMono(prisonerId: String): Mono<Optional<PrisonerVOBalanceDetailedDto>> {
     val uri = VO_DETAILED_BALANCE_URI.replace("{prisonerId}", prisonerId)
     return webClient.get()
       .uri(uri)
       .retrieve()
-      .bodyToMono<Optional<PrisonerVOBalanceDto>>()
+      .bodyToMono<Optional<PrisonerVOBalanceDetailedDto>>()
       .onErrorResume { e ->
         if (e is WebClientResponseException && e.statusCode == HttpStatus.NOT_FOUND) {
           // return an Optional.empty element if 404 is thrown
