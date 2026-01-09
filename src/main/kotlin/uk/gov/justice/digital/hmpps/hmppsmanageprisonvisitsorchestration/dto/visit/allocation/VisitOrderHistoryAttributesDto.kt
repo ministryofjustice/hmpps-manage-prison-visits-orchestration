@@ -8,5 +8,5 @@ data class VisitOrderHistoryAttributesDto(
   val attributeType: VisitOrderHistoryAttributeType,
 
   @param:Schema(description = "Visit order history attribute value", required = true)
-  val attributeValue: String,
+  var attributeValue: String,
 )

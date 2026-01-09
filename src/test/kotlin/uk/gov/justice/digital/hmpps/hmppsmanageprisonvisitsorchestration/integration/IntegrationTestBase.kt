@@ -56,6 +56,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.helper.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.AlertsApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.HmppsAuthExtension
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.IncentivesApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.ManageUsersApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonOffenderSearchMockServer
@@ -86,6 +87,7 @@ abstract class IntegrationTestBase {
     val whereaboutsApiMockServer = WhereaboutsApiMockServer()
     val govUkMockServer = GovUkMockServer()
     val visitAllocationApiMockServer = VisitAllocationApiMockServer()
+    val incentivesApiMockServer = IncentivesApiMockServer()
 
     @BeforeEach
     fun resetStubs() {
@@ -100,6 +102,7 @@ abstract class IntegrationTestBase {
       whereaboutsApiMockServer.resetAll()
       govUkMockServer.resetAll()
       visitAllocationApiMockServer.resetAll()
+      incentivesApiMockServer.resetAll()
     }
 
     @BeforeAll
@@ -116,6 +119,7 @@ abstract class IntegrationTestBase {
       whereaboutsApiMockServer.start()
       govUkMockServer.start()
       visitAllocationApiMockServer.start()
+      incentivesApiMockServer.start()
     }
 
     @AfterAll
@@ -132,6 +136,7 @@ abstract class IntegrationTestBase {
       whereaboutsApiMockServer.stop()
       govUkMockServer.stop()
       visitAllocationApiMockServer.stop()
+      incentivesApiMockServer.stop()
     }
 
     fun getVisitsQueryParams(

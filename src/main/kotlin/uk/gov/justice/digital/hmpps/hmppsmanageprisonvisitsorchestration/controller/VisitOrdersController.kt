@@ -57,5 +57,7 @@ class VisitOrdersController(
     prisonerId: String,
     @RequestParam
     fromDate: LocalDate,
-  ): VisitOrderHistoryDetailsDto? = visitAllocationService.getVisitOrderHistoryDetails(prisonerId, fromDate)
+    @RequestParam
+    maxResults: Int? = null,
+  ): VisitOrderHistoryDetailsDto? = visitAllocationService.getVisitOrderHistoryDetails(prisonerId, fromDate, maxResults)
 }
