@@ -71,7 +71,7 @@ class VisitAllocationApiClient(
   }
 
   fun getVisitOrderHistoryDetails(prisonerId: String, fromDate: LocalDate): VisitOrderHistoryDetailsDto? {
-    PrisonerProfileClient.Companion.LOG.trace("getVisitOrderHistory - for prisoner {} from date {}", prisonerId, fromDate)
+    LOG.trace("getVisitOrderHistory - for prisoner {} from date {}", prisonerId, fromDate)
     val prisonerMono = prisonerSearchClient.getPrisonerByIdAsMono(prisonerId)
     val inmateDetailMono = prisonApiClient.getInmateDetailsAsMono(prisonerId)
     val visitOrderHistoryListMono = getPrisonerVisitOrderHistoryAsMono(prisonerId, fromDate)
