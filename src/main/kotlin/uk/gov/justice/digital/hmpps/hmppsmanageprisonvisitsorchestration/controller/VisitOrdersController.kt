@@ -23,7 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitAllocationService
 import java.time.LocalDate
 
-const val VISIT_ORDER_PRISONER_CONTROLLER_PATH: String = "prison/{prisonId}/prisoners/{prisonerId}/visit-orders"
+const val VISIT_ORDER_PRISONER_CONTROLLER_PATH: String = "/prison/{prisonId}/prisoners/{prisonerId}/visit-orders"
 const val VISIT_ORDER_HISTORY_FOR_PRISONER = "$VISIT_ORDER_PRISONER_CONTROLLER_PATH/history"
 
 const val VISIT_ORDER_PRISONER_BALANCE_ENDPOINT = "$VISIT_ORDER_PRISONER_CONTROLLER_PATH/balance"
