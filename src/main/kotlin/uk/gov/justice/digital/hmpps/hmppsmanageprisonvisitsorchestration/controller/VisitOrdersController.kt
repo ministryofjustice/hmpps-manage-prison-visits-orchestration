@@ -67,6 +67,7 @@ class VisitOrdersController(
     @NotBlank
     @Length(min = 3, max = 50)
     prisonerId: String,
+    @Schema(description = "Visit order history starting from date", example = "2025-01-01", required = true)
     @RequestParam
     fromDate: LocalDate,
     @Schema(description = "Maximum number of results to return, if null, returns all result from date", example = "100", required = false)
