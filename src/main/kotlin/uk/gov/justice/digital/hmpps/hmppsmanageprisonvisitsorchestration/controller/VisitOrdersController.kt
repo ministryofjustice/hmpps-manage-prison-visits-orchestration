@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceAdjustmentDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitAllocationService
 import java.time.LocalDate
@@ -25,7 +26,7 @@ import java.time.LocalDate
 const val VISIT_ORDERS_CONTROLLER_PATH: String = "/visit-orders"
 const val VISIT_ORDER_HISTORY_FOR_PRISONER = "$VISIT_ORDERS_CONTROLLER_PATH/{prisonerId}/history"
 
-const val VISIT_ORDER_PRISONER_BALANCE_ENDPOINT = "$VISIT_ORDERS_CONTROLLER_PATH/{prisonerId}/balance"
+const val VISIT_ORDER_PRISONER_BALANCE_ENDPOINT = "/prison/{prisonId}/prisoners/{prisonerId}/visit-orders/balance"
 
 @RestController
 class VisitOrdersController(
@@ -68,6 +69,48 @@ class VisitOrdersController(
     @RequestParam
     maxResults: Int? = null,
   ): VisitOrderHistoryDetailsDto? = visitAllocationService.getVisitOrderHistoryDetails(prisonerId, fromDate, maxResults)
+
+  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
+  @GetMapping(VISIT_ORDER_PRISONER_BALANCE_ENDPOINT)
+  @Operation(
+    summary = "Get visit order balance of the prisoner",
+    description = "Get visit order balance of the prisoner",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Return balance of prisoner",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Incorrect request to get visit order balance of prisoner",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized to access this endpoint",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Incorrect permissions to get visit order balance of prisoner",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Prisoner not found on visit allocation api, cannot get balance",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getVisitOrderBalanceForPrisoner(
+    @PathVariable(value = "prisonerId", required = true)
+    @NotBlank
+    @Length(min = 3, max = 50)
+    prisonerId: String,
+    @PathVariable(value = "prisonId", required = true)
+    @NotBlank
+    prisonId: String,
+  ): PrisonerBalanceDto = visitAllocationService.getPrisonerVisitOrderBalance(prisonerId, prisonId)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @PutMapping(VISIT_ORDER_PRISONER_BALANCE_ENDPOINT)
@@ -114,7 +157,10 @@ class VisitOrdersController(
     @NotBlank
     @Length(min = 3, max = 50)
     prisonerId: String,
+    @PathVariable(value = "prisonId", required = true)
+    @NotBlank
+    prisonId: String,
     @RequestBody @Valid
     prisonerBalanceAdjustmentDto: PrisonerBalanceAdjustmentDto,
-  ) = visitAllocationService.adjustPrisonerVisitOrderBalance(prisonerId, prisonerBalanceAdjustmentDto)
+  ) = visitAllocationService.adjustPrisonerVisitOrderBalance(prisonerId, prisonId, prisonerBalanceAdjustmentDto)
 }

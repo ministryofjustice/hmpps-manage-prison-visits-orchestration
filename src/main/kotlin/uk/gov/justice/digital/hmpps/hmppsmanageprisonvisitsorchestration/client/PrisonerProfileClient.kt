@@ -40,7 +40,7 @@ class PrisonerProfileClient(
     LOG.trace("getPrisonerProfile - Beginning calls to collect prisoner profile data for prisoner {} in {}", prisonerId, prisonId)
     val prisonerMono = prisonerSearchClient.getPrisonerByIdAsMono(prisonerId)
     val inmateDetailMono = prisonApiClient.getInmateDetailsAsMono(prisonerId)
-    val visitBalancesMono = visitAllocationApiClient.getPrisonerVOBalanceAsMono(prisonerId)
+    val visitBalancesMono = visitAllocationApiClient.getPrisonerVOBalanceDetailedAsMono(prisonerId)
     val visitSchedulerMono = visitSchedulerClient.getVisitsAsMono(visitSearchRequestFilter)
     val alertsMono = alertsApiClient.getPrisonerAlertsAsMono(prisonerId)
     val prisonerRestrictionsMono = prisonApiClient.getPrisonerRestrictionsAsMono(prisonerId)

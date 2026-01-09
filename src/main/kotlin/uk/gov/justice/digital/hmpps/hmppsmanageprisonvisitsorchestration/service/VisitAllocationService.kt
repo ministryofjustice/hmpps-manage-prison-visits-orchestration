@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 
+import jakarta.validation.ValidationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -7,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitAllocationApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.incentives.IncentiveLevelDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceAdjustmentDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryAttributesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDto
@@ -16,8 +18,9 @@ import java.util.function.Predicate
 
 @Service
 class VisitAllocationService(
-  private val visitAllocationApiClient: VisitAllocationApiClient,
   private val manageUsersService: ManageUsersService,
+  private val prisonerSearchService: PrisonerSearchService,
+  private val visitAllocationApiClient: VisitAllocationApiClient,
   private val incentivesApiClient: IncentivesApiClient,
 ) {
   companion object {
@@ -33,8 +36,28 @@ class VisitAllocationService(
     it.attributeType == VisitOrderHistoryAttributeType.INCENTIVE_LEVEL
   }
 
-  fun adjustPrisonerVisitOrderBalance(prisonerId: String, prisonerBalanceAdjustmentDto: PrisonerBalanceAdjustmentDto) {
+  fun getPrisonerVisitOrderBalance(prisonerId: String, staffPrisonId: String): PrisonerBalanceDto {
+    logger.info("Entered VisitAllocationService - getPrisonerVisitOrderBalance for prisonerId $prisonerId and staff prisonId $staffPrisonId")
+
+    val prisoner = prisonerSearchService.getPrisoner(prisonerId)
+    validatePrisonerLocationAgainstStaffCaseload(prisoner.prisonId!!, staffPrisonId)
+
+    val visitOrderBalance = visitAllocationApiClient.getPrisonerVOBalance(prisonerId)
+
+    return PrisonerBalanceDto(
+      prisonerId = prisoner.prisonerNumber,
+      voBalance = visitOrderBalance.voBalance,
+      pvoBalance = visitOrderBalance.pvoBalance,
+      firstName = prisoner.firstName,
+      lastName = prisoner.lastName,
+    )
+  }
+
+  fun adjustPrisonerVisitOrderBalance(prisonerId: String, staffPrisonId: String, prisonerBalanceAdjustmentDto: PrisonerBalanceAdjustmentDto) {
     logger.info("Entered VisitAllocationService - adjustPrisonerVisitOrderBalance, adjust prisonerId $prisonerId's balance with dto $prisonerBalanceAdjustmentDto")
+    val prisoner = prisonerSearchService.getPrisoner(prisonerId)
+    validatePrisonerLocationAgainstStaffCaseload(prisoner.prisonId!!, staffPrisonId)
+
     visitAllocationApiClient.adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
   }
 
@@ -163,5 +186,11 @@ class VisitAllocationService(
   } catch (e: Exception) {
     logger.info("Error getting all incentive levels, returning empty list", e)
     emptyList()
+  }
+
+  private fun validatePrisonerLocationAgainstStaffCaseload(prisonerPrisonId: String, staffPrisonId: String) {
+    if (prisonerPrisonId != staffPrisonId) {
+      throw ValidationException("Prisoner's prison ID - $prisonerPrisonId does not match staff prisonId caseload - $staffPrisonId. Prisoner visit order balance cannot be retrieved for a prisoner from a different prison.")
+    }
   }
 }
