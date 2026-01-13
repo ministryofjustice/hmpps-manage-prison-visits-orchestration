@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerVisitorRequestValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceAdjustmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceDto
@@ -152,6 +153,11 @@ class VisitOrdersController(
         responseCode = "404",
         description = "Prisoner not found on visit allocation api, cannot adjust balance",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "422",
+        description = "Prisoner balance adjustment validation failed",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = BookerVisitorRequestValidationErrorResponse::class))],
       ),
     ],
   )

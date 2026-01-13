@@ -13,6 +13,7 @@ import org.springframework.web.reactive.function.client.WebClientException
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.BookerPrisonerRegistrationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.BookerPrisonerValidationErrorCodes
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.PrisonerBalanceAdjustmentValidationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestValidationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationValidationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.ApplicationValidationException
@@ -22,9 +23,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.excepti
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerVisitorRequestValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.PrisonerBalanceAdjustmentValidationException
 
 @RestControllerAdvice
 class OrchestrationExceptionHandler {
+  companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
+  }
+
   @ExceptionHandler(InvalidPrisonerProfileException::class)
   fun handleInvalidPrisonerProfileException(e: InvalidPrisonerProfileException): ResponseEntity<ErrorResponse?>? {
     log.error("Prisoner profile not found exception caught: {}", e.message)
@@ -180,8 +186,18 @@ class OrchestrationExceptionHandler {
     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error)
   }
 
-  companion object {
-    val log: Logger = LoggerFactory.getLogger(this::class.java)
+  @ExceptionHandler(PrisonerBalanceAdjustmentValidationException::class)
+  fun handlePrisonerBalanceAdjustmentValidationException(e: PrisonerBalanceAdjustmentValidationException): ResponseEntity<ValidationErrorResponse> {
+    log.debug("Manually adjust prisoner balance on visit-allocation-api failed with exception: {}, {}", e.message, e.errorCode)
+    val message = e.localizedMessage
+    val error = PrisonerBalanceAdjustmentValidationErrorResponse(
+      status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+      userMessage = "Manually adjust prisoner balance request failed",
+      developerMessage = message,
+      validationError = e.errorCode,
+    )
+
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error)
   }
 }
 
@@ -237,4 +253,12 @@ data class BookerVisitorRequestValidationErrorResponse(
   override val userMessage: String? = null,
   override val developerMessage: String? = null,
   val validationError: VisitorRequestValidationErrorCodes,
+) : ValidationErrorResponse(status, errorCode, userMessage, developerMessage)
+
+data class PrisonerBalanceAdjustmentValidationErrorResponse(
+  override val status: Int,
+  override val errorCode: Int? = null,
+  override val userMessage: String? = null,
+  override val developerMessage: String? = null,
+  val validationError: PrisonerBalanceAdjustmentValidationErrorCodes,
 ) : ValidationErrorResponse(status, errorCode, userMessage, developerMessage)
