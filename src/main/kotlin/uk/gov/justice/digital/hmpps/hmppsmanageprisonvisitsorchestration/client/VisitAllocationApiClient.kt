@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -13,7 +14,9 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Mono
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isUnprocessableEntityError
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient.Companion.logger
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.PrisonerBalanceAdjustmentValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceAdjustmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDetailedDto
@@ -22,6 +25,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderPrisonerBalanceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.PrisonerBalanceAdjustmentValidationException
 import java.time.Duration
 import java.time.LocalDate
 import java.util.*
@@ -31,6 +35,7 @@ class VisitAllocationApiClient(
   @param:Qualifier("visitAllocationApiWebClient") private val webClient: WebClient,
   @param:Value("\${visit-allocation.api.timeout:10s}") private val apiTimeout: Duration,
   private val prisonApiClient: PrisonApiClient,
+  private val objectMapper: ObjectMapper,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -39,20 +44,26 @@ class VisitAllocationApiClient(
     const val VO_DETAILED_BALANCE_URI = "$VO_BALANCE_ENDPOINT/detailed"
   }
 
-  fun adjustPrisonersVisitOrderBalanceAsMono(prisonerId: String, prisonerBalanceAdjustmentDto: PrisonerBalanceAdjustmentDto) {
+  fun adjustPrisonersVisitOrderBalanceAsMono(prisonerId: String, prisonerBalanceAdjustmentDto: PrisonerBalanceAdjustmentDto): VisitOrderPrisonerBalanceDto {
     val uri = VO_BALANCE_ENDPOINT.replace("{prisonerId}", prisonerId)
 
-    webClient.put()
+    return webClient.put()
       .uri(uri)
       .body(BodyInserters.fromValue(prisonerBalanceAdjustmentDto))
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .toBodilessEntity()
+      .bodyToMono<VisitOrderPrisonerBalanceDto>()
       .onErrorResume { e ->
-        LOG.error("Could not manually adjust prisoner's balance due to exception when calling visit allocation api:", e)
-        Mono.error(e)
+        if (isUnprocessableEntityError(e)) {
+          LOG.error("Could not manually adjust prisoner's balance due to validation exception when calling visit allocation api:", e)
+          val exception = getPrisonerBalanceAdjustmentValidationErrorResponse(e)
+          Mono.error(exception)
+        } else {
+          LOG.error("Could not manually adjust prisoner's balance due to exception when calling visit allocation api:", e)
+          Mono.error(e)
+        }
       }
-      .block(apiTimeout)
+      .block(apiTimeout) ?: throw IllegalStateException("timeout response from visit-allocation-api for adjustPrisonersVisitOrderBalanceAsMono")
   }
 
   fun getPrisonerVOBalance(prisonerId: String): VisitOrderPrisonerBalanceDto {
@@ -129,5 +140,19 @@ class VisitAllocationApiClient(
     uriBuilder.queryParam("fromDate", fromDate)
 
     return uriBuilder
+  }
+
+  private fun getPrisonerBalanceAdjustmentValidationErrorResponse(e: Throwable): Throwable {
+    if (e is WebClientResponseException && isUnprocessableEntityError(e)) {
+      try {
+        val errorResponse = objectMapper.readValue(e.responseBodyAsString, PrisonerBalanceAdjustmentValidationErrorResponse::class.java)
+        return PrisonerBalanceAdjustmentValidationException(errorResponse.validationErrors)
+      } catch (jsonProcessingException: Exception) {
+        LOG.error("An error occurred submitting request to manually adjust prisoner VO balance, error response - ${e.stackTraceToString()}")
+        throw jsonProcessingException
+      }
+    }
+
+    return e
   }
 }

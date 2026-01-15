@@ -16,10 +16,12 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerVisitorRequestValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceAdjustmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderPrisonerBalanceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitAllocationService
 import java.time.LocalDate
 
@@ -155,6 +157,11 @@ class VisitOrdersController(
         description = "Prisoner not found on visit allocation api, cannot adjust balance",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
+      ApiResponse(
+        responseCode = "422",
+        description = "Prisoner balance adjustment validation failed",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = BookerVisitorRequestValidationErrorResponse::class))],
+      ),
     ],
   )
   fun updatePrisonerVisitOrderBalance(
@@ -167,5 +174,5 @@ class VisitOrdersController(
     prisonId: String,
     @RequestBody @Valid
     prisonerBalanceAdjustmentDto: PrisonerBalanceAdjustmentDto,
-  ) = visitAllocationService.adjustPrisonerVisitOrderBalance(prisonerId, prisonId, prisonerBalanceAdjustmentDto)
+  ): VisitOrderPrisonerBalanceDto = visitAllocationService.adjustPrisonerVisitOrderBalance(prisonerId, prisonId, prisonerBalanceAdjustmentDto)
 }
