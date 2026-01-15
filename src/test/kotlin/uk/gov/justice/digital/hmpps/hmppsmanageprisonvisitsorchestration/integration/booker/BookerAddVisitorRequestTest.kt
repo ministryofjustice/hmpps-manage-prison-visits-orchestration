@@ -14,7 +14,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerVisitorRequestValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_VISITOR_REQUESTS_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AddVisitorToBookerPrisonerRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.CreateVisitorRequestResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestValidationErrorCodes
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestsStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
 
@@ -41,7 +43,8 @@ class BookerAddVisitorRequestTest : IntegrationTestBase() {
   fun `when call to booker registry is successful a CREATED response code is returned`() {
     // Given
     val addVisitorRequest = AddVisitorToBookerPrisonerRequestDto("Test", "User", LocalDate.of(2000, 1, 1))
-    prisonVisitBookerRegistryMockServer.stubAddVisitorRequest(bookerReference, prisonerId, addVisitorRequest, HttpStatus.CREATED)
+    val response = CreateVisitorRequestResponseDto(reference = "random-ref", status = VisitorRequestsStatus.REQUESTED, bookerReference = bookerReference, prisonerId = prisonerId)
+    prisonVisitBookerRegistryMockServer.stubAddVisitorRequest(bookerReference, prisonerId, addVisitorRequest, response, HttpStatus.CREATED)
 
     // When
     val responseSpec = callAddVisitorRequest(webTestClient, bookerReference, prisonerId, addVisitorRequest, roleVSIPOrchestrationServiceHttpHeaders)
@@ -72,7 +75,8 @@ class BookerAddVisitorRequestTest : IntegrationTestBase() {
   fun `when call to booker registry fails with a NOT_FOUND error then NOT_FOUND error code is returned`() {
     // Given
     val addVisitorRequest = AddVisitorToBookerPrisonerRequestDto("Test", "User", LocalDate.of(2000, 1, 1))
-    prisonVisitBookerRegistryMockServer.stubAddVisitorRequest(bookerReference, prisonerId, addVisitorRequest, HttpStatus.NOT_FOUND)
+    val response = CreateVisitorRequestResponseDto(reference = "random-ref", status = VisitorRequestsStatus.REQUESTED, bookerReference = bookerReference, prisonerId = prisonerId)
+    prisonVisitBookerRegistryMockServer.stubAddVisitorRequest(bookerReference, prisonerId, addVisitorRequest, response, HttpStatus.NOT_FOUND)
 
     // When
     val responseSpec = callAddVisitorRequest(webTestClient, bookerReference, prisonerId, addVisitorRequest, roleVSIPOrchestrationServiceHttpHeaders)
@@ -86,7 +90,9 @@ class BookerAddVisitorRequestTest : IntegrationTestBase() {
   fun `when call to booker registry fails with an INTERNAL_SERVER_ERROR error then INTERNAL_SERVER_ERROR error code is returned`() {
     // Given
     val addVisitorRequest = AddVisitorToBookerPrisonerRequestDto("Test", "User", LocalDate.of(2000, 1, 1))
-    prisonVisitBookerRegistryMockServer.stubAddVisitorRequest(bookerReference, prisonerId, addVisitorRequest, HttpStatus.INTERNAL_SERVER_ERROR)
+    val response = CreateVisitorRequestResponseDto(reference = "random-ref", status = VisitorRequestsStatus.REQUESTED, bookerReference = bookerReference, prisonerId = prisonerId)
+
+    prisonVisitBookerRegistryMockServer.stubAddVisitorRequest(bookerReference, prisonerId, addVisitorRequest, response, HttpStatus.INTERNAL_SERVER_ERROR)
 
     // When
     val responseSpec = callAddVisitorRequest(webTestClient, bookerReference, prisonerId, addVisitorRequest, roleVSIPOrchestrationServiceHttpHeaders)
@@ -100,7 +106,9 @@ class BookerAddVisitorRequestTest : IntegrationTestBase() {
   fun `when booker authorisation is called without correct role then FORBIDDEN status is returned`() {
     // When
     val addVisitorRequest = AddVisitorToBookerPrisonerRequestDto("Test", "User", LocalDate.of(2000, 1, 1))
-    prisonVisitBookerRegistryMockServer.stubAddVisitorRequest(bookerReference, prisonerId, addVisitorRequest, HttpStatus.CREATED)
+    val response = CreateVisitorRequestResponseDto(reference = "random-ref", status = VisitorRequestsStatus.REQUESTED, bookerReference = bookerReference, prisonerId = prisonerId)
+
+    prisonVisitBookerRegistryMockServer.stubAddVisitorRequest(bookerReference, prisonerId, addVisitorRequest, response, HttpStatus.CREATED)
 
     // When
     val responseSpec = callAddVisitorRequest(webTestClient, bookerReference, prisonerId, addVisitorRequest, authHttpHeaders = setAuthorisation(roles = listOf()))

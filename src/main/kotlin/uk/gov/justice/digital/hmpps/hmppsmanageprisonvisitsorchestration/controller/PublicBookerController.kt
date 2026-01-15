@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.CreateVisitorRequestResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestListEntryDto
@@ -534,9 +535,9 @@ class PublicBookerController(
     prisonerId: String,
     @RequestBody
     addVisitorToBookerPrisonerRequestDto: AddVisitorToBookerPrisonerRequestDto,
-  ): ResponseEntity<String> {
-    publicBookerVisitorRequestsService.createAddVisitorRequest(bookerReference, prisonerId, addVisitorToBookerPrisonerRequestDto)
-    return ResponseEntity.status(HttpStatus.CREATED.value()).build()
+  ): ResponseEntity<CreateVisitorRequestResponseDto> {
+    val response = publicBookerVisitorRequestsService.createAddVisitorRequest(bookerReference, prisonerId, addVisitorToBookerPrisonerRequestDto)
+    return ResponseEntity.status(HttpStatus.CREATED.value()).body(response)
   }
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
