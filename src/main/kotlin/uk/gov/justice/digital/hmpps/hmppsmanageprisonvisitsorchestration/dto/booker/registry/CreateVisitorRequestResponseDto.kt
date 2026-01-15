@@ -7,7 +7,7 @@ data class CreateVisitorRequestResponseDto(
   @param:Schema(description = "Reference of newly created visitor request", example = "abc-def-ghi")
   val reference: String,
 
-  @param:Schema(description = "Status of newly created visitor request", example = "AUTO_APPROVED")
+  @param:Schema(description = "Status of newly created visitor request", example = "REQUESTED or AUTO_APPROVED")
   val status: VisitorRequestsStatus,
 
   @param:Schema(description = "Reference of booker who submitted the request", example = "abc-def-ghi")
