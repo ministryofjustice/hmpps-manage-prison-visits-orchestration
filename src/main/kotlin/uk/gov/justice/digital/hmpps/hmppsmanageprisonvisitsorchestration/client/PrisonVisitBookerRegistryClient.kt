@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.CreateVisitorRequestResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
@@ -231,23 +232,21 @@ class PrisonVisitBookerRegistryClient(
       .block(apiTimeout)
   }
 
-  fun createAddVisitorRequest(bookerReference: String, prisonerId: String, addVisitorToBookerPrisonerRequestDto: AddVisitorToBookerPrisonerRequestDto) {
-    webClient.post()
-      .uri(ADD_VISITOR_REQUEST.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId))
-      .body(BodyInserters.fromValue(addVisitorToBookerPrisonerRequestDto))
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .toBodilessEntity()
-      .onErrorResume { e ->
-        if (isUnprocessableEntityError(e)) {
-          val exception = getBookerVisitorRequestValidationErrorResponse(e)
-          Mono.error(exception)
-        } else {
-          Mono.error(e)
-        }
+  fun createAddVisitorRequest(bookerReference: String, prisonerId: String, addVisitorToBookerPrisonerRequestDto: AddVisitorToBookerPrisonerRequestDto): CreateVisitorRequestResponseDto = webClient.post()
+    .uri(ADD_VISITOR_REQUEST.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId))
+    .body(BodyInserters.fromValue(addVisitorToBookerPrisonerRequestDto))
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<CreateVisitorRequestResponseDto>()
+    .onErrorResume { e ->
+      if (isUnprocessableEntityError(e)) {
+        val exception = getBookerVisitorRequestValidationErrorResponse(e)
+        Mono.error(exception)
+      } else {
+        Mono.error(e)
       }
-      .block(apiTimeout)
-  }
+    }
+    .block(apiTimeout) ?: throw IllegalStateException("timeout response from prison-visit-booker-registry for createAddVisitorRequest")
 
   fun getActiveVisitorRequestsForBooker(bookerReference: String): List<BookerPrisonerVisitorRequestDto>? {
     val uri = GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference)
