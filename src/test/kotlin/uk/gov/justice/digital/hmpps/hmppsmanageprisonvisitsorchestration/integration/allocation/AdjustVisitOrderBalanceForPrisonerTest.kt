@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.allocation
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -12,8 +13,11 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitAllocationApiClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.PrisonerBalanceAdjustmentValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.VISIT_ORDER_PRISONER_BALANCE_ENDPOINT
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.PrisonerBalanceAdjustmentValidationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceAdjustmentDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderPrisonerBalanceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.enums.AdjustmentReasonType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
@@ -40,12 +44,47 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
       userName = "A_USER",
     )
 
+    val response = VisitOrderPrisonerBalanceDto(
+      prisonerId,
+      voBalance = 5,
+      pvoBalance = 2,
+    )
+
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, createPrisoner(prisonerId, "John", "Smith", LocalDate.now().minusYears(21), prisonId, convictedStatus = "Convicted"))
-    visitAllocationApiMockServer.stubAdjustPrisonersVisitOrderBalance(prisonerId, prisonerBalanceAdjustmentDto)
+    visitAllocationApiMockServer.stubAdjustPrisonersVisitOrderBalance(prisonerId, response)
 
     // When
     val responseSpec = callAdjustPrisonersVisitOrderBalance(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, prisonId, prisonerBalanceAdjustmentDto)
-    responseSpec.expectStatus().isOk
+    val result = responseSpec.expectStatus().isOk.expectBody()
+    val prisonerBalanceDto = getResults(result)
+    assertThat(prisonerBalanceDto.prisonerId).isEqualTo(prisonerId)
+
+    verify(prisonerSearchApiClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
+  }
+
+  @Test
+  fun `when visit allocation is called, and validation errors are returned then UNPROCESSABLE_ENTITY is returned`() {
+    // Given
+    val prisonerBalanceAdjustmentDto = PrisonerBalanceAdjustmentDto(
+      voAmount = -5,
+      pvoAmount = -5,
+      adjustmentReasonType = AdjustmentReasonType.GOVERNOR_ADJUSTMENT,
+      adjustmentReasonText = null,
+      userName = "A_USER",
+    )
+
+    val errorResponse = PrisonerBalanceAdjustmentValidationErrorResponse(status = HttpStatus.UNPROCESSABLE_ENTITY.value(), validationErrors = listOf(PrisonerBalanceAdjustmentValidationErrorCodes.VO_TOTAL_POST_ADJUSTMENT_BELOW_ZERO, PrisonerBalanceAdjustmentValidationErrorCodes.PVO_TOTAL_POST_ADJUSTMENT_BELOW_ZERO))
+
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, createPrisoner(prisonerId, "John", "Smith", LocalDate.now().minusYears(21), prisonId, convictedStatus = "Convicted"))
+    visitAllocationApiMockServer.stubAdjustPrisonersVisitOrderBalanceValidationFailure(prisonerId, errorResponse)
+
+    // When
+    val responseSpec = callAdjustPrisonersVisitOrderBalance(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, prisonId, prisonerBalanceAdjustmentDto)
+    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+
+    val errorResponseSpec = getValidationErrorResponse(responseSpec)
+    assertThat(errorResponseSpec.validationErrors.size).isEqualTo(2)
 
     verify(prisonerSearchApiClientSpy, times(1)).getPrisonerById(prisonerId)
     verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
@@ -229,4 +268,8 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
       .headers(authHttpHeaders)
       .exchange()
   }
+
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): VisitOrderPrisonerBalanceDto = objectMapper.readValue(returnResult.returnResult().responseBody, VisitOrderPrisonerBalanceDto::class.java)
+
+  private fun getValidationErrorResponse(responseSpec: WebTestClient.ResponseSpec): PrisonerBalanceAdjustmentValidationErrorResponse = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, PrisonerBalanceAdjustmentValidationErrorResponse::class.java)
 }

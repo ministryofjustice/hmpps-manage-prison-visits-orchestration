@@ -4,5 +4,5 @@ import jakarta.validation.ValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.PrisonerBalanceAdjustmentValidationErrorCodes
 
 class PrisonerBalanceAdjustmentValidationException(
-  val errorCode: PrisonerBalanceAdjustmentValidationErrorCodes,
+  val errorCodes: List<PrisonerBalanceAdjustmentValidationErrorCodes>,
 ) : ValidationException()

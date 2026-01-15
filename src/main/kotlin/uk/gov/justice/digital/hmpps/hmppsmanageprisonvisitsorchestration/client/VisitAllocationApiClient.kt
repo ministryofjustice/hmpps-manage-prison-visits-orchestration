@@ -44,15 +44,15 @@ class VisitAllocationApiClient(
     const val VO_DETAILED_BALANCE_URI = "$VO_BALANCE_ENDPOINT/detailed"
   }
 
-  fun adjustPrisonersVisitOrderBalanceAsMono(prisonerId: String, prisonerBalanceAdjustmentDto: PrisonerBalanceAdjustmentDto) {
+  fun adjustPrisonersVisitOrderBalanceAsMono(prisonerId: String, prisonerBalanceAdjustmentDto: PrisonerBalanceAdjustmentDto): VisitOrderPrisonerBalanceDto {
     val uri = VO_BALANCE_ENDPOINT.replace("{prisonerId}", prisonerId)
 
-    webClient.put()
+    return webClient.put()
       .uri(uri)
       .body(BodyInserters.fromValue(prisonerBalanceAdjustmentDto))
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .toBodilessEntity()
+      .bodyToMono<VisitOrderPrisonerBalanceDto>()
       .onErrorResume { e ->
         if (isUnprocessableEntityError(e)) {
           LOG.error("Could not manually adjust prisoner's balance due to validation exception when calling visit allocation api:", e)
@@ -63,7 +63,7 @@ class VisitAllocationApiClient(
           Mono.error(e)
         }
       }
-      .block(apiTimeout)
+      .block(apiTimeout) ?: throw IllegalStateException("timeout response from visit-allocation-api for adjustPrisonersVisitOrderBalanceAsMono")
   }
 
   fun getPrisonerVOBalance(prisonerId: String): VisitOrderPrisonerBalanceDto {
@@ -146,7 +146,7 @@ class VisitAllocationApiClient(
     if (e is WebClientResponseException && isUnprocessableEntityError(e)) {
       try {
         val errorResponse = objectMapper.readValue(e.responseBodyAsString, PrisonerBalanceAdjustmentValidationErrorResponse::class.java)
-        return PrisonerBalanceAdjustmentValidationException(errorResponse.validationError)
+        return PrisonerBalanceAdjustmentValidationException(errorResponse.validationErrors)
       } catch (jsonProcessingException: Exception) {
         LOG.error("An error occurred submitting request to manually adjust prisoner VO balance, error response - ${e.stackTraceToString()}")
         throw jsonProcessingException

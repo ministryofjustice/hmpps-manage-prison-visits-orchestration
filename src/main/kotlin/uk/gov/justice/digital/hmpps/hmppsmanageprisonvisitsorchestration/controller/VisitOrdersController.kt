@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceAdjustmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderPrisonerBalanceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitAllocationService
 import java.time.LocalDate
 
@@ -173,5 +174,5 @@ class VisitOrdersController(
     prisonId: String,
     @RequestBody @Valid
     prisonerBalanceAdjustmentDto: PrisonerBalanceAdjustmentDto,
-  ) = visitAllocationService.adjustPrisonerVisitOrderBalance(prisonerId, prisonId, prisonerBalanceAdjustmentDto)
+  ): VisitOrderPrisonerBalanceDto = visitAllocationService.adjustPrisonerVisitOrderBalance(prisonerId, prisonId, prisonerBalanceAdjustmentDto)
 }

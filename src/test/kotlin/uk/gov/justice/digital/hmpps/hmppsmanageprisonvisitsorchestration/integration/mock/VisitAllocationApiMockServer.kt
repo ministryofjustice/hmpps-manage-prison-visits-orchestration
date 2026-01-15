@@ -4,7 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import org.springframework.http.HttpStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceAdjustmentDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.PrisonerBalanceAdjustmentValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDetailedDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderPrisonerBalanceDto
@@ -78,18 +78,30 @@ class VisitAllocationApiMockServer : WireMockServer(8101) {
     )
   }
 
-  fun stubAdjustPrisonersVisitOrderBalance(prisonerId: String, prisonerBalanceAdjustmentDto: PrisonerBalanceAdjustmentDto?, httpStatus: HttpStatus = HttpStatus.OK) {
+  fun stubAdjustPrisonersVisitOrderBalance(prisonerId: String, response: VisitOrderPrisonerBalanceDto?, httpStatus: HttpStatus = HttpStatus.OK) {
     val responseBuilder = createJsonResponseBuilder()
 
     stubFor(
       put("/visits/allocation/prisoner/$prisonerId/balance")
         .willReturn(
-          if (prisonerBalanceAdjustmentDto == null) {
+          if (response == null) {
             responseBuilder.withStatus(httpStatus.value())
           } else {
             responseBuilder.withStatus(HttpStatus.OK.value())
-              .withBody(getJsonString(prisonerBalanceAdjustmentDto))
+              .withBody(getJsonString(response))
           },
+        ),
+    )
+  }
+
+  fun stubAdjustPrisonersVisitOrderBalanceValidationFailure(prisonerId: String, errorResponse: PrisonerBalanceAdjustmentValidationErrorResponse) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      WireMock.put("/visits/allocation/prisoner/$prisonerId/balance")
+        .willReturn(
+          responseBuilder
+            .withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+            .withBody(getJsonString(errorResponse)),
         ),
     )
   }

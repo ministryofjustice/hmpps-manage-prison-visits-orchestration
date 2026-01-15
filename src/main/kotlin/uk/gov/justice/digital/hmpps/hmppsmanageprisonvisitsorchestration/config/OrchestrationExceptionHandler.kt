@@ -188,13 +188,13 @@ class OrchestrationExceptionHandler {
 
   @ExceptionHandler(PrisonerBalanceAdjustmentValidationException::class)
   fun handlePrisonerBalanceAdjustmentValidationException(e: PrisonerBalanceAdjustmentValidationException): ResponseEntity<ValidationErrorResponse> {
-    log.debug("Manually adjust prisoner balance on visit-allocation-api failed with exception: {}, {}", e.message, e.errorCode)
+    log.debug("Manually adjust prisoner balance on visit-allocation-api failed with exception: {}, {}", e.message, e.errorCodes)
     val message = e.localizedMessage
     val error = PrisonerBalanceAdjustmentValidationErrorResponse(
       status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
       userMessage = "Manually adjust prisoner balance request failed",
       developerMessage = message,
-      validationError = e.errorCode,
+      validationErrors = e.errorCodes,
     )
 
     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error)
@@ -260,5 +260,5 @@ data class PrisonerBalanceAdjustmentValidationErrorResponse(
   override val errorCode: Int? = null,
   override val userMessage: String? = null,
   override val developerMessage: String? = null,
-  val validationError: PrisonerBalanceAdjustmentValidationErrorCodes,
+  val validationErrors: List<PrisonerBalanceAdjustmentValidationErrorCodes>,
 ) : ValidationErrorResponse(status, errorCode, userMessage, developerMessage)
