@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums
+package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.enums
 
 @Suppress("unused")
 enum class PrisonerBalanceAdjustmentValidationErrorCodes {
