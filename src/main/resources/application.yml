@@ -29,19 +29,12 @@ spring:
           jwk-set-uri: ${hmpps.auth.url}/.well-known/jwks.json
       client:
         registration:
-          visit-scheduler:
+          hmpps-api:
             provider: hmpps-auth
             client-id: ${system.client.id}
             client-secret: ${system.client.secret}
             authorization-grant-type: client_credentials
             scope: read, write
-
-          other-hmpps-apis:
-            provider: hmpps-auth
-            client-id: ${system.client.id}
-            client-secret: ${system.client.secret}
-            authorization-grant-type: client_credentials
-            scope: read
 
         provider:
           hmpps-auth:
@@ -131,3 +124,9 @@ public:
   service:
     from-date-override: 2
     to-date-override: 28
+
+api:
+  timeout: 10s
+  health:
+    timeout: 2s
+
