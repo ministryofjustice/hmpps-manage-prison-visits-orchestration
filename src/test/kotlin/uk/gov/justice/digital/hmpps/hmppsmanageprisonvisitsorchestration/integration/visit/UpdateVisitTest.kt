@@ -77,7 +77,7 @@ class UpdateVisitTest : IntegrationTestBase() {
     val responseSpec = callUpdateVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT)
     val errorResponse = getValidationErrorResponse(responseSpec)
     assertThat(errorResponse.validationErrors.size).isEqualTo(2)
     assertThat(errorResponse.validationErrors).contains(APPLICATION_INVALID_NON_ASSOCIATION_VISITS)
@@ -85,7 +85,7 @@ class UpdateVisitTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when update visit slot fails application validation parsing then INTERNAL_SERVER_ERROR status is returned`() {
+  fun `when update visit slot fails application validation parsing then UNPROCESSABLE_CONTENT status is returned`() {
     // Given
     val applicationReference = "aaa-bbb-ccc-ddd"
     val reference = "aa-bb-cc-dd"
@@ -99,7 +99,7 @@ class UpdateVisitTest : IntegrationTestBase() {
     val responseSpec = callUpdateVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    responseSpec.expectStatus().isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
+    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT)
   }
 
   private fun callUpdateVisit(
