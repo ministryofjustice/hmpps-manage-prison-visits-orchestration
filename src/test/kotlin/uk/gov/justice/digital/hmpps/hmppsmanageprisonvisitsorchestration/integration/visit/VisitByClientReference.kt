@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 
 class VisitByClientReference : IntegrationTestBase() {
   fun callVisitByClientReference(
@@ -30,7 +31,7 @@ class VisitByClientReference : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isOk
     val responseBody = responseSpec.expectBody().returnResult().responseBody
-    val mappedResponse: List<String> = objectMapper.readValue(
+    val mappedResponse: List<String> = TestObjectMapper.mapper.readValue(
       responseBody,
       TypeFactory.defaultInstance().constructCollectionType(
         MutableList::class.java,
@@ -55,7 +56,7 @@ class VisitByClientReference : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isOk
     val responseBody = responseSpec.expectBody().returnResult().responseBody
-    val mappedResponse: List<String> = objectMapper.readValue(
+    val mappedResponse: List<String> = TestObjectMapper.mapper.readValue(
       responseBody,
       TypeFactory.defaultInstance().constructCollectionType(
         MutableList::class.java,

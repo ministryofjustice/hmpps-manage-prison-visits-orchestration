@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.domainevents.PrisonVisitsEventsIntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PRISON_VISITS_WRITES_QUEUE_CONFIG_KEY
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.VisitFromExternalSystemEvent
@@ -167,7 +168,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
     fun `will process a visit write create event`() {
       visitSchedulerMockServer.stubPostVisitFromExternalSystem(createVisitFromExternalSystemDto, visitDto)
 
-      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
       vweQueueSqsClient.sendMessage(
         SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
       )
@@ -186,7 +187,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
         status = HttpStatus.BAD_REQUEST,
       )
 
-      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
       vweQueueSqsClient.sendMessage(
         SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
       )
@@ -199,7 +200,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
 
     @Test
     fun `will throw an exception if message attributes are invalid`() {
-      val message = objectMapper.writeValueAsString(invalidVisitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(invalidVisitFromExternalSystemEvent)
       vweQueueSqsClient.sendMessage(
         SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
       )
@@ -248,7 +249,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
     fun `will process a visit write update event`() {
       visitSchedulerMockServer.stubPutVisitFromExternalSystem(updateVisitFromExternalSystemDto, visitDto)
 
-      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
       vweQueueSqsClient.sendMessage(
         SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
       )
@@ -263,7 +264,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
     fun `if visit scheduler returns error, expect event to be added to the dlq`() {
       visitSchedulerMockServer.stubPutVisitFromExternalSystem(updateVisitFromExternalSystemDto, visitDto, status = HttpStatus.BAD_REQUEST)
 
-      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
       vweQueueSqsClient.sendMessage(
         SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
       )
@@ -276,7 +277,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
 
     @Test
     fun `will throw an exception if message attributes are invalid`() {
-      val message = objectMapper.writeValueAsString(invalidVisitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(invalidVisitFromExternalSystemEvent)
       vweQueueSqsClient.sendMessage(
         SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
       )
@@ -315,7 +316,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
       val visitRef = visitFromExternalSystemEvent.messageAttributes["visitReference"].toString()
       visitSchedulerMockServer.stubCancelVisit(visitRef, visitDto)
 
-      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
       vweQueueSqsClient.sendMessage(
         SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
       )
@@ -329,7 +330,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
       val visitRef = visitFromExternalSystemEvent.messageAttributes["visitReference"].toString()
       visitSchedulerMockServer.stubCancelVisit(visitRef, null)
 
-      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
       vweQueueSqsClient.sendMessage(
         SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
       )
@@ -339,7 +340,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
 
     @Test
     fun `will throw an exception if message attributes are invalid`() {
-      val message = objectMapper.writeValueAsString(invalidVisitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(invalidVisitFromExternalSystemEvent)
       vweQueueSqsClient.sendMessage(
         SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
       )

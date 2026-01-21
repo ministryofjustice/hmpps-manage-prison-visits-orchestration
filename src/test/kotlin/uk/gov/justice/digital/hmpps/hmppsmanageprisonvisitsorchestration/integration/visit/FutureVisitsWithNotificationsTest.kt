@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -137,7 +138,7 @@ class FutureVisitsWithNotificationsTest : IntegrationTestBase() {
     responseSpec.expectStatus().isUnauthorized
   }
 
-  fun getVisitsWithNotificationDtos(responseSpec: ResponseSpec): Array<OrchestrationVisitNotificationsDto> = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, Array<OrchestrationVisitNotificationsDto>::class.java)
+  fun getVisitsWithNotificationDtos(responseSpec: ResponseSpec): Array<OrchestrationVisitNotificationsDto> = TestObjectMapper.mapper.readValue(responseSpec.expectBody().returnResult().responseBody, Array<OrchestrationVisitNotificationsDto>::class.java)
 
   fun callFutureNotificationVisits(
     webTestClient: WebTestClient,

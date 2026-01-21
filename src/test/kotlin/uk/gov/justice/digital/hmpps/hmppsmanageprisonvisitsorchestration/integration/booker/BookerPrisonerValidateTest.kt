@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.BookerPrisonerValidationErrorCodes.REGISTERED_PRISON_NOT_SUPPORTED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 
 @DisplayName("Validate prisoner for a public booker")
@@ -80,7 +81,7 @@ class BookerPrisonerValidateTest : IntegrationTestBase() {
     val responseSpec = callPrisonerValidate(bookerReference, prisonerId, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT)
     val errorResponse = getValidationErrorResponse(responseSpec)
     assertThat(errorResponse.validationError).isEqualTo(PRISONER_RELEASED)
   }
@@ -110,7 +111,7 @@ class BookerPrisonerValidateTest : IntegrationTestBase() {
     val responseSpec = callPrisonerValidate(bookerReference, prisonerId, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT)
     val errorResponse = getValidationErrorResponse(responseSpec)
     assertThat(errorResponse.validationError).isEqualTo(REGISTERED_PRISON_NOT_SUPPORTED)
   }
@@ -199,5 +200,5 @@ class BookerPrisonerValidateTest : IntegrationTestBase() {
     responseSpec.expectStatus().is5xxServerError
   }
 
-  fun getValidationErrorResponse(responseSpec: WebTestClient.ResponseSpec): BookerPrisonerValidationErrorResponse = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerPrisonerValidationErrorResponse::class.java)
+  fun getValidationErrorResponse(responseSpec: WebTestClient.ResponseSpec): BookerPrisonerValidationErrorResponse = TestObjectMapper.mapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerPrisonerValidationErrorResponse::class.java)
 }

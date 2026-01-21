@@ -40,6 +40,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventAttributeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -1039,7 +1040,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     assertThat(visitBookingResponse.prisoner.prisonerRestrictions).isEqualTo(expectedRestrictions)
   }
 
-  private fun getResult(bodyContentSpec: WebTestClient.BodyContentSpec): VisitBookingDetailsDto = objectMapper.readValue(bodyContentSpec.returnResult().responseBody, VisitBookingDetailsDto::class.java)
+  private fun getResult(bodyContentSpec: WebTestClient.BodyContentSpec): VisitBookingDetailsDto = TestObjectMapper.mapper.readValue(bodyContentSpec.returnResult().responseBody, VisitBookingDetailsDto::class.java)
 
   private fun assertVisitBookingDetails(
     visitBookingDetailsDto: VisitBookingDetailsDto,

@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -188,5 +189,5 @@ class PublicPastVisitsByBookerReferenceTest : IntegrationTestBase() {
     Assertions.assertThat(visits.size).isEqualTo(0)
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<OrchestrationVisitDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<OrchestrationVisitDto>::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<OrchestrationVisitDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<OrchestrationVisitDto>::class.java)
 }

@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.domainevents
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
@@ -8,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
@@ -19,6 +19,7 @@ import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.PurgeQueueRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.helper.JwtAuthHelper
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.domainevents.LocalStackContainer.setLocalStackProperties
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.AlertsApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.HmppsAuthExtension
@@ -51,6 +52,7 @@ import uk.gov.justice.hmpps.sqs.HmppsTopic
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @ExtendWith(HmppsAuthExtension::class)
+@AutoConfigureWebTestClient
 abstract class PrisonVisitsEventsIntegrationTestBase {
 
   companion object {
@@ -137,9 +139,6 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
   lateinit var prisonerAlertsUpdatedNotifier: PrisonerAlertsUpdatedNotifier
 
   @Autowired
-  protected lateinit var objectMapper: ObjectMapper
-
-  @Autowired
   private lateinit var hmppsQueueService: HmppsQueueService
 
   internal val topic by lazy { hmppsQueueService.findByTopicId("domainevents") as HmppsTopic }
@@ -191,7 +190,7 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
 
   fun createDomainEventPublishRequest(eventType: String): PublishRequest? = PublishRequest.builder()
     .topicArn(topicArn)
-    .message(objectMapper.writeValueAsString(createDomainEvent(eventType, ""))).build()
+    .message(TestObjectMapper.mapper.writeValueAsString(createDomainEvent(eventType, ""))).build()
 
   fun createDomainEventJson(eventType: String, additionalInformation: String): String = "{\"eventType\":\"$eventType\",\"additionalInformation\":$additionalInformation}"
 

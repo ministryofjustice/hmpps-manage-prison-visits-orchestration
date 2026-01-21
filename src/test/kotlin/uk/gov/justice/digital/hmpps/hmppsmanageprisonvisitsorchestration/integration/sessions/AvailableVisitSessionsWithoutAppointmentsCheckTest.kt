@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.OPEN
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AppointmentsService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonerProfileService
 import java.time.LocalDate
@@ -155,7 +156,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     // Then
 
     val returnResult = responseSpec.expectStatus().isBadRequest.expectBody()
-    val errorResponse = objectMapper.readValue(returnResult.returnResult().responseBody, ErrorResponse::class.java)
+    val errorResponse = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, ErrorResponse::class.java)
     assertThat(errorResponse.userMessage).isEqualTo("400 BAD_REQUEST \"Validation failure\"")
   }
 

@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.enums.HigherPriorityMedicalOrLegalEvents.ADJUDICATION_HEARING
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.enums.HigherPriorityMedicalOrLegalEvents.MEDICAL_OPTICIAN
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AppointmentsService
 import java.time.LocalDate
 import java.time.LocalTime
@@ -403,5 +404,5 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     verify(appointmentsService, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<AvailableVisitSessionDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<AvailableVisitSessionDto>::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<AvailableVisitSessionDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<AvailableVisitSessionDto>::class.java)
 }

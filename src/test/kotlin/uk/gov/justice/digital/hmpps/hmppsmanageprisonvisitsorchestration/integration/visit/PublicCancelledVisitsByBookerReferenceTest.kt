@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus.CANCELLED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -189,5 +190,5 @@ class PublicCancelledVisitsByBookerReferenceTest : IntegrationTestBase() {
     Mockito.verify(prisonerSearchClient, times(1)).getPrisonerById(prisonerId)
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<OrchestrationVisitDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<OrchestrationVisitDto>::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<OrchestrationVisitDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<OrchestrationVisitDto>::class.java)
 }

@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -9,10 +8,10 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
-import org.testcontainers.shaded.org.apache.commons.lang3.RandomUtils
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.GET_VISIT_SESSIONS_AVAILABLE_PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.ORCHESTRATION_GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.ORCHESTRATION_GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
@@ -69,11 +68,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
+import java.util.concurrent.ThreadLocalRandom
 import java.util.stream.Collectors
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
 @ExtendWith(HmppsAuthExtension::class)
+@AutoConfigureWebTestClient
 abstract class IntegrationTestBase {
   companion object {
     val visitSchedulerMockServer = VisitSchedulerMockServer()
@@ -175,9 +176,6 @@ abstract class IntegrationTestBase {
 
   @Autowired
   protected lateinit var jwtAuthHelper: JwtAuthHelper
-
-  @Autowired
-  protected lateinit var objectMapper: ObjectMapper
 
   @BeforeEach
   internal fun setUp() {
@@ -575,6 +573,28 @@ abstract class IntegrationTestBase {
       .exchange()
   }
 
+  final fun createContactDto(
+    personId: Long = ThreadLocalRandom.current().nextLong(),
+    firstName: String,
+    lastName: String,
+    dateOfBirth: LocalDate? = null,
+    approvedVisitor: Boolean = true,
+    restrictions: List<RestrictionDto> = emptyList(),
+    addresses: List<AddressDto> = emptyList(),
+  ): PrisonerContactDto = PrisonerContactDto(
+    personId = personId,
+    firstName = firstName,
+    lastName = lastName,
+    approvedVisitor = approvedVisitor,
+    dateOfBirth = dateOfBirth,
+    relationshipCode = "OTH",
+    contactType = "S",
+    emergencyContact = true,
+    nextOfKin = true,
+    restrictions = restrictions,
+    addresses = addresses,
+  )
+
   final fun createPrisoner(
     prisonerId: String,
     firstName: String,
@@ -597,34 +617,12 @@ abstract class IntegrationTestBase {
     convictedStatus = convictedStatus,
   )
 
-  final fun createContactDto(
-    personId: Long = RandomUtils.nextLong(),
-    firstName: String,
-    lastName: String,
-    dateOfBirth: LocalDate? = null,
-    approvedVisitor: Boolean = true,
-    restrictions: List<RestrictionDto> = emptyList(),
-    addresses: List<AddressDto> = emptyList(),
-  ): PrisonerContactDto = PrisonerContactDto(
-    personId = personId,
-    firstName = firstName,
-    lastName = lastName,
-    approvedVisitor = approvedVisitor,
-    dateOfBirth = dateOfBirth,
-    relationshipCode = "OTH",
-    contactType = "S",
-    emergencyContact = true,
-    nextOfKin = true,
-    restrictions = restrictions,
-    addresses = addresses,
-  )
-
   final fun createContactsList(visitorDetails: List<VisitorDetails>): List<PrisonerContactDto> = visitorDetails.stream().map {
     createContactDto(it.personId, it.firstName, it.lastName, it.dateOfBirth, it.approved, it.restrictions)
   }.collect(Collectors.toList())
 
   final fun createVisitor(
-    visitorId: Int = RandomUtils.nextInt(),
+    visitorId: Int = ThreadLocalRandom.current().nextInt(),
     firstName: String,
     lastName: String,
     dateOfBirth: LocalDate?,
