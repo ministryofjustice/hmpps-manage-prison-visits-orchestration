@@ -154,8 +154,8 @@ abstract class IntegrationTestBase {
         queryParams.add("prisonId=$prisonCode")
       }
       queryParams.add("prisonerId=$prisonerId")
-      visitStatus.forEach {
-        queryParams.add("visitStatus=$it")
+      if (visitStatus.isNotEmpty()) {
+        queryParams.add("visitStatus=${visitStatus.joinToString(",")}")
       }
       startDateTime?.let {
         queryParams.add("visitStartDate=$it")

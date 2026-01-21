@@ -166,7 +166,7 @@ class VisitSchedulerClient(
         .queryParam("fromDate", sessionDate)
         .queryParam("toDate", sessionDate)
         .queryParamIfPresent("visitRestrictions", Optional.ofNullable(visitRestrictions))
-        .queryParam("visitStatus", visitStatusList.toTypedArray())
+        .queryParam("visitStatus", visitStatusList.joinToString(separator = ","))
         .queryParam("prisonCode", prisonCode)
         .queryParam("page", page)
         .queryParam("size", size)
@@ -636,7 +636,7 @@ class VisitSchedulerClient(
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParamIfPresent("prisonId", Optional.ofNullable(visitSearchRequestFilter.prisonCode))
     uriBuilder.queryParamIfPresent("prisonerId", Optional.ofNullable(visitSearchRequestFilter.prisonerId))
-    uriBuilder.queryParam("visitStatus", visitSearchRequestFilter.visitStatusList.toTypedArray())
+    uriBuilder.queryParam("visitStatus", visitSearchRequestFilter.visitStatusList.joinToString(separator = ","))
     uriBuilder.queryParamIfPresent("visitStartDate", Optional.ofNullable(visitSearchRequestFilter.visitStartDate))
     uriBuilder.queryParamIfPresent("visitEndDate", Optional.ofNullable(visitSearchRequestFilter.visitEndDate))
     uriBuilder.queryParam("page", visitSearchRequestFilter.page)
