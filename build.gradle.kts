@@ -60,6 +60,17 @@ tasks {
   }
 }
 
+tasks.test {
+  minHeapSize = "512m"
+  maxHeapSize = "2g"
+
+  // Optional but useful
+  jvmArgs(
+    "-XX:MaxMetaspaceSize=1024m",
+    "-XX:+HeapDumpOnOutOfMemoryError",
+  )
+}
+
 dependencyCheck {
   nvd.datafeedUrl = "file:///opt/vulnz/cache"
 }
