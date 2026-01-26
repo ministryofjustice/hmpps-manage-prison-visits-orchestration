@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.VisitSessionsAndScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -277,5 +278,5 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     }
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): VisitSessionsAndScheduleDto = objectMapper.readValue(returnResult.returnResult().responseBody, VisitSessionsAndScheduleDto::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): VisitSessionsAndScheduleDto = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, VisitSessionsAndScheduleDto::class.java)
 }

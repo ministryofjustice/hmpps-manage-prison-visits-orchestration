@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.enums.AdjustmentReasonType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.enums.PrisonerBalanceAdjustmentValidationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 
 @DisplayName("PUT $VISIT_ORDER_PRISONER_BALANCE_ENDPOINT - Manual Adjustment tests")
@@ -81,7 +82,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
 
     // When
     val responseSpec = callAdjustPrisonersVisitOrderBalance(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, prisonId, prisonerBalanceAdjustmentDto)
-    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT)
 
     val errorResponseSpec = getValidationErrorResponse(responseSpec)
     assertThat(errorResponseSpec.validationErrors.size).isEqualTo(2)
@@ -269,7 +270,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
       .exchange()
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): VisitOrderPrisonerBalanceDto = objectMapper.readValue(returnResult.returnResult().responseBody, VisitOrderPrisonerBalanceDto::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): VisitOrderPrisonerBalanceDto = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, VisitOrderPrisonerBalanceDto::class.java)
 
-  private fun getValidationErrorResponse(responseSpec: WebTestClient.ResponseSpec): PrisonerBalanceAdjustmentValidationErrorResponse = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, PrisonerBalanceAdjustmentValidationErrorResponse::class.java)
+  private fun getValidationErrorResponse(responseSpec: WebTestClient.ResponseSpec): PrisonerBalanceAdjustmentValidationErrorResponse = TestObjectMapper.mapper.readValue(responseSpec.expectBody().returnResult().responseBody, PrisonerBalanceAdjustmentValidationErrorResponse::class.java)
 }

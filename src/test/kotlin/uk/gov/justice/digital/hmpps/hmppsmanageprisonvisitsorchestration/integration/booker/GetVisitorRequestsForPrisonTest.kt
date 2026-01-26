@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestListEntryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestsStatus.REQUESTED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 
 @DisplayName("Get list of visitor requests for prison - $PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_PRISON_CODE")
@@ -104,7 +105,7 @@ class GetVisitorRequestsForPrisonTest : IntegrationTestBase() {
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getVisitorRequestsByPrisonCode(any())
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<PrisonVisitorRequestListEntryDto> = objectMapper.readValue(returnResult.returnResult().responseBody, object : TypeReference<List<PrisonVisitorRequestListEntryDto>>() {})
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<PrisonVisitorRequestListEntryDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, object : TypeReference<List<PrisonVisitorRequestListEntryDto>>() {})
 
   fun callGetVisitorRequestsByPrisonCode(
     webTestClient: WebTestClient,

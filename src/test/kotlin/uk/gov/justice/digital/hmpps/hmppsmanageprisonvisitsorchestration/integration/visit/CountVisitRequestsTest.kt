@@ -11,6 +11,7 @@ import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.VISIT_REQUESTS_COUNT_FOR_PRISON_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitRequestsCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 
 @DisplayName("GET - $VISIT_REQUESTS_COUNT_FOR_PRISON_PATH")
 class CountVisitRequestsTest : IntegrationTestBase() {
@@ -48,7 +49,7 @@ class CountVisitRequestsTest : IntegrationTestBase() {
     responseSpec.expectStatus().is5xxServerError
   }
 
-  fun getVisitRequestsCountDto(responseSpec: ResponseSpec): VisitRequestsCountDto = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, VisitRequestsCountDto::class.java)
+  fun getVisitRequestsCountDto(responseSpec: ResponseSpec): VisitRequestsCountDto = TestObjectMapper.mapper.readValue(responseSpec.expectBody().returnResult().responseBody, VisitRequestsCountDto::class.java)
 
   fun callCountVisitRequestsForAPrison(
     webTestClient: WebTestClient,

@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.con
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorRestrictionType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 
 @DisplayName("Get permitted visitors for permitted prisoner for booker")
@@ -581,12 +582,12 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
     responseSpec.expectStatus().isEqualTo(httpStatusCode)
     errorMessage?.let {
       val errorResponse =
-        objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, ErrorResponse::class.java)
+        TestObjectMapper.mapper.readValue(responseSpec.expectBody().returnResult().responseBody, ErrorResponse::class.java)
       Assertions.assertThat(errorResponse.developerMessage).isEqualTo(errorMessage)
     }
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<VisitorInfoDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<VisitorInfoDto>::class.java).toList()
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<VisitorInfoDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<VisitorInfoDto>::class.java).toList()
 
   fun callGetVisitorsByBookersPrisoner(
     webTestClient: WebTestClient,

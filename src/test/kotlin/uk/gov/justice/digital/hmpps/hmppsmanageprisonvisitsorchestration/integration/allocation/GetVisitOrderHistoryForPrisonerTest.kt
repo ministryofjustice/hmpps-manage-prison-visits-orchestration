@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.enums.VisitOrderHistoryAttributeType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.enums.VisitOrderHistoryType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -649,7 +650,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     }
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): VisitOrderHistoryDetailsDto = objectMapper.readValue(returnResult.returnResult().responseBody, VisitOrderHistoryDetailsDto::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): VisitOrderHistoryDetailsDto = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, VisitOrderHistoryDetailsDto::class.java)
 
   fun callVisitOrderHistoryForPrisoner(
     webTestClient: WebTestClient,

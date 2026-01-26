@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.IsExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 
 @DisplayName("Is session date excluded for visits tests")
@@ -152,5 +153,5 @@ class IsDateExcludedForSessionTest : IntegrationTestBase() {
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): IsExcludeDateDto = objectMapper.readValue(returnResult.returnResult().responseBody, IsExcludeDateDto::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): IsExcludeDateDto = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, IsExcludeDateDto::class.java)
 }

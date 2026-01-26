@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonerProfileService
 import java.time.LocalDate
 
@@ -91,5 +92,5 @@ class AvailableVisitSessionsRestrictionTest : IntegrationTestBase() {
     verify(prisonerProfileService, times(1)).hasVisitorsGotClosedRestrictions(prisonerId, visitorIds)
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): AvailableVisitSessionRestrictionDto = objectMapper.readValue(returnResult.returnResult().responseBody, AvailableVisitSessionRestrictionDto::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): AvailableVisitSessionRestrictionDto = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, AvailableVisitSessionRestrictionDto::class.java)
 }
