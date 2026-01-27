@@ -1,22 +1,13 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock
 
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
 import com.github.tomakehurst.wiremock.client.WireMock
 import org.springframework.http.MediaType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 
 class MockUtils {
   companion object {
-    private val objectMapper: ObjectMapper = ObjectMapper()
-      .registerModules(JavaTimeModule(), kotlinModule())
-      .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-      .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-
-    fun getJsonString(obj: Any): String = objectMapper.writer().writeValueAsString(obj)
+    fun getJsonString(obj: Any): String = TestObjectMapper.mapper.writer().writeValueAsString(obj)
 
     fun createJsonResponseBuilder(): ResponseDefinitionBuilder = WireMock.aResponse().withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
   }

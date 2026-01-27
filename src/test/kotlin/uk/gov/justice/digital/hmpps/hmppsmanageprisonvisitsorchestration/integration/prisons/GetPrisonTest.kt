@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 
 @DisplayName("Get prison tests")
 class GetPrisonTest : IntegrationTestBase() {
@@ -158,5 +159,5 @@ class GetPrisonTest : IntegrationTestBase() {
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
   }
 
-  private fun getResult(returnResult: WebTestClient.BodyContentSpec): PrisonDto = objectMapper.readValue(returnResult.returnResult().responseBody, PrisonDto::class.java)
+  private fun getResult(returnResult: WebTestClient.BodyContentSpec): PrisonDto = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, PrisonDto::class.java)
 }

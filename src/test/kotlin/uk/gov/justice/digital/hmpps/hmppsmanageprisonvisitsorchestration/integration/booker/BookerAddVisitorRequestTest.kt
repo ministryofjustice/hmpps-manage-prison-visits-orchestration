@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestValidationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestsStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 
 class BookerAddVisitorRequestTest : IntegrationTestBase() {
@@ -65,7 +66,7 @@ class BookerAddVisitorRequestTest : IntegrationTestBase() {
     val responseSpec = callAddVisitorRequest(webTestClient, bookerReference, prisonerId, addVisitorRequest, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT)
     val errorResponse = getValidationErrorResponse(responseSpec)
     assertThat(errorResponse.validationError).isEqualTo(VisitorRequestValidationErrorCodes.VISITOR_ALREADY_EXISTS)
     verify(prisonVisitBookerRegistryClientSpy, times(1)).createAddVisitorRequest(bookerReference, prisonerId, addVisitorRequest)
@@ -135,5 +136,5 @@ class BookerAddVisitorRequestTest : IntegrationTestBase() {
     verify(prisonVisitBookerRegistryClientSpy, times(0)).createAddVisitorRequest(any(), any(), any())
   }
 
-  fun getValidationErrorResponse(responseSpec: WebTestClient.ResponseSpec): BookerVisitorRequestValidationErrorResponse = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerVisitorRequestValidationErrorResponse::class.java)
+  fun getValidationErrorResponse(responseSpec: WebTestClient.ResponseSpec): BookerVisitorRequestValidationErrorResponse = TestObjectMapper.mapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerVisitorRequestValidationErrorResponse::class.java)
 }

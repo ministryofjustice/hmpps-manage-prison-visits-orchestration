@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 
 @DisplayName("GET active visitor requests count for prison - $PUBLIC_BOOKER_GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE")
 class GetCountVisitorRequestsForPrisonTest : IntegrationTestBase() {
@@ -75,7 +76,7 @@ class GetCountVisitorRequestsForPrisonTest : IntegrationTestBase() {
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getVisitorRequestsCountByPrisonCode(any())
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): VisitorRequestsCountByPrisonCodeDto = objectMapper.readValue(returnResult.returnResult().responseBody, VisitorRequestsCountByPrisonCodeDto::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): VisitorRequestsCountByPrisonCodeDto = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, VisitorRequestsCountByPrisonCodeDto::class.java)
 
   fun callGetVisitorRequestsCountByPrisonCode(
     webTestClient: WebTestClient,

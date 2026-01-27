@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSubStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 
 @DisplayName("GET $VISIT_REQUESTS_APPROVE_VISIT_BY_REFERENCE_PATH")
@@ -114,7 +115,7 @@ class ApproveVisitRequestByReferenceTest : IntegrationTestBase() {
     responseSpec.expectStatus().isUnauthorized
   }
 
-  fun getApproveVisitRequestByReferenceResult(responseSpec: ResponseSpec): OrchestrationApproveRejectVisitRequestResponseDto = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, OrchestrationApproveRejectVisitRequestResponseDto::class.java)
+  fun getApproveVisitRequestByReferenceResult(responseSpec: ResponseSpec): OrchestrationApproveRejectVisitRequestResponseDto = TestObjectMapper.mapper.readValue(responseSpec.expectBody().returnResult().responseBody, OrchestrationApproveRejectVisitRequestResponseDto::class.java)
 
   fun callApproveVisitRequestByReference(
     webTestClient: WebTestClient,

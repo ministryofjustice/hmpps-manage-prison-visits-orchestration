@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AuthDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 
 class BookerAuthorisationTest : IntegrationTestBase() {
 
@@ -100,5 +101,5 @@ class BookerAuthorisationTest : IntegrationTestBase() {
     verify(prisonVisitBookerRegistryClientSpy, times(0)).bookerAuthorisation(any())
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): BookerReference = objectMapper.readValue(returnResult.returnResult().responseBody, BookerReference::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): BookerReference = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, BookerReference::class.java)
 }

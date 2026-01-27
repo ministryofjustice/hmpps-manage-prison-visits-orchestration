@@ -32,7 +32,7 @@ class OrchestrationExceptionHandler {
   }
 
   @ExceptionHandler(InvalidPrisonerProfileException::class)
-  fun handleInvalidPrisonerProfileException(e: InvalidPrisonerProfileException): ResponseEntity<ErrorResponse?>? {
+  fun handleInvalidPrisonerProfileException(e: InvalidPrisonerProfileException): ResponseEntity<ErrorResponse>? {
     log.error("Prisoner profile not found exception caught: {}", e.message)
     return ResponseEntity
       .status(HttpStatus.NOT_FOUND)
@@ -46,7 +46,7 @@ class OrchestrationExceptionHandler {
   }
 
   @ExceptionHandler(NotFoundException::class)
-  fun handleNotFoundException(e: NotFoundException): ResponseEntity<ErrorResponse?>? {
+  fun handleNotFoundException(e: NotFoundException): ResponseEntity<ErrorResponse>? {
     log.error("Not Found exception caught: {}", e.message)
     return ResponseEntity
       .status(HttpStatus.NOT_FOUND)
@@ -60,7 +60,7 @@ class OrchestrationExceptionHandler {
   }
 
   @ExceptionHandler(BookerAuthFailureException::class)
-  fun handleBookerAuthFailureException(e: BookerAuthFailureException): ResponseEntity<ErrorResponse?>? {
+  fun handleBookerAuthFailureException(e: BookerAuthFailureException): ResponseEntity<ErrorResponse>? {
     log.error("Booker auth failure exception caught: {}", e.message)
     return ResponseEntity
       .status(HttpStatus.NOT_FOUND)

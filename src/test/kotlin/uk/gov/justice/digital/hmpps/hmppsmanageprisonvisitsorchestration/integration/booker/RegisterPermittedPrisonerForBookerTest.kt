@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.control
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.BookerPrisonerRegistrationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 
 @DisplayName("$PUBLIC_BOOKER_REGISTER_PRISONER_CONTROLLER_PATH - Register a prisoner for a public booker")
@@ -56,7 +57,7 @@ class RegisterPermittedPrisonerForBookerTest : IntegrationTestBase() {
     val responseSpec = callRegisterPrisoner(bookerReference, registerPrisonerForBookerDto, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT)
     val errorResponse = getValidationErrorResponse(responseSpec)
     assertThat(errorResponse.validationError).isEqualTo(BookerPrisonerRegistrationErrorCodes.FAILED_REGISTRATION)
   }
@@ -81,7 +82,7 @@ class RegisterPermittedPrisonerForBookerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
   }
 
-  fun getValidationErrorResponse(responseSpec: WebTestClient.ResponseSpec): BookerPrisonerRegistrationErrorResponse = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerPrisonerRegistrationErrorResponse::class.java)
+  fun getValidationErrorResponse(responseSpec: WebTestClient.ResponseSpec): BookerPrisonerRegistrationErrorResponse = TestObjectMapper.mapper.readValue(responseSpec.expectBody().returnResult().responseBody, BookerPrisonerRegistrationErrorResponse::class.java)
 
   fun callRegisterPrisoner(
     bookerReference: String,

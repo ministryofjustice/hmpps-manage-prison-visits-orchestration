@@ -8,6 +8,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 
 @DisplayName("Get visits by reference")
 class VisitByReferenceTest : IntegrationTestBase() {
@@ -31,7 +32,7 @@ class VisitByReferenceTest : IntegrationTestBase() {
 
     // Then
     responseSpec.expectStatus().isOk
-    val visitDtoResponse = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, VisitDto::class.java)
+    val visitDtoResponse = TestObjectMapper.mapper.readValue(responseSpec.expectBody().returnResult().responseBody, VisitDto::class.java)
     Assertions.assertThat(visitDtoResponse.reference).isEqualTo(visitDto.reference)
   }
 
@@ -47,11 +48,11 @@ class VisitByReferenceTest : IntegrationTestBase() {
 
     // Then
     responseSpec.expectStatus().isOk
-    val visitDtoResponse = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, VisitDto::class.java)
+    val visitDtoResponse = TestObjectMapper.mapper.readValue(responseSpec.expectBody().returnResult().responseBody, VisitDto::class.java)
     Assertions.assertThat(visitDtoResponse.reference).isEqualTo(visitDto.reference)
     Assertions.assertThat(visitDtoResponse.visitContact!!.telephone).isNull()
-    Assertions.assertThat(visitDtoResponse.visitContact!!.email).isNull()
-    Assertions.assertThat(visitDtoResponse.visitContact!!.name).isEqualTo("Jane Doe")
+    Assertions.assertThat(visitDtoResponse.visitContact.email).isNull()
+    Assertions.assertThat(visitDtoResponse.visitContact.name).isEqualTo("Jane Doe")
   }
 
   @Test

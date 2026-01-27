@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.EventAuditType.BOOKED_VISIT
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDateTime
 
 @DisplayName("Get permitted prisoners for booker")
@@ -232,7 +233,7 @@ class GetBookerAuditHistoryTest : IntegrationTestBase() {
     verify(prisonVisitBookerRegistryClientSpy, times(0)).bookerAuthorisation(any())
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerHistoryAuditDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<BookerHistoryAuditDto>::class.java).toList()
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerHistoryAuditDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<BookerHistoryAuditDto>::class.java).toList()
 
   fun callGetBookerAuditHistory(
     webTestClient: WebTestClient,

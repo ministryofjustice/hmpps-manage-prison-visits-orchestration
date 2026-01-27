@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Period
@@ -834,7 +835,7 @@ class GetPrisonerProfileTest(
     Assertions.assertThat(visitSummary.prisonName).isEqualTo(prisonName)
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): PrisonerProfileDto = objectMapper.readValue(returnResult.returnResult().responseBody, PrisonerProfileDto::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): PrisonerProfileDto = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, PrisonerProfileDto::class.java)
 
   private fun createPrisonerVoBalanceDto(): PrisonerVOBalanceDetailedDto = PrisonerVOBalanceDetailedDto(
     prisonerId = "prisonerId",

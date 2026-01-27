@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestsStatus.REQUESTED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitor.VisitorLastApprovedDatesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -295,7 +296,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
     verify(prisonerSearchClient, times(0)).getPrisonerById(any())
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): SingleVisitorRequestForReviewDto = objectMapper.readValue(returnResult.returnResult().responseBody, SingleVisitorRequestForReviewDto::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): SingleVisitorRequestForReviewDto = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, SingleVisitorRequestForReviewDto::class.java)
 
   fun callGetSingleVisitorRequestForReview(
     webTestClient: WebTestClient,

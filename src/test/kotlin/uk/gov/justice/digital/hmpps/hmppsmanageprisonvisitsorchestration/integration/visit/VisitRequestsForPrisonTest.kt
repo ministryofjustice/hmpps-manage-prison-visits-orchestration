@@ -11,6 +11,7 @@ import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.VISIT_REQUESTS_VISITS_FOR_PRISON_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitRequestSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 
 @DisplayName("GET $VISIT_REQUESTS_VISITS_FOR_PRISON_PATH")
@@ -81,7 +82,7 @@ class VisitRequestsForPrisonTest : IntegrationTestBase() {
 
   fun getVisitRequestsForPrisonResult(responseSpec: ResponseSpec): List<VisitRequestSummaryDto> {
     val responseBody = responseSpec.expectBody().returnResult().responseBody
-    return objectMapper.readValue(responseBody, object : TypeReference<List<VisitRequestSummaryDto>>() {})
+    return TestObjectMapper.mapper.readValue(responseBody, object : TypeReference<List<VisitRequestSummaryDto>>() {})
   }
 
   fun callVisitRequestsForPrison(

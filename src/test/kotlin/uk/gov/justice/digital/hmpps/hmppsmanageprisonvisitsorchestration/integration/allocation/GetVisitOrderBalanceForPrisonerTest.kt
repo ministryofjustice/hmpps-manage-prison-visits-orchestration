@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.control
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderPrisonerBalanceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 
 @DisplayName("GET $VISIT_ORDER_PRISONER_BALANCE_ENDPOINT")
@@ -162,5 +163,5 @@ class GetVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
       .exchange()
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): PrisonerBalanceDto = objectMapper.readValue(returnResult.returnResult().responseBody, PrisonerBalanceDto::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): PrisonerBalanceDto = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, PrisonerBalanceDto::class.java)
 }

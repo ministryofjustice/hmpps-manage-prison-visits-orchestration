@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDateTime
 
 @DisplayName("Get multiple visits by filter")
@@ -47,5 +48,5 @@ class FutureVisitsByPrisonerTest : IntegrationTestBase() {
     Assertions.assertThat(visits.size).isEqualTo(0)
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<VisitDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<VisitDto>::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<VisitDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<VisitDto>::class.java)
 }
