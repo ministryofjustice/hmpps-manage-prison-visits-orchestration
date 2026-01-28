@@ -57,14 +57,14 @@ class BookVisitTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when book visit slot fails application validation then UNPROCESSABLE_ENTITY status is returned`() {
+  fun `when book visit slot fails application validation then UNPROCESSABLE_CONTENT status is returned`() {
     // Given
     val applicationReference = "aaa-bbb-ccc-ddd"
     visitSchedulerMockServer.stubGetBookedVisitByApplicationReference(applicationReference, null)
     visitSchedulerMockServer.stubBookVisitApplicationValidationFailure(
       applicationReference,
       ApplicationValidationErrorResponse(
-        status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+        status = HttpStatus.UNPROCESSABLE_CONTENT.value(),
         validationErrors = listOf(APPLICATION_INVALID_NON_ASSOCIATION_VISITS, APPLICATION_INVALID_NO_VO_BALANCE),
       ),
     )
@@ -83,14 +83,14 @@ class BookVisitTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when book visit slot fails due to prison date being blocked then UNPROCESSABLE_ENTITY status and appropriate error code is returned`() {
+  fun `when book visit slot fails due to prison date being blocked then UNPROCESSABLE_CONTENT status and appropriate error code is returned`() {
     // Given
     val applicationReference = "aaa-bbb-ccc-ddd"
     visitSchedulerMockServer.stubGetBookedVisitByApplicationReference(applicationReference, null)
     visitSchedulerMockServer.stubBookVisitApplicationValidationFailure(
       applicationReference,
       ApplicationValidationErrorResponse(
-        status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+        status = HttpStatus.UNPROCESSABLE_CONTENT.value(),
         validationErrors = listOf(APPLICATION_INVALID_VISIT_DATE_BLOCKED),
       ),
     )
@@ -108,14 +108,14 @@ class BookVisitTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when book visit slot fails due to session date being blocked then UNPROCESSABLE_ENTITY status and appropriate error code is returned`() {
+  fun `when book visit slot fails due to session date being blocked then UNPROCESSABLE_CONTENT status and appropriate error code is returned`() {
     // Given
     val applicationReference = "aaa-bbb-ccc-ddd"
     visitSchedulerMockServer.stubGetBookedVisitByApplicationReference(applicationReference, null)
     visitSchedulerMockServer.stubBookVisitApplicationValidationFailure(
       applicationReference,
       ApplicationValidationErrorResponse(
-        status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+        status = HttpStatus.UNPROCESSABLE_CONTENT.value(),
         validationErrors = listOf(APPLICATION_INVALID_SESSION_DATE_BLOCKED),
       ),
     )

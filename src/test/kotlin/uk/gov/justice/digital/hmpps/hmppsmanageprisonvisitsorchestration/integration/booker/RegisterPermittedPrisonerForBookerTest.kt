@@ -49,9 +49,9 @@ class RegisterPermittedPrisonerForBookerTest : IntegrationTestBase() {
       prisonCode = "HEI",
     )
 
-    val bookerPrisonerRegistrationErrorResponse = BookerPrisonerRegistrationErrorResponse(status = HttpStatus.UNPROCESSABLE_ENTITY.value(), validationError = BookerPrisonerRegistrationErrorCodes.FAILED_REGISTRATION)
+    val bookerPrisonerRegistrationErrorResponse = BookerPrisonerRegistrationErrorResponse(status = HttpStatus.UNPROCESSABLE_CONTENT.value(), validationError = BookerPrisonerRegistrationErrorCodes.FAILED_REGISTRATION)
 
-    prisonVisitBookerRegistryMockServer.stubRegisterPrisonerForBooker(bookerReference = bookerReference, httpStatus = HttpStatus.UNPROCESSABLE_ENTITY, errorResponse = bookerPrisonerRegistrationErrorResponse)
+    prisonVisitBookerRegistryMockServer.stubRegisterPrisonerForBooker(bookerReference = bookerReference, httpStatus = HttpStatus.UNPROCESSABLE_CONTENT, errorResponse = bookerPrisonerRegistrationErrorResponse)
 
     // When
     val responseSpec = callRegisterPrisoner(bookerReference, registerPrisonerForBookerDto, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)

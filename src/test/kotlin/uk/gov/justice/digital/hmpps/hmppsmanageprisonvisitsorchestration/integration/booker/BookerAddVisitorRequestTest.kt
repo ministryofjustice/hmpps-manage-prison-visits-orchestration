@@ -59,7 +59,7 @@ class BookerAddVisitorRequestTest : IntegrationTestBase() {
   fun `when call to booker registry throws a validation error then validation error is returned`() {
     // Given
     val addVisitorRequest = AddVisitorToBookerPrisonerRequestDto("Test", "User", LocalDate.of(2000, 1, 1))
-    val bookerVisitorRequestValidationErrorResponse = BookerVisitorRequestValidationErrorResponse(status = HttpStatus.UNPROCESSABLE_ENTITY.value(), validationError = VisitorRequestValidationErrorCodes.VISITOR_ALREADY_EXISTS)
+    val bookerVisitorRequestValidationErrorResponse = BookerVisitorRequestValidationErrorResponse(status = HttpStatus.UNPROCESSABLE_CONTENT.value(), validationError = VisitorRequestValidationErrorCodes.VISITOR_ALREADY_EXISTS)
     prisonVisitBookerRegistryMockServer.stubAddVisitorRequestValidationFailure(bookerReference, prisonerId, bookerVisitorRequestValidationErrorResponse)
 
     // When
