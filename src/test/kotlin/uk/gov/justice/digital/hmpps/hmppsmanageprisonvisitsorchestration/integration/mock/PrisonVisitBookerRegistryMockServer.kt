@@ -138,7 +138,7 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
       WireMock.get(VALIDATE_PRISONER.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerNumber))
         .willReturn(
           responseBuilder
-            .withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+            .withStatus(HttpStatus.UNPROCESSABLE_CONTENT.value())
             .withBody(getJsonString(errorResponse)),
         ),
     )
@@ -228,7 +228,7 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
       WireMock.post(uri)
         .willReturn(
           responseBuilder
-            .withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+            .withStatus(HttpStatus.UNPROCESSABLE_CONTENT.value())
             .withBody(getJsonString(errorResponse)),
         ),
     )

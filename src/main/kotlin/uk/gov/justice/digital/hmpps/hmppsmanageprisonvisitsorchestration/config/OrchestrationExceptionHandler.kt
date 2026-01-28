@@ -135,13 +135,13 @@ class OrchestrationExceptionHandler {
     log.debug("Application Validation exception: {}, {}", e.message, e.errorCodes)
     val message = e.localizedMessage
     val error = ApplicationValidationErrorResponse(
-      status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+      status = HttpStatus.UNPROCESSABLE_CONTENT.value(),
       userMessage = "Application validation failed",
       developerMessage = message,
       validationErrors = e.errorCodes,
     )
 
-    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error)
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(error)
   }
 
   @ExceptionHandler(BookerPrisonerValidationException::class)
@@ -149,13 +149,13 @@ class OrchestrationExceptionHandler {
     log.debug("Prisoner Validation exception: {}, {}", e.message, e.errorCode)
     val message = e.localizedMessage
     val error = BookerPrisonerValidationErrorResponse(
-      status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+      status = HttpStatus.UNPROCESSABLE_CONTENT.value(),
       userMessage = "Prisoner validation failed",
       developerMessage = message,
       validationError = e.errorCode,
     )
 
-    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error)
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(error)
   }
 
   @ExceptionHandler(BookerPrisonerRegistrationException::class)
@@ -163,13 +163,13 @@ class OrchestrationExceptionHandler {
     log.debug("Prisoner failed registration with exception: {}, {}", e.message, e.errorCode)
     val message = e.localizedMessage
     val error = BookerPrisonerRegistrationErrorResponse(
-      status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+      status = HttpStatus.UNPROCESSABLE_CONTENT.value(),
       userMessage = "Prisoner registration failed",
       developerMessage = message,
       validationError = e.errorCode,
     )
 
-    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error)
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(error)
   }
 
   @ExceptionHandler(BookerVisitorRequestValidationException::class)
@@ -177,13 +177,13 @@ class OrchestrationExceptionHandler {
     log.debug("Create visitor request failed with exception: {}, {}", e.message, e.errorCode)
     val message = e.localizedMessage
     val error = BookerVisitorRequestValidationErrorResponse(
-      status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+      status = HttpStatus.UNPROCESSABLE_CONTENT.value(),
       userMessage = "Create visitor request failed",
       developerMessage = message,
       validationError = e.errorCode,
     )
 
-    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error)
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(error)
   }
 
   @ExceptionHandler(PrisonerBalanceAdjustmentValidationException::class)
@@ -191,13 +191,13 @@ class OrchestrationExceptionHandler {
     log.debug("Manually adjust prisoner balance on visit-allocation-api failed with exception: {}, {}", e.message, e.errorCodes)
     val message = e.localizedMessage
     val error = PrisonerBalanceAdjustmentValidationErrorResponse(
-      status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+      status = HttpStatus.UNPROCESSABLE_CONTENT.value(),
       userMessage = "Manually adjust prisoner balance request failed",
       developerMessage = message,
       validationErrors = e.errorCodes,
     )
 
-    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error)
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(error)
   }
 }
 

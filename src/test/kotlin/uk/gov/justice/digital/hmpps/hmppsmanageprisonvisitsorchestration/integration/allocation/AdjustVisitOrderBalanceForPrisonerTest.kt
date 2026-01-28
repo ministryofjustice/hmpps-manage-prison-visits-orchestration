@@ -65,7 +65,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when visit allocation is called, and validation errors are returned then UNPROCESSABLE_ENTITY is returned`() {
+  fun `when visit allocation is called, and validation errors are returned then UNPROCESSABLE_CONTENT is returned`() {
     // Given
     val prisonerBalanceAdjustmentDto = PrisonerBalanceAdjustmentDto(
       voAmount = -5,
@@ -75,7 +75,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
       userName = "A_USER",
     )
 
-    val errorResponse = PrisonerBalanceAdjustmentValidationErrorResponse(status = HttpStatus.UNPROCESSABLE_ENTITY.value(), validationErrors = listOf(PrisonerBalanceAdjustmentValidationErrorCodes.VO_TOTAL_POST_ADJUSTMENT_BELOW_ZERO, PrisonerBalanceAdjustmentValidationErrorCodes.PVO_TOTAL_POST_ADJUSTMENT_BELOW_ZERO))
+    val errorResponse = PrisonerBalanceAdjustmentValidationErrorResponse(status = HttpStatus.UNPROCESSABLE_CONTENT.value(), validationErrors = listOf(PrisonerBalanceAdjustmentValidationErrorCodes.VO_TOTAL_POST_ADJUSTMENT_BELOW_ZERO, PrisonerBalanceAdjustmentValidationErrorCodes.PVO_TOTAL_POST_ADJUSTMENT_BELOW_ZERO))
 
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, createPrisoner(prisonerId, "John", "Smith", LocalDate.now().minusYears(21), prisonId, convictedStatus = "Convicted"))
     visitAllocationApiMockServer.stubAdjustPrisonersVisitOrderBalanceValidationFailure(prisonerId, errorResponse)

@@ -100,7 +100,7 @@ class VisitAllocationApiMockServer : WireMockServer(8101) {
       WireMock.put("/visits/allocation/prisoner/$prisonerId/balance")
         .willReturn(
           responseBuilder
-            .withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+            .withStatus(HttpStatus.UNPROCESSABLE_CONTENT.value())
             .withBody(getJsonString(errorResponse)),
         ),
     )

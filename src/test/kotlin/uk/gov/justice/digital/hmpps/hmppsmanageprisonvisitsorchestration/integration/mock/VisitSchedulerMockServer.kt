@@ -309,7 +309,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     stubFor(
       put("/visits/$applicationReference/book")
         .willReturn(
-          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_CONTENT.value())
             .withBody(getJsonString(errorResponse)),
         ),
     )
@@ -321,7 +321,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     stubFor(
       put("/visits/$applicationReference/book")
         .willReturn(
-          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_CONTENT.value())
             .withBody(
               """{
                 "status": 422,
@@ -340,7 +340,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     stubFor(
       put("/visits/$applicationReference/visit/update")
         .willReturn(
-          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_CONTENT.value())
             .withBody(getJsonString(errorResponse)),
         ),
     )
@@ -352,7 +352,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     stubFor(
       put("/visits/$applicationReference/visit/update")
         .willReturn(
-          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_CONTENT.value())
             .withBody(
               """{
                 "status": 422,
