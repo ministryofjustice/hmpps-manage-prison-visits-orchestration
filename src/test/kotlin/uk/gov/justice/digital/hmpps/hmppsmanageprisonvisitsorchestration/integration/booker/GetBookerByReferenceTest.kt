@@ -7,10 +7,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_DETAILS
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
@@ -24,12 +21,6 @@ import java.time.LocalDateTime
 
 @DisplayName("Get booker via booker reference")
 class GetBookerByReferenceTest : IntegrationTestBase() {
-  @MockitoSpyBean
-  lateinit var prisonVisitBookerRegistryClientSpy: PrisonVisitBookerRegistryClient
-
-  @MockitoSpyBean
-  lateinit var prisonerContactRegistryClient: PrisonerContactRegistryClient
-
   private final val prisoner1Id = "AA123456"
   private final val prisoner2Id = "BB987654"
   private final val prisonCode = "HEI"
@@ -92,8 +83,8 @@ class GetBookerByReferenceTest : IntegrationTestBase() {
     Assertions.assertThat(bookerDetailedInfo.permittedPrisoners.first { it.prisoner.prisonerNumber == prisoner2Id }.permittedVisitors.size).isEqualTo(1)
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(bookerReference)
-    verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisoner1Id, false)
-    verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisoner2Id, false)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisoner1Id, false)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisoner2Id, false)
   }
 
   @Test
@@ -131,8 +122,8 @@ class GetBookerByReferenceTest : IntegrationTestBase() {
     Assertions.assertThat(bookerDetailedInfo.permittedPrisoners.first { it.prisoner.prisonerNumber == prisoner2Id }.permittedVisitors.size).isEqualTo(0)
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(bookerReference)
-    verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisoner1Id, false)
-    verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisoner2Id, false)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisoner1Id, false)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisoner2Id, false)
   }
 
   @Test

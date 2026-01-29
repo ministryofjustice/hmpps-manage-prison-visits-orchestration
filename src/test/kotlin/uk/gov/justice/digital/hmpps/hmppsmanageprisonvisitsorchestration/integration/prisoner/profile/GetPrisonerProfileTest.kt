@@ -10,15 +10,7 @@ import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.AlertsApiClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonApiClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonRegisterClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitAllocationApiClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.PrisonerProfileDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitBalancesDto
@@ -94,27 +86,6 @@ class GetPrisonerProfileTest(
 
   // visit2 has 1 visitor in visitors list
   private final val visit2 = createVisitDto(reference = "visit-2", prisonerId = PRISONER_ID, visitors = visit2Visitors, prisonCode = "ABC")
-
-  @MockitoSpyBean
-  lateinit var visitSchedulerClientSpy: VisitSchedulerClient
-
-  @MockitoSpyBean
-  lateinit var prisonAPiClientSpy: PrisonApiClient
-
-  @MockitoSpyBean
-  lateinit var alertsApiClient: AlertsApiClient
-
-  @MockitoSpyBean
-  lateinit var prisonerSearchClientSpy: PrisonerSearchClient
-
-  @MockitoSpyBean
-  lateinit var prisonerContactRegistryClientSpy: PrisonerContactRegistryClient
-
-  @MockitoSpyBean
-  lateinit var prisonRegisterClientSpy: PrisonRegisterClient
-
-  @MockitoSpyBean
-  lateinit var visitAllocationApiClientSpy: VisitAllocationApiClient
 
   fun callGetPrisonerProfile(
     webTestClient: WebTestClient,
@@ -867,9 +838,9 @@ class GetPrisonerProfileTest(
   private fun verifyExternalAPIClientCalls() {
     verify(visitSchedulerClientSpy, times(1)).getVisitsAsMono(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(any())
-    verify(prisonAPiClientSpy, times(1)).getInmateDetailsAsMono(any())
+    verify(prisonApiClientSpy, times(1)).getInmateDetailsAsMono(any())
     verify(visitAllocationApiClientSpy, times(1)).getPrisonerVOBalanceDetailedAsMono(any())
-    verify(alertsApiClient, times(1)).getPrisonerAlertsAsMono(any())
-    verify(prisonAPiClientSpy, times(1)).getPrisonerRestrictionsAsMono(any())
+    verify(alertsApiClientSpy, times(1)).getPrisonerAlertsAsMono(any())
+    verify(prisonApiClientSpy, times(1)).getPrisonerRestrictionsAsMono(any())
   }
 }

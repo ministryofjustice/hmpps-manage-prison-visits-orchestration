@@ -8,11 +8,8 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitAllocationApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.PrisonerBalanceAdjustmentValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.VISIT_ORDER_PRISONER_BALANCE_ENDPOINT
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceAdjustmentDto
@@ -27,12 +24,6 @@ import java.time.LocalDate
 class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
   val prisonerId = "ABC123"
   val prisonId = "HEI"
-
-  @MockitoSpyBean
-  lateinit var visitAllocationApiClientSpy: VisitAllocationApiClient
-
-  @MockitoSpyBean
-  lateinit var prisonerSearchApiClientSpy: PrisonerSearchClient
 
   @Test
   fun `when visit allocation is called, with a valid request to adjust balance for a prisoner, then OK is returned`() {
@@ -60,7 +51,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     val prisonerBalanceDto = getResults(result)
     assertThat(prisonerBalanceDto.prisonerId).isEqualTo(prisonerId)
 
-    verify(prisonerSearchApiClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
   }
 
@@ -87,7 +78,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     val errorResponseSpec = getValidationErrorResponse(responseSpec)
     assertThat(errorResponseSpec.validationErrors.size).isEqualTo(2)
 
-    verify(prisonerSearchApiClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
   }
 
@@ -109,7 +100,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     val responseSpec = callAdjustPrisonersVisitOrderBalance(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, prisonId, prisonerBalanceAdjustmentDto)
     responseSpec.expectStatus().isNotFound
 
-    verify(prisonerSearchApiClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
   }
 
@@ -131,7 +122,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     val responseSpec = callAdjustPrisonersVisitOrderBalance(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, prisonId, prisonerBalanceAdjustmentDto)
     responseSpec.expectStatus().isBadRequest
 
-    verify(prisonerSearchApiClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
   }
 
@@ -153,7 +144,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     val responseSpec = callAdjustPrisonersVisitOrderBalance(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, prisonId, prisonerBalanceAdjustmentDto)
     responseSpec.expectStatus().is5xxServerError
 
-    verify(prisonerSearchApiClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
   }
 
@@ -175,7 +166,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
 
     // And
-    verify(prisonerSearchApiClientSpy, times(0)).getPrisonerById(prisonerId)
+    verify(prisonerSearchClientSpy, times(0)).getPrisonerById(prisonerId)
     verify(visitAllocationApiClientSpy, times(0)).adjustPrisonersVisitOrderBalanceAsMono(any(), any())
   }
 
@@ -209,7 +200,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     val responseSpec = callAdjustPrisonersVisitOrderBalance(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, prisonId, prisonerBalanceAdjustmentDto)
     responseSpec.expectStatus().isBadRequest
 
-    verify(prisonerSearchApiClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     verify(visitAllocationApiClientSpy, times(0)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
   }
 
@@ -230,7 +221,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     val responseSpec = callAdjustPrisonersVisitOrderBalance(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, prisonId, prisonerBalanceAdjustmentDto)
     responseSpec.expectStatus().isBadRequest
 
-    verify(prisonerSearchApiClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     verify(visitAllocationApiClientSpy, times(0)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
   }
 
@@ -251,7 +242,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     val responseSpec = callAdjustPrisonersVisitOrderBalance(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonerId, prisonId, prisonerBalanceAdjustmentDto)
     responseSpec.expectStatus().is5xxServerError
 
-    verify(prisonerSearchApiClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     verify(visitAllocationApiClientSpy, times(0)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
   }
 
