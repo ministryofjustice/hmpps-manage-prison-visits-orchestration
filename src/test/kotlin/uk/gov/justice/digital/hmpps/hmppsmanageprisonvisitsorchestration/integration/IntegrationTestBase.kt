@@ -228,7 +228,7 @@ abstract class IntegrationTestBase {
   protected lateinit var whereAboutsApiClientSpy: WhereAboutsApiClient
 
   @MockitoSpyBean
-  lateinit var prisonVisitBookerRegistryClientSpy: PrisonVisitBookerRegistryClient
+  protected lateinit var prisonVisitBookerRegistryClientSpy: PrisonVisitBookerRegistryClient
 
   @BeforeEach
   internal fun setUp() {
