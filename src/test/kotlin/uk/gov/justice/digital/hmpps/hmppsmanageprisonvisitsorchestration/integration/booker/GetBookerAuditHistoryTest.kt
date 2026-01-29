@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_BOOKER_AUDIT_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerHistoryAuditDto
@@ -28,9 +27,6 @@ import java.time.LocalDateTime
 class GetBookerAuditHistoryTest : IntegrationTestBase() {
   @MockitoSpyBean
   lateinit var prisonVisitBookerRegistryClientSpy: PrisonVisitBookerRegistryClient
-
-  @MockitoSpyBean
-  lateinit var visitSchedulerClientSpy: VisitSchedulerClient
 
   @Test
   fun `when booker has audit history both booker and visit history is combined and returned`() {

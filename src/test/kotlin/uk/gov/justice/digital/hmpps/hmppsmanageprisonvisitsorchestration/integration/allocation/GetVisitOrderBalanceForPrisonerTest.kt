@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitAllocationApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.VISIT_ORDER_PRISONER_BALANCE_ENDPOINT
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderPrisonerBalanceDto
@@ -22,9 +21,6 @@ import java.time.LocalDate
 class GetVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
   val prisonerId = "ABC123"
   val prisonId = "HEI"
-
-  @MockitoSpyBean
-  lateinit var visitAllocationApiClientSpy: VisitAllocationApiClient
 
   @MockitoSpyBean
   lateinit var prisonerSearchApiClientSpy: PrisonerSearchClient

@@ -10,10 +10,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonRegisterClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitAllocationApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_PRISONERS_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
@@ -38,15 +35,6 @@ class GetPermittedPrisonersForBookerTest : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var prisonVisitBookerRegistryClientSpy: PrisonVisitBookerRegistryClient
-
-  @MockitoSpyBean
-  lateinit var prisonerSearchClientSpy: PrisonerSearchClient
-
-  @MockitoSpyBean
-  lateinit var prisonRegisterClientSpy: PrisonRegisterClient
-
-  @MockitoSpyBean
-  lateinit var visitAllocationApiClientSpy: VisitAllocationApiClient
 
   private final val prisonDto = PrisonRegisterPrisonDto(PRISON_CODE, PRISON_NAME)
   private final val registeredPrisonDto = RegisteredPrisonDto(PRISON_CODE, PRISON_NAME)

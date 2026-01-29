@@ -11,8 +11,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.AlertsApiClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.WhereAboutsApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.request.review.VisitorRestrictionsForReview
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
@@ -32,13 +30,7 @@ import java.time.LocalTime
 class AvailableVisitSessionsForReviewFailuresTest : IntegrationTestBase() {
 
   @MockitoSpyBean
-  private lateinit var visitSchedulerClientSpy: VisitSchedulerClient
-
-  @MockitoSpyBean
   private lateinit var whereAboutsApiClientSpy: WhereAboutsApiClient
-
-  @MockitoSpyBean
-  private lateinit var alertsApiClientSpy: AlertsApiClient
 
   @MockitoBean
   private lateinit var prisonerProfileService: PrisonerProfileService

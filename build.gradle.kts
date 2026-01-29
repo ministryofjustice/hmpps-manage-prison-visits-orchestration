@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.0.1"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.0.2"
   kotlin("plugin.spring") version "2.3.0"
   id("org.jetbrains.kotlin.plugin.noarg") version "2.3.0"
   id("org.owasp.dependencycheck") version "12.2.0"
@@ -69,6 +69,10 @@ tasks.test {
     "-XX:MaxMetaspaceSize=1024m",
     "-XX:+HeapDumpOnOutOfMemoryError",
   )
+}
+
+tasks.withType<Test>().configureEach {
+  jvmArgs("-Dspring.test.context.cache.pause=never")
 }
 
 dependencyCheck {
