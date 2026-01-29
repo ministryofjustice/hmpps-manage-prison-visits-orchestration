@@ -93,3 +93,9 @@ feature:
 
 wiremock:
   reset-mappings-after-each-test: true
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

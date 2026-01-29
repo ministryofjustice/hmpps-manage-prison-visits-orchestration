@@ -9,9 +9,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ManageUsersApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.GET_VISIT_FULL_DETAILS_BY_VISIT_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertResponseDto
@@ -88,9 +86,6 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
   private lateinit var eventAttribute1: VisitNotificationEventAttributeDto
   private lateinit var eventAttribute2: VisitNotificationEventAttributeDto
   private lateinit var eventAttribute3: VisitNotificationEventAttributeDto
-
-  @MockitoSpyBean
-  lateinit var manageUsersApiClientSpy: ManageUsersApiClient
 
   @BeforeEach
   internal fun setup() {
