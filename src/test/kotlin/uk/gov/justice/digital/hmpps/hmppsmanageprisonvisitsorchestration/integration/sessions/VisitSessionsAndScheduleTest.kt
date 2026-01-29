@@ -8,9 +8,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.WhereAboutsApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.VisitSessionsAndScheduleDto
@@ -29,9 +27,6 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
   private val minDays = 2
   private val maxDays = 12
   private val today = LocalDate.now()
-
-  @MockitoSpyBean
-  private lateinit var whereAboutsApiClientSpy: WhereAboutsApiClient
 
   fun callGetVisitSessionsAndSchedule(
     webTestClient: WebTestClient,

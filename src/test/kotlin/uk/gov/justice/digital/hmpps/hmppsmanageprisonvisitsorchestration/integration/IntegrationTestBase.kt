@@ -14,12 +14,16 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.AlertsApiClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.IncentivesApiClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ManageUsersApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonRegisterClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitAllocationApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.WhereAboutsApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.GET_VISIT_SESSIONS_AVAILABLE_PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.ORCHESTRATION_GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.ORCHESTRATION_GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
@@ -73,6 +77,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.VisitAllocationApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.VisitSchedulerMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.WhereaboutsApiMockServer
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AppointmentsService
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonerProfileService
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -189,7 +195,7 @@ abstract class IntegrationTestBase {
   protected lateinit var visitSchedulerClientSpy: VisitSchedulerClient
 
   @MockitoSpyBean
-  protected lateinit var prisonAPiClientSpy: PrisonApiClient
+  protected lateinit var prisonApiClientSpy: PrisonApiClient
 
   @MockitoSpyBean
   protected lateinit var alertsApiClientSpy: AlertsApiClient
@@ -205,6 +211,24 @@ abstract class IntegrationTestBase {
 
   @MockitoSpyBean
   protected lateinit var visitAllocationApiClientSpy: VisitAllocationApiClient
+
+  @MockitoSpyBean
+  protected lateinit var manageUsersApiClientSpy: ManageUsersApiClient
+
+  @MockitoSpyBean
+  protected lateinit var incentivesApiClientSpy: IncentivesApiClient
+
+  @MockitoSpyBean
+  protected lateinit var appointmentsServiceSpy: AppointmentsService
+
+  @MockitoSpyBean
+  protected lateinit var prisonerProfileServiceSpy: PrisonerProfileService
+
+  @MockitoSpyBean
+  protected lateinit var whereAboutsApiClientSpy: WhereAboutsApiClient
+
+  @MockitoSpyBean
+  lateinit var prisonVisitBookerRegistryClientSpy: PrisonVisitBookerRegistryClient
 
   @BeforeEach
   internal fun setUp() {

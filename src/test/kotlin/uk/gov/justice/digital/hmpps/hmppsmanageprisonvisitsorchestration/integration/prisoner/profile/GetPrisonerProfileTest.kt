@@ -838,9 +838,9 @@ class GetPrisonerProfileTest(
   private fun verifyExternalAPIClientCalls() {
     verify(visitSchedulerClientSpy, times(1)).getVisitsAsMono(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonerByIdAsMono(any())
-    verify(prisonAPiClientSpy, times(1)).getInmateDetailsAsMono(any())
+    verify(prisonApiClientSpy, times(1)).getInmateDetailsAsMono(any())
     verify(visitAllocationApiClientSpy, times(1)).getPrisonerVOBalanceDetailedAsMono(any())
     verify(alertsApiClientSpy, times(1)).getPrisonerAlertsAsMono(any())
-    verify(prisonAPiClientSpy, times(1)).getPrisonerRestrictionsAsMono(any())
+    verify(prisonApiClientSpy, times(1)).getPrisonerRestrictionsAsMono(any())
   }
 }

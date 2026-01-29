@@ -9,9 +9,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.bean.override.mockito.MockitoBean
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.WhereAboutsApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.request.review.VisitorRestrictionsForReview
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTimeSlotDto
@@ -28,10 +26,6 @@ import java.time.LocalTime
 // but only the 2nd call needs to fail
 @DisplayName("Get available visit sessions marked for review test when prison API call to get prisoner restrictions returns an error")
 class AvailableVisitSessionsForReviewFailuresTest : IntegrationTestBase() {
-
-  @MockitoSpyBean
-  private lateinit var whereAboutsApiClientSpy: WhereAboutsApiClient
-
   @MockitoBean
   private lateinit var prisonerProfileService: PrisonerProfileService
 

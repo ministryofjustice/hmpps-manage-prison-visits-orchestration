@@ -7,10 +7,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpStatus
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonApiClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.WhereAboutsApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.enums.PrisonerSupportedAlertCodeType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.request.review.PrisonerRestrictionsForReview
@@ -28,13 +25,6 @@ import java.time.LocalTime
 
 @DisplayName("Get available visit sessions marked for review test")
 class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
-
-  @MockitoSpyBean
-  private lateinit var prisonApiClientSpy: PrisonApiClient
-
-  @MockitoSpyBean
-  private lateinit var whereAboutsApiClientSpy: WhereAboutsApiClient
-
   private val prisonCode = "MDI"
   private val prisonerId = "AA123456B"
   private val visitSession1 = AvailableVisitSessionDto(LocalDate.now().plusDays(7), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
