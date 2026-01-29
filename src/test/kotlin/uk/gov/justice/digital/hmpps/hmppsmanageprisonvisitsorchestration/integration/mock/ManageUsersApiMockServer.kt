@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integr
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.get
-import com.github.tomakehurst.wiremock.client.WireMock.put
+import com.github.tomakehurst.wiremock.client.WireMock.post
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.manage.users.UserExtendedDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.createJsonResponseBuilder
@@ -45,7 +45,7 @@ class ManageUsersApiMockServer : WireMockServer(8097) {
     val responseBuilder = createJsonResponseBuilder()
 
     stubFor(
-      put("/prisonusers/find-by-usernames")
+      post("/prisonusers/find-by-usernames")
         .willReturn(
           if (userDetails == null) {
             responseBuilder.withStatus(httpStatus.value())

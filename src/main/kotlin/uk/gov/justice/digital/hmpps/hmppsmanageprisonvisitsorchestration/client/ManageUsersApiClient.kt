@@ -39,7 +39,7 @@ class ManageUsersApiClient(
 
   private fun findUsersByUsernames(userIds: Set<String>): Mono<Map<String, UserExtendedDetailsDto>> {
     LOG.info("Getting users by usernames: {}", userIds)
-    return webClient.put()
+    return webClient.post()
       .uri("/prisonusers/find-by-usernames")
       .body(BodyInserters.fromValue(userIds.toList()))
       .retrieve()
