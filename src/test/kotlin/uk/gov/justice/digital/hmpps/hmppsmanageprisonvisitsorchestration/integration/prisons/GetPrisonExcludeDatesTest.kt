@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ManageUsersApiClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.manage.users.UserExtendedDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
@@ -42,6 +43,12 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
   @Test
   fun `when prison has past and future exclude dates only future ones are returned on call to get future exclude dates`() {
     // Given
+    val userIds = listOf("user-4", "user-5", "user-6")
+    val userNamesMap = mapOf(
+      "user-4" to UserExtendedDetailsDto("user-4", "User", "Four"),
+      "user-6" to UserExtendedDetailsDto("user-6", "User", "Six"),
+    )
+
     val excludeDatePast1 = LocalDate.now().minusDays(1)
     val excludeDatePast2 = LocalDate.now().minusDays(2)
     val excludeDatePast3 = LocalDate.now().minusDays(3)
@@ -62,8 +69,7 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
 
     visitSchedulerMockServer.stubGetExcludeDates("HEI", excludeDates.sortedByDescending { it.excludeDate })
     // user-4 and user-6 exist on hmpps-auth but not user-5
-    manageUsersApiMockServer.stubGetUserDetails("user-4", "User Four")
-    manageUsersApiMockServer.stubGetUserDetails("user-6", "User Six")
+    manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
 
     // When
     val responseSpec = callGetFutureExcludeDates(webTestClient, "HEI", roleVSIPOrchestrationServiceHttpHeaders)
@@ -76,15 +82,18 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
     Assertions.assertThat(dates[1]).isEqualTo(ExcludeDateDto(excludeDateFuture1, "user-5"))
     Assertions.assertThat(dates[2]).isEqualTo(ExcludeDateDto(excludeDateFuture2, "User Six"))
     Assertions.assertThat(dates[3]).isEqualTo(ExcludeDateDto(excludeDateFuture3, "User Six"))
-    verify(manageUsersApiClientSpy, times(3)).getUserDetails(any())
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-4")
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-5")
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-6")
+    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
+    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(any())
   }
 
   @Test
   fun `when prison has only today as exclude date it is returned on call to get future exclude dates`() {
     // Given
+    val userIds = listOf("user-1")
+    val userNamesMap = mapOf(
+      "user-1" to UserExtendedDetailsDto("user-1", "User", "One"),
+    )
+
     val excludeDateCurrent = LocalDate.now()
 
     val excludeDates = listOf(
@@ -92,7 +101,7 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
     )
 
     visitSchedulerMockServer.stubGetExcludeDates("HEI", excludeDates.sortedByDescending { it.excludeDate })
-    manageUsersApiMockServer.stubGetUserDetails("user-1", "User One")
+    manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
 
     // When
     val responseSpec = callGetFutureExcludeDates(webTestClient, "HEI", roleVSIPOrchestrationServiceHttpHeaders)
@@ -102,7 +111,7 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
     val dates = getResults(returnResult)
     Assertions.assertThat(dates).hasSize(1)
     Assertions.assertThat(dates[0]).isEqualTo(ExcludeDateDto(excludeDateCurrent, "User One"))
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-1")
+    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
   }
 
   @Test
@@ -148,6 +157,12 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
   @Test
   fun `when prison has past and future exclude dates only past ones are returned on call to get past exclude dates`() {
     // Given
+    val userIds = listOf("user-11", "user-12", "user-13")
+    val userNamesMap = mapOf(
+      "user-11" to UserExtendedDetailsDto("user-11", "User", "Eleven"),
+      "user-13" to UserExtendedDetailsDto("user-11", "User", "Thirteen"),
+    )
+
     val excludeDatePast1 = LocalDate.now().minusDays(1)
     val excludeDatePast2 = LocalDate.now().minusDays(2)
     val excludeDatePast3 = LocalDate.now().minusDays(3)
@@ -168,8 +183,7 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
 
     visitSchedulerMockServer.stubGetExcludeDates("HEI", excludeDates.sortedByDescending { it.excludeDate })
     // user-11 and user-13 exist on hmpps-auth but not user-12
-    manageUsersApiMockServer.stubGetUserDetails("user-11", "User Eleven")
-    manageUsersApiMockServer.stubGetUserDetails("user-13", "User Thirteen")
+    manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
 
     // When
     val responseSpec = callGetPastExcludeDates(webTestClient, "HEI", roleVSIPOrchestrationServiceHttpHeaders)
@@ -181,10 +195,8 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
     Assertions.assertThat(dates[2]).isEqualTo(ExcludeDateDto(excludeDatePast3, "User Thirteen"))
     Assertions.assertThat(dates[1]).isEqualTo(ExcludeDateDto(excludeDatePast2, "user-12"))
     Assertions.assertThat(dates[0]).isEqualTo(ExcludeDateDto(excludeDatePast1, "User Eleven"))
-    verify(manageUsersApiClientSpy, times(3)).getUserDetails(any())
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-11")
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-12")
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user-13")
+    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(any())
+    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
   }
 
   @Test
@@ -211,7 +223,7 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val dates = getResults(returnResult)
     Assertions.assertThat(dates).isEmpty()
-    verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
+    verify(manageUsersApiClientSpy, times(0)).getUsersByUsernames(any())
   }
 
   @Test
