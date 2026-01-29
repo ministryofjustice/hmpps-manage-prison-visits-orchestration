@@ -10,12 +10,7 @@ import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.HttpStatus.NOT_FOUND
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.IncentivesApiClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ManageUsersApiClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitAllocationApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.VISIT_ORDER_HISTORY_FOR_PRISONER
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.incentives.IncentiveLevelDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryAttributesDto
@@ -43,18 +38,6 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
   )
 
   private val inmateDetails = createInmateDetails(prisonerId, "Category - C")
-
-  @MockitoSpyBean
-  lateinit var visitAllocationApiClientSpy: VisitAllocationApiClient
-
-  @MockitoSpyBean
-  lateinit var manageUsersApiClientSpy: ManageUsersApiClient
-
-  @MockitoSpyBean
-  lateinit var incentivesApiClientSpy: IncentivesApiClient
-
-  @MockitoSpyBean
-  lateinit var prisonerSearchClientSpy: PrisonerSearchClient
 
   @Test
   fun `when prisoner has multiple visit order history then all results are returned with balance change populated`() {

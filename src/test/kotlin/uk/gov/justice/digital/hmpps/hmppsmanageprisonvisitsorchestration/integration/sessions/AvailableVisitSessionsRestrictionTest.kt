@@ -5,7 +5,6 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionsDto
@@ -13,15 +12,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonerProfileService
 import java.time.LocalDate
 
 @DisplayName("Get available visit session restriction")
 class AvailableVisitSessionsRestrictionTest : IntegrationTestBase() {
-
-  @MockitoSpyBean
-  private lateinit var prisonerProfileService: PrisonerProfileService
-
   @Test
   fun `when get available session restriction called and no restriction for prisoner or visitors, OPEN is returned`() {
     // Given
@@ -40,8 +34,8 @@ class AvailableVisitSessionsRestrictionTest : IntegrationTestBase() {
     val sessionRestrictionDto = getResults(result)
     Assertions.assertThat(sessionRestrictionDto.sessionRestriction).isEqualTo(SessionRestriction.OPEN)
 
-    verify(prisonerProfileService, times(1)).hasPrisonerGotClosedRestrictions(prisonerId)
-    verify(prisonerProfileService, times(1)).hasVisitorsGotClosedRestrictions(prisonerId, visitorIds)
+    verify(prisonerProfileServiceSpy, times(1)).hasPrisonerGotClosedRestrictions(prisonerId)
+    verify(prisonerProfileServiceSpy, times(1)).hasVisitorsGotClosedRestrictions(prisonerId, visitorIds)
   }
 
   @Test
@@ -67,7 +61,7 @@ class AvailableVisitSessionsRestrictionTest : IntegrationTestBase() {
     val sessionRestrictionDto = getResults(result)
     Assertions.assertThat(sessionRestrictionDto.sessionRestriction).isEqualTo(SessionRestriction.CLOSED)
 
-    verify(prisonerProfileService, times(1)).hasPrisonerGotClosedRestrictions(prisonerId)
+    verify(prisonerProfileServiceSpy, times(1)).hasPrisonerGotClosedRestrictions(prisonerId)
   }
 
   @Test
@@ -88,8 +82,8 @@ class AvailableVisitSessionsRestrictionTest : IntegrationTestBase() {
     val sessionRestrictionDto = getResults(result)
     Assertions.assertThat(sessionRestrictionDto.sessionRestriction).isEqualTo(SessionRestriction.CLOSED)
 
-    verify(prisonerProfileService, times(1)).hasPrisonerGotClosedRestrictions(prisonerId)
-    verify(prisonerProfileService, times(1)).hasVisitorsGotClosedRestrictions(prisonerId, visitorIds)
+    verify(prisonerProfileServiceSpy, times(1)).hasPrisonerGotClosedRestrictions(prisonerId)
+    verify(prisonerProfileServiceSpy, times(1)).hasVisitorsGotClosedRestrictions(prisonerId, visitorIds)
   }
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): AvailableVisitSessionRestrictionDto = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, AvailableVisitSessionRestrictionDto::class.java)

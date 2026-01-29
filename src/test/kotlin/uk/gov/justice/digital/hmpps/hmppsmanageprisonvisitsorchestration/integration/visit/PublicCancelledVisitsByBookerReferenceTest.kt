@@ -6,10 +6,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.times
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
@@ -22,12 +19,6 @@ import java.time.LocalDateTime
 
 @DisplayName("Get public cancelled visits by booker reference")
 class PublicCancelledVisitsByBookerReferenceTest : IntegrationTestBase() {
-  @MockitoSpyBean
-  private lateinit var prisonerContactRegistryClient: PrisonerContactRegistryClient
-
-  @MockitoSpyBean
-  private lateinit var prisonerSearchClient: PrisonerSearchClient
-
   private lateinit var visitDto: VisitDto
   private lateinit var visitDto2: VisitDto
   private lateinit var prisoner: PrisonerDto
@@ -107,8 +98,8 @@ class PublicCancelledVisitsByBookerReferenceTest : IntegrationTestBase() {
     assertVisitorDetails(visits[0].visitors, contacts)
     assertVisitorDetails(visits[1].visitors, contacts)
 
-    Mockito.verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false)
-    Mockito.verify(prisonerSearchClient, times(1)).getPrisonerById(prisonerId)
+    Mockito.verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false)
+    Mockito.verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
   }
 
   @Test
@@ -159,8 +150,8 @@ class PublicCancelledVisitsByBookerReferenceTest : IntegrationTestBase() {
       Assertions.assertThat(visitor.lastName).isNull()
     }
 
-    Mockito.verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false)
-    Mockito.verify(prisonerSearchClient, times(1)).getPrisonerById(prisonerId)
+    Mockito.verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false)
+    Mockito.verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
   }
 
   @Test
@@ -186,8 +177,8 @@ class PublicCancelledVisitsByBookerReferenceTest : IntegrationTestBase() {
     assertVisitorDetails(visits[0].visitors, contacts)
     assertVisitorDetails(visits[1].visitors, contacts)
 
-    Mockito.verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false)
-    Mockito.verify(prisonerSearchClient, times(1)).getPrisonerById(prisonerId)
+    Mockito.verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false)
+    Mockito.verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
   }
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<OrchestrationVisitDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<OrchestrationVisitDto>::class.java)
