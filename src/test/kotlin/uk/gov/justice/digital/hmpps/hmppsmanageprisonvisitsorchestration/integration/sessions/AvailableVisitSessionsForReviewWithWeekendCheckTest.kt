@@ -31,7 +31,7 @@ import java.time.temporal.TemporalAdjusters
 
 @DisplayName("Get available visit sessions marked for review test")
 class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase() {
-  @Autowired(required = false)
+  @Autowired
   lateinit var cacheManager: CacheManager
 
   @MockitoBean
