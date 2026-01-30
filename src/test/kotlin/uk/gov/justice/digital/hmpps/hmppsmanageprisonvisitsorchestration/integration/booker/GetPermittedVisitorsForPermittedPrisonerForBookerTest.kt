@@ -318,6 +318,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       firstName = "c",
       lastName = "c",
       dateOfBirth = LocalDate.of(1990, 4, 1),
+      approved = false
     )
 
     val visitor2 = createVisitor(
@@ -558,6 +559,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
     Assertions.assertThat(visitorBasicInfo.firstName).isEqualTo(visitorDetails.firstName)
     Assertions.assertThat(visitorBasicInfo.lastName).isEqualTo(visitorDetails.lastName)
     Assertions.assertThat(visitorBasicInfo.dateOfBirth).isEqualTo(visitorDetails.dateOfBirth)
+    Assertions.assertThat(visitorBasicInfo.approved).isEqualTo(visitorDetails.approved)
   }
 
   private fun assertVisitorRestriction(visitorRestriction: VisitorRestrictionDto, restrictionType: VisitorRestrictionType, restrictionExpiryDate: LocalDate?) {
