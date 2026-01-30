@@ -17,15 +17,15 @@ data class VisitorInfoDto(
   val dateOfBirth: LocalDate?,
   @param:Schema(description = "Relevant visitor restrictions that impact visits or empty list if none", required = true)
   val visitorRestrictions: Set<VisitorRestrictionDto>,
-  @param:Schema(description = "A flag to signify if the visitor is on the approved or unapproved social contact list", example = "true", required = true)
-  val approvedVisitor: Boolean,
+  @param:Schema(description = "A flag to signify if the visitor is on the approved social contact list", example = "true", required = true)
+  val approved: Boolean,
 ) {
   constructor(contact: PrisonerContactDto, visitorRestrictions: Set<VisitorRestrictionDto>) : this(
     visitorId = contact.personId!!,
     firstName = contact.firstName,
     lastName = contact.lastName,
     dateOfBirth = contact.dateOfBirth,
-    approvedVisitor = contact.approvedVisitor,
+    approved = contact.approvedVisitor,
     visitorRestrictions = visitorRestrictions,
   )
 }
