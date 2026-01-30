@@ -123,16 +123,11 @@ class VisitAllocationService(
   }
 
   private fun getUserFullNames(userNames: Set<String>): Map<String, String> {
-    // TODO - see if manage users can return multiple user names in a single API call, if they do replace this with the new API call as this will slow down the process
+    val userDetails = manageUsersService.getFullNamesForUserIds(userNames)
     val userNameMap = mutableMapOf<String, String>()
+
     userNames.forEach { userName ->
-      when (userName) {
-        SYSTEM_USER_NAME -> userNameMap[userName] = userName
-        else -> {
-          val userFullName = manageUsersService.getUserFullName(userName, userNameIfNotAvailable = userName)
-          userNameMap[userName] = userFullName
-        }
-      }
+      userNameMap.put(userName, userDetails.getOrDefault(userName, userName))
     }
 
     return userNameMap

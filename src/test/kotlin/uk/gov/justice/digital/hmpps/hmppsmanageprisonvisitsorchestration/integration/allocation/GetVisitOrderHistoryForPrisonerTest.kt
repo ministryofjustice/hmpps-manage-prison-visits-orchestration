@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.VISIT_ORDER_HISTORY_FOR_PRISONER
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.incentives.IncentiveLevelDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.manage.users.UserExtendedDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryAttributesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDto
@@ -42,6 +43,12 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
   @Test
   fun `when prisoner has multiple visit order history then all results are returned with balance change populated`() {
     // Given
+    val userIds = listOf("user1", "user2", "user3")
+    val userNamesMap = mapOf(
+      "user1" to UserExtendedDetailsDto("user1", "John", "Smith"),
+      "user2" to UserExtendedDetailsDto("user2", "Sarah", "Jones"),
+    )
+
     val fromDate = LocalDate.now().minusDays(10)
     val incentiveLevels = listOf(IncentiveLevelDto("STD", "Standard"), IncentiveLevelDto("ENH", "Enhanced"))
     val visitOrderHistory1 = VisitOrderHistoryDto(VisitOrderHistoryType.MIGRATION, LocalDateTime.now().minusDays(10), 10, null, 3, null, userName = "user1", attributes = emptyList())
@@ -54,9 +61,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetails)
     visitAllocationApiMockServer.stubGetVisitOrderHistory(prisonerId, fromDate, listOf(visitOrderHistory1, visitOrderHistory2, visitOrderHistory3, visitOrderHistory4, visitOrderHistory5))
-    manageUsersApiMockServer.stubGetUserDetails("user1", "John Smith")
-    manageUsersApiMockServer.stubGetUserDetails("user2", "Sarah Jones")
-    manageUsersApiMockServer.stubGetUserDetailsFailure("user3")
+    manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
     incentivesApiMockServer.stubGetAllIncentiveLevels(incentiveLevels)
 
     // When
@@ -80,10 +85,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user1")
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user2")
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user3")
-    verify(manageUsersApiClientSpy, times(3)).getUserDetails(any())
+    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
     verify(incentivesApiClientSpy, times(0)).getAllIncentiveLevels()
   }
 
@@ -112,6 +114,9 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
   @Test
   fun `when prisoner has multiple visit order history but maxResults expected is less then only equalling maxResults are returned`() {
     // Given
+    val userIds = listOf("user3")
+    val userNamesMap = emptyMap<String, UserExtendedDetailsDto>()
+
     val fromDate = LocalDate.now().minusDays(10)
     val incentiveLevels = listOf(IncentiveLevelDto("STD", "Standard"), IncentiveLevelDto("ENH", "Enhanced"))
     val visitOrderHistory1 = VisitOrderHistoryDto(VisitOrderHistoryType.MIGRATION, LocalDateTime.now().minusDays(10), 10, null, 3, null, userName = "user1", attributes = emptyList())
@@ -124,9 +129,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetails)
     visitAllocationApiMockServer.stubGetVisitOrderHistory(prisonerId, fromDate, listOf(visitOrderHistory1, visitOrderHistory2, visitOrderHistory3, visitOrderHistory4, visitOrderHistory5))
-    manageUsersApiMockServer.stubGetUserDetails("user1", "John Smith")
-    manageUsersApiMockServer.stubGetUserDetails("user2", "Sarah Jones")
-    manageUsersApiMockServer.stubGetUserDetailsFailure("user3")
+    manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
     incentivesApiMockServer.stubGetAllIncentiveLevels(incentiveLevels)
 
     // When
@@ -145,14 +148,19 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user3")
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails(any())
+    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
     verify(incentivesApiClientSpy, times(0)).getAllIncentiveLevels()
   }
 
   @Test
   fun `when prisoner has multiple visit order history but maxResults expected is more then returned results all results are returned`() {
     // Given
+    val userIds = listOf("user1", "user2", "user3")
+    val userNamesMap = mapOf(
+      "user1" to UserExtendedDetailsDto("user1", "John", "Smith"),
+      "user2" to UserExtendedDetailsDto("user2", "Sarah", "Jones"),
+    )
+
     val fromDate = LocalDate.now().minusDays(10)
     val incentiveLevels = listOf(IncentiveLevelDto("STD", "Standard"), IncentiveLevelDto("ENH", "Enhanced"))
     val visitOrderHistory1 = VisitOrderHistoryDto(VisitOrderHistoryType.MIGRATION, LocalDateTime.now().minusDays(10), 10, null, 3, null, userName = "user1", attributes = emptyList())
@@ -165,9 +173,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetails)
     visitAllocationApiMockServer.stubGetVisitOrderHistory(prisonerId, fromDate, listOf(visitOrderHistory1, visitOrderHistory2, visitOrderHistory3, visitOrderHistory4, visitOrderHistory5))
-    manageUsersApiMockServer.stubGetUserDetails("user1", "John Smith")
-    manageUsersApiMockServer.stubGetUserDetails("user2", "Sarah Jones")
-    manageUsersApiMockServer.stubGetUserDetailsFailure("user3")
+    manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
     incentivesApiMockServer.stubGetAllIncentiveLevels(incentiveLevels)
 
     // When
@@ -193,13 +199,19 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
-    verify(manageUsersApiClientSpy, times(3)).getUserDetails(any())
+    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
     verify(incentivesApiClientSpy, times(0)).getAllIncentiveLevels()
   }
 
   @Test
   fun `when prisoner has multiple visit order history but maxResults passed is 0 then all results are returned`() {
     // Given
+    val userIds = listOf("user1", "user2", "user3")
+    val userNamesMap = mapOf(
+      "user1" to UserExtendedDetailsDto("user1", "John", "Smith"),
+      "user2" to UserExtendedDetailsDto("user2", "Sarah", "Jones"),
+    )
+
     val fromDate = LocalDate.now().minusDays(10)
     val incentiveLevels = listOf(IncentiveLevelDto("STD", "Standard"), IncentiveLevelDto("ENH", "Enhanced"))
     val visitOrderHistory1 = VisitOrderHistoryDto(VisitOrderHistoryType.MIGRATION, LocalDateTime.now().minusDays(10), 10, null, 3, null, userName = "user1", attributes = emptyList())
@@ -212,9 +224,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetails)
     visitAllocationApiMockServer.stubGetVisitOrderHistory(prisonerId, fromDate, listOf(visitOrderHistory1, visitOrderHistory2, visitOrderHistory3, visitOrderHistory4, visitOrderHistory5))
-    manageUsersApiMockServer.stubGetUserDetails("user1", "John Smith")
-    manageUsersApiMockServer.stubGetUserDetails("user2", "Sarah Jones")
-    manageUsersApiMockServer.stubGetUserDetailsFailure("user3")
+    manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
     incentivesApiMockServer.stubGetAllIncentiveLevels(incentiveLevels)
 
     // When
@@ -239,13 +249,19 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
-    verify(manageUsersApiClientSpy, times(3)).getUserDetails(any())
+    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
     verify(incentivesApiClientSpy, times(0)).getAllIncentiveLevels()
   }
 
   @Test
   fun `when prisoner has multiple visit order history but maxResults passed is negative then all results are returned`() {
     // Given
+    val userIds = listOf("user1", "user2", "user3")
+    val userNamesMap = mapOf(
+      "user1" to UserExtendedDetailsDto("user1", "John", "Smith"),
+      "user2" to UserExtendedDetailsDto("user2", "Sarah", "Jones"),
+    )
+
     val fromDate = LocalDate.now().minusDays(10)
     val incentiveLevels = listOf(IncentiveLevelDto("STD", "Standard"), IncentiveLevelDto("ENH", "Enhanced"))
     val visitOrderHistory1 = VisitOrderHistoryDto(VisitOrderHistoryType.MIGRATION, LocalDateTime.now().minusDays(10), 10, null, 3, null, userName = "user1", attributes = emptyList())
@@ -258,9 +274,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetails)
     visitAllocationApiMockServer.stubGetVisitOrderHistory(prisonerId, fromDate, listOf(visitOrderHistory1, visitOrderHistory2, visitOrderHistory3, visitOrderHistory4, visitOrderHistory5))
-    manageUsersApiMockServer.stubGetUserDetails("user1", "John Smith")
-    manageUsersApiMockServer.stubGetUserDetails("user2", "Sarah Jones")
-    manageUsersApiMockServer.stubGetUserDetailsFailure("user3")
+    manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
     incentivesApiMockServer.stubGetAllIncentiveLevels(incentiveLevels)
 
     // When
@@ -285,13 +299,19 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
-    verify(manageUsersApiClientSpy, times(3)).getUserDetails(any())
+    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
     verify(incentivesApiClientSpy, times(0)).getAllIncentiveLevels()
   }
 
   @Test
   fun `when incentive levels are part of visit order history attributes then the value not the name is returned`() {
     // Given
+    val userIds = listOf("user1", "user2", "user3")
+    val userNamesMap = mapOf(
+      "user1" to UserExtendedDetailsDto("user1", "John", "Smith"),
+      "user2" to UserExtendedDetailsDto("user2", "Sarah", "Jones"),
+    )
+
     val fromDate = LocalDate.now().minusDays(10)
     val incentiveLevels = listOf(IncentiveLevelDto("STD", "Standard"), IncentiveLevelDto("ENH", "Enhanced"))
     val visitOrderHistory1Attributes = listOf(
@@ -312,9 +332,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetails)
     visitAllocationApiMockServer.stubGetVisitOrderHistory(prisonerId, fromDate, listOf(visitOrderHistory1, visitOrderHistory2, visitOrderHistory3))
-    manageUsersApiMockServer.stubGetUserDetails("user1", "John Smith")
-    manageUsersApiMockServer.stubGetUserDetails("user2", "Sarah Jones")
-    manageUsersApiMockServer.stubGetUserDetailsFailure("user3")
+    manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
     incentivesApiMockServer.stubGetAllIncentiveLevels(incentiveLevels)
 
     // When
@@ -335,16 +353,73 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user1")
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user2")
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user3")
-    verify(manageUsersApiClientSpy, times(3)).getUserDetails(any())
+    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
+    verify(incentivesApiClientSpy, times(1)).getAllIncentiveLevels()
+  }
+
+  @Test
+  fun `when there are also SYSTEM users then call to manage user API ignores SYSTEM users`() {
+    // Given
+    val userIds = listOf("user1", "user3")
+    val userNamesMap = mapOf(
+      "user1" to UserExtendedDetailsDto("user1", "John", "Smith"),
+      "user2" to UserExtendedDetailsDto("user2", "Sarah", "Jones"),
+    )
+
+    val fromDate = LocalDate.now().minusDays(10)
+    val incentiveLevels = listOf(IncentiveLevelDto("STD", "Standard"), IncentiveLevelDto("ENH", "Enhanced"))
+    val visitOrderHistory1Attributes = listOf(
+      VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.INCENTIVE_LEVEL, "STD"),
+    )
+    val visitOrderHistory1 = VisitOrderHistoryDto(VisitOrderHistoryType.VO_AND_PVO_ALLOCATION, LocalDateTime.now().minusDays(3), 4, null, 2, null, userName = "user1", attributes = visitOrderHistory1Attributes)
+
+    val visitOrderHistory2Attributes = listOf(
+      VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.INCENTIVE_LEVEL, "ENH"),
+    )
+    val visitOrderHistory2 = VisitOrderHistoryDto(VisitOrderHistoryType.VO_AND_PVO_ALLOCATION, LocalDateTime.now().minusDays(2), 6, null, 3, null, userName = "SYSTEM", attributes = visitOrderHistory2Attributes)
+
+    val visitOrderHistory3Attributes = listOf(
+      VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.INCENTIVE_LEVEL, "BAS"),
+    )
+    val visitOrderHistory3 = VisitOrderHistoryDto(VisitOrderHistoryType.VO_AND_PVO_ALLOCATION, LocalDateTime.now().minusDays(1), 8, null, 4, null, userName = "user3", attributes = visitOrderHistory3Attributes)
+
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetails)
+    visitAllocationApiMockServer.stubGetVisitOrderHistory(prisonerId, fromDate, listOf(visitOrderHistory1, visitOrderHistory2, visitOrderHistory3))
+    manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
+    incentivesApiMockServer.stubGetAllIncentiveLevels(incentiveLevels)
+
+    // When
+    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonId, prisonerId, LocalDate.now().minusDays(10))
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val visitOrderHistoryDetailsDto = getResults(returnResult)
+    val visitOrderHistory = visitOrderHistoryDetailsDto.visitOrderHistory
+
+    assertThat(visitOrderHistory.size).isEqualTo(3)
+    assertVisitOrderHistory(visitOrderHistory[0], visitOrderHistory3, 2, 1, "user3")
+    assertVisitOrderHistoryAttributes(visitOrderHistory[0].attributes, listOf(Pair(VisitOrderHistoryAttributeType.INCENTIVE_LEVEL, "BAS")))
+
+    assertVisitOrderHistory(visitOrderHistory[1], visitOrderHistory2, 2, 1, "SYSTEM")
+    assertVisitOrderHistoryAttributes(visitOrderHistory[1].attributes, listOf(Pair(VisitOrderHistoryAttributeType.INCENTIVE_LEVEL, "Enhanced")))
+
+    assertVisitOrderHistory(visitOrderHistory[2], visitOrderHistory1, 0, 0, "John Smith")
+    assertVisitOrderHistoryAttributes(visitOrderHistory[2].attributes, listOf(Pair(VisitOrderHistoryAttributeType.INCENTIVE_LEVEL, "Standard")))
+
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
+    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
     verify(incentivesApiClientSpy, times(1)).getAllIncentiveLevels()
   }
 
   @Test
   fun `when incorrect prison ID passed then a BAD_REQUEST is returned`() {
     // Given
+    val userIds = listOf("user1", "user2", "user3")
+    val userNamesMap = mapOf(
+      "user1" to UserExtendedDetailsDto("user1", "John", "Smith"),
+      "user2" to UserExtendedDetailsDto("user2", "Sarah", "Jones"),
+    )
+
     val fromDate = LocalDate.now().minusDays(10)
     val incentiveLevels = listOf(IncentiveLevelDto("STD", "Standard"), IncentiveLevelDto("ENH", "Enhanced"))
     val visitOrderHistory1 = VisitOrderHistoryDto(VisitOrderHistoryType.MIGRATION, LocalDateTime.now().minusDays(10), 10, null, 3, null, userName = "user1", attributes = emptyList())
@@ -357,9 +432,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetails)
     visitAllocationApiMockServer.stubGetVisitOrderHistory(prisonerId, fromDate, listOf(visitOrderHistory1, visitOrderHistory2, visitOrderHistory3, visitOrderHistory4, visitOrderHistory5))
-    manageUsersApiMockServer.stubGetUserDetails("user1", "John Smith")
-    manageUsersApiMockServer.stubGetUserDetails("user2", "Sarah Jones")
-    manageUsersApiMockServer.stubGetUserDetailsFailure("user3")
+    manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
     incentivesApiMockServer.stubGetAllIncentiveLevels(incentiveLevels)
 
     // When
@@ -375,6 +448,12 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
   @Test
   fun `when incentive levels call returns a NOT_FOUND error then incentive levels names are not replaced with values`() {
     // Given
+    val userIds = listOf("user1", "user2", "user3")
+    val userNamesMap = mapOf(
+      "user1" to UserExtendedDetailsDto("user1", "John", "Smith"),
+      "user2" to UserExtendedDetailsDto("user2", "Sarah", "Jones"),
+    )
+
     val fromDate = LocalDate.now().minusDays(10)
     val incentiveLevels = null
     val visitOrderHistory1Attributes = listOf(
@@ -395,9 +474,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetails)
     visitAllocationApiMockServer.stubGetVisitOrderHistory(prisonerId, fromDate, listOf(visitOrderHistory1, visitOrderHistory2, visitOrderHistory3))
-    manageUsersApiMockServer.stubGetUserDetails("user1", "John Smith")
-    manageUsersApiMockServer.stubGetUserDetails("user2", "Sarah Jones")
-    manageUsersApiMockServer.stubGetUserDetailsFailure("user3")
+    manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
     incentivesApiMockServer.stubGetAllIncentiveLevels(incentiveLevels, NOT_FOUND)
 
     // When
@@ -418,16 +495,19 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user1")
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user2")
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user3")
-    verify(manageUsersApiClientSpy, times(3)).getUserDetails(any())
+    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
     verify(incentivesApiClientSpy, times(1)).getAllIncentiveLevels()
   }
 
   @Test
   fun `when incentive levels call returns an INTERNAL_SERVER_ERROR then incentive levels names are not replaced with values`() {
     // Given
+    val userIds = listOf("user1", "user2", "user3")
+    val userNamesMap = mapOf(
+      "user1" to UserExtendedDetailsDto("user1", "John", "Smith"),
+      "user2" to UserExtendedDetailsDto("user2", "Sarah", "Jones"),
+    )
+
     val fromDate = LocalDate.now().minusDays(10)
     val incentiveLevels = null
     val visitOrderHistory1Attributes = listOf(
@@ -448,9 +528,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetails)
     visitAllocationApiMockServer.stubGetVisitOrderHistory(prisonerId, fromDate, listOf(visitOrderHistory1, visitOrderHistory2, visitOrderHistory3))
-    manageUsersApiMockServer.stubGetUserDetails("user1", "John Smith")
-    manageUsersApiMockServer.stubGetUserDetails("user2", "Sarah Jones")
-    manageUsersApiMockServer.stubGetUserDetailsFailure("user3")
+    manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
     incentivesApiMockServer.stubGetAllIncentiveLevels(incentiveLevels, NOT_FOUND)
 
     // When
@@ -471,10 +549,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user1")
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user2")
-    verify(manageUsersApiClientSpy, times(1)).getUserDetails("user3")
-    verify(manageUsersApiClientSpy, times(3)).getUserDetails(any())
+    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
     verify(incentivesApiClientSpy, times(1)).getAllIncentiveLevels()
   }
 
@@ -581,6 +656,96 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
+  }
+
+  @Test
+  fun `when manage users call returns NOT_FOUND then usernames are populated as userIds`() {
+    // Given
+    val userIds = listOf("user1", "user2", "user3")
+
+    val fromDate = LocalDate.now().minusDays(10)
+    val incentiveLevels = listOf(IncentiveLevelDto("STD", "Standard"), IncentiveLevelDto("ENH", "Enhanced"))
+    val visitOrderHistory1 = VisitOrderHistoryDto(VisitOrderHistoryType.MIGRATION, LocalDateTime.now().minusDays(10), 10, null, 3, null, userName = "user1", attributes = emptyList())
+    val visitOrderHistory2 = VisitOrderHistoryDto(VisitOrderHistoryType.PRISONER_BALANCE_RESET, LocalDateTime.now().minusDays(9), 0, null, 0, null, userName = "user2", attributes = emptyList())
+    val visitOrderHistory3 = VisitOrderHistoryDto(VisitOrderHistoryType.ALLOCATION_USED_BY_VISIT, LocalDateTime.now().minusDays(8), -1, null, 0, null, userName = "SYSTEM", attributes = listOf(VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd")))
+
+    // this entry needs to be ignored as balance does not change
+    val visitOrderHistory4 = VisitOrderHistoryDto(VisitOrderHistoryType.SYNC_FROM_NOMIS, LocalDateTime.now().minusDays(7), -1, null, 0, null, userName = "SYSTEM", attributes = emptyList())
+    val visitOrderHistory5 = VisitOrderHistoryDto(VisitOrderHistoryType.VO_AND_PVO_ALLOCATION, LocalDateTime.now().minusDays(6), 4, null, 2, null, userName = "user3", attributes = emptyList())
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetails)
+    visitAllocationApiMockServer.stubGetVisitOrderHistory(prisonerId, fromDate, listOf(visitOrderHistory1, visitOrderHistory2, visitOrderHistory3, visitOrderHistory4, visitOrderHistory5))
+    manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = null, NOT_FOUND)
+    incentivesApiMockServer.stubGetAllIncentiveLevels(incentiveLevels)
+
+    // When
+    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonId, prisonerId, LocalDate.now().minusDays(10))
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val visitOrderHistoryDetailsDto = getResults(returnResult)
+    val visitOrderHistory = visitOrderHistoryDetailsDto.visitOrderHistory
+
+    assertThat(visitOrderHistory.size).isEqualTo(5)
+    // latest on top
+    assertVisitOrderHistory(visitOrderHistory[0], visitOrderHistory5, 5, 2, "user3")
+    assertVisitOrderHistoryAttributes(visitOrderHistory5.attributes, emptyList())
+    assertVisitOrderHistory(visitOrderHistory[1], visitOrderHistory4, 0, 0, "SYSTEM")
+    assertVisitOrderHistoryAttributes(visitOrderHistory4.attributes, emptyList())
+    assertVisitOrderHistory(visitOrderHistory[2], visitOrderHistory3, -1, 0, "SYSTEM")
+    assertVisitOrderHistoryAttributes(visitOrderHistory3.attributes, listOf(Pair(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd")))
+    assertVisitOrderHistory(visitOrderHistory[3], visitOrderHistory2, -10, -3, "user2")
+    assertVisitOrderHistoryAttributes(visitOrderHistory2.attributes, emptyList())
+    assertVisitOrderHistory(visitOrderHistory[4], visitOrderHistory1, 0, 0, "user1")
+    assertVisitOrderHistoryAttributes(visitOrderHistory1.attributes, emptyList())
+
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
+    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
+    verify(incentivesApiClientSpy, times(0)).getAllIncentiveLevels()
+  }
+
+  @Test
+  fun `when manage users call returns INTERNAL_SERVER_ERROR then usernames are populated as userIds`() {
+    // Given
+    val userIds = listOf("user1", "user2", "user3")
+
+    val fromDate = LocalDate.now().minusDays(10)
+    val incentiveLevels = listOf(IncentiveLevelDto("STD", "Standard"), IncentiveLevelDto("ENH", "Enhanced"))
+    val visitOrderHistory1 = VisitOrderHistoryDto(VisitOrderHistoryType.MIGRATION, LocalDateTime.now().minusDays(10), 10, null, 3, null, userName = "user1", attributes = emptyList())
+    val visitOrderHistory2 = VisitOrderHistoryDto(VisitOrderHistoryType.PRISONER_BALANCE_RESET, LocalDateTime.now().minusDays(9), 0, null, 0, null, userName = "user2", attributes = emptyList())
+    val visitOrderHistory3 = VisitOrderHistoryDto(VisitOrderHistoryType.ALLOCATION_USED_BY_VISIT, LocalDateTime.now().minusDays(8), -1, null, 0, null, userName = "SYSTEM", attributes = listOf(VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd")))
+
+    // this entry needs to be ignored as balance does not change
+    val visitOrderHistory4 = VisitOrderHistoryDto(VisitOrderHistoryType.SYNC_FROM_NOMIS, LocalDateTime.now().minusDays(7), -1, null, 0, null, userName = "SYSTEM", attributes = emptyList())
+    val visitOrderHistory5 = VisitOrderHistoryDto(VisitOrderHistoryType.VO_AND_PVO_ALLOCATION, LocalDateTime.now().minusDays(6), 4, null, 2, null, userName = "user3", attributes = emptyList())
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonApiMockServer.stubGetInmateDetails(prisonerId, inmateDetails)
+    visitAllocationApiMockServer.stubGetVisitOrderHistory(prisonerId, fromDate, listOf(visitOrderHistory1, visitOrderHistory2, visitOrderHistory3, visitOrderHistory4, visitOrderHistory5))
+    manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = null, INTERNAL_SERVER_ERROR)
+    incentivesApiMockServer.stubGetAllIncentiveLevels(incentiveLevels)
+
+    // When
+    val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonId, prisonerId, LocalDate.now().minusDays(10))
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val visitOrderHistoryDetailsDto = getResults(returnResult)
+    val visitOrderHistory = visitOrderHistoryDetailsDto.visitOrderHistory
+
+    assertThat(visitOrderHistory.size).isEqualTo(5)
+    // latest on top
+    assertVisitOrderHistory(visitOrderHistory[0], visitOrderHistory5, 5, 2, "user3")
+    assertVisitOrderHistoryAttributes(visitOrderHistory5.attributes, emptyList())
+    assertVisitOrderHistory(visitOrderHistory[1], visitOrderHistory4, 0, 0, "SYSTEM")
+    assertVisitOrderHistoryAttributes(visitOrderHistory4.attributes, emptyList())
+    assertVisitOrderHistory(visitOrderHistory[2], visitOrderHistory3, -1, 0, "SYSTEM")
+    assertVisitOrderHistoryAttributes(visitOrderHistory3.attributes, listOf(Pair(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd")))
+    assertVisitOrderHistory(visitOrderHistory[3], visitOrderHistory2, -10, -3, "user2")
+    assertVisitOrderHistoryAttributes(visitOrderHistory2.attributes, emptyList())
+    assertVisitOrderHistory(visitOrderHistory[4], visitOrderHistory1, 0, 0, "user1")
+    assertVisitOrderHistoryAttributes(visitOrderHistory1.attributes, emptyList())
+
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
+    verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
+    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
+    verify(incentivesApiClientSpy, times(0)).getAllIncentiveLevels()
   }
 
   @Test
