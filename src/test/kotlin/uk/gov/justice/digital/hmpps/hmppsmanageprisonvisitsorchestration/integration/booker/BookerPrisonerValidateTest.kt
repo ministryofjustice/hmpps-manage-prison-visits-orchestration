@@ -63,7 +63,7 @@ class BookerPrisonerValidateTest : IntegrationTestBase() {
     val prisonerId = "prisoner-id"
     val prisonId = "MDI"
 
-    val bookerPrisonerValidationErrorResponse = BookerPrisonerValidationErrorResponse(status = HttpStatus.UNPROCESSABLE_ENTITY.value(), validationError = PRISONER_RELEASED)
+    val bookerPrisonerValidationErrorResponse = BookerPrisonerValidationErrorResponse(status = HttpStatus.UNPROCESSABLE_CONTENT.value(), validationError = PRISONER_RELEASED)
     val prisoner1Dto = createPrisoner(
       prisonerId = prisonerId,
       firstName = "FirstName",

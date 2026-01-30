@@ -9,11 +9,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_SINGLE_VISITOR_REQUEST
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
@@ -30,16 +26,6 @@ import java.time.LocalDateTime
 
 @DisplayName("Get single visitor request for review - $PUBLIC_BOOKER_GET_SINGLE_VISITOR_REQUEST")
 class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
-
-  @MockitoSpyBean
-  lateinit var prisonVisitBookerRegistryClientSpy: PrisonVisitBookerRegistryClient
-
-  @MockitoSpyBean
-  lateinit var prisonerContactRegistryClient: PrisonerContactRegistryClient
-
-  @MockitoSpyBean
-  lateinit var prisonerSearchClient: PrisonerSearchClient
-
   @Test
   fun `when call to get single visitor request for review then request returned with prisoners approved contacts list`() {
     // Given
@@ -106,7 +92,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(any())
-    verify(prisonerContactRegistryClient, times(1)).getPrisonersApprovedSocialContacts(any(), any(), isNull())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersApprovedSocialContacts(any(), any(), isNull())
   }
 
   @Test
@@ -172,8 +158,8 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(any())
-    verify(prisonerContactRegistryClient, times(1)).getPrisonersApprovedSocialContacts(any(), any(), isNull())
-    verify(prisonerSearchClient, times(1)).getPrisonerById(any())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersApprovedSocialContacts(any(), any(), isNull())
+    verify(prisonerSearchClientSpy, times(1)).getPrisonerById(any())
   }
 
   @Test
@@ -218,8 +204,8 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(any())
-    verify(prisonerContactRegistryClient, times(1)).getPrisonersApprovedSocialContacts(any(), any(), isNull())
-    verify(prisonerSearchClient, times(0)).getPrisonerById(any())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersApprovedSocialContacts(any(), any(), isNull())
+    verify(prisonerSearchClientSpy, times(0)).getPrisonerById(any())
   }
 
   @Test
@@ -239,8 +225,8 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getBookerByBookerReference(any())
-    verify(prisonerContactRegistryClient, times(0)).getPrisonersApprovedSocialContacts(any(), any(), any())
-    verify(prisonerSearchClient, times(0)).getPrisonerById(any())
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersApprovedSocialContacts(any(), any(), any())
+    verify(prisonerSearchClientSpy, times(0)).getPrisonerById(any())
   }
 
   @Test
@@ -259,8 +245,8 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getBookerByBookerReference(any())
-    verify(prisonerContactRegistryClient, times(0)).getPrisonersApprovedSocialContacts(any(), any(), any())
-    verify(prisonerSearchClient, times(0)).getPrisonerById(any())
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersApprovedSocialContacts(any(), any(), any())
+    verify(prisonerSearchClientSpy, times(0)).getPrisonerById(any())
   }
 
   @Test
@@ -275,8 +261,8 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
     // And
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getBookerByBookerReference(any())
-    verify(prisonerContactRegistryClient, times(0)).getPrisonersApprovedSocialContacts(any(), any(), any())
-    verify(prisonerSearchClient, times(0)).getPrisonerById(any())
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersApprovedSocialContacts(any(), any(), any())
+    verify(prisonerSearchClientSpy, times(0)).getPrisonerById(any())
   }
 
   @Test
@@ -292,8 +278,8 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
     // And
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getBookerByBookerReference(any())
-    verify(prisonerContactRegistryClient, times(0)).getPrisonersApprovedSocialContacts(any(), any(), any())
-    verify(prisonerSearchClient, times(0)).getPrisonerById(any())
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersApprovedSocialContacts(any(), any(), any())
+    verify(prisonerSearchClientSpy, times(0)).getPrisonerById(any())
   }
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): SingleVisitorRequestForReviewDto = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, SingleVisitorRequestForReviewDto::class.java)

@@ -5,17 +5,13 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
 @DisplayName("Get visit sessions")
 class VisitSessionsTest : IntegrationTestBase() {
-  @MockitoSpyBean
-  private lateinit var visitSchedulerClient: VisitSchedulerClient
   fun callGetVisitSessions(
     webTestClient: WebTestClient,
     prisonCode: String,
@@ -89,7 +85,7 @@ class VisitSessionsTest : IntegrationTestBase() {
     callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = username, userType = STAFF, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    verify(visitSchedulerClient, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, username, userType = STAFF)
+    verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, username, userType = STAFF)
   }
 
   @Test
@@ -103,7 +99,7 @@ class VisitSessionsTest : IntegrationTestBase() {
     callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = username, userType = STAFF, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    verify(visitSchedulerClient, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, username, userType = STAFF)
+    verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, username, userType = STAFF)
   }
 
   @Test
@@ -124,6 +120,6 @@ class VisitSessionsTest : IntegrationTestBase() {
 
     // Then
     // verify getVisitSessions on visit-scheduler is called with userType = STAFF
-    verify(visitSchedulerClient, times(1)).getVisitSessions(prisonCode, prisonerId, min = null, max = null, username = null, userType = STAFF)
+    verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, min = null, max = null, username = null, userType = STAFF)
   }
 }

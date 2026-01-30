@@ -309,7 +309,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     stubFor(
       put("/visits/$applicationReference/book")
         .willReturn(
-          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_CONTENT.value())
             .withBody(getJsonString(errorResponse)),
         ),
     )
@@ -321,12 +321,12 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     stubFor(
       put("/visits/$applicationReference/book")
         .willReturn(
-          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_CONTENT.value())
             .withBody(
               """{
                 "status": 422,
                 "validationErrors": [
-                  "INVALID_APPLICATION_VALIDATION_RESPONSE"
+                  "APPLICATION_INVALID_NO_SLOT_CAPACITY"
                   ]
                 }""",
             ),
@@ -340,7 +340,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     stubFor(
       put("/visits/$applicationReference/visit/update")
         .willReturn(
-          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_CONTENT.value())
             .withBody(getJsonString(errorResponse)),
         ),
     )
@@ -352,12 +352,12 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     stubFor(
       put("/visits/$applicationReference/visit/update")
         .willReturn(
-          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+          responseBuilder.withStatus(HttpStatus.UNPROCESSABLE_CONTENT.value())
             .withBody(
               """{
                 "status": 422,
                 "validationErrors": [
-                  "INVALID_APPLICATION_VALIDATION_RESPONSE"
+                  "APPLICATION_INVALID_NO_SLOT_CAPACITY"
                   ]
                 }""",
             ),

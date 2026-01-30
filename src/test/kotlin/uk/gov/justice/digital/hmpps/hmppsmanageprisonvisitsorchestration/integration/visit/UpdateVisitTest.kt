@@ -56,7 +56,7 @@ class UpdateVisitTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when update visit slot fails application validation then UNPROCESSABLE_ENTITY status is returned`() {
+  fun `when update visit slot fails application validation then UNPROCESSABLE_CONTENT status is returned`() {
     // Given
     val applicationReference = "aaa-bbb-ccc-ddd"
     val reference = "aa-bb-cc-dd"
@@ -66,7 +66,7 @@ class UpdateVisitTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubUpdateVisitApplicationValidationFailure(
       applicationReference,
       ApplicationValidationErrorResponse(
-        status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+        status = HttpStatus.UNPROCESSABLE_CONTENT.value(),
         validationErrors = listOf(APPLICATION_INVALID_NON_ASSOCIATION_VISITS, APPLICATION_INVALID_NO_VO_BALANCE),
       ),
     )

@@ -7,10 +7,8 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_APPROVE_VISITOR_REQUEST
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.ApproveVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
@@ -22,9 +20,6 @@ import java.time.LocalDate
 class ApproveVisitorRequestTest : IntegrationTestBase() {
 
   private val requestReference = "abc-def-ghi"
-
-  @MockitoSpyBean
-  lateinit var prisonVisitBookerRegistryClientSpy: PrisonVisitBookerRegistryClient
 
   @Test
   fun `when call to approve visitor request on booker-registry is successful a successful response code is returned`() {

@@ -9,9 +9,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
@@ -20,9 +18,6 @@ import java.time.LocalDate
 
 @DisplayName("Get active visitor requests for booker")
 class GetActiveVisitorRequestsForBookerTest : IntegrationTestBase() {
-
-  @MockitoSpyBean
-  lateinit var prisonVisitBookerRegistryClientSpy: PrisonVisitBookerRegistryClient
 
   @Test
   fun `when booker has active visitor requests then all active visitor requests are returned`() {
