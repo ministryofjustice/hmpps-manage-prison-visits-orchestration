@@ -45,6 +45,12 @@ class ManageUsersApiClient(
       .retrieve()
       .bodyToMono<Map<String, UserExtendedDetailsDto>>()
       .onErrorResume { e ->
+        Mono.error(e)
+      }.onErrorResume { e ->
+        if (e is WebClientResponseException) {
+          LOG.warn("Failed to acquire users by usernames from hmpps-manage-users-api - ${userIds.joinToString()}} ", e)
+          return@onErrorResume Mono.empty()
+        }
         LOG.warn("Failed to acquire users by usernames from hmpps-manage-users-api - ${userIds.joinToString()}} ", e)
         Mono.error(e)
       }

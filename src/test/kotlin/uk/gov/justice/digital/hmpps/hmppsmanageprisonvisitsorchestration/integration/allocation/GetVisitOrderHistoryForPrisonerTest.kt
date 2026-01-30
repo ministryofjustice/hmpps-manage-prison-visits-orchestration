@@ -680,7 +680,22 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
 
     // When
     val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonId, prisonerId, LocalDate.now().minusDays(10))
-    responseSpec.expectStatus().isNotFound.expectBody()
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val visitOrderHistoryDetailsDto = getResults(returnResult)
+    val visitOrderHistory = visitOrderHistoryDetailsDto.visitOrderHistory
+
+    assertThat(visitOrderHistory.size).isEqualTo(5)
+    // latest on top
+    assertVisitOrderHistory(visitOrderHistory[0], visitOrderHistory5, 5, 2, "user3")
+    assertVisitOrderHistoryAttributes(visitOrderHistory5.attributes, emptyList())
+    assertVisitOrderHistory(visitOrderHistory[1], visitOrderHistory4, 0, 0, "SYSTEM")
+    assertVisitOrderHistoryAttributes(visitOrderHistory4.attributes, emptyList())
+    assertVisitOrderHistory(visitOrderHistory[2], visitOrderHistory3, -1, 0, "SYSTEM")
+    assertVisitOrderHistoryAttributes(visitOrderHistory3.attributes, listOf(Pair(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd")))
+    assertVisitOrderHistory(visitOrderHistory[3], visitOrderHistory2, -10, -3, "user2")
+    assertVisitOrderHistoryAttributes(visitOrderHistory2.attributes, emptyList())
+    assertVisitOrderHistory(visitOrderHistory[4], visitOrderHistory1, 0, 0, "user1")
+    assertVisitOrderHistoryAttributes(visitOrderHistory1.attributes, emptyList())
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
@@ -689,7 +704,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when manage users call returns INTERNAL_SERVER_ERROR then INTERNAL_SERVER_ERROR is returned`() {
+  fun `when manage users call returns INTERNAL_SERVER_ERROR then usernames are populated as userIds`() {
     // Given
     val userIds = listOf("user1", "user2", "user3")
 
@@ -710,7 +725,23 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
 
     // When
     val responseSpec = callVisitOrderHistoryForPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, prisonId, prisonerId, LocalDate.now().minusDays(10))
-    responseSpec.expectStatus().is5xxServerError.expectBody()
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val visitOrderHistoryDetailsDto = getResults(returnResult)
+    val visitOrderHistory = visitOrderHistoryDetailsDto.visitOrderHistory
+
+    assertThat(visitOrderHistory.size).isEqualTo(5)
+    // latest on top
+    assertVisitOrderHistory(visitOrderHistory[0], visitOrderHistory5, 5, 2, "user3")
+    assertVisitOrderHistoryAttributes(visitOrderHistory5.attributes, emptyList())
+    assertVisitOrderHistory(visitOrderHistory[1], visitOrderHistory4, 0, 0, "SYSTEM")
+    assertVisitOrderHistoryAttributes(visitOrderHistory4.attributes, emptyList())
+    assertVisitOrderHistory(visitOrderHistory[2], visitOrderHistory3, -1, 0, "SYSTEM")
+    assertVisitOrderHistoryAttributes(visitOrderHistory3.attributes, listOf(Pair(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd")))
+    assertVisitOrderHistory(visitOrderHistory[3], visitOrderHistory2, -10, -3, "user2")
+    assertVisitOrderHistoryAttributes(visitOrderHistory2.attributes, emptyList())
+    assertVisitOrderHistory(visitOrderHistory[4], visitOrderHistory1, 0, 0, "user1")
+    assertVisitOrderHistoryAttributes(visitOrderHistory1.attributes, emptyList())
+
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
     verify(visitAllocationApiClientSpy, times(1)).getVisitOrderHistoryDetails(prisonerDto, fromDate)
     verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())

@@ -945,6 +945,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     val eventList = listOf(eventAudit1, eventAudit2, eventAudit3, eventAudit4, eventAudit5)
 
     // test-user returns 404 so the userId is returned as name
+    val expectedEventActionedByFullNames = listOf("abcd", null, "test-user", "test-user1", "test-user2")
     val notifications = listOf(notification1, notification2)
 
     visitSchedulerMockServer.stubGetVisit(reference, visit)
@@ -962,8 +963,14 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     val responseSpec = callGetVisitFullDetailsByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    responseSpec.expectStatus().isNotFound.expectBody()
-    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(any())
+    responseSpec.expectStatus().isOk
+    val visitBookingResponse = getResult(responseSpec.expectBody())
+    val expectedVisitContact = VisitContactDto(
+      contactDto = visit.visitContact!!,
+      visitContactId = visitor3.personId,
+    )
+
+    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
   }
 
   @Test
@@ -976,6 +983,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     val eventList = listOf(eventAudit1, eventAudit2, eventAudit3, eventAudit4, eventAudit5)
 
     // test-user returns 500 so the userId is returned as name
+    val expectedEventActionedByFullNames = listOf("abcd", null, "test-user", "test-user1", "test-user2")
     val notifications = listOf(notification1, notification2)
 
     visitSchedulerMockServer.stubGetVisit(reference, visit)
@@ -988,13 +996,18 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetMultipleUserDetails(listOf("test-user"), null, HttpStatus.INTERNAL_SERVER_ERROR)
-
     // When
     val responseSpec = callGetVisitFullDetailsByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    responseSpec.expectStatus().is5xxServerError.expectBody()
-    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(any())
+    responseSpec.expectStatus().isOk
+    val visitBookingResponse = getResult(responseSpec.expectBody())
+    val expectedVisitContact = VisitContactDto(
+      contactDto = visit.visitContact!!,
+      visitContactId = visitor3.personId,
+    )
+
+    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
   }
 
   @Test
