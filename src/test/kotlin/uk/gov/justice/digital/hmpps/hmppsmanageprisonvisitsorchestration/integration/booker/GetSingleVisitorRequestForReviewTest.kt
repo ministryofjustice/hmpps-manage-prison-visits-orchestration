@@ -71,7 +71,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
 
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(booker.reference, booker = booker)
 
-    prisonerContactRegistryMockServer.stubGetApprovedPrisonerContacts(
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(
       prisonerId,
       withAddress = false,
       hasDateOfBirth = null,
@@ -92,7 +92,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(any())
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersApprovedSocialContacts(any(), any(), isNull())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), any(), isNull())
   }
 
   @Test
@@ -140,7 +140,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
 
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(booker.reference, booker = booker)
 
-    prisonerContactRegistryMockServer.stubGetApprovedPrisonerContacts(
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(
       prisonerId,
       withAddress = false,
       hasDateOfBirth = null,
@@ -158,7 +158,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(any())
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersApprovedSocialContacts(any(), any(), isNull())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), any(), isNull())
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(any())
   }
 
@@ -189,7 +189,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
 
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(booker.reference, booker = booker)
 
-    prisonerContactRegistryMockServer.stubGetApprovedPrisonerContacts(
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(
       prisonerId,
       withAddress = false,
       hasDateOfBirth = null,
@@ -204,15 +204,13 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(any())
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersApprovedSocialContacts(any(), any(), isNull())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), any(), isNull())
     verify(prisonerSearchClientSpy, times(0)).getPrisonerById(any())
   }
 
   @Test
   fun `when booker registry call returns NOT_FOUND then NOT_FOUND is returned`() {
     // Given
-    val bookerReference = "booker-ref"
-    val prisonerId = "AA123456"
     val requestReference = "abc-def-ghi"
 
     //
@@ -225,15 +223,13 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getBookerByBookerReference(any())
-    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersApprovedSocialContacts(any(), any(), any())
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(any(), any(), any())
     verify(prisonerSearchClientSpy, times(0)).getPrisonerById(any())
   }
 
   @Test
   fun `when booker registry call returns INTERNAL_SERVER_ERROR then INTERNAL_SERVER_ERROR is returned`() {
     // Given
-    val bookerReference = "booker-ref"
-    val prisonerId = "AA123456"
     val requestReference = "abc-def-ghi"
 
     prisonVisitBookerRegistryMockServer.stubGetSingleVisitorRequest(requestReference, null, HttpStatus.INTERNAL_SERVER_ERROR)
@@ -245,7 +241,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getBookerByBookerReference(any())
-    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersApprovedSocialContacts(any(), any(), any())
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(any(), any(), any())
     verify(prisonerSearchClientSpy, times(0)).getPrisonerById(any())
   }
 
@@ -261,7 +257,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
     // And
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getBookerByBookerReference(any())
-    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersApprovedSocialContacts(any(), any(), any())
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(any(), any(), any())
     verify(prisonerSearchClientSpy, times(0)).getPrisonerById(any())
   }
 
@@ -278,7 +274,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
     // And
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getBookerByBookerReference(any())
-    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersApprovedSocialContacts(any(), any(), any())
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(any(), any(), any())
     verify(prisonerSearchClientSpy, times(0)).getPrisonerById(any())
   }
 

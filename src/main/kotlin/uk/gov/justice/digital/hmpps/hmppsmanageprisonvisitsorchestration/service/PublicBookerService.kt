@@ -96,19 +96,17 @@ class PublicBookerService(
 
     val permittedPrisoner = booker.permittedPrisoners.firstOrNull { it.prisonerId == prisonerId } ?: throw NotFoundException("Prisoner with number - $prisonerId not found for booker reference - $bookerReference")
 
-    // TODO - might need to change to all visitors including approved ones after a while
-    // Get all approved visitors for prisoner except the ones already on the permittedVisitors list
-
+    // Get all visitors for prisoner except the ones already on the permittedVisitors list
     val socialContactsNotRegistered = try {
-      prisonerContactService.getPrisonersApprovedContacts(prisonerId).filterNot { approvedVisitor ->
-        permittedPrisoner.permittedVisitors.map { it.visitorId }.contains(approvedVisitor.personId)
+      prisonerContactService.getPrisonerSocialContacts(prisonerId).filterNot { socialContact ->
+        permittedPrisoner.permittedVisitors.map { it.visitorId }.contains(socialContact.personId)
       }.map { visitorNotRegistered -> SocialContactsDto(visitorNotRegistered) }
     } catch (_: NotFoundException) {
       logger.info("No approved visitors found for $prisonerId - $prisonerId, returning an empty list")
       emptyList()
     }
 
-    // set the last approved dates for each visitoe
+    // set the last approved dates for each visitor
     if (socialContactsNotRegistered.isNotEmpty()) {
       setLastApprovedDate(prisonerId, socialContactsNotRegistered)
     }
