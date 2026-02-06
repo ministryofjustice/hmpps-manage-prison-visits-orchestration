@@ -24,7 +24,7 @@ class PrisonerContactService(
     val prisonersContactMap = mutableMapOf<String, List<PrisonerContactDto>>()
     prisonerIds.forEach { prisonerId ->
       val contacts = try {
-        getPrisonerContacts(prisonerId)
+        getPrisonerSocialContacts(prisonerId)
       } catch (e: NotFoundException) {
         LOG.info("No contacts found for prisoner id - $prisonerId")
         emptyList()
@@ -35,12 +35,7 @@ class PrisonerContactService(
     return prisonersContactMap.toMap()
   }
 
-  fun getPrisonersApprovedContacts(prisonerId: String): List<PrisonerContactDto> = prisonerContactRegistryClient.getPrisonersApprovedSocialContacts(
-    prisonerId = prisonerId,
-    withAddress = false,
-  )
-
-  private fun getPrisonerContacts(prisonerId: String): List<PrisonerContactDto> = prisonerContactRegistryClient.getPrisonersSocialContacts(
+  fun getPrisonerSocialContacts(prisonerId: String): List<PrisonerContactDto> = prisonerContactRegistryClient.getPrisonersSocialContacts(
     prisonerId = prisonerId,
     withAddress = false,
   )
