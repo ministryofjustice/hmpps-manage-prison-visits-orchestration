@@ -47,7 +47,7 @@ class VisitBookingDetailsClient(
     val prisonerRestrictionsMono = prisonApiClient.getPrisonerRestrictionsAsMono(visit.prisonerId)
     val visitorsMono = prisonerContactRegistryClient.getPrisonersSocialContactsAsMono(
       prisonerId = visit.prisonerId,
-      withAddress = true,
+
     )
     val eventsMono = visitSchedulerClient.getVisitHistoryByReferenceAsMono(visitReference)
 
