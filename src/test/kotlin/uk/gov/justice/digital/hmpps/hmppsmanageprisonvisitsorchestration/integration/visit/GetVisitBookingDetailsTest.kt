@@ -343,7 +343,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when a visit's visitor has no addresses then address is populated as null on the visit booking details`() {
+  fun `when a visit's visitor has no address then address is populated as null on the visit booking details`() {
     // Given
     val reference = "aa-bb-cc-dd"
     val prisonerId = "prisoner-id"
