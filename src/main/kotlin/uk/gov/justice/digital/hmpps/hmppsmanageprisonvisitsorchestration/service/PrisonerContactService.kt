@@ -17,12 +17,12 @@ class PrisonerContactService(
 
   fun getPrisonersApprovedSocialContactsWithDOB(prisonerNumber: String): List<PrisonerContactDto> {
     LOG.debug("Getting approved social contacts with a DOB for prisoner - {}", prisonerNumber)
-    return prisonerContactRegistryClient.getPrisonersApprovedSocialContacts(prisonerNumber, withAddress = false, hasDateOfBirth = true)
+    return prisonerContactRegistryClient.getPrisonersApprovedSocialContacts(prisonerNumber, hasDateOfBirth = true)
   }
 
   fun getPrisonersSocialContactsWithDOB(prisonerNumber: String): List<PrisonerContactDto> {
     LOG.debug("Getting full social contacts list (with DOB) for prisoner - {}", prisonerNumber)
-    return prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerNumber, withAddress = false, hasDateOfBirth = true)
+    return prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerNumber, hasDateOfBirth = true)
   }
 
   fun getPrisonersContacts(prisonerIds: Set<String>): Map<String, List<PrisonerContactDto>> {
@@ -40,13 +40,7 @@ class PrisonerContactService(
     return prisonersContactMap.toMap()
   }
 
-  fun getPrisonersApprovedContacts(prisonerId: String): List<PrisonerContactDto> = prisonerContactRegistryClient.getPrisonersApprovedSocialContacts(
-    prisonerId = prisonerId,
-    withAddress = false,
-  )
+  fun getPrisonersApprovedContacts(prisonerId: String): List<PrisonerContactDto> = prisonerContactRegistryClient.getPrisonersApprovedSocialContacts(prisonerId = prisonerId)
 
-  private fun getPrisonerContacts(prisonerId: String): List<PrisonerContactDto> = prisonerContactRegistryClient.getPrisonersSocialContacts(
-    prisonerId = prisonerId,
-    withAddress = false,
-  )
+  private fun getPrisonerContacts(prisonerId: String): List<PrisonerContactDto> = prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerId = prisonerId)
 }
