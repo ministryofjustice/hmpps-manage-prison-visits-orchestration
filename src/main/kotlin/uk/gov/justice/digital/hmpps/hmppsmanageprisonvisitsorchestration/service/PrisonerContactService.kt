@@ -20,6 +20,11 @@ class PrisonerContactService(
     return prisonerContactRegistryClient.getPrisonersApprovedSocialContacts(prisonerNumber, hasDateOfBirth = true)
   }
 
+  fun getPrisonersSocialContactsWithDOB(prisonerNumber: String): List<PrisonerContactDto> {
+    LOG.debug("Getting full social contacts list (with DOB) for prisoner - {}", prisonerNumber)
+    return prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerNumber, hasDateOfBirth = true)
+  }
+
   fun getPrisonersContacts(prisonerIds: Set<String>): Map<String, List<PrisonerContactDto>> {
     val prisonersContactMap = mutableMapOf<String, List<PrisonerContactDto>>()
     prisonerIds.forEach { prisonerId ->
