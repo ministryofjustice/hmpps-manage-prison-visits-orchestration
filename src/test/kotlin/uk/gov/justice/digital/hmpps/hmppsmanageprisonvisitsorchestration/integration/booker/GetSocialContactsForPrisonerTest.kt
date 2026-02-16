@@ -4,7 +4,7 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.isNull
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
@@ -92,7 +92,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     ).map { VisitorLastApprovedDatesDto(it.key, it.value) }
 
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(bookerReference, booker)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = false, hasDateOfBirth = null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, hasDateOfBirth = null, contactsList)
     visitSchedulerMockServer.stubGetVisitorsLastApprovedDates(prisonerId, listOf(visitor1.personId, visitor2.personId, visitor5.personId), lastApprovedDatesList)
 
     // When
@@ -109,7 +109,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     assertSocialContacts(prisonerDetailsList[2], visitor5, null)
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(bookerReference)
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false, hasDateOfBirth = null)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId, hasDateOfBirth = null)
     verify(visitSchedulerClientSpy, times(1)).findLastApprovedDateForVisitor(prisonerId, listOf(visitor1.personId, visitor2.personId, visitor5.personId))
   }
 
@@ -140,7 +140,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     ).map { VisitorLastApprovedDatesDto(it.key, it.value) }
 
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(bookerReference, booker)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = false, hasDateOfBirth = null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, hasDateOfBirth = null, contactsList)
     visitSchedulerMockServer.stubGetVisitorsLastApprovedDates(prisonerId, listOf(visitor1.personId, visitor2.personId, visitor3.personId, visitor4.personId, visitor5.personId), lastApprovedDatesList)
 
     // When
@@ -159,7 +159,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     assertSocialContacts(prisonerDetailsList[4], visitor5, null)
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(bookerReference)
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false, hasDateOfBirth = null)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId, hasDateOfBirth = null)
     verify(visitSchedulerClientSpy, times(1)).findLastApprovedDateForVisitor(prisonerId, listOf(visitor1.personId, visitor2.personId, visitor3.personId, visitor4.personId, visitor5.personId))
   }
 
@@ -176,7 +176,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isNotFound
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(incorrectBookerReference)
-    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(any(), any(), anyOrNull())
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(any(), any())
     verify(visitSchedulerClientSpy, times(0)).findLastApprovedDateForVisitor(any(), any())
 
     assertErrorResult(responseSpec, HttpStatus.NOT_FOUND, "booker not found on booker-registry for booker reference - $incorrectBookerReference")
@@ -203,7 +203,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     val contactsList = createContactsList(listOf(visitor1, visitor2, visitor3, visitor4, visitor5))
 
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(bookerReference, booker)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = false, hasDateOfBirth = null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, hasDateOfBirth = null, contactsList)
 
     // When
     val responseSpec = callGetSocialContactsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, bookerReference, incorrectPrisonerId)
@@ -211,7 +211,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isNotFound
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(bookerReference)
-    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(any(), any(), anyOrNull())
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(any(), any())
     verify(visitSchedulerClientSpy, times(0)).findLastApprovedDateForVisitor(any(), any())
     assertErrorResult(responseSpec, HttpStatus.NOT_FOUND, "Prisoner with number - $incorrectPrisonerId not found for booker reference - $bookerReference")
   }
@@ -229,7 +229,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().is5xxServerError
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(bookerReference)
-    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(any(), any(), anyOrNull())
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(any(), any())
     verify(visitSchedulerClientSpy, times(0)).findLastApprovedDateForVisitor(any(), any())
   }
 
@@ -250,7 +250,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     )
 
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(bookerReference, booker)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = false, hasDateOfBirth = null, null, HttpStatus.NOT_FOUND)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, hasDateOfBirth = null, null, HttpStatus.NOT_FOUND)
 
     // When
     val responseSpec = callGetSocialContactsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, bookerReference, prisonerId)
@@ -261,7 +261,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
 
     Assertions.assertThat(prisonerDetailsList.size).isEqualTo(0)
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(bookerReference)
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false, hasDateOfBirth = null)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId, hasDateOfBirth = null)
     verify(visitSchedulerClientSpy, times(0)).findLastApprovedDateForVisitor(any(), any())
   }
 
@@ -283,7 +283,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     )
 
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(bookerReference, booker)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = false, hasDateOfBirth = null, null, HttpStatus.INTERNAL_SERVER_ERROR)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, hasDateOfBirth = null, null, HttpStatus.INTERNAL_SERVER_ERROR)
 
     // When
     val responseSpec = callGetSocialContactsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, bookerReference, prisonerId)
@@ -291,7 +291,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().is5xxServerError
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(bookerReference)
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), any(), anyOrNull())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), isNull())
     verify(visitSchedulerClientSpy, times(0)).findLastApprovedDateForVisitor(any(), any())
   }
 
@@ -311,7 +311,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     val lastApprovedDatesList = null
 
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(bookerReference, booker)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = false, hasDateOfBirth = null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, hasDateOfBirth = null, contactsList)
     // call to visit-scheduler returns a 404
     visitSchedulerMockServer.stubGetVisitorsLastApprovedDates(prisonerId, listOf(visitor1.personId, visitor2.personId, visitor3.personId, visitor4.personId, visitor5.personId), lastApprovedDatesList, HttpStatus.NOT_FOUND)
 
@@ -331,7 +331,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     assertSocialContacts(prisonerDetailsList[4], visitor5, null)
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(bookerReference)
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false, hasDateOfBirth = null)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId, hasDateOfBirth = null)
     verify(visitSchedulerClientSpy, times(1)).findLastApprovedDateForVisitor(prisonerId, listOf(visitor1.personId, visitor2.personId, visitor3.personId, visitor4.personId, visitor5.personId))
   }
 
@@ -357,7 +357,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     val lastApprovedDatesList = null
 
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(bookerReference, booker)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, withAddress = false, hasDateOfBirth = null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, hasDateOfBirth = null, contactsList)
     // call to visit-scheduler returns a 500 error
     visitSchedulerMockServer.stubGetVisitorsLastApprovedDates(prisonerId, listOf(visitor1.personId, visitor2.personId, visitor3.personId, visitor4.personId, visitor5.personId), lastApprovedDatesList, HttpStatus.INTERNAL_SERVER_ERROR)
 
@@ -366,7 +366,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().is5xxServerError
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(bookerReference)
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), any(), anyOrNull())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), isNull())
     verify(visitSchedulerClientSpy, times(1)).findLastApprovedDateForVisitor(any(), any())
   }
 

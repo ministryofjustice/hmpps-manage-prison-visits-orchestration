@@ -197,7 +197,7 @@ class PublicBookerService(
     return visitorDetailsList.toList()
   }
 
-  private fun getAllValidContacts(prisonerNumber: String): List<PrisonerContactDto> = prisonerContactService.getPrisonersApprovedSocialContactsWithDOB(prisonerNumber)
+  private fun getAllValidContacts(prisonerNumber: String): List<PrisonerContactDto> = prisonerContactService.getPrisonersSocialContactsWithDOB(prisonerNumber)
 
   private fun getMaxExpiryDate(restrictions: List<RestrictionDto>): LocalDate? {
     val expiryDates = restrictions.map { it.expiryDate }

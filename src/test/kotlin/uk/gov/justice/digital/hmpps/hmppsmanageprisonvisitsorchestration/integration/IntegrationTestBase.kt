@@ -633,7 +633,7 @@ abstract class IntegrationTestBase {
     dateOfBirth: LocalDate? = null,
     approvedVisitor: Boolean = true,
     restrictions: List<RestrictionDto> = emptyList(),
-    addresses: List<AddressDto> = emptyList(),
+    address: AddressDto? = null,
   ): PrisonerContactDto = PrisonerContactDto(
     personId = personId,
     firstName = firstName,
@@ -645,7 +645,7 @@ abstract class IntegrationTestBase {
     emergencyContact = true,
     nextOfKin = true,
     restrictions = restrictions,
-    addresses = addresses,
+    address = address,
   )
 
   final fun createPrisoner(
@@ -858,7 +858,6 @@ abstract class IntegrationTestBase {
   )
 
   final fun createAddressDto(primary: Boolean, noFixedAddress: Boolean = false, street: String): AddressDto = AddressDto(
-    addressType = "RES",
     street = street,
     town = "London",
     postalCode = "ABC123",
@@ -866,7 +865,6 @@ abstract class IntegrationTestBase {
     country = "UK",
     primary = primary,
     noFixedAddress = noFixedAddress,
-    startDate = LocalDate.now().minusDays(1),
   )
 
   protected fun createNotificationEvent(
