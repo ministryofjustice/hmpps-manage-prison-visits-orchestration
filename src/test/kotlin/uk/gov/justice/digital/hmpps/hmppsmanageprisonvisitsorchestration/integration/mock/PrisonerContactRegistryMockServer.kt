@@ -43,35 +43,6 @@ class PrisonerContactRegistryMockServer : WireMockServer(8095) {
     )
   }
 
-  fun stubGetApprovedPrisonerContacts(
-    prisonerId: String,
-    hasDateOfBirth: Boolean? = null,
-    contactsList: List<PrisonerContactDto>?,
-    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
-  ) {
-    val responseBuilder = createJsonResponseBuilder()
-
-    val uri = if (hasDateOfBirth != null) {
-      "/v2/prisoners/$prisonerId/contacts/social/approved?hasDateOfBirth=$hasDateOfBirth"
-    } else {
-      "/v2/prisoners/$prisonerId/contacts/social/approved"
-    }
-
-    stubFor(
-      get(uri)
-        .willReturn(
-          if (contactsList == null) {
-            responseBuilder
-              .withStatus(httpStatus.value())
-          } else {
-            responseBuilder
-              .withStatus(HttpStatus.OK.value())
-              .withBody(getJsonString(contactsList))
-          },
-        ),
-    )
-  }
-
   fun stubDoVisitorsHaveClosedRestrictions(prisonerId: String, visitorIds: List<Long>, result: Boolean? = null) {
     val responseBuilder = createJsonResponseBuilder()
 
