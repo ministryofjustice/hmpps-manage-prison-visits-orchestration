@@ -103,7 +103,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     visitAllocationApiMockServer.stubGetPrisonerVOBalanceDetailed(PRISONER_ID, visitBalancesDto)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, contactsList = contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsList = contactsDto)
     prisonRegisterMockServer.stubGetPrisonNames(prisons)
     prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, listOf(prisonerRestrictionDto)))
     stubGetVisits(listOf(visit1, visit2))
@@ -133,7 +133,7 @@ class GetPrisonerProfileTest(
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, null)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     visitAllocationApiMockServer.stubGetPrisonerVOBalanceDetailed(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, contactsList = contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsList = contactsDto)
     prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, listOf(prisonerRestrictionDto)))
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
 
@@ -154,7 +154,7 @@ class GetPrisonerProfileTest(
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, null)
     visitAllocationApiMockServer.stubGetPrisonerVOBalanceDetailed(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, contactsList = contactsDto, httpStatus = HttpStatus.NOT_FOUND)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsList = contactsDto, httpStatus = HttpStatus.NOT_FOUND)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
     prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, listOf(prisonerRestrictionDto)))
     prisonRegisterMockServer.stubGetPrisonNames(prisons)
@@ -185,7 +185,7 @@ class GetPrisonerProfileTest(
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     visitAllocationApiMockServer.stubGetPrisonerVOBalanceDetailed(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, contactsList = contactsDto, httpStatus = HttpStatus.NOT_FOUND)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsList = contactsDto, httpStatus = HttpStatus.NOT_FOUND)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
     prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, listOf(prisonerRestrictionDto)))
     prisonRegisterMockServer.stubGetPrisonNames(prisons)
@@ -206,7 +206,7 @@ class GetPrisonerProfileTest(
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     visitAllocationApiMockServer.stubGetPrisonerVOBalanceDetailed(PRISONER_ID, null)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, contactsList = contactsDto, httpStatus = HttpStatus.NOT_FOUND)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsList = contactsDto, httpStatus = HttpStatus.NOT_FOUND)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
     prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, listOf(prisonerRestrictionDto)))
     prisonRegisterMockServer.stubGetPrisonNames(prisons)
@@ -244,7 +244,7 @@ class GetPrisonerProfileTest(
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     visitAllocationApiMockServer.stubGetPrisonerVOBalanceDetailed(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, contactsList = contactsDto, httpStatus = HttpStatus.NOT_FOUND)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsList = contactsDto, httpStatus = HttpStatus.NOT_FOUND)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
     prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, listOf(prisonerRestrictionDto)))
     prisonRegisterMockServer.stubGetPrisonNames(prisons)
@@ -273,7 +273,7 @@ class GetPrisonerProfileTest(
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     visitAllocationApiMockServer.stubGetPrisonerVOBalanceDetailed(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, contactsList = contactsDto, httpStatus = HttpStatus.NOT_FOUND)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsList = contactsDto, httpStatus = HttpStatus.NOT_FOUND)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
     prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, listOf(prisonerRestrictionDto)))
     prisonRegisterMockServer.stubGetPrisonNames(prisons)
@@ -302,7 +302,7 @@ class GetPrisonerProfileTest(
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     visitAllocationApiMockServer.stubGetPrisonerVOBalanceDetailed(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, contactsList = contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsList = contactsDto)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
     prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, listOf(prisonerRestrictionDto)))
     prisonRegisterMockServer.stubGetPrisonNames(prisons)
@@ -330,7 +330,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is only done once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), eq(null))
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(null))
   }
 
   @Test
@@ -348,7 +348,7 @@ class GetPrisonerProfileTest(
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     visitAllocationApiMockServer.stubGetPrisonerVOBalanceDetailed(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, contactsList = contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsList = contactsDto)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
     prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, listOf(prisonerRestrictionDto)))
     prisonRegisterMockServer.stubGetPrisonNames(prisons)
@@ -375,7 +375,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is made once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), eq(null))
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(null))
   }
 
   @Test
@@ -389,7 +389,7 @@ class GetPrisonerProfileTest(
     prisonRegisterMockServer.stubGetPrisonNames(prisons)
 
     // as we are passing null as contacts parameter a 404 will be returned
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, contactsList = null)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsList = null)
     stubGetVisits(listOf(visit1, visit2))
 
     // When
@@ -413,7 +413,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is made once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), eq(null))
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(null))
   }
 
   @Test
@@ -427,7 +427,7 @@ class GetPrisonerProfileTest(
     prisonRegisterMockServer.stubGetPrisonNames(prisons)
 
     // as we are passing null as contacts parameter a 404 will be returned
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, contactsList = null, httpStatus = HttpStatus.BAD_REQUEST)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsList = null, httpStatus = HttpStatus.BAD_REQUEST)
     stubGetVisits(listOf(visit1, visit2))
 
     // When
@@ -451,7 +451,7 @@ class GetPrisonerProfileTest(
 
     verifyExternalAPIClientCalls()
     // verify the call to prisoner contact registry is made once
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(false), eq(null))
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(any(), eq(null))
   }
 
   @Test
@@ -461,7 +461,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     visitAllocationApiMockServer.stubGetPrisonerVOBalanceDetailed(PRISONER_ID, visitBalancesDto)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, contactsList = contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsList = contactsDto)
     prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, listOf(prisonerRestrictionDto)))
     prisonRegisterMockServer.stubGetPrisonNames(prisons)
     stubGetVisits(listOf(visit1, visit2))
@@ -493,7 +493,7 @@ class GetPrisonerProfileTest(
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     visitAllocationApiMockServer.stubGetPrisonerVOBalanceDetailed(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, contactsList = contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsList = contactsDto)
     prisonRegisterMockServer.stubGetPrisonNames(prisons)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
     prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, listOf(prisonerRestrictionDto)))
@@ -523,7 +523,7 @@ class GetPrisonerProfileTest(
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     visitAllocationApiMockServer.stubGetPrisonerVOBalanceDetailed(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, contactsList = contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsList = contactsDto)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
     prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, listOf(prisonerRestrictionDto)))
 
@@ -555,7 +555,7 @@ class GetPrisonerProfileTest(
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     visitAllocationApiMockServer.stubGetPrisonerVOBalanceDetailed(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, contactsList = contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsList = contactsDto)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
     prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, listOf(prisonerRestrictionDto)))
 
@@ -590,7 +590,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     visitAllocationApiMockServer.stubGetPrisonerVOBalanceDetailed(PRISONER_ID, visitBalancesDto)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, null, HttpStatus.NOT_FOUND)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, contactsList = contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsList = contactsDto)
     prisonRegisterMockServer.stubGetPrisonNames(prisons)
     prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, listOf(prisonerRestrictionDto)))
     stubGetVisits(listOf(visit1, visit2))
@@ -611,7 +611,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     visitAllocationApiMockServer.stubGetPrisonerVOBalanceDetailed(PRISONER_ID, visitBalancesDto)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, null, HttpStatus.INTERNAL_SERVER_ERROR)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, contactsList = contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsList = contactsDto)
     prisonRegisterMockServer.stubGetPrisonNames(prisons)
     prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, listOf(prisonerRestrictionDto)))
     stubGetVisits(listOf(visit1, visit2))
@@ -632,7 +632,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     visitAllocationApiMockServer.stubGetPrisonerVOBalanceDetailed(PRISONER_ID, visitBalancesDto)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, contactsList = contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsList = contactsDto)
     prisonRegisterMockServer.stubGetPrisonNames(prisons)
     prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, null, HttpStatus.NOT_FOUND)
     stubGetVisits(listOf(visit1, visit2))
@@ -653,7 +653,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     visitAllocationApiMockServer.stubGetPrisonerVOBalanceDetailed(PRISONER_ID, visitBalancesDto)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, contactsList = contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsList = contactsDto)
     prisonRegisterMockServer.stubGetPrisonNames(prisons)
     prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, null, HttpStatus.INTERNAL_SERVER_ERROR)
     stubGetVisits(listOf(visit1, visit2))
@@ -701,7 +701,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     visitAllocationApiMockServer.stubGetPrisonerVOBalanceDetailed(PRISONER_ID, visitBalancesDto)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alert1, alert2, alert3, alert4, alert5, alert6, alert7, alert8, alert9, alert10, alert11))
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, contactsList = contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsList = contactsDto)
     prisonRegisterMockServer.stubGetPrisonNames(prisons)
     prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, listOf(prisonerRestrictionDto)))
     stubGetVisits(listOf(visit1, visit2))
@@ -748,7 +748,7 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     visitAllocationApiMockServer.stubGetPrisonerVOBalanceDetailed(PRISONER_ID, visitBalancesDto)
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, withAddress = false, contactsList = contactsDto)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, contactsList = contactsDto)
     prisonRegisterMockServer.stubGetPrisonNames(prisons)
     prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, listOf(restriction1, restriction2, restriction3, restriction4, restriction5, restriction6)))
     stubGetVisits(listOf(visit1, visit2))

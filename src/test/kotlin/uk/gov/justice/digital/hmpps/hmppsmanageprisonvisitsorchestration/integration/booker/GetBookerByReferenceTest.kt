@@ -83,8 +83,8 @@ class GetBookerByReferenceTest : IntegrationTestBase() {
     Assertions.assertThat(bookerDetailedInfo.permittedPrisoners.first { it.prisoner.prisonerNumber == prisoner2Id }.permittedVisitors.size).isEqualTo(1)
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(bookerReference)
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisoner1Id, false)
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisoner2Id, false)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisoner1Id)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisoner2Id)
   }
 
   @Test
@@ -122,8 +122,8 @@ class GetBookerByReferenceTest : IntegrationTestBase() {
     Assertions.assertThat(bookerDetailedInfo.permittedPrisoners.first { it.prisoner.prisonerNumber == prisoner2Id }.permittedVisitors.size).isEqualTo(0)
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(bookerReference)
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisoner1Id, false)
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisoner2Id, false)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisoner1Id)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisoner2Id)
   }
 
   @Test
