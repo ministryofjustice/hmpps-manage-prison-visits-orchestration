@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.FUTURE_NOTIFICATION_VISITS
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.manage.users.UserExtendedDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ActionedByDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
@@ -33,6 +34,9 @@ class FutureVisitsWithNotificationsTest : IntegrationTestBase() {
   @Test
   fun `when future visits with notifications are requested then appropriate results are returned`() {
     // Given
+    val userIds = listOf("test")
+    val userNamesMap = emptyMap<String, UserExtendedDetailsDto>()
+
     val notifications = listOf(
       VisitNotificationEventDto(
         type = PRISON_VISITS_BLOCKED_FOR_DATE,
@@ -51,6 +55,8 @@ class FutureVisitsWithNotificationsTest : IntegrationTestBase() {
     )
 
     visitSchedulerMockServer.stubGetFutureVisitsWithNotificationsForPrison(prisonCode, notificationEventTypes = null, listOf(notification1))
+    manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
+
     // When
     val responseSpec = callFutureNotificationVisits(webTestClient, prisonCode, null, roleVSIPOrchestrationServiceHttpHeaders)
 
@@ -60,7 +66,7 @@ class FutureVisitsWithNotificationsTest : IntegrationTestBase() {
     Assertions.assertThat(visitsWithNotifications.size).isEqualTo(1)
     Assertions.assertThat(visitsWithNotifications[0].prisonerNumber).isEqualTo("AB123456")
     Assertions.assertThat(visitsWithNotifications[0].visitReference).isEqualTo("visit-1")
-    Assertions.assertThat(visitsWithNotifications[0].bookedByName).isEqualTo("NOT_KNOWN")
+    Assertions.assertThat(visitsWithNotifications[0].bookedByName).isEqualTo("test")
     Assertions.assertThat(visitsWithNotifications[0].bookedByUserName).isEqualTo("test")
     Assertions.assertThat(visitsWithNotifications[0].visitDate).isEqualTo(LocalDate.now().plusDays(1))
     Assertions.assertThat(visitsWithNotifications[0].notifications).isEqualTo(notifications)
@@ -69,6 +75,11 @@ class FutureVisitsWithNotificationsTest : IntegrationTestBase() {
   @Test
   fun `when future visits with notifications for certain notification types are requested then appropriate results are returned`() {
     // Given
+    val userIds = listOf("test")
+    val userNamesMap = mapOf(
+      "test" to UserExtendedDetailsDto("test", "John", lastName = "Smith"),
+    )
+
     val notifications = listOf(
       VisitNotificationEventDto(
         type = PRISON_VISITS_BLOCKED_FOR_DATE,
@@ -87,6 +98,8 @@ class FutureVisitsWithNotificationsTest : IntegrationTestBase() {
     )
 
     visitSchedulerMockServer.stubGetFutureVisitsWithNotificationsForPrison(prisonCode, notificationEventTypes = listOf(PRISON_VISITS_BLOCKED_FOR_DATE), listOf(notification1))
+    manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
+
     // When
     val responseSpec = callFutureNotificationVisits(webTestClient, prisonCode, notificationEventTypes = listOf(PRISON_VISITS_BLOCKED_FOR_DATE), roleVSIPOrchestrationServiceHttpHeaders)
 
@@ -96,7 +109,7 @@ class FutureVisitsWithNotificationsTest : IntegrationTestBase() {
     Assertions.assertThat(visitsWithNotifications.size).isEqualTo(1)
     Assertions.assertThat(visitsWithNotifications[0].prisonerNumber).isEqualTo("AB123456")
     Assertions.assertThat(visitsWithNotifications[0].visitReference).isEqualTo("visit-1")
-    Assertions.assertThat(visitsWithNotifications[0].bookedByName).isEqualTo("NOT_KNOWN")
+    Assertions.assertThat(visitsWithNotifications[0].bookedByName).isEqualTo("John Smith")
     Assertions.assertThat(visitsWithNotifications[0].bookedByUserName).isEqualTo("test")
     Assertions.assertThat(visitsWithNotifications[0].visitDate).isEqualTo(LocalDate.now().plusDays(1))
     Assertions.assertThat(visitsWithNotifications[0].notifications).isEqualTo(notifications)

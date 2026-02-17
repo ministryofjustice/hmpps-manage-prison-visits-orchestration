@@ -34,7 +34,8 @@ class ExcludeDatesService(
 
   private fun setActionedByFullName(excludeDates: List<ExcludeDateDto>): List<ExcludeDateDto> {
     if (excludeDates.isNotEmpty()) {
-      val userNameMap = getUserNamesMap(excludeDates.map { it.actionedBy }.toSet())
+      val userNames = excludeDates.map { it.actionedBy }.toSet()
+      val userNameMap = manageUsersService.getFullNamesForUserIds(userNames)
 
       for (excludeDate in excludeDates) {
         excludeDate.actionedBy = userNameMap[excludeDate.actionedBy] ?: excludeDate.actionedBy
@@ -42,17 +43,5 @@ class ExcludeDatesService(
     }
 
     return excludeDates
-  }
-
-  /**
-   * returns Map<String, String> where key = username, value = full name.
-   */
-  private fun getUserNamesMap(usernames: Set<String>): Map<String, String> {
-    val userNameMap = HashMap<String, String>()
-    for (username in usernames) {
-      userNameMap[username] = manageUsersService.getUserFullName(username, userNameIfNotAvailable = username)
-    }
-
-    return userNameMap
   }
 }
