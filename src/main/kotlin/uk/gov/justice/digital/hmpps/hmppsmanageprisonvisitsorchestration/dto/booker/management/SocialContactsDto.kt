@@ -17,12 +17,16 @@ data class SocialContactsDto(
 
   @param:Schema(description = "Date of birth", example = "2000-01-31", required = false)
   val dateOfBirth: LocalDate?,
+
+  @param:Schema(description = "Approved Visitor Flag", required = true)
+  val approvedVisitor: Boolean,
 ) {
   constructor(contact: PrisonerContactDto) : this(
     visitorId = contact.personId!!,
     firstName = contact.firstName,
     lastName = contact.lastName,
     dateOfBirth = contact.dateOfBirth,
+    approvedVisitor = contact.approvedVisitor,
   )
 
   @Schema(description = "Date when visitor was last approved for a visit (approved / auto-approved)", example = "2025-09-12", required = false)

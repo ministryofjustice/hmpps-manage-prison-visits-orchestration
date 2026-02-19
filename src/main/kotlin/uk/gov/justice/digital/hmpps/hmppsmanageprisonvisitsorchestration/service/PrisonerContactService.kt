@@ -15,16 +15,16 @@ class PrisonerContactService(
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun getPrisonersApprovedSocialContactsWithDOB(prisonerNumber: String): List<PrisonerContactDto> {
-    LOG.debug("Getting approved social contacts with a DOB for prisoner - {}", prisonerNumber)
-    return prisonerContactRegistryClient.getPrisonersApprovedSocialContacts(prisonerNumber, withAddress = false, hasDateOfBirth = true)
+  fun getPrisonersSocialContactsWithDOB(prisonerNumber: String): List<PrisonerContactDto> {
+    LOG.debug("Getting full social contacts list (with DOB) for prisoner - {}", prisonerNumber)
+    return prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerNumber, hasDateOfBirth = true)
   }
 
   fun getPrisonersContacts(prisonerIds: Set<String>): Map<String, List<PrisonerContactDto>> {
     val prisonersContactMap = mutableMapOf<String, List<PrisonerContactDto>>()
     prisonerIds.forEach { prisonerId ->
       val contacts = try {
-        getPrisonerContacts(prisonerId)
+        getPrisonerSocialContacts(prisonerId)
       } catch (e: NotFoundException) {
         LOG.info("No contacts found for prisoner id - $prisonerId")
         emptyList()
@@ -35,13 +35,5 @@ class PrisonerContactService(
     return prisonersContactMap.toMap()
   }
 
-  fun getPrisonersApprovedContacts(prisonerId: String): List<PrisonerContactDto> = prisonerContactRegistryClient.getPrisonersApprovedSocialContacts(
-    prisonerId = prisonerId,
-    withAddress = false,
-  )
-
-  private fun getPrisonerContacts(prisonerId: String): List<PrisonerContactDto> = prisonerContactRegistryClient.getPrisonersSocialContacts(
-    prisonerId = prisonerId,
-    withAddress = false,
-  )
+  fun getPrisonerSocialContacts(prisonerId: String): List<PrisonerContactDto> = prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerId = prisonerId)
 }
