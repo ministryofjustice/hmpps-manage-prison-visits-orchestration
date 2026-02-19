@@ -2,11 +2,8 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.servic
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import reactor.core.publisher.Mono
-import reactor.util.function.Tuple2
-import reactor.util.function.Tuple3
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ManageUsersApiClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.manage.users.UserDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.manage.users.UserExtendedDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.EventAuditOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ActionedByDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
@@ -15,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.SYSTEM
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitAllocationService.Companion.SYSTEM_USER_NAME
 import java.time.Duration
 import java.util.function.BiPredicate
 
@@ -32,87 +30,50 @@ class ManageUsersService(
 
   fun getFullNamesFromVisitHistory(eventAuditList: List<EventAuditDto>): Map<String, String> {
     val userDetails = eventAuditList.map { Pair(it.actionedBy.userType, it.actionedBy.userName) }
-    return getUserFullNames(userDetails)
+    return getStaffUserFullNames(userDetails)
   }
 
   fun getFullNamesFromEventAuditOrchestrationDetails(eventAuditList: List<EventAuditOrchestrationDto>): Map<String, String> {
     val userDetails = eventAuditList.map { Pair(it.userType, it.actionedByFullName) }
-    return getUserFullNames(userDetails)
+    return getStaffUserFullNames(userDetails)
   }
 
-  private fun getUserFullNames(userDetails: List<Pair<UserType, String?>>): Map<String, String> {
-    // converting to userIds as only STAFF user-ids need to be fetched
-    val userIds = userDetails.asSequence().filter { userFullNameFilterPredicate.test(it.first, it.second) }
-      .map { it.second }.toSet().filterNotNull().toSet()
-    return getUsersFullNamesFromUserIds(userIds)
+  fun getFullNamesFromActionedByDetails(actionedByList: List<ActionedByDto>): Map<String, String> {
+    val userDetails = actionedByList.map { Pair(it.userType, it.userName) }
+    return getStaffUserFullNames(userDetails)
   }
 
-  private fun getUsersFullNamesFromUserIds(userIds: Set<String>): Map<String, String> {
-    val monoCallsList = createUserMonoCalls(userIds)
-    return executeMonoCalls(monoCallsList)
-  }
-
-  private fun executeMonoCalls(monoCallsList: List<Mono<UserDetailsDto>>): Map<String, String> {
-    val results: MutableMap<String, String> = mutableMapOf()
-    if (monoCallsList.size == 1) {
-      val userDetails = monoCallsList[0].block(apiTimeout)
-      userDetails?.let {
-        userDetails.fullName?.let { results[userDetails.username] = userDetails.fullName }
-      }
-    }
-
-    if (monoCallsList.size > 1) {
-      var zipResults: List<UserDetailsDto> = mutableListOf()
-      if (monoCallsList.size == 2) {
-        val iterable: Tuple2<UserDetailsDto, UserDetailsDto>? = Mono.zip(
-          monoCallsList[0],
-          monoCallsList[1],
-        ).block(apiTimeout)
-
-        iterable?.let {
-          zipResults = listOf(it.t1, it.t2) // Correct way to extract values from Tuple2
-        }
-      }
-      if (monoCallsList.size == 3) {
-        val userDetailsTuples: Tuple3<UserDetailsDto, UserDetailsDto, UserDetailsDto>? =
-          Mono.zip(monoCallsList[0], monoCallsList[1], monoCallsList[2]).block(apiTimeout)
-
-        userDetailsTuples?.let {
-          zipResults = listOf(it.t1, it.t2, it.t3) // Extract values safely
-        }
-      }
-
-      zipResults.forEach { userDetails -> userDetails.fullName?.let { results[userDetails.username] = userDetails.fullName } }
-    }
-
-    return results.toMap()
-  }
-
-  private fun createUserMonoCalls(
-    userNames: Set<String>,
-  ): List<Mono<UserDetailsDto>> = userNames.map {
-    getFullNamesFromVisitHistory(it)
-  }
-
-  private fun getFullNamesFromVisitHistory(actionedBy: String): Mono<UserDetailsDto> {
-    // for past visits or some exceptional circumstances actionedBy will be NOT_KNOWN
-    return if (actionedBy == NOT_KNOWN) {
-      Mono.just(UserDetailsDto(actionedBy, NOT_KNOWN))
-    } else {
-      manageUsersApiClient.getUserDetails(actionedBy)
-    }
-  }
-
-  fun getUserFullName(userName: String, userNameIfNotAvailable: String = NOT_KNOWN): String = if (userName == NOT_KNOWN) {
-    userName
-  } else {
-    manageUsersApiClient.getUserDetails(userName).block(apiTimeout)?.fullName ?: userNameIfNotAvailable
-  }
-
-  fun getFullNameFromActionedBy(actionedByDto: ActionedByDto): String = when (actionedByDto.userType) {
-    STAFF -> manageUsersApiClient.getUserDetails(actionedByDto.userName!!).block(apiTimeout)?.fullName ?: NOT_KNOWN
+  fun getFullNameFromActionedBy(actionedByDto: ActionedByDto, usernames: Map<String, String>): String = when (actionedByDto.userType) {
+    STAFF -> usernames[actionedByDto.userName] ?: NOT_KNOWN
     PUBLIC -> "GOV.UK"
     SYSTEM -> NOT_KNOWN
     PRISONER -> NOT_KNOWN
   }
+
+  fun getFullNamesForUserIds(userIds: Set<String>): Map<String, String> {
+    val nonSystemUserIds = userIds.filter { it != SYSTEM_USER_NAME }.toSet()
+    val userDetails = mutableMapOf<String, String>()
+
+    if (nonSystemUserIds.isNotEmpty()) {
+      val usersByUserNames = manageUsersApiClient.getUsersByUsernames(nonSystemUserIds)
+
+      nonSystemUserIds.forEach { userId ->
+        val fullName = getFullName(usersByUserNames[userId], userId)
+        userDetails.put(userId, fullName)
+      }
+    }
+
+    return userDetails.toMap()
+  }
+
+  private fun getStaffUserFullNames(userDetails: List<Pair<UserType, String?>>): Map<String, String> {
+    val staffUserNames = getStaffUserNames(userDetails)
+    return getFullNamesForUserIds(staffUserNames.toSet())
+  }
+
+  private fun getFullName(userDetails: UserExtendedDetailsDto?, userId: String): String = userDetails?.let { it.firstName + " " + it.lastName } ?: userId
+
+  private fun getStaffUserNames(userTypesAndNames: List<Pair<UserType, String?>>) = userTypesAndNames.asSequence().filter {
+    userFullNameFilterPredicate.test(it.first, it.second)
+  }.map { it.second }.toSet().filterNotNull()
 }
