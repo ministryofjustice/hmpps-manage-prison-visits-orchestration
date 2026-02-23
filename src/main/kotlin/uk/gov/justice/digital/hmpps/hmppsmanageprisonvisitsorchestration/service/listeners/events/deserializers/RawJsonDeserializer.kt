@@ -1,18 +1,18 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.deserializers
 
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.JsonDeserializer
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.core.JacksonException
+import tools.jackson.core.JsonParser
+import tools.jackson.databind.DeserializationContext
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.ValueDeserializer
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.io.IOException
 
-class RawJsonDeserializer : JsonDeserializer<String>() {
-  @Throws(IOException::class, JsonProcessingException::class)
+class RawJsonDeserializer : ValueDeserializer<String>() {
+  @Throws(IOException::class, JacksonException::class)
   override fun deserialize(jp: JsonParser, ctxt: DeserializationContext): String {
-    val mapper = jp.codec as ObjectMapper
-    val node = mapper.readTree<JsonNode>(jp)
+    val mapper = jacksonObjectMapper()
+    val node = jp.readValueAsTree<JsonNode>()
     return mapper.writeValueAsString(node)
   }
 }

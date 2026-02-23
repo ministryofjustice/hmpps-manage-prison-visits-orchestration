@@ -1,10 +1,10 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.visit
 
-import com.fasterxml.jackson.databind.type.TypeFactory
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
+import tools.jackson.databind.type.TypeFactory
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 
@@ -33,7 +33,7 @@ class VisitByClientReference : IntegrationTestBase() {
     val responseBody = responseSpec.expectBody().returnResult().responseBody
     val mappedResponse: List<String> = TestObjectMapper.mapper.readValue(
       responseBody,
-      TypeFactory.defaultInstance().constructCollectionType(
+      TypeFactory.createDefaultInstance().constructCollectionType(
         MutableList::class.java,
         String::class.java,
       ),
@@ -58,7 +58,7 @@ class VisitByClientReference : IntegrationTestBase() {
     val responseBody = responseSpec.expectBody().returnResult().responseBody
     val mappedResponse: List<String> = TestObjectMapper.mapper.readValue(
       responseBody,
-      TypeFactory.defaultInstance().constructCollectionType(
+      TypeFactory.createDefaultInstance().constructCollectionType(
         MutableList::class.java,
         String::class.java,
       ),

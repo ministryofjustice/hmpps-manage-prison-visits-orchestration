@@ -8,6 +8,8 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
 import org.springframework.web.reactive.function.client.WebClient
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import uk.gov.justice.hmpps.kotlin.auth.authorisedWebClient
 import uk.gov.justice.hmpps.kotlin.auth.healthWebClient
 import uk.gov.justice.hmpps.kotlin.auth.service.GlobalPrincipalOAuth2AuthorizedClientService
@@ -151,4 +153,7 @@ class WebClientConfiguration(
 
   @Bean
   fun incentivesHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(incentivesApiUrl, healthTimeout)
+
+  @Bean
+  fun objectMapper(): ObjectMapper = jacksonObjectMapper()
 }
