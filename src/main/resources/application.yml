@@ -12,7 +12,7 @@ spring:
   codec:
     max-in-memory-size: 10MB
 
-  Jackson:
+  jackson:
     date-format: "yyyy-MM-dd HH:mm:ss"
     datatype:
       datetime:
