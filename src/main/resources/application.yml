@@ -14,6 +14,7 @@ spring:
 
   jackson:
     date-format: "yyyy-MM-dd HH:mm:ss"
+    default-property-inclusion: non_null
     datatype:
       datetime:
         WRITE_DATES_AS_TIMESTAMPS: false
