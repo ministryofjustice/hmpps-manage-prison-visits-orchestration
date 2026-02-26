@@ -6,11 +6,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.NonAssociationDomainEventType
 
 data class NonAssociationChangedNotificationDto(
-  @NotBlank
+  @field:NotBlank
   val prisonerNumber: String,
-  @NotBlank
+  @field:NotBlank
   val nonAssociationPrisonerNumber: String,
-  @NotNull
+  @field:NotNull
   val type: NonAssociationDomainEventType,
 
 ) {

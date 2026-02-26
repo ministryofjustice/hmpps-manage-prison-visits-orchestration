@@ -6,15 +6,15 @@ import jakarta.validation.constraints.NotBlank
 @Schema(description = "Auth detail Dto")
 data class AuthDetailDto(
 
-  @Schema(name = "oneLoginSub", description = "auth reference/sub", required = true)
+  @param:Schema(name = "oneLoginSub", description = "auth reference/sub", required = true)
   @field:NotBlank
   val oneLoginSub: String,
 
-  @Schema(name = "email", description = "auth email", required = true)
+  @param:Schema(name = "email", description = "auth email", required = true)
   @field:NotBlank
   val email: String,
 
-  @Schema(name = "phoneNumber", description = "auth phone number", required = false)
+  @param:Schema(name = "phoneNumber", description = "auth phone number", required = false)
   val phoneNumber: String? = null,
 
 )

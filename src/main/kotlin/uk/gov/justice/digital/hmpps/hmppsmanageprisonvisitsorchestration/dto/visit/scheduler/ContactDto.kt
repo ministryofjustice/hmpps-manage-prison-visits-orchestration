@@ -6,11 +6,11 @@ import io.swagger.v3.oas.annotations.media.Schema
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "Contact")
 open class ContactDto(
-  @Schema(description = "Contact Name", example = "John Smith", required = true)
+  @param:Schema(description = "Contact Name", example = "John Smith", required = true)
   open val name: String,
-  @Schema(description = "Contact Phone Number", example = "01234 567890", required = false)
+  @param:Schema(description = "Contact Phone Number", example = "01234 567890", required = false)
   open val telephone: String? = null,
-  @Schema(description = "Contact Email Address", example = "email@example.com", required = false)
+  @param:Schema(description = "Contact Email Address", example = "email@example.com", required = false)
   open val email: String? = null,
 ) {
   override fun equals(other: Any?): Boolean {

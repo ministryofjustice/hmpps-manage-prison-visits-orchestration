@@ -5,8 +5,8 @@ import java.time.LocalDate
 
 @Schema(description = "Visitor restriction")
 data class VisitorRestrictionDto(
-  @Schema(description = "Restriction Type", example = "BAN", required = true)
+  @param:Schema(description = "Restriction Type", example = "BAN", required = true)
   val restrictionType: VisitorRestrictionType,
-  @Schema(description = "Restriction Expiry", example = "2029-12-31", required = false)
+  @param:Schema(description = "Restriction Expiry", example = "2029-12-31", required = false)
   val expiryDate: LocalDate? = null,
 )

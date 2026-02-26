@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType.PRISON_VISITS_BLOCKED_FOR_DATE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 
 @DisplayName("GET visits/notification/{prisonCode}/count")
 class CountVisitNotificationTest : IntegrationTestBase() {
@@ -50,7 +51,7 @@ class CountVisitNotificationTest : IntegrationTestBase() {
     Assertions.assertThat(notificationCount.count).isEqualTo(2)
   }
 
-  fun getNotificationCountDto(responseSpec: ResponseSpec): NotificationCountDto = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, NotificationCountDto::class.java)
+  fun getNotificationCountDto(responseSpec: ResponseSpec): NotificationCountDto = TestObjectMapper.mapper.readValue(responseSpec.expectBody().returnResult().responseBody, NotificationCountDto::class.java)
 
   fun callCountVisitNotificationForAPrison(
     webTestClient: WebTestClient,

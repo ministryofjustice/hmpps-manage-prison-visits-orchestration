@@ -4,33 +4,33 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
 data class PrisonerDto(
-  @Schema(required = true, description = "Prisoner Number", example = "A1234AA")
+  @param:Schema(required = true, description = "Prisoner Number", example = "A1234AA")
   val prisonerNumber: String,
 
-  @Schema(required = true, description = "First Name", example = "Robert")
+  @param:Schema(required = true, description = "First Name", example = "Robert")
   val firstName: String,
 
-  @Schema(required = true, description = "Last name", example = "Larsen")
+  @param:Schema(required = true, description = "Last name", example = "Larsen")
   val lastName: String,
 
-  @Schema(required = true, description = "Date of Birth", example = "1975-04-02")
+  @param:Schema(required = true, description = "Date of Birth", example = "1975-04-02")
   val dateOfBirth: LocalDate,
 
-  @Schema(description = "Prison ID", example = "MDI")
+  @param:Schema(description = "Prison ID", example = "MDI")
   val prisonId: String?,
 
-  @Schema(description = "Prison Name", example = "HMP Leeds")
+  @param:Schema(description = "Prison Name", example = "HMP Leeds")
   val prisonName: String?,
 
-  @Schema(description = "In prison cell location", example = "A-1-002")
+  @param:Schema(description = "In prison cell location", example = "A-1-002")
   val cellLocation: String? = null,
 
-  @Schema(description = "Incentive level")
+  @param:Schema(description = "Incentive level")
   val currentIncentive: CurrentIncentive? = null,
 
-  @Schema(description = "current prison or outside with last movement information.", example = "Outside - released from Leeds")
+  @param:Schema(description = "current prison or outside with last movement information.", example = "Outside - released from Leeds")
   val locationDescription: String? = null,
 
-  @Schema(description = "Convicted Status", example = "Convicted", allowableValues = ["Convicted", "Remand"])
+  @param:Schema(description = "Convicted Status", example = "Convicted", allowableValues = ["Convicted", "Remand"])
   val convictedStatus: String? = null,
 )

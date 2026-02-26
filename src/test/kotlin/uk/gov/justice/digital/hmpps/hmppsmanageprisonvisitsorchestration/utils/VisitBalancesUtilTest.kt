@@ -4,7 +4,7 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDetailedDto
 import java.time.LocalDate
 
 class VisitBalancesUtilTest {
@@ -19,7 +19,7 @@ class VisitBalancesUtilTest {
     negativePvos: Int,
     lastVoAllocatedDate: LocalDate,
     lastPvoAllocatedDate: LocalDate?,
-  ) = PrisonerVOBalanceDto(
+  ) = PrisonerVOBalanceDetailedDto(
     prisonerId = prisonerId,
     voBalance = (availableVos + accumulatedVos) - negativeVos,
     availableVos = availableVos,

@@ -18,8 +18,8 @@ import java.util.*
 
 @Component
 class PrisonRegisterClient(
-  @Qualifier("prisonRegisterWebClient") private val webClient: WebClient,
-  @Value("\${prison-register.api.timeout:10s}") private val apiTimeout: Duration,
+  @param:Qualifier("prisonRegisterWebClient") private val webClient: WebClient,
+  @param:Value("\${prison-register.api.timeout:10s}") private val apiTimeout: Duration,
 ) {
   companion object {
     val logger: Logger = LoggerFactory.getLogger(this::class.java)

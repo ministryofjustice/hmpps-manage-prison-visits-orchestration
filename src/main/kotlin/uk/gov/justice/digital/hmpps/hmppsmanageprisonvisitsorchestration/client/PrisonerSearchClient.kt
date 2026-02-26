@@ -11,17 +11,19 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isNotFoundError
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.AttributeSearchPrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import java.time.Duration
 
 @Component
 class PrisonerSearchClient(
-  @Qualifier("prisonerSearchWebClient") private val webClient: WebClient,
-  @Value("\${prisoner.search.timeout:10s}") private val apiTimeout: Duration,
+  @param:Qualifier("prisonerSearchWebClient") private val webClient: WebClient,
+  @param:Value("\${prisoner.search.timeout:10s}") private val apiTimeout: Duration,
 ) {
   companion object {
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
+    private val ATTRIBUTE_SEARCH_RESPONSE_FIELDS = listOf("prisonerNumber", "firstName", "lastName")
   }
 
   fun getPrisonerById(prisonerId: String): PrisonerDto = getPrisonerByIdAsMono(prisonerId)
@@ -50,8 +52,10 @@ class PrisonerSearchClient(
     }
   }
 
-  fun getPrisonersByPrisonerIds(prisonerIds: List<String>): RestPage<PrisonerDto>? {
+  fun getPrisonersByPrisonerIdsAttributeSearch(prisonerIds: List<String>): RestPage<AttributeSearchPrisonerDto>? {
     logger.info("Calling prisoner-search to get all prisoners for given prisonerIds $prisonerIds")
+    val responseFields = ATTRIBUTE_SEARCH_RESPONSE_FIELDS.joinToString(separator = ",")
+
     val requestBody = AttributeSearch(
       queries = listOf(
         AttributeQuery(
@@ -64,11 +68,11 @@ class PrisonerSearchClient(
 
     return webClient
       .post()
-      .uri("/attribute-search?size=10000")
+      .uri("/attribute-search?size=10000&responseFields=$responseFields")
       .bodyValue(requestBody)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono<RestPage<PrisonerDto>>()
+      .bodyToMono<RestPage<AttributeSearchPrisonerDto>>()
       .block(apiTimeout)
   }
 }

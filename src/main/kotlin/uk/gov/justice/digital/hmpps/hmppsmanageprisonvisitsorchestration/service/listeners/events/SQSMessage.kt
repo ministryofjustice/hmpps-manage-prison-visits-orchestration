@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 @Suppress("PropertyName")
 data class SQSMessage(
-  @JsonProperty("Type")
+  @param:JsonProperty("Type")
   val type: String,
-  @JsonProperty("Message")
+  @param:JsonProperty("Message")
   val message: String,
-  @JsonProperty("MessageId")
+  @param:JsonProperty("MessageId")
   val messageId: String? = null,
 )

@@ -7,11 +7,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 @Schema(description = "Prison user client dto")
 class PrisonUserClientDto(
 
-  @Schema(description = "User type", example = "STAFF", required = true)
+  @param:Schema(description = "User type", example = "STAFF", required = true)
   @field:NotNull
   val userType: UserType,
 
-  @Schema(description = "is prison user client active", example = "true", required = true)
+  @param:Schema(description = "is prison user client active", example = "true", required = true)
   @field:NotNull
   var active: Boolean,
 )

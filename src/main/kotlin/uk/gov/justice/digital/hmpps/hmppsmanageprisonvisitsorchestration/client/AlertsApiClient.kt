@@ -14,8 +14,8 @@ import java.time.Duration
 
 @Component
 class AlertsApiClient(
-  @Qualifier("alertsApiWebClient") private val webClient: WebClient,
-  @Value("\${prison.api.timeout:10s}") private val apiTimeout: Duration,
+  @param:Qualifier("alertsApiWebClient") private val webClient: WebClient,
+  @param:Value("\${prison.api.timeout:10s}") private val apiTimeout: Duration,
 ) {
 
   companion object {

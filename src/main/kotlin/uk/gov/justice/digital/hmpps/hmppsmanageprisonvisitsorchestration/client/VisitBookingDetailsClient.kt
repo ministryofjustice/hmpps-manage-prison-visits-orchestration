@@ -28,7 +28,7 @@ class VisitBookingDetailsClient(
   private val visitSchedulerClient: VisitSchedulerClient,
   private val prisonerContactRegistryClient: PrisonerContactRegistryClient,
   private val prisonRegisterClient: PrisonRegisterClient,
-  @Value("\${prisoner.profile.timeout:10s}") private val apiTimeout: Duration,
+  @param:Value("\${prisoner.profile.timeout:10s}") private val apiTimeout: Duration,
   private val manageUsersService: ManageUsersService,
 ) {
   companion object {
@@ -47,7 +47,7 @@ class VisitBookingDetailsClient(
     val prisonerRestrictionsMono = prisonApiClient.getPrisonerRestrictionsAsMono(visit.prisonerId)
     val visitorsMono = prisonerContactRegistryClient.getPrisonersSocialContactsAsMono(
       prisonerId = visit.prisonerId,
-      withAddress = true,
+
     )
     val eventsMono = visitSchedulerClient.getVisitHistoryByReferenceAsMono(visitReference)
 

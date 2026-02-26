@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -13,8 +12,10 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Mono
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isNotFoundError
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isUnprocessableEntityError
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient.Companion.logger
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ApplicationValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ApproveVisitRequestBodyDto
@@ -52,6 +53,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorApprovedUnapprovedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionUpsertedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitor.VisitorLastApprovedDateRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitor.VisitorLastApprovedDatesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.ApplicationValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
@@ -89,12 +92,13 @@ const val GET_PAST_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/b
 const val GET_VISIT_EVENTS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/events"
 
 const val POST_VISIT_FROM_EXTERNAL_SYSTEM: String = "$VISIT_CONTROLLER_PATH/external-system"
+const val FIND_LAST_APPROVED_DATE_FOR_VISITORS_BY_PRISONER: String = "/visits/prisoner/{prisonerNumber}/visitors/last-approved-date"
 
 @Component
 class VisitSchedulerClient(
   val objectMapper: ObjectMapper,
-  @Qualifier("visitSchedulerWebClient") private val webClient: WebClient,
-  @Value("\${visit-scheduler.api.timeout:10s}") val apiTimeout: Duration,
+  @param:Qualifier("visitSchedulerWebClient") private val webClient: WebClient,
+  @param:Value("\${visit-scheduler.api.timeout:10s}") val apiTimeout: Duration,
 ) {
 
   companion object {
@@ -162,7 +166,7 @@ class VisitSchedulerClient(
         .queryParam("fromDate", sessionDate)
         .queryParam("toDate", sessionDate)
         .queryParamIfPresent("visitRestrictions", Optional.ofNullable(visitRestrictions))
-        .queryParam("visitStatus", visitStatusList)
+        .queryParam("visitStatus", visitStatusList.joinToString(separator = ","))
         .queryParam("prisonCode", prisonCode)
         .queryParam("page", page)
         .queryParam("size", size)
@@ -613,10 +617,26 @@ class VisitSchedulerClient(
     .retrieve()
     .bodyToMono<List<EventAuditDto>>()
 
+  fun findLastApprovedDateForVisitor(prisonerId: String, nomisPersonIds: List<Long>): List<VisitorLastApprovedDatesDto>? = webClient.post()
+    .uri(FIND_LAST_APPROVED_DATE_FOR_VISITORS_BY_PRISONER.replace("{prisonerNumber}", prisonerId))
+    .body(BodyInserters.fromValue(VisitorLastApprovedDateRequestDto(nomisPersonIds)))
+    .retrieve()
+    .bodyToMono<List<VisitorLastApprovedDatesDto>>()
+    .onErrorResume { e ->
+      if (!isNotFoundError(e)) {
+        logger.error("findLastApprovedDateForVisitor - failed with unrecoverable error, visitors with NOMIS person ids - $nomisPersonIds, prisoner - $prisonerId")
+        Mono.error(e)
+      } else {
+        logger.error("findLastApprovedDateForVisitor - failed with NOT_FOUND error, visitors with NOMIS person ids - $nomisPersonIds, prisoner - $prisonerId")
+        Mono.empty()
+      }
+    }
+    .block(apiTimeout)
+
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParamIfPresent("prisonId", Optional.ofNullable(visitSearchRequestFilter.prisonCode))
     uriBuilder.queryParamIfPresent("prisonerId", Optional.ofNullable(visitSearchRequestFilter.prisonerId))
-    uriBuilder.queryParam("visitStatus", visitSearchRequestFilter.visitStatusList)
+    uriBuilder.queryParam("visitStatus", visitSearchRequestFilter.visitStatusList.joinToString(separator = ","))
     uriBuilder.queryParamIfPresent("visitStartDate", Optional.ofNullable(visitSearchRequestFilter.visitStartDate))
     uriBuilder.queryParamIfPresent("visitEndDate", Optional.ofNullable(visitSearchRequestFilter.visitEndDate))
     uriBuilder.queryParam("page", visitSearchRequestFilter.page)

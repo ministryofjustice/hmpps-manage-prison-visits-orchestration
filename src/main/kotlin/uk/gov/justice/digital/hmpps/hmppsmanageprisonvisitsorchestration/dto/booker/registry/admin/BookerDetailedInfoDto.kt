@@ -6,15 +6,15 @@ import jakarta.validation.constraints.NotBlank
 
 @Schema(description = "Detailed information of a booker")
 data class BookerDetailedInfoDto(
-  @Schema(name = "reference", description = "This is the booker reference, unique per booker", required = true)
+  @param:Schema(name = "reference", description = "This is the booker reference, unique per booker", required = true)
   @field:NotBlank
   val reference: String,
 
-  @Schema(name = "email", description = "email registered to booker", required = true)
+  @param:Schema(name = "email", description = "email registered to booker", required = true)
   @field:NotBlank
   val email: String,
 
-  @Schema(description = "Permitted prisoners list", required = true)
+  @param:Schema(description = "Permitted prisoners list", required = true)
   @field:Valid
   val permittedPrisoners: List<BookerPrisonerDetailedInfoDto>,
 )

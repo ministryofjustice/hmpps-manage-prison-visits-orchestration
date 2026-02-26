@@ -6,10 +6,10 @@ import io.swagger.v3.oas.annotations.media.Schema
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "Prison Contact Details such as email address, phone number and web address")
 data class PrisonRegisterContactDetailsDto(
-  @Schema(description = "Contact email address of prison", example = "example@example.com", required = false)
+  @param:Schema(description = "Contact email address of prison", example = "example@example.com", required = false)
   val emailAddress: String? = null,
-  @Schema(description = "Contact number of prison", required = false)
+  @param:Schema(description = "Contact number of prison", required = false)
   val phoneNumber: String? = null,
-  @Schema(description = "Web address of prison", required = false)
+  @param:Schema(description = "Web address of prison", required = false)
   val webAddress: String? = null,
 )

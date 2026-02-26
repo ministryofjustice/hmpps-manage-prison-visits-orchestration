@@ -6,8 +6,8 @@ import jakarta.validation.constraints.Size
 
 @Schema(description = "Visitor support")
 data class VisitorSupportDto(
-  @Schema(description = "Support text description", example = "visually impaired assistance", required = true)
-  @Size(min = 3, max = 512)
-  @NotBlank
+  @param:Schema(description = "Support text description", example = "visually impaired assistance", required = true)
+  @field:Size(min = 3, max = 512)
+  @field:NotBlank
   val description: String,
 )

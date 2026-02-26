@@ -4,18 +4,34 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import org.springframework.http.HttpStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ADD_VISITOR_REQUEST
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.APPROVE_VISITOR_REQUEST
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_BOOKER_BY_BOOKING_REFERENCE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_SINGLE_VISITOR_REQUEST
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.LINK_VISITOR
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PERMITTED_PRISONERS
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PERMITTED_VISITORS
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_PRISON_CODE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PUBLIC_BOOKER_GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.REGISTER_PRISONER
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.REJECT_VISITOR_REQUEST
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.SEARCH_FOR_BOOKER
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.UNLINK_VISITOR
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VALIDATE_PRISONER
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerRegistrationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerValidationErrorResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerVisitorRequestValidationErrorResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerAuditDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.CreateVisitorRequestResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterVisitorForBookerPrisonerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.SearchBookerDto
@@ -39,7 +55,7 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
   fun stubGetBookersPrisoners(bookerReference: String, bookerPrisoners: List<PermittedPrisonerForBookerDto>?, httpStatus: HttpStatus = HttpStatus.OK) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
-      WireMock.get(PERMITTED_PRISONERS.replace("{bookerReference}", bookerReference) + "?active=true")
+      WireMock.get(PERMITTED_PRISONERS.replace("{bookerReference}", bookerReference))
         .willReturn(
           if (bookerPrisoners == null) {
             responseBuilder
@@ -91,7 +107,7 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
   fun stubGetBookersPrisonerVisitors(bookerReference: String, prisonerNumber: String, visitors: List<PermittedVisitorsForPermittedPrisonerBookerDto>?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
-      WireMock.get(PERMITTED_VISITORS.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerNumber) + "?active=true")
+      WireMock.get(PERMITTED_VISITORS.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerNumber))
         .willReturn(
           if (visitors == null) {
             responseBuilder
@@ -122,7 +138,7 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
       WireMock.get(VALIDATE_PRISONER.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerNumber))
         .willReturn(
           responseBuilder
-            .withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+            .withStatus(HttpStatus.UNPROCESSABLE_CONTENT.value())
             .withBody(getJsonString(errorResponse)),
         ),
     )
@@ -141,6 +157,20 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
     )
   }
 
+  fun stubRegisterVisitorForBookerPrisoner(bookerReference: String, prisonerId: String, registerVisitorForBookerPrisonerDto: RegisterVisitorForBookerPrisonerDto, visitorsForPermittedPrisonerBookerDto: PermittedVisitorsForPermittedPrisonerBookerDto, httpStatus: HttpStatus = HttpStatus.OK) {
+    val responseBuilder = createJsonResponseBuilder()
+    val uri = LINK_VISITOR.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId)
+    stubFor(
+      WireMock.put(uri)
+        .withRequestBody(equalToJson(getJsonString(registerVisitorForBookerPrisonerDto)))
+        .willReturn(
+          responseBuilder
+            .withStatus(httpStatus.value())
+            .withBody(getJsonString(visitorsForPermittedPrisonerBookerDto)),
+        ),
+    )
+  }
+
   fun stubGetBookerAuditHistory(
     bookerReference: String,
     events: List<BookerAuditDto>? = null,
@@ -153,6 +183,165 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
           if (events != null) {
             responseBuilder.withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(events))
+          } else {
+            responseBuilder.withStatus(httpStatus.value())
+          },
+        ),
+    )
+  }
+
+  fun stubUnlinkVisitor(bookerReference: String, prisonerId: String, visitorId: String, httpStatus: HttpStatus = HttpStatus.OK) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    val uri = UNLINK_VISITOR
+      .replace("{bookerReference}", bookerReference)
+      .replace("{prisonerId}", prisonerId)
+      .replace("{visitorId}", visitorId)
+
+    stubFor(
+      WireMock.delete(uri)
+        .willReturn(
+          responseBuilder
+            .withStatus(httpStatus.value()),
+        ),
+    )
+  }
+
+  fun stubAddVisitorRequest(bookerReference: String, prisonerId: String, addVisitorToBookerPrisonerRequestDto: AddVisitorToBookerPrisonerRequestDto, response: CreateVisitorRequestResponseDto, httpStatus: HttpStatus = HttpStatus.OK) {
+    val responseBuilder = createJsonResponseBuilder()
+    val uri = ADD_VISITOR_REQUEST.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId)
+    stubFor(
+      WireMock.post(uri)
+        .withRequestBody(equalToJson(getJsonString(addVisitorToBookerPrisonerRequestDto)))
+        .willReturn(
+          responseBuilder
+            .withStatus(httpStatus.value())
+            .withBody(getJsonString(response)),
+        ),
+    )
+  }
+
+  fun stubAddVisitorRequestValidationFailure(bookerReference: String, prisonerId: String, errorResponse: BookerVisitorRequestValidationErrorResponse) {
+    val responseBuilder = createJsonResponseBuilder()
+    val uri = ADD_VISITOR_REQUEST.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId)
+    stubFor(
+      WireMock.post(uri)
+        .willReturn(
+          responseBuilder
+            .withStatus(HttpStatus.UNPROCESSABLE_CONTENT.value())
+            .withBody(getJsonString(errorResponse)),
+        ),
+    )
+  }
+
+  fun stubGetActiveVisitorRequestsForBooker(
+    bookerReference: String,
+    activeVisitorRequests: List<BookerPrisonerVisitorRequestDto>? = null,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val uri = GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE.replace("{bookerReference}", bookerReference)
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      WireMock.get(uri)
+        .willReturn(
+          if (activeVisitorRequests != null) {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(activeVisitorRequests))
+          } else {
+            responseBuilder.withStatus(httpStatus.value())
+          },
+        ),
+    )
+  }
+
+  fun stubGetCountVisitorRequestsForPrison(
+    prisonCode: String,
+    count: VisitorRequestsCountByPrisonCodeDto? = null,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val uri = PUBLIC_BOOKER_GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE.replace("{prisonCode}", prisonCode)
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      WireMock.get(uri)
+        .willReturn(
+          if (count != null) {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(count))
+          } else {
+            responseBuilder.withStatus(httpStatus.value())
+          },
+        ),
+    )
+  }
+
+  fun stubGetVisitorRequestsForPrison(
+    prisonCode: String,
+    visitorRequestsList: List<PrisonVisitorRequestDto>? = null,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val uri = PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_PRISON_CODE.replace("{prisonCode}", prisonCode)
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      WireMock.get(uri)
+        .willReturn(
+          if (visitorRequestsList != null) {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(visitorRequestsList))
+          } else {
+            responseBuilder.withStatus(httpStatus.value())
+          },
+        ),
+    )
+  }
+
+  fun stubGetSingleVisitorRequest(
+    requestReference: String,
+    visitorRequest: PrisonVisitorRequestDto? = null,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val uri = GET_SINGLE_VISITOR_REQUEST.replace("{requestReference}", requestReference)
+
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      WireMock.get(uri)
+        .willReturn(
+          if (visitorRequest != null) {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(visitorRequest))
+          } else {
+            responseBuilder.withStatus(httpStatus.value())
+          },
+        ),
+    )
+  }
+
+  fun stubApproveVisitorRequest(requestReference: String, response: PrisonVisitorRequestDto? = null, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
+    val uri = APPROVE_VISITOR_REQUEST.replace("{requestReference}", requestReference)
+
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      WireMock.put(uri)
+        .willReturn(
+          if (response != null) {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(response))
+          } else {
+            responseBuilder.withStatus(httpStatus.value())
+          },
+        ),
+    )
+  }
+
+  fun stubRejectVisitorRequest(requestReference: String, response: PrisonVisitorRequestDto? = null, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
+    val uri = REJECT_VISITOR_REQUEST.replace("{requestReference}", requestReference)
+
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      WireMock.put(uri)
+        .willReturn(
+          if (response != null) {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(response))
           } else {
             responseBuilder.withStatus(httpStatus.value())
           },

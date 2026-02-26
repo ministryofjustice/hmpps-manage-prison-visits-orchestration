@@ -6,13 +6,13 @@ import java.time.LocalDateTime
 
 @Schema(description = "Combined visits and booker registry audit entries for a public booker.")
 data class BookerHistoryAuditDto(
-  @Schema(name = "auditType", description = "Audit Type", required = true, example = "PRISONER_REGISTERED")
+  @param:Schema(name = "auditType", description = "Audit Type", required = true, example = "PRISONER_REGISTERED")
   val auditType: String,
 
-  @Schema(name = "text", description = "Audit summary", required = false)
+  @param:Schema(name = "text", description = "Audit summary", required = false)
   val text: String? = null,
 
-  @Schema(name = "createdTimestamp", description = "Timestamp of booker audit entry", required = true)
+  @param:Schema(name = "createdTimestamp", description = "Timestamp of booker audit entry", required = true)
   val createdTimestamp: LocalDateTime,
 ) {
   constructor(eventAuditDto: EventAuditDto) : this(

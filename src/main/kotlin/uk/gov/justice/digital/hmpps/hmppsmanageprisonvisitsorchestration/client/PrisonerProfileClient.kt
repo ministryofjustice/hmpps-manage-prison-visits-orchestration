@@ -26,7 +26,7 @@ class PrisonerProfileClient(
   private val visitSchedulerClient: VisitSchedulerClient,
   private val prisonerContactRegistryClient: PrisonerContactRegistryClient,
   private val prisonRegisterClient: PrisonRegisterClient,
-  @Value("\${prisoner.profile.timeout:10s}") private val apiTimeout: Duration,
+  @param:Value("\${prisoner.profile.timeout:10s}") private val apiTimeout: Duration,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -40,7 +40,7 @@ class PrisonerProfileClient(
     LOG.trace("getPrisonerProfile - Beginning calls to collect prisoner profile data for prisoner {} in {}", prisonerId, prisonId)
     val prisonerMono = prisonerSearchClient.getPrisonerByIdAsMono(prisonerId)
     val inmateDetailMono = prisonApiClient.getInmateDetailsAsMono(prisonerId)
-    val visitBalancesMono = visitAllocationApiClient.getPrisonerVOBalanceAsMono(prisonerId)
+    val visitBalancesMono = visitAllocationApiClient.getPrisonerVOBalanceDetailedAsMono(prisonerId)
     val visitSchedulerMono = visitSchedulerClient.getVisitsAsMono(visitSearchRequestFilter)
     val alertsMono = alertsApiClient.getPrisonerAlertsAsMono(prisonerId)
     val prisonerRestrictionsMono = prisonApiClient.getPrisonerRestrictionsAsMono(prisonerId)
@@ -91,7 +91,7 @@ class PrisonerProfileClient(
 
   private fun getContactsForPrisoner(prisonerProfile: PrisonerProfileDto): Map<Long?, PrisonerContactDto>? {
     try {
-      val contacts = prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerProfile.prisonerId, withAddress = false)
+      val contacts = prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerProfile.prisonerId)
       return contacts.associateBy { it.personId }
     } catch (e: Exception) {
       // log a message if there is an error but do not terminate the call

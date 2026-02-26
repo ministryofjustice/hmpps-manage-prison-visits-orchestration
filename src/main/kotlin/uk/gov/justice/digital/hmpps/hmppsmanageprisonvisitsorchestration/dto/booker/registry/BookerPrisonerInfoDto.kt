@@ -5,15 +5,15 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import java.time.LocalDate
 
 data class BookerPrisonerInfoDto(
-  @Schema(description = "Prisoner Details", required = true)
+  @param:Schema(description = "Prisoner Details", required = true)
   val prisoner: PrisonerDto,
 
-  @Schema(description = "Available VOs - a total of VOs and PVOs", example = "0", required = true)
+  @param:Schema(description = "Available VOs - a total of VOs and PVOs", example = "0", required = true)
   val availableVos: Int = 0,
 
-  @Schema(description = "Next available VO date", example = "2024-08-01", required = true)
+  @param:Schema(description = "Next available VO date", example = "2024-08-01", required = true)
   val nextAvailableVoDate: LocalDate,
 
-  @Schema(description = "Current prison code for the prison that the booker registered the prisoner with", required = true)
+  @param:Schema(description = "Current prison code for the prison that the booker registered the prisoner with", required = true)
   val registeredPrison: RegisteredPrisonDto,
 )

@@ -16,39 +16,20 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 class PrisonerContactRegistryMockServer : WireMockServer(8095) {
   fun stubGetPrisonerContacts(
     prisonerId: String,
-    withAddress: Boolean = false,
     hasDateOfBirth: Boolean? = null,
     contactsList: List<PrisonerContactDto>?,
     httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
   ) {
     val responseBuilder = createJsonResponseBuilder()
 
-    stubFor(
-      get("/v2/prisoners/$prisonerId/contacts/social?${getContactsQueryParams(hasDateOfBirth, withAddress)}")
-        .willReturn(
-          if (contactsList == null) {
-            responseBuilder
-              .withStatus(httpStatus.value())
-          } else {
-            responseBuilder
-              .withStatus(HttpStatus.OK.value())
-              .withBody(getJsonString(contactsList))
-          },
-        ),
-    )
-  }
-
-  fun stubGetApprovedPrisonerContacts(
-    prisonerId: String,
-    withAddress: Boolean = false,
-    hasDateOfBirth: Boolean? = null,
-    contactsList: List<PrisonerContactDto>?,
-    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
-  ) {
-    val responseBuilder = createJsonResponseBuilder()
+    val uri = if (hasDateOfBirth != null) {
+      "/v2/prisoners/$prisonerId/contacts/social?hasDateOfBirth=$hasDateOfBirth"
+    } else {
+      "/v2/prisoners/$prisonerId/contacts/social"
+    }
 
     stubFor(
-      get("/v2/prisoners/$prisonerId/contacts/social/approved?${getContactsQueryParams(hasDateOfBirth, withAddress)}")
+      get(uri)
         .willReturn(
           if (contactsList == null) {
             responseBuilder
@@ -136,20 +117,5 @@ class PrisonerContactRegistryMockServer : WireMockServer(8095) {
           },
         ),
     )
-  }
-
-  private fun getContactsQueryParams(
-    hasDateOfBirth: Boolean? = null,
-    withAddress: Boolean? = null,
-  ): String {
-    val queryParams = ArrayList<String>()
-    hasDateOfBirth?.let {
-      queryParams.add("hasDateOfBirth=$it")
-    }
-    withAddress?.let {
-      queryParams.add("withAddress=$it")
-    }
-
-    return queryParams.joinToString("&")
   }
 }

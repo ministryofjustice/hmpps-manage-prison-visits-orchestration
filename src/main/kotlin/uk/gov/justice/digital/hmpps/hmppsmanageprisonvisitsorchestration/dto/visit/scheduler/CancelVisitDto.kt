@@ -15,11 +15,11 @@ data class CancelVisitDto(
   @field:NotBlank
   val actionedBy: String,
 
-  @Schema(description = "application method", required = true)
+  @param:Schema(description = "application method", required = true)
   @field:NotNull
   val applicationMethodType: ApplicationMethodType,
 
-  @Schema(description = "User type", example = "STAFF", required = true)
+  @param:Schema(description = "User type", example = "STAFF", required = true)
   @field:NotNull
   val userType: UserType,
 ) {

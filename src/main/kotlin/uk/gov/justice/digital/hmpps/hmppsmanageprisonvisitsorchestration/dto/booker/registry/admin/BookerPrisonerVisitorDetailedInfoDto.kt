@@ -6,19 +6,19 @@ import java.time.LocalDate
 
 @Schema(description = "A detailed view of a visitor for a prisoner")
 data class BookerPrisonerVisitorDetailedInfoDto(
-  @Schema(description = "Identifier for this contact (Person in NOMIS)", example = "5871791", required = true)
+  @param:Schema(description = "Identifier for this contact (Person in NOMIS)", example = "5871791", required = true)
   val visitorId: Long,
 
-  @Schema(description = "First name", example = "John", required = true)
+  @param:Schema(description = "First name", example = "John", required = true)
   val firstName: String,
 
-  @Schema(description = "Last name", example = "Smith", required = true)
+  @param:Schema(description = "Last name", example = "Smith", required = true)
   val lastName: String,
 
-  @Schema(description = "Date of birth", example = "2000-01-31", required = false)
+  @param:Schema(description = "Date of birth", example = "2000-01-31", required = false)
   val dateOfBirth: LocalDate?,
 
-  @Schema(description = "Description of relationship to Prisoner", example = "Mother", required = false)
+  @param:Schema(description = "Description of relationship to Prisoner", example = "Mother", required = false)
   val relationshipDescription: String?,
 ) {
   constructor(contact: PrisonerContactDto) : this(

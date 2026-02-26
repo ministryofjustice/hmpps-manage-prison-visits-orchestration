@@ -10,46 +10,46 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 @Schema(description = "Prison dto")
 data class PrisonDto(
 
-  @Schema(description = "prison code", example = "BHI", required = true)
+  @param:Schema(description = "prison code", example = "BHI", required = true)
   val code: String,
 
-  @Schema(description = "prison name", example = "HMP Hewell", required = true)
+  @param:Schema(description = "prison name", example = "HMP Hewell", required = true)
   val prisonName: String,
 
-  @Schema(description = "is prison active", example = "true", required = true)
+  @param:Schema(description = "is prison active", example = "true", required = true)
   val active: Boolean = false,
 
-  @Schema(description = "minimum number of days notice from the current date to booked a visit", example = "2", required = true)
+  @param:Schema(description = "minimum number of days notice from the current date to booked a visit", example = "2", required = true)
   val policyNoticeDaysMin: Int,
 
-  @Schema(description = "maximum number of days notice from the current date to booked a visit", example = "28", required = true)
+  @param:Schema(description = "maximum number of days notice from the current date to booked a visit", example = "28", required = true)
   val policyNoticeDaysMax: Int,
 
-  @Schema(description = "Max number of total visitors")
+  @param:Schema(description = "Max number of total visitors")
   @field:Min(1)
   val maxTotalVisitors: Int,
 
-  @Schema(description = "Max number of adults")
+  @param:Schema(description = "Max number of adults")
   @field:Min(1)
   val maxAdultVisitors: Int,
 
-  @Schema(description = "Max number of children")
+  @param:Schema(description = "Max number of children")
   @field:Min(0)
   val maxChildVisitors: Int,
 
-  @Schema(description = "Age of adults in years")
+  @param:Schema(description = "Age of adults in years")
   val adultAgeYears: Int,
 
-  @Schema(description = "Contact email address of prison", example = "example@example.com", required = false)
+  @param:Schema(description = "Contact email address of prison", example = "example@example.com", required = false)
   val emailAddress: String?,
 
-  @Schema(description = "Contact number of prison", required = false)
+  @param:Schema(description = "Contact number of prison", required = false)
   val phoneNumber: String?,
 
-  @Schema(description = "Web address of prison", required = false)
+  @param:Schema(description = "Web address of prison", required = false)
   val webAddress: String?,
 
-  @Schema(description = "prison user client", required = false)
+  @param:Schema(description = "prison user client", required = false)
   val clients: List<PrisonUserClientDto> = listOf(),
 ) {
   constructor(visitSchedulerPrisonDto: VisitSchedulerPrisonDto, prisonRegisterPrisonDto: PrisonRegisterPrisonDto, prisonRegisterContactDetailsDto: PrisonRegisterContactDetailsDto) : this(

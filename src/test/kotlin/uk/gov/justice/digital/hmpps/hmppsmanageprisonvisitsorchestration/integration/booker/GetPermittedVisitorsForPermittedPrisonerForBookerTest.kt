@@ -8,12 +8,9 @@ import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_VISITORS_CONTROLLER_PATH
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_VISITORS_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorInfoDto
@@ -21,16 +18,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.con
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorRestrictionType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 
 @DisplayName("Get permitted visitors for permitted prisoner for booker")
 class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBase() {
-  @MockitoSpyBean
-  lateinit var prisonVisitBookerRegistryClientSpy: PrisonVisitBookerRegistryClient
-
-  @MockitoSpyBean
-  lateinit var prisonerContactRegistryClientSpy: PrisonerContactRegistryClient
-
   companion object {
     private val INDEFINITELY_BANNED_RESTRICTION = RestrictionDto(restrictionId = 123, restrictionType = "BAN", restrictionTypeDescription = "BANNED", startDate = LocalDate.now(), globalRestriction = true)
     private val EXPIRED_BANNED_RESTRICTION = RestrictionDto(restrictionId = 234, restrictionType = "BAN", restrictionTypeDescription = "BANNED", startDate = LocalDate.now().minusDays(3), expiryDate = LocalDate.now().minusDays(1), globalRestriction = true)
@@ -44,7 +36,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
     private const val PRISONER_ID = "AA112233B"
   }
 
-  val bookerRegistryPrisonerDto = PermittedPrisonerForBookerDto(PRISONER_ID, true, PRISON_CODE, listOf())
+  val bookerRegistryPrisonerDto = PermittedPrisonerForBookerDto(PRISONER_ID, PRISON_CODE, listOf())
 
   private val adultVisitor = createVisitor(
     firstName = "First",
@@ -123,14 +115,14 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
   @Test
   fun `when booker's prisoners has valid visitors then all allowed visitors are returned`() {
     // Given
-    prisonerContactRegistryMockServer.stubGetApprovedPrisonerContacts(PRISONER_ID, withAddress = false, hasDateOfBirth = true, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, hasDateOfBirth = true, contactsList)
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(BOOKER_REFERENCE, listOf(bookerRegistryPrisonerDto))
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisonerVisitors(
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId),
       ),
     )
 
@@ -149,25 +141,25 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersApprovedSocialContacts(PRISONER_ID, withAddress = false, hasDateOfBirth = true)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(PRISONER_ID, hasDateOfBirth = true)
   }
 
   @Test
   fun `when booker's prisoners has banned and unbanned visitors then visitors are returned with restriction list populated`() {
     // Given
-    prisonerContactRegistryMockServer.stubGetApprovedPrisonerContacts(PRISONER_ID, withAddress = false, hasDateOfBirth = true, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, hasDateOfBirth = true, contactsList)
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(BOOKER_REFERENCE, listOf(bookerRegistryPrisonerDto))
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisonerVisitors(
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(indefinitelyBannedVisitor.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(bannedVisitorForNext3Weeks.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(bannedVisitorForNext6Weeks.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(multipleBansVisitor.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(expiredBanVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(indefinitelyBannedVisitor.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(bannedVisitorForNext3Weeks.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(bannedVisitorForNext6Weeks.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(multipleBansVisitor.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(expiredBanVisitor.personId),
       ),
     )
 
@@ -189,18 +181,66 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
     assertVisitorContactBasicDetails(prisonerDetailsList[3], bannedVisitorForNext3Weeks)
     Assertions.assertThat(prisonerDetailsList[3].visitorRestrictions.size).isEqualTo(1)
     assertVisitorRestriction(prisonerDetailsList[3].visitorRestrictions.toList()[0], VisitorRestrictionType.BAN, EXPIRING_IN_3_WEEKS_BANNED_RESTRICTION.expiryDate)
-    assertVisitorContactBasicDetails(prisonerDetailsList[4], bannedVisitorForNext6Weeks)
+
+    // sorted by last name and first name
+    assertVisitorContactBasicDetails(prisonerDetailsList[4], multipleBansVisitor)
     Assertions.assertThat(prisonerDetailsList[4].visitorRestrictions.size).isEqualTo(1)
     assertVisitorRestriction(prisonerDetailsList[4].visitorRestrictions.toList()[0], VisitorRestrictionType.BAN, EXPIRING_IN_6_WEEKS_BANNED_RESTRICTION.expiryDate)
-    assertVisitorContactBasicDetails(prisonerDetailsList[5], multipleBansVisitor)
-    Assertions.assertThat(prisonerDetailsList[5].visitorRestrictions.size).isEqualTo(1)
-    assertVisitorRestriction(prisonerDetailsList[5].visitorRestrictions.toList()[0], VisitorRestrictionType.BAN, EXPIRING_IN_6_WEEKS_BANNED_RESTRICTION.expiryDate)
-    assertVisitorContactBasicDetails(prisonerDetailsList[6], expiredBanVisitor)
-    Assertions.assertThat(prisonerDetailsList[6].visitorRestrictions).isEmpty()
+    assertVisitorContactBasicDetails(prisonerDetailsList[5], expiredBanVisitor)
+    Assertions.assertThat(prisonerDetailsList[5].visitorRestrictions).isEmpty()
+    assertVisitorContactBasicDetails(prisonerDetailsList[6], bannedVisitorForNext6Weeks)
+    Assertions.assertThat(prisonerDetailsList[6].visitorRestrictions.size).isEqualTo(1)
+    assertVisitorRestriction(prisonerDetailsList[6].visitorRestrictions.toList()[0], VisitorRestrictionType.BAN, EXPIRING_IN_6_WEEKS_BANNED_RESTRICTION.expiryDate)
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersApprovedSocialContacts(PRISONER_ID, withAddress = false, hasDateOfBirth = true)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(PRISONER_ID, hasDateOfBirth = true)
+  }
+
+  @Test
+  fun `when booker's prisoner has unapproved visitors then they are included in the returned visitor list`() {
+    // Given
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, hasDateOfBirth = true, contactsList)
+    prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(BOOKER_REFERENCE, listOf(bookerRegistryPrisonerDto))
+    prisonVisitBookerRegistryMockServer.stubGetBookersPrisonerVisitors(
+      BOOKER_REFERENCE,
+      PRISONER_ID,
+      listOf(
+        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(unapprovedVisitor.personId),
+      ),
+    )
+
+    // When
+    val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, BOOKER_REFERENCE, PRISONER_ID)
+
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val prisonerDetailsList = getResults(returnResult)
+
+    Assertions.assertThat(prisonerDetailsList)
+      .hasSize(3)
+      .satisfiesExactlyInAnyOrder(
+        { v ->
+          assertVisitorContactBasicDetails(v, adultVisitor)
+          Assertions.assertThat(v.visitorRestrictions).isEmpty()
+          Assertions.assertThat(v.approved).isTrue()
+        },
+        { v ->
+          assertVisitorContactBasicDetails(v, childVisitor)
+          Assertions.assertThat(v.visitorRestrictions).isEmpty()
+          Assertions.assertThat(v.approved).isTrue()
+        },
+        { v ->
+          assertVisitorContactBasicDetails(v, unapprovedVisitor)
+          Assertions.assertThat(v.visitorRestrictions).isEmpty()
+          Assertions.assertThat(v.approved).isFalse()
+        },
+      )
+
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(PRISONER_ID, hasDateOfBirth = true)
   }
 
   @Test
@@ -215,13 +255,13 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
 
     val contacts = createContactsList(listOf(visitorWithIndefiniteBan))
 
-    prisonerContactRegistryMockServer.stubGetApprovedPrisonerContacts(PRISONER_ID, withAddress = false, hasDateOfBirth = true, contacts)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, hasDateOfBirth = true, contacts)
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(BOOKER_REFERENCE, listOf(bookerRegistryPrisonerDto))
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisonerVisitors(
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        PermittedVisitorsForPermittedPrisonerBookerDto(visitorWithIndefiniteBan.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(visitorWithIndefiniteBan.personId),
       ),
     )
 
@@ -238,7 +278,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersApprovedSocialContacts(PRISONER_ID, withAddress = false, hasDateOfBirth = true)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(PRISONER_ID, hasDateOfBirth = true)
   }
 
   @Test
@@ -253,13 +293,13 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
 
     val contacts = createContactsList(listOf(visitorWithBan))
 
-    prisonerContactRegistryMockServer.stubGetApprovedPrisonerContacts(PRISONER_ID, withAddress = false, hasDateOfBirth = true, contacts)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, hasDateOfBirth = true, contacts)
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(BOOKER_REFERENCE, listOf(bookerRegistryPrisonerDto))
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisonerVisitors(
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        PermittedVisitorsForPermittedPrisonerBookerDto(visitorWithBan.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(visitorWithBan.personId),
       ),
     )
 
@@ -276,7 +316,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersApprovedSocialContacts(PRISONER_ID, withAddress = false, hasDateOfBirth = true)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(PRISONER_ID, hasDateOfBirth = true)
   }
 
   @Test
@@ -291,13 +331,13 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
 
     val contacts = createContactsList(listOf(visitorWithBan))
 
-    prisonerContactRegistryMockServer.stubGetApprovedPrisonerContacts(PRISONER_ID, withAddress = false, hasDateOfBirth = true, contacts)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, hasDateOfBirth = true, contacts)
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(BOOKER_REFERENCE, listOf(bookerRegistryPrisonerDto))
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisonerVisitors(
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        PermittedVisitorsForPermittedPrisonerBookerDto(visitorWithBan.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(visitorWithBan.personId),
       ),
     )
 
@@ -314,13 +354,70 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersApprovedSocialContacts(PRISONER_ID, withAddress = false, hasDateOfBirth = true)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(PRISONER_ID, hasDateOfBirth = true)
+  }
+
+  @Test
+  fun `when booker's prisoners has multiple visitors then they are returned in appropriate sort order`() {
+    // Given
+    val visitor1 = createVisitor(
+      firstName = "c",
+      lastName = "c",
+      dateOfBirth = LocalDate.of(1990, 4, 1),
+      approved = false,
+    )
+
+    val visitor2 = createVisitor(
+      firstName = "B",
+      lastName = "c",
+      dateOfBirth = LocalDate.of(1990, 4, 1),
+    )
+
+    val visitor3 = createVisitor(
+      firstName = "a",
+      lastName = "c",
+      dateOfBirth = LocalDate.of(1990, 4, 1),
+    )
+
+    val visitor4 = createVisitor(
+      firstName = "A",
+      lastName = "A",
+      dateOfBirth = LocalDate.of(1990, 4, 1),
+    )
+
+    val contacts = createContactsList(listOf(visitor1, visitor2, visitor3, visitor4))
+
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, hasDateOfBirth = true, contacts)
+    prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(BOOKER_REFERENCE, listOf(bookerRegistryPrisonerDto))
+    prisonVisitBookerRegistryMockServer.stubGetBookersPrisonerVisitors(
+      BOOKER_REFERENCE,
+      PRISONER_ID,
+      listOf(
+        PermittedVisitorsForPermittedPrisonerBookerDto(visitor1.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(visitor2.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(visitor3.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(visitor4.personId),
+      ),
+    )
+
+    // When
+    val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, BOOKER_REFERENCE, PRISONER_ID)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val prisonerDetailsList = getResults(returnResult)
+
+    Assertions.assertThat(prisonerDetailsList.size).isEqualTo(4)
+    assertVisitorContactBasicDetails(prisonerDetailsList[0], visitor4)
+    assertVisitorContactBasicDetails(prisonerDetailsList[1], visitor3)
+    assertVisitorContactBasicDetails(prisonerDetailsList[2], visitor2)
+    assertVisitorContactBasicDetails(prisonerDetailsList[3], visitor1)
   }
 
   @Test
   fun `when booker's prisoners has no valid visitors then no visitors are returned`() {
     // Given
-    prisonerContactRegistryMockServer.stubGetApprovedPrisonerContacts(PRISONER_ID, withAddress = false, hasDateOfBirth = true, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, hasDateOfBirth = true, contactsList)
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisoners(BOOKER_REFERENCE, listOf(bookerRegistryPrisonerDto))
     prisonVisitBookerRegistryMockServer.stubGetBookersPrisonerVisitors(
       BOOKER_REFERENCE,
@@ -339,7 +436,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
-    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersApprovedSocialContacts(PRISONER_ID, withAddress = false)
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(PRISONER_ID)
   }
 
   @Test
@@ -350,7 +447,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       BOOKER_REFERENCE,
       null,
     )
-    prisonerContactRegistryMockServer.stubGetApprovedPrisonerContacts(PRISONER_ID, withAddress = false, hasDateOfBirth = true, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, hasDateOfBirth = true, contactsList)
 
     // When
     val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, BOOKER_REFERENCE, PRISONER_ID)
@@ -361,7 +458,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
-    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersApprovedSocialContacts(PRISONER_ID, withAddress = false)
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(PRISONER_ID)
   }
 
   @Test
@@ -376,7 +473,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       HttpStatus.NOT_FOUND,
     )
 
-    prisonerContactRegistryMockServer.stubGetApprovedPrisonerContacts(PRISONER_ID, withAddress = false, hasDateOfBirth = true, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, hasDateOfBirth = true, contactsList)
 
     // When
     val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, BOOKER_REFERENCE, PRISONER_ID)
@@ -387,7 +484,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
-    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersApprovedSocialContacts(PRISONER_ID, withAddress = false)
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(PRISONER_ID)
   }
 
   @Test
@@ -401,7 +498,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       HttpStatus.INTERNAL_SERVER_ERROR,
     )
 
-    prisonerContactRegistryMockServer.stubGetApprovedPrisonerContacts(PRISONER_ID, withAddress = false, hasDateOfBirth = true, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, hasDateOfBirth = true, contactsList)
 
     // When
     val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, BOOKER_REFERENCE, PRISONER_ID)
@@ -411,7 +508,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
-    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersApprovedSocialContacts(PRISONER_ID, withAddress = false)
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(PRISONER_ID)
   }
 
   @Test
@@ -423,13 +520,13 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId),
       ),
     )
 
     // prisoner contact registry returns 404
-    prisonerContactRegistryMockServer.stubGetApprovedPrisonerContacts(PRISONER_ID, withAddress = false, hasDateOfBirth = true, null, HttpStatus.NOT_FOUND)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, hasDateOfBirth = true, null, HttpStatus.NOT_FOUND)
 
     // When
     val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, BOOKER_REFERENCE, PRISONER_ID)
@@ -442,7 +539,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersApprovedSocialContacts(PRISONER_ID, withAddress = false, hasDateOfBirth = true)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(PRISONER_ID, hasDateOfBirth = true)
   }
 
   @Test
@@ -454,13 +551,13 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
       BOOKER_REFERENCE,
       PRISONER_ID,
       listOf(
-        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId, true),
-        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId, true),
+        PermittedVisitorsForPermittedPrisonerBookerDto(adultVisitor.personId),
+        PermittedVisitorsForPermittedPrisonerBookerDto(childVisitor.personId),
       ),
     )
 
     // prisoner contact registry returns INTERNAL_SERVER_ERROR
-    prisonerContactRegistryMockServer.stubGetApprovedPrisonerContacts(PRISONER_ID, withAddress = false, hasDateOfBirth = true, null, HttpStatus.INTERNAL_SERVER_ERROR)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(PRISONER_ID, hasDateOfBirth = true, null, HttpStatus.INTERNAL_SERVER_ERROR)
 
     // When
     val responseSpec = callGetVisitorsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, BOOKER_REFERENCE, PRISONER_ID)
@@ -470,7 +567,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersApprovedSocialContacts(PRISONER_ID, withAddress = false, hasDateOfBirth = true)
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(PRISONER_ID, hasDateOfBirth = true)
   }
 
   @Test
@@ -486,7 +583,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
 
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
-    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersApprovedSocialContacts(PRISONER_ID, withAddress = false)
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(PRISONER_ID)
   }
 
   @Test
@@ -500,7 +597,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
     // And
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getPermittedPrisonersForBooker(BOOKER_REFERENCE)
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getPermittedVisitorsForBookersAssociatedPrisoner(BOOKER_REFERENCE, PRISONER_ID)
-    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersApprovedSocialContacts(PRISONER_ID, withAddress = false, hasDateOfBirth = true)
+    verify(prisonerContactRegistryClientSpy, times(0)).getPrisonersSocialContacts(PRISONER_ID, hasDateOfBirth = true)
   }
 
   private fun assertVisitorContactBasicDetails(visitorBasicInfo: VisitorInfoDto, visitorDetails: VisitorDetails) {
@@ -508,6 +605,7 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
     Assertions.assertThat(visitorBasicInfo.firstName).isEqualTo(visitorDetails.firstName)
     Assertions.assertThat(visitorBasicInfo.lastName).isEqualTo(visitorDetails.lastName)
     Assertions.assertThat(visitorBasicInfo.dateOfBirth).isEqualTo(visitorDetails.dateOfBirth)
+    Assertions.assertThat(visitorBasicInfo.approved).isEqualTo(visitorDetails.approved)
   }
 
   private fun assertVisitorRestriction(visitorRestriction: VisitorRestrictionDto, restrictionType: VisitorRestrictionType, restrictionExpiryDate: LocalDate?) {
@@ -523,19 +621,19 @@ class GetPermittedVisitorsForPermittedPrisonerForBookerTest : IntegrationTestBas
     responseSpec.expectStatus().isEqualTo(httpStatusCode)
     errorMessage?.let {
       val errorResponse =
-        objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, ErrorResponse::class.java)
+        TestObjectMapper.mapper.readValue(responseSpec.expectBody().returnResult().responseBody, ErrorResponse::class.java)
       Assertions.assertThat(errorResponse.developerMessage).isEqualTo(errorMessage)
     }
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<VisitorInfoDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<VisitorInfoDto>::class.java).toList()
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<VisitorInfoDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<VisitorInfoDto>::class.java).toList()
 
   fun callGetVisitorsByBookersPrisoner(
     webTestClient: WebTestClient,
     authHttpHeaders: (HttpHeaders) -> Unit,
     bookerReference: String,
     prisonerId: String,
-  ): WebTestClient.ResponseSpec = webTestClient.get().uri(PUBLIC_BOOKER_GET_VISITORS_CONTROLLER_PATH.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId))
+  ): WebTestClient.ResponseSpec = webTestClient.get().uri(PUBLIC_BOOKER_VISITORS_CONTROLLER_PATH.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId))
     .headers(authHttpHeaders)
     .exchange()
 }

@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpStatus
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
@@ -19,15 +18,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.enums.HigherPriorityMedicalOrLegalEvents.ADJUDICATION_HEARING
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.enums.HigherPriorityMedicalOrLegalEvents.MEDICAL_OPTICIAN
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AppointmentsService
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 import java.time.LocalTime
 
 @DisplayName("Get available visit sessions with appointments check")
 class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
-
-  @MockitoSpyBean
-  private lateinit var appointmentsService: AppointmentsService
   private val prisonCode = "MDI"
   private val prisonerId = "AA123456B"
   private val visitSession1 = AvailableVisitSessionDto(LocalDate.now().plusDays(3), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
@@ -70,7 +66,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     assertThat(availableSessions[1]).isEqualTo(visitSession2)
     assertThat(availableSessions[2]).isEqualTo(visitSession3)
 
-    verify(appointmentsService, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(appointmentsServiceSpy, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -98,7 +94,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     assertThat(availableSessions[0]).isEqualTo(visitSession2)
     assertThat(availableSessions[1]).isEqualTo(visitSession3)
 
-    verify(appointmentsService, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(appointmentsServiceSpy, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -124,7 +120,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     assertThat(availableSessions[0]).isEqualTo(visitSession2)
     assertThat(availableSessions[1]).isEqualTo(visitSession3)
 
-    verify(appointmentsService, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(appointmentsServiceSpy, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -154,7 +150,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     assertThat(availableSessions[1]).isEqualTo(visitSession2)
     assertThat(availableSessions[2]).isEqualTo(visitSession3)
 
-    verify(appointmentsService, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(appointmentsServiceSpy, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -184,7 +180,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     assertThat(availableSessions[1]).isEqualTo(visitSession2)
     assertThat(availableSessions[2]).isEqualTo(visitSession3)
 
-    verify(appointmentsService, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(appointmentsServiceSpy, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -214,7 +210,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     assertThat(availableSessions[1]).isEqualTo(visitSession2)
     assertThat(availableSessions[2]).isEqualTo(visitSession3)
 
-    verify(appointmentsService, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(appointmentsServiceSpy, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -244,7 +240,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     assertThat(availableSessions[1]).isEqualTo(visitSession2)
     assertThat(availableSessions[2]).isEqualTo(visitSession3)
 
-    verify(appointmentsService, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(appointmentsServiceSpy, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -275,7 +271,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     assertThat(availableSessions[2]).isEqualTo(visitSession2)
     assertThat(availableSessions[3]).isEqualTo(visitSession3)
 
-    verify(appointmentsService, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(appointmentsServiceSpy, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -306,7 +302,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     assertThat(availableSessions[2]).isEqualTo(visitSession2)
     assertThat(availableSessions[3]).isEqualTo(visitSession3)
 
-    verify(appointmentsService, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(appointmentsServiceSpy, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -339,7 +335,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     assertThat(availableSessions[2]).isEqualTo(visitSession2)
     assertThat(availableSessions[3]).isEqualTo(visitSession3)
 
-    verify(appointmentsService, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(appointmentsServiceSpy, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -372,7 +368,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     assertThat(availableSessions[2]).isEqualTo(visitSession2)
     assertThat(availableSessions[3]).isEqualTo(visitSession3)
 
-    verify(appointmentsService, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(appointmentsServiceSpy, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -386,7 +382,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
 
     // Then
     responseSpec.expectStatus().isNotFound
-    verify(appointmentsService, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(appointmentsServiceSpy, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -400,8 +396,8 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
 
     // Then
     responseSpec.expectStatus().is5xxServerError
-    verify(appointmentsService, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(appointmentsServiceSpy, times(1)).getHigherPriorityAppointments(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<AvailableVisitSessionDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<AvailableVisitSessionDto>::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<AvailableVisitSessionDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<AvailableVisitSessionDto>::class.java)
 }

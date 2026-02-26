@@ -8,10 +8,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_BOOKER_AUDIT_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerHistoryAuditDto
@@ -21,15 +18,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.EventAuditType.BOOKED_VISIT
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDateTime
 
 @DisplayName("Get permitted prisoners for booker")
 class GetBookerAuditHistoryTest : IntegrationTestBase() {
-  @MockitoSpyBean
-  lateinit var prisonVisitBookerRegistryClientSpy: PrisonVisitBookerRegistryClient
-
-  @MockitoSpyBean
-  lateinit var visitSchedulerClientSpy: VisitSchedulerClient
 
   @Test
   fun `when booker has audit history both booker and visit history is combined and returned`() {
@@ -232,7 +225,7 @@ class GetBookerAuditHistoryTest : IntegrationTestBase() {
     verify(prisonVisitBookerRegistryClientSpy, times(0)).bookerAuthorisation(any())
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerHistoryAuditDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<BookerHistoryAuditDto>::class.java).toList()
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerHistoryAuditDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<BookerHistoryAuditDto>::class.java).toList()
 
   fun callGetBookerAuditHistory(
     webTestClient: WebTestClient,

@@ -19,7 +19,7 @@ class BookerPrisonerInfoClient(
   private val prisonRegisterClient: PrisonRegisterClient,
   private val prisonerSearchClient: PrisonerSearchClient,
   private val visitBalancesUtil: VisitBalancesUtil,
-  @Value("\${prisoner.profile.timeout:10s}") private val apiTimeout: Duration,
+  @param:Value("\${prisoner.profile.timeout:10s}") private val apiTimeout: Duration,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -32,7 +32,7 @@ class BookerPrisonerInfoClient(
     val prisonerId = bookerPrisoner.prisonerId
 
     val offenderSearchPrisonerDtoMono = prisonerSearchClient.getPrisonerByIdAsMonoEmptyIfNotFound(prisonerId)
-    val prisonerVOBalanceMono = visitAllocationApiClient.getPrisonerVOBalanceAsMono(prisonerId)
+    val prisonerVOBalanceMono = visitAllocationApiClient.getPrisonerVOBalanceDetailedAsMono(prisonerId)
     val registeredPrisonMono = prisonRegisterClient.getPrisonAsMonoEmptyIfNotFound(prisonCode)
 
     Mono.zip(offenderSearchPrisonerDtoMono, prisonerVOBalanceMono, registeredPrisonMono).block(apiTimeout).also { bookerPrisonerInfoMonos ->

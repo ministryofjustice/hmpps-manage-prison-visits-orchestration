@@ -23,8 +23,8 @@ class SwaggerConfig {
 
 @Configuration
 class OpenApiConfiguration(buildProperties: BuildProperties) {
-  private val buildName: String = buildProperties.name
-  private val buildVersion: String = buildProperties.version
+  private val buildName: String? = buildProperties.name
+  private val buildVersion: String? = buildProperties.version
 
   @Value("\${info.app.description}")
   private val description: String = "VSIP Orchestration service used by VSIP frontend to make external API calls and collate responses."

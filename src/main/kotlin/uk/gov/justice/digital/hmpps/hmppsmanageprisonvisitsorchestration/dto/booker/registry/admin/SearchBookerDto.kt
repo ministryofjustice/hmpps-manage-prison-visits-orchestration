@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank
 
 @Schema(description = "Find a booker via search criteria")
 data class SearchBookerDto(
-  @Schema(name = "email", description = "auth email", required = true)
+  @param:Schema(name = "email", description = "auth email", required = true)
   @field:NotBlank
   val email: String,
 )

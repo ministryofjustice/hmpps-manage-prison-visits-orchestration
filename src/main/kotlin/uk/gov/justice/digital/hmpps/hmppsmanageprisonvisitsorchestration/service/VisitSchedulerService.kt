@@ -181,6 +181,11 @@ class VisitSchedulerService(
 
   fun getFutureVisitsWithNotifications(prisonCode: String, notificationEventTypes: List<NotificationEventType>?): List<OrchestrationVisitNotificationsDto> {
     val visitsWithNotifications = visitSchedulerClient.getFutureVisitsWithNotifications(prisonCode, notificationEventTypes?.map { it.name }?.toList())
+    var staffUserNames: Map<String, String> = emptyMap()
+    if (visitsWithNotifications != null && visitsWithNotifications.isNotEmpty()) {
+      val actionedByList = visitsWithNotifications.map { it.bookedBy }.distinct()
+      staffUserNames = manageUsersService.getFullNamesFromActionedByDetails(actionedByList)
+    }
 
     return visitsWithNotifications?.map {
       OrchestrationVisitNotificationsDto(
@@ -188,7 +193,7 @@ class VisitSchedulerService(
         bookedByUserName = getUsernameFromActionedBy(it.bookedBy),
         visitDate = it.visitDate,
         visitReference = it.visitReference,
-        bookedByName = manageUsersService.getFullNameFromActionedBy(it.bookedBy),
+        bookedByName = manageUsersService.getFullNameFromActionedBy(it.bookedBy, staffUserNames),
         notifications = it.notifications,
       )
     } ?: emptyList()

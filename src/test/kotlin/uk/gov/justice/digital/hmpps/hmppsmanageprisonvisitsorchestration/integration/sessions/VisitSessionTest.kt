@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 
 @DisplayName("Get Session Test")
@@ -36,7 +37,7 @@ class VisitSessionTest : IntegrationTestBase() {
     val responseSpec = callGetSession(webTestClient, prisonCode, sessionDate, sessionTemplateReference, visitSessionDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    val visitSessionDtoResponse = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, VisitSessionDto::class.java)
+    val visitSessionDtoResponse = TestObjectMapper.mapper.readValue(responseSpec.expectBody().returnResult().responseBody, VisitSessionDto::class.java)
 
     Assertions.assertThat(visitSessionDtoResponse.sessionTemplateReference).isEqualTo(sessionTemplateReference)
   }

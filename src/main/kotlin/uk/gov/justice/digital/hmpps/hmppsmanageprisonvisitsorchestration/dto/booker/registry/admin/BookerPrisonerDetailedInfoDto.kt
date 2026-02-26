@@ -8,13 +8,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.con
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 
 data class BookerPrisonerDetailedInfoDto(
-  @Schema(description = "Prisoner Details", required = true)
+  @param:Schema(description = "Prisoner Details", required = true)
   val prisoner: PrisonerDto,
 
-  @Schema(description = "Current prison code for the prison that the booker registered the prisoner with", required = true)
+  @param:Schema(description = "Current prison code for the prison that the booker registered the prisoner with", required = true)
   val registeredPrison: RegisteredPrisonDto,
 
-  @Schema(description = "Permitted visitors list", required = true)
+  @param:Schema(description = "Permitted visitors list", required = true)
   @field:Valid
   val permittedVisitors: List<BookerPrisonerVisitorDetailedInfoDto>,
 ) {

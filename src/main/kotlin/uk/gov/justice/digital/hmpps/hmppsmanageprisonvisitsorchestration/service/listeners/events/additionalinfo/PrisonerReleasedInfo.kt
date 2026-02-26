@@ -4,13 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.NotBlank
 
 data class PrisonerReleasedInfo(
-  @NotBlank
-  @JsonProperty("nomsNumber")
+  @field:NotBlank
+  @param:JsonProperty("nomsNumber")
   val prisonerNumber: String,
-  @NotBlank
-  @JsonProperty("prisonId")
+  @field:NotBlank
+  @param:JsonProperty("prisonId")
   val prisonCode: String,
-  @NotBlank
-  @JsonProperty("reason")
+  @field:NotBlank
+  @param:JsonProperty("reason")
   val reasonType: String,
 ) : EventInfo

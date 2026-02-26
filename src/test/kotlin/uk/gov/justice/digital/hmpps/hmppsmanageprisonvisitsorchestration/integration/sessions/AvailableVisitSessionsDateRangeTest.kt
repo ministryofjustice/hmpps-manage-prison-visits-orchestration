@@ -6,8 +6,6 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
@@ -22,8 +20,6 @@ import java.time.LocalTime
 @DisplayName("Get available visit sessions with appointments check")
 class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
 
-  @MockitoSpyBean
-  private lateinit var visitSchedulerClient: VisitSchedulerClient
   private val prisonCode = "MDI"
   private val prisonerId = "AA123456B"
   private val visitSession1 = AvailableVisitSessionDto(LocalDate.now().plusDays(3), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
@@ -67,7 +63,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
       authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
     )
     // Then
-    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
+    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
   }
 
   @Test
@@ -96,7 +92,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
     )
 
     // Then
-    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
+    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
   }
 
   @Test
@@ -125,7 +121,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
     )
 
     // Then
-    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
+    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
   }
 
   @Test
@@ -154,7 +150,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
     )
 
     // Then
-    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
+    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
   }
 
   @Test
@@ -183,7 +179,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
     )
 
     // Then
-    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
+    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
   }
 
   @Test
@@ -213,7 +209,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
     )
 
     // Then
-    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
+    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
   }
 
   @Test
@@ -242,7 +238,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
     )
 
     // Then
-    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
+    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
   }
 
   @Test
@@ -270,7 +266,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
       toDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMax.toLong()),
     )
 
-    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
+    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
   }
 
   @Test
@@ -298,7 +294,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
       toDate = LocalDate.now().plusDays(toDateOverride.toLong()),
     )
 
-    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
+    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
   }
 
   @Test
@@ -328,7 +324,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
       toDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMax.toLong()),
     )
 
-    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
+    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
   }
 
   @Test
@@ -358,7 +354,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
       toDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMax.toLong()),
     )
 
-    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
+    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
   }
 
   @Test
@@ -388,7 +384,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
       toDate = LocalDate.now().plusDays(toDateOverride.toLong()),
     )
 
-    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
+    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
   }
 
   @Test
@@ -419,7 +415,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
       toDate = LocalDate.now().plusDays(visitSchedulerPrisonDto.policyNoticeDaysMax.toLong()),
     )
 
-    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
+    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonId = prisonCode, prisonerId = prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
   }
 
   @Test
@@ -448,6 +444,6 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
 
     // Then
     // verify getVisitSessions on visit-scheduler is called with userType = PUBLIC
-    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
+    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, sessionRestriction = OPEN, dateRange = dateRange, userType = PUBLIC, excludedApplicationReference = null)
   }
 }

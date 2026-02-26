@@ -10,6 +10,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import software.amazon.awssdk.services.sns.model.PublishRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_COURT_VIDEO_APPOINTMENT_CANCELLED_DELETED_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_COURT_VIDEO_APPOINTMENT_CREATED_PATH
@@ -555,6 +556,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
         COURT_VIDEO_APPOINTMENT_CREATED_EVENT_TYPE,
         createCourtVideoAppointmentAdditionalInformationJson(
           appointmentInstanceId = "TEST",
+          categoryCode = "VLPM",
         ),
       )
 
@@ -572,6 +574,94 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
   }
 
   @Test
+  fun `test court-video-appointment-created is skipped when unsupported category code is found`() {
+    // Given
+    val domainEvent =
+      createDomainEventJson(
+        COURT_VIDEO_APPOINTMENT_CREATED_EVENT_TYPE,
+        createCourtVideoAppointmentAdditionalInformationJson(
+          appointmentInstanceId = "TEST",
+          categoryCode = "UNSUPPORTED_CATEGORY_CODE",
+        ),
+      )
+
+    val publishRequest = createDomainEventPublishRequest(COURT_VIDEO_APPOINTMENT_CREATED_EVENT_TYPE, domainEvent)
+
+    // When
+    sendSqSMessage(publishRequest)
+
+    // Then
+    await untilAsserted { verifyNoInteractions(visitSchedulerService) }
+    await untilAsserted { verifyNoInteractions(visitSchedulerClient) }
+  }
+
+  @Test
+  fun `test court-video-appointment-updated is skipped when unsupported category code is found`() {
+    // Given
+    val domainEvent =
+      createDomainEventJson(
+        COURT_VIDEO_APPOINTMENT_UPDATED_EVENT_TYPE,
+        createCourtVideoAppointmentAdditionalInformationJson(
+          appointmentInstanceId = "TEST",
+          categoryCode = "UNSUPPORTED_CATEGORY_CODE",
+        ),
+      )
+
+    val publishRequest = createDomainEventPublishRequest(COURT_VIDEO_APPOINTMENT_UPDATED_EVENT_TYPE, domainEvent)
+
+    // When
+    sendSqSMessage(publishRequest)
+
+    // Then
+    await untilAsserted { verifyNoInteractions(visitSchedulerService) }
+    await untilAsserted { verifyNoInteractions(visitSchedulerClient) }
+  }
+
+  @Test
+  fun `test court-video-appointment-cancelled is skipped when unsupported category code is found`() {
+    // Given
+    val domainEvent =
+      createDomainEventJson(
+        COURT_VIDEO_APPOINTMENT_CANCELLED_EVENT_TYPE,
+        createCourtVideoAppointmentAdditionalInformationJson(
+          appointmentInstanceId = "TEST",
+          categoryCode = "UNSUPPORTED_CATEGORY_CODE",
+        ),
+      )
+
+    val publishRequest = createDomainEventPublishRequest(COURT_VIDEO_APPOINTMENT_CANCELLED_EVENT_TYPE, domainEvent)
+
+    // When
+    sendSqSMessage(publishRequest)
+
+    // Then
+    await untilAsserted { verifyNoInteractions(visitSchedulerService) }
+    await untilAsserted { verifyNoInteractions(visitSchedulerClient) }
+  }
+
+  @Test
+  fun `test court-video-appointment-deleted is skipped when unsupported category code is found`() {
+    // Given
+    val domainEvent =
+      createDomainEventJson(
+        COURT_VIDEO_APPOINTMENT_DELETED_EVENT_TYPE,
+        createCourtVideoAppointmentAdditionalInformationJson(
+          appointmentInstanceId = "TEST",
+          categoryCode = "UNSUPPORTED_CATEGORY_CODE",
+        ),
+      )
+
+    val publishRequest = createDomainEventPublishRequest(COURT_VIDEO_APPOINTMENT_DELETED_EVENT_TYPE, domainEvent)
+
+    // When
+    sendSqSMessage(publishRequest)
+
+    // Then
+    await untilAsserted { verifyNoInteractions(visitSchedulerService) }
+    await untilAsserted { verifyNoInteractions(visitSchedulerClient) }
+  }
+
+  @Test
   fun `test court-video-appointment-updated is processed`() {
     // Given
     val sentRequestToVsip = CourtVideoAppointmentNotificationDto(
@@ -583,6 +673,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
         COURT_VIDEO_APPOINTMENT_UPDATED_EVENT_TYPE,
         createCourtVideoAppointmentAdditionalInformationJson(
           appointmentInstanceId = "TEST",
+          categoryCode = "VLPM",
         ),
       )
 
@@ -611,6 +702,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
         COURT_VIDEO_APPOINTMENT_DELETED_EVENT_TYPE,
         createCourtVideoAppointmentAdditionalInformationJson(
           appointmentInstanceId = "TEST",
+          categoryCode = "VLPM",
         ),
       )
 
@@ -639,6 +731,7 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
         COURT_VIDEO_APPOINTMENT_CANCELLED_EVENT_TYPE,
         createCourtVideoAppointmentAdditionalInformationJson(
           appointmentInstanceId = "TEST",
+          categoryCode = "VLPM",
         ),
       )
 

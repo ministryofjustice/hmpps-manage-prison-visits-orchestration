@@ -7,21 +7,18 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.SEARCH_FOR_BOOKER
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_SEARCH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.SearchBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDateTime
 
 @DisplayName("Get booker via search criteria")
 class SearchForBookerTest : IntegrationTestBase() {
-  @MockitoSpyBean
-  lateinit var prisonVisitBookerRegistryClientSpy: PrisonVisitBookerRegistryClient
 
   @Test
   fun `when booker exists with same email, then booker is returned`() {
@@ -110,7 +107,7 @@ class SearchForBookerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isUnauthorized
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerSearchResultsDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<BookerSearchResultsDto>::class.java).toList()
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerSearchResultsDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<BookerSearchResultsDto>::class.java).toList()
 
   fun callSearchBooker(
     searchBookerDto: SearchBookerDto,

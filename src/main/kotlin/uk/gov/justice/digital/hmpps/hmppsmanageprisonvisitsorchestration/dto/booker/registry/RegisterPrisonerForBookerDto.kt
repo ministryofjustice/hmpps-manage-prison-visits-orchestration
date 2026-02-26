@@ -7,24 +7,24 @@ import java.time.LocalDate
 
 @Schema(description = "Details to register a prisoner to a booker.")
 data class RegisterPrisonerForBookerDto(
-  @JsonProperty("prisonerId")
-  @Schema(description = "Prisoner Id", example = "A1234AA", required = true)
+  @param:JsonProperty("prisonerId")
+  @param:Schema(description = "Prisoner Id", example = "A1234AA", required = true)
   @field:NotBlank
   val prisonerId: String,
 
-  @Schema(description = "Prisoner first name", example = "James", required = true)
+  @param:Schema(description = "Prisoner first name", example = "James", required = true)
   @field:NotBlank
   val prisonerFirstName: String,
 
-  @Schema(description = "Prisoner last name", example = "Smith", required = true)
+  @param:Schema(description = "Prisoner last name", example = "Smith", required = true)
   @field:NotBlank
   val prisonerLastName: String,
 
-  @Schema(description = "Prisoner date of birth", example = "1960-01-30", required = true)
+  @param:Schema(description = "Prisoner date of birth", example = "1960-01-30", required = true)
   val prisonerDateOfBirth: LocalDate,
 
-  @JsonProperty("prisonId")
+  @param:JsonProperty("prisonId")
   @field:NotBlank
-  @Schema(description = "Prison Id", example = "MDI", required = true)
+  @param:Schema(description = "Prison Id", example = "MDI", required = true)
   val prisonCode: String,
 )

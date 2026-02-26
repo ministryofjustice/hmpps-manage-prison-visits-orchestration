@@ -9,11 +9,11 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 data class PrisonerRestrictionChangeNotificationDto(
-  @NotBlank
+  @field:NotBlank
   val prisonerNumber: String,
-  @NotNull
+  @field:NotNull
   val validFromDate: LocalDate,
-  @JsonInclude(Include.NON_NULL)
+  @param:JsonInclude(Include.NON_NULL)
   val validToDate: LocalDate? = null,
 ) {
 

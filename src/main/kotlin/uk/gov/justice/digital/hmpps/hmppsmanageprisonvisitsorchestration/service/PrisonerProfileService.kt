@@ -21,8 +21,8 @@ class PrisonerProfileService(
   private val prisonerProfileClient: PrisonerProfileClient,
   private val prisonApiClient: PrisonApiClient,
   private val prisonerContactRegistryClient: PrisonerContactRegistryClient,
-  @Value("\${prisoner.profile.past-visits.duration-in-months: P3M}") private val pastVisitsPeriod: Period,
-  @Value("\${prisoner.profile.future-visits.duration-in-months: P2M}") private val futureVisitsPeriod: Period,
+  @param:Value("\${prisoner.profile.past-visits.duration-in-months: P3M}") private val pastVisitsPeriod: Period,
+  @param:Value("\${prisoner.profile.future-visits.duration-in-months: P2M}") private val futureVisitsPeriod: Period,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)

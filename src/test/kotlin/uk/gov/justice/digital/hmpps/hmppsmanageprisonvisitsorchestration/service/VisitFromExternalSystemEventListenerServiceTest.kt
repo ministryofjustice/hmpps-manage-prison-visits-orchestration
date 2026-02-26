@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
@@ -32,15 +32,17 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.VisitFromExternalSystemEvent
 import java.time.LocalDateTime
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 @ExtendWith(SpringExtension::class)
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 internal class VisitFromExternalSystemEventListenerServiceTest {
-  private val objectMapper = jacksonObjectMapper()
   private val visitSchedulerClient = mock<VisitSchedulerClient>()
-  private val visitFromExternalSystemEventListenerService = VisitFromExternalSystemEventListenerService(objectMapper, visitSchedulerClient)
+  private val visitFromExternalSystemEventListenerService = VisitFromExternalSystemEventListenerService(TestObjectMapper.mapper, visitSchedulerClient)
   private val visitDto = VisitDto(
     reference = "v9-d7-ed-7u",
     prisonerId = "A1243B",
@@ -116,7 +118,7 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
     fun `will process a visit create event`() {
       whenever(visitSchedulerClient.createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())).thenReturn(visitDto)
 
-      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
 
       assertDoesNotThrow {
         visitFromExternalSystemEventListenerService.onEventReceived(message).get()
@@ -129,7 +131,7 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
       val exceptionMessage = "Failed to create visit from external system"
       whenever(visitSchedulerClient.createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())).thenThrow(MockitoException(exceptionMessage))
 
-      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
 
       val exception = assertThrows<Exception> {
         visitFromExternalSystemEventListenerService.onEventReceived(message).get()
@@ -140,7 +142,7 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
 
     @Test
     fun `will throw an exception if message attributes are invalid`() {
-      val message = objectMapper.writeValueAsString(invalidVisitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(invalidVisitFromExternalSystemEvent)
 
       assertThrows<Exception> {
         visitFromExternalSystemEventListenerService.onEventReceived(message).get()
@@ -181,7 +183,7 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
     fun `will process a visit update event`() {
       whenever(visitSchedulerClient.updateVisitFromExternalSystem(any<UpdateVisitFromExternalSystemDto>())).thenReturn(visitDto)
 
-      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
 
       assertDoesNotThrow {
         visitFromExternalSystemEventListenerService.onEventReceived(message).get()
@@ -194,7 +196,7 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
       val exceptionMessage = "Could not update visit from external system"
       whenever(visitSchedulerClient.updateVisitFromExternalSystem(any<UpdateVisitFromExternalSystemDto>())).thenThrow(MockitoException(exceptionMessage))
 
-      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
 
       val exception = assertThrows<Exception> {
         visitFromExternalSystemEventListenerService.onEventReceived(message).get()
@@ -205,7 +207,7 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
 
     @Test
     fun `will throw an exception if message attributes are invalid`() {
-      val message = objectMapper.writeValueAsString(invalidVisitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(invalidVisitFromExternalSystemEvent)
 
       assertThrows<Exception> {
         visitFromExternalSystemEventListenerService.onEventReceived(message).get()
@@ -240,7 +242,7 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
     fun `will process a visit cancel event`() {
       whenever(visitSchedulerClient.cancelVisit(any(), any<CancelVisitDto>())).thenReturn(visitDto)
 
-      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
 
       assertDoesNotThrow {
         visitFromExternalSystemEventListenerService.onEventReceived(message).get()
@@ -253,7 +255,7 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
       val exceptionMessage = "Failed to cancel visit from external system"
       whenever(visitSchedulerClient.cancelVisit(any(), any<CancelVisitDto>())).thenThrow(MockitoException(exceptionMessage))
 
-      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
 
       val exception = assertThrows<Exception> {
         visitFromExternalSystemEventListenerService.onEventReceived(message).get()
@@ -264,7 +266,7 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
 
     @Test
     fun `will throw an exception if message attributes are invalid`() {
-      val message = objectMapper.writeValueAsString(invalidVisitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(invalidVisitFromExternalSystemEvent)
 
       assertThrows<Exception> {
         visitFromExternalSystemEventListenerService.onEventReceived(message).get()

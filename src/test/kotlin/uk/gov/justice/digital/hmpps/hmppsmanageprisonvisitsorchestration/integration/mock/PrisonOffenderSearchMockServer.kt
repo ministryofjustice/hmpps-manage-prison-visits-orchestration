@@ -32,9 +32,10 @@ class PrisonOffenderSearchMockServer : WireMockServer(8094) {
     prisoners: List<PrisonerDto>?,
     httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
   ) {
+    val responseFields = listOf("prisonerNumber", "firstName", "lastName").joinToString(",")
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
-      post("/attribute-search?size=10000")
+      post("/attribute-search?size=10000&responseFields=$responseFields")
         .willReturn(
           if (prisoners == null) {
             responseBuilder
