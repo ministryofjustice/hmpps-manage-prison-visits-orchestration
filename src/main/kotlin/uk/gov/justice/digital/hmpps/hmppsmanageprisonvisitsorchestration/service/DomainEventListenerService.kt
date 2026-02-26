@@ -1,15 +1,15 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.awspring.cloud.sqs.annotation.SqsListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.future.future
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Service
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.DomainEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.EventFeatureSwitch
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.SQSMessage
@@ -21,8 +21,8 @@ const val PRISON_VISITS_QUEUE_CONFIG_KEY = "prisonvisitsevents"
 @Service
 class DomainEventListenerService(
   val context: ApplicationContext,
-  val objectMapper: ObjectMapper,
   val eventFeatureSwitch: EventFeatureSwitch,
+  @param:Qualifier("objectMapper") val objectMapper: ObjectMapper,
 ) {
 
   private companion object {
@@ -35,11 +35,11 @@ class DomainEventListenerService(
   ): CompletableFuture<Void> = asCompletableFuture {
     var dLQException: Exception? = null
     try {
-      val sqsMessage: SQSMessage = objectMapper.readValue(rawMessage)
+      val sqsMessage: SQSMessage = objectMapper.readValue(rawMessage, SQSMessage::class.java)
       if (sqsMessage.type == "Notification") {
         if (eventFeatureSwitch.isAllEventsEnabled()) {
           LOG.debug("Entered onDomainEvent")
-          val domainEvent = objectMapper.readValue<DomainEvent>(sqsMessage.message)
+          val domainEvent = objectMapper.readValue(sqsMessage.message, DomainEvent::class.java)
           LOG.debug("Received message: type:${domainEvent.eventType} message:${domainEvent.additionalInformation}")
           val enabled = eventFeatureSwitch.isEnabled(domainEvent.eventType)
           if (enabled) {
