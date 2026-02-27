@@ -5,10 +5,10 @@ import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionDateConflict
 
 data class SessionDateConflictDto(
-  @Schema(description = "Session Date Conflict", example = "NON_ASSOCIATION", required = true)
+  @param:Schema(description = "Session Date Conflict", example = "NON_ASSOCIATION", required = true)
   @field:NotNull
   val sessionDateConflict: SessionDateConflict,
 
-  @Schema(description = "Session Conflict attributes", required = false)
+  @param:Schema(description = "Session Conflict attributes", required = false)
   val additionalAttributes: List<List<AdditionalConflictInfoDto>> = emptyList(),
 )
