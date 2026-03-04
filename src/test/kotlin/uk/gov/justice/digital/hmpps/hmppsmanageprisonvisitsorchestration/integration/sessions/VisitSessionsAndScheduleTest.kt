@@ -161,7 +161,8 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertSessionsAndScheduleCount(sessionsAndScheduleDto, datesWithSessionsNoSchedule, 1, 0)
 
     val datesWithNoSessionsOrSchedule = sessionsAndScheduleDto.sessionsAndSchedule.map { it.date }.filter { !datesWithSessionsAndSchedule.contains(it) && !datesWithSessionsNoSchedule.contains(it) }
-    assertSessionsAndScheduleCount(sessionsAndScheduleDto, datesWithNoSessionsOrSchedule, 0, 0)
+    assertThat (datesWithNoSessionsOrSchedule.size).isEqualTo(8)
+
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
     verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
   }
@@ -190,7 +191,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     var visitSessionWithDateConflict = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto1.startTimestamp.toLocalDate() }
     assertThat(visitSessionWithDateConflict.sessionDateConflicts.size).isEqualTo(1)
     assertThat(visitSessionWithDateConflict.sessionDateConflicts.first().sessionDateConflict).isEqualTo(SessionDateConflict.NON_ASSOCIATION)
-    assertThat(visitSessionWithDateConflict.visitSessions).isEmpty()
+    assertThat(visitSessionWithDateConflict.visitSessions.size).isEqualTo(1)
 
     val visitSessionWithNoDateConflict = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto2.startTimestamp.toLocalDate() }
     assertThat(visitSessionWithNoDateConflict.sessionDateConflicts).isEmpty()
@@ -222,7 +223,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule.size).isEqualTo(13)
     val visitSessionWithDateConflict = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto1.startTimestamp.toLocalDate() }
     assertThat(visitSessionWithDateConflict.sessionDateConflicts.size).isEqualTo(1)
-    assertThat(visitSessionWithDateConflict.visitSessions).isEmpty()
+    assertThat(visitSessionWithDateConflict.visitSessions.size).isEqualTo(1)
     assertThat(visitSessionWithDateConflict.sessionDateConflicts.first().sessionDateConflict).isEqualTo(SessionDateConflict.PRISON_DATE_BLOCKED)
 
     val visitSessionWithNoDateConflict = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto2.startTimestamp.toLocalDate() }

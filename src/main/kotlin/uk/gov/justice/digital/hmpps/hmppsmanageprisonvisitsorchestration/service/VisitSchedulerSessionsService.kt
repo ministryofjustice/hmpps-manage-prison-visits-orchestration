@@ -488,7 +488,6 @@ class VisitSchedulerSessionsService(
     LOG.debug("getSessionsAndScheduleDataForDate: {}", sessionDate)
     val visitSessionsForDate = visitSessions?.filter { it.startTimestamp.toLocalDate() == sessionDate }?.map { VisitSessionV2Dto(it) } ?: emptyList()
     val sessionDateConflicts: MutableList<SessionDateConflictDto> = mutableListOf()
-    var prisonerScheduleForDate: List<PrisonerScheduledEventDto> = emptyList()
 
     // check if the date range is outside the booking window
     if (isOutsideBookingWindow(sessionDate, prisonDateRange)) {
@@ -496,15 +495,15 @@ class VisitSchedulerSessionsService(
     } else {
       // only populate schedules if sessions are available
       if (visitSessionsForDate.isNotEmpty()) {
-        prisonerScheduleForDate = prisonerSchedules.filter { it.eventDate == sessionDate }.map { PrisonerScheduledEventDto(it) }
         sessionDateConflicts.addAll(getSessionDateConflicts(visitSessionsForDate))
       }
     }
 
     return if (sessionDateConflicts.isNotEmpty()) {
-      // if there are session date conflicts - do not return the sessions associated
-      SessionsAndScheduleDto(sessionDate, emptyList(), emptyList(), sessionDateConflicts.toList())
+      // if there are session date conflicts - do not get schedules
+      SessionsAndScheduleDto(sessionDate, visitSessionsForDate, emptyList(), sessionDateConflicts.toList())
     } else {
+      val prisonerScheduleForDate = prisonerSchedules.filter { it.eventDate == sessionDate }.map { PrisonerScheduledEventDto(it) }
       SessionsAndScheduleDto(sessionDate, visitSessionsForDate, prisonerScheduleForDate)
     }
   }
