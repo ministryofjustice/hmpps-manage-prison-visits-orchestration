@@ -161,7 +161,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertSessionsAndScheduleCount(sessionsAndScheduleDto, datesWithSessionsNoSchedule, 1, 0)
 
     val datesWithNoSessionsOrSchedule = sessionsAndScheduleDto.sessionsAndSchedule.map { it.date }.filter { !datesWithSessionsAndSchedule.contains(it) && !datesWithSessionsNoSchedule.contains(it) }
-    assertThat (datesWithNoSessionsOrSchedule.size).isEqualTo(8)
+    assertThat(datesWithNoSessionsOrSchedule.size).isEqualTo(8)
 
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
     verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
