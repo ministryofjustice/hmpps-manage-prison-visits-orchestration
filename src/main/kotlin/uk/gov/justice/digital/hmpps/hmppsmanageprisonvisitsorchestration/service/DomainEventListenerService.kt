@@ -36,7 +36,7 @@ class DomainEventListenerService(
     var dLQException: Exception? = null
     try {
       val sqsMessage: SQSMessage = objectMapper.readValue(rawMessage, SQSMessage::class.java)
-      if (sqsMessage.type == "Notification") {
+      if (sqsMessage.messageAttributes.eventType == "Notification") {
         if (eventFeatureSwitch.isAllEventsEnabled()) {
           LOG.debug("Entered onDomainEvent")
           val domainEvent = objectMapper.readValue(sqsMessage.message, DomainEvent::class.java)
