@@ -83,6 +83,7 @@ class PrisonerContactRegistryClient(
 
   private fun getSocialContactsUriBuilder(hasDateOfBirth: Boolean? = null, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParamIfPresent("hasDateOfBirth", Optional.ofNullable(hasDateOfBirth))
+    uriBuilder.queryParam("withRestrictions", true)
     return uriBuilder
   }
 
