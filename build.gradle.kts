@@ -38,7 +38,7 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-webclient-test")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
-  testImplementation("org.testcontainers:localstack:1.21.4")
+  testImplementation("org.testcontainers:testcontainers-localstack:2.0.3")
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
   testImplementation("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
