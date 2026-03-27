@@ -23,9 +23,9 @@ class PrisonerContactRegistryMockServer : WireMockServer(8095) {
     val responseBuilder = createJsonResponseBuilder()
 
     val uri = if (hasDateOfBirth != null) {
-      "/v2/prisoners/$prisonerId/contacts/social?hasDateOfBirth=$hasDateOfBirth"
+      "/v2/prisoners/$prisonerId/contacts/social?hasDateOfBirth=$hasDateOfBirth&withRestrictions=true"
     } else {
-      "/v2/prisoners/$prisonerId/contacts/social"
+      "/v2/prisoners/$prisonerId/contacts/social?withRestrictions=true"
     }
 
     stubFor(
