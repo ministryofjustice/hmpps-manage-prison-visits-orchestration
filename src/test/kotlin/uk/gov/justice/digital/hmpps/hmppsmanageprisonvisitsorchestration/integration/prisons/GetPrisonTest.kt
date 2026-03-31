@@ -20,7 +20,7 @@ class GetPrisonTest : IntegrationTestBase() {
 
   final val prisonCode = "HEI"
   val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18)
-  val prisonRegisterPrisonDto = PrisonRegisterPrisonDto(prisonCode, "HMP Hewell")
+  val prisonRegisterPrisonDto = PrisonRegisterPrisonDto(prisonCode, "HMP Hewell", prisonNameInWelsh = "HMP Hewell (Cymru)")
   val prisonRegisterPrisonContactDetailsDto = PrisonRegisterContactDetailsDto("example@email.com", "07777777777", "https://www.example.com")
 
   fun callGetSupportedPrisons(
@@ -49,6 +49,7 @@ class GetPrisonTest : IntegrationTestBase() {
     Assertions.assertThat(result.active).isEqualTo(visitSchedulerPrisonDto.active)
     Assertions.assertThat(result.code).isEqualTo(visitSchedulerPrisonDto.code)
     Assertions.assertThat(result.prisonName).isEqualTo(prisonRegisterPrisonDto.prisonName)
+    Assertions.assertThat(result.prisonNameInWelsh).isEqualTo(prisonRegisterPrisonDto.prisonNameInWelsh)
     Assertions.assertThat(result.policyNoticeDaysMin).isEqualTo(visitSchedulerPrisonDto.policyNoticeDaysMin)
     Assertions.assertThat(result.policyNoticeDaysMax).isEqualTo(visitSchedulerPrisonDto.policyNoticeDaysMax)
     Assertions.assertThat(result.maxAdultVisitors).isEqualTo(visitSchedulerPrisonDto.maxAdultVisitors)
