@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
 data class RegisteredPrisonDto(
   @param:Schema(description = "prison code", example = "MDI", required = true)
   val prisonCode: String,
@@ -12,6 +11,7 @@ data class RegisteredPrisonDto(
   @param:Schema(description = "prison name", example = "MDI", required = true)
   val prisonName: String,
 
+  @param:JsonInclude(JsonInclude.Include.NON_NULL)
   @Schema(description = "Name of the prison in Welsh", example = "Carchar Brynbuga", required = false)
   val prisonNameInWelsh: String? = null,
 ) {
