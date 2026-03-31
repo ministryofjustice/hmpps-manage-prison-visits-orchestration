@@ -9,9 +9,13 @@ data class RegisteredPrisonDto(
 
   @param:Schema(description = "prison name", example = "MDI", required = true)
   val prisonName: String,
+
+  @Schema(description = "Name of the prison in Welsh", example = "Carchar Brynbuga", required = false)
+  val prisonNameInWelsh: String? = null,
 ) {
   constructor(prisonDto: PrisonRegisterPrisonDto) : this(
     prisonCode = prisonDto.prisonId,
     prisonName = prisonDto.prisonName,
+    prisonNameInWelsh = prisonDto.prisonNameInWelsh,
   )
 }
