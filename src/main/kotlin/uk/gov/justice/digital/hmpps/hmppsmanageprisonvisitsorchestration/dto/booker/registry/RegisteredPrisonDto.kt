@@ -1,8 +1,10 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class RegisteredPrisonDto(
   @param:Schema(description = "prison code", example = "MDI", required = true)
   val prisonCode: String,
