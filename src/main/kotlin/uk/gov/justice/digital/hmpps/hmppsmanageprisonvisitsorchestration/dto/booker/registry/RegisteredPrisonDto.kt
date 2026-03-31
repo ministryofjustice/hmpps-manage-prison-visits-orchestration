@@ -12,7 +12,7 @@ data class RegisteredPrisonDto(
   val prisonName: String,
 
   @param:JsonInclude(JsonInclude.Include.NON_NULL)
-  @Schema(description = "Name of the prison in Welsh", example = "Carchar Brynbuga", required = false)
+  @param:Schema(description = "Name of the prison in Welsh", example = "Carchar Brynbuga", required = false)
   val prisonNameInWelsh: String? = null,
 ) {
   constructor(prisonDto: PrisonRegisterPrisonDto) : this(
