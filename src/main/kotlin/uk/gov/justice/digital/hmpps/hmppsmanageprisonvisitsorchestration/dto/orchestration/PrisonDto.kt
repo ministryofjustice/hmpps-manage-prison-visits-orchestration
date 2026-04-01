@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration
 
-import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Min
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterContactDetailsDto
@@ -17,7 +16,6 @@ data class PrisonDto(
   @param:Schema(description = "prison name", example = "HMP Hewell", required = true)
   val prisonName: String,
 
-  @param:JsonInclude(JsonInclude.Include.NON_NULL)
   @param:Schema(description = "Name of the prison in Welsh", example = "Carchar Brynbuga", required = false)
   val prisonNameInWelsh: String? = null,
 
