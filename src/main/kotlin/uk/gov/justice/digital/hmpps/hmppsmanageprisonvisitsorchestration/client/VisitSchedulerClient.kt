@@ -432,7 +432,7 @@ class VisitSchedulerClient(
       .body(BodyInserters.fromValue(sendDto))
       .retrieve()
       .toBodilessEntity()
-      .doOnError { e -> LOG.error("Could not process contact restriction upsert :", e) }
+      .doOnError { e -> LOG.error("Could not processContactRestrictionUpserted :", e) }
       .block(apiTimeout)
   }
 

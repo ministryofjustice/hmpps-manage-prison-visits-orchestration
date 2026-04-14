@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_CONTACT_RESTRICTION_UPDATED_TYPE
 import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 
-class PrisonerPrisonerContactRestrictionUpdatedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
+class PrisonerContactRestrictionUpdatedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
 
   @Test
   fun `when valid contact restriction updated event received then event is successfully processed`() {

@@ -197,7 +197,7 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     client.purgeQueue(PurgeQueueRequest.builder().queueUrl(url).build()).get()
   }
 
-  fun createDomainEvent(eventType: String, additionalInformation: String = "test", personReference: PersonReference = PersonReference(emptyList())): DomainEvent = DomainEvent(eventType = eventType, additionalInformation, null, personReference)
+  fun createDomainEvent(eventType: String, additionalInformation: String = "test", personReference: PersonReference = PersonReference(emptyList())): DomainEvent = DomainEvent(eventType = eventType, additionalInformation = additionalInformation, description = null, personReference = personReference)
 
   fun createDomainEventPublishRequest(eventType: String, domainEvent: String): PublishRequest? = PublishRequest.builder()
     .topicArn(topicArn)
