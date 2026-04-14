@@ -14,8 +14,8 @@ data class ContactRestrictionUpsertedNotificationDto(
   val restrictionId: Long,
 ) {
   constructor(info: ContactRestrictionUpsertedInfo) : this(
-    prisonerNumber = info.prisonerNumber ?: throw Exception("Prisoner number is required"),
-    contactId = info.contactId?.toLong() ?: throw Exception("Contact ID is required"),
+    prisonerNumber = requireNotNull(info.prisonerNumber) { "Prisoner number is required" },
+    contactId = requireNotNull(info.contactId) { "Contact ID is required" }.toLong(),
     prisonerContactId = info.prisonerContactId.toLong(),
     restrictionId = info.prisonerContactRestrictionId.toLong(),
   )

@@ -16,7 +16,7 @@ class PrisonerContactRestrictionCreatedNotifier : EventNotifier() {
     }
 
     LOG.debug("Enter ContactRestrictionCreatedNotifier Info: {}", contactRestrictionCreatedInfo)
-    getVisitSchedulerService().processPrisonerContactRestrictionUpsert(contactRestrictionCreatedInfo)
+    getVisitSchedulerService().processPrisonerContactRestrictionUpserted(contactRestrictionCreatedInfo)
   }
 
   override fun isProcessableEvent(domainEvent: DomainEvent): Boolean = true

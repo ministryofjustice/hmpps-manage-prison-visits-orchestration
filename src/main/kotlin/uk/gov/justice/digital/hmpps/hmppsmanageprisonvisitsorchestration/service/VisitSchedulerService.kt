@@ -143,7 +143,7 @@ class VisitSchedulerService(
     visitSchedulerClient.processPrisonerRestrictionChange(PrisonerRestrictionChangeNotificationDto(info))
   }
 
-  fun processPrisonerContactRestrictionUpsert(info: ContactRestrictionUpsertedInfo) {
+  fun processPrisonerContactRestrictionUpserted(info: ContactRestrictionUpsertedInfo) {
     visitSchedulerClient.processContactRestrictionUpserted(ContactRestrictionUpsertedNotificationDto(info))
   }
 

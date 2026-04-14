@@ -16,7 +16,7 @@ class PrisonerContactRestrictionUpdatedNotifier : EventNotifier() {
     }
 
     LOG.debug("Enter ContactRestrictionUpdatedNotifier Info: {}", contactRestrictionUpdatedInfo)
-    getVisitSchedulerService().processPrisonerContactRestrictionUpsert(contactRestrictionUpdatedInfo)
+    getVisitSchedulerService().processPrisonerContactRestrictionUpserted(contactRestrictionUpdatedInfo)
   }
 
   override fun isProcessableEvent(domainEvent: DomainEvent): Boolean = true
