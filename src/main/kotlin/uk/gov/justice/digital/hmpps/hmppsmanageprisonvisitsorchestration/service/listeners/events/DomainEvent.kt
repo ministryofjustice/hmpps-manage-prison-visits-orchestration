@@ -12,4 +12,19 @@ data class DomainEvent(
 
   @param:JsonProperty("description")
   val description: String? = null,
+
+  val personReference: PersonReference?,
 )
+
+data class PersonReference(
+  val identifiers: List<PersonIdentifier>,
+)
+
+data class PersonIdentifier(val type: Identifier, val value: String)
+
+@Suppress("unused")
+enum class Identifier {
+  NOMS,
+  NOMIS,
+  DPS_CONTACT_ID,
+}
