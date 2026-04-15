@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.DomainEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.Identifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.ContactRestrictionUpsertedInfo
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerContactRestrictionUpsertedInfo
 
 interface IEventNotifier {
   fun process(domainEvent: DomainEvent)
@@ -34,11 +35,19 @@ abstract class EventNotifier : IEventNotifier {
 
   fun <T> getAdditionalInfo(domainEvent: DomainEvent, target: Class<T>): T = objectMapper.readValue(domainEvent.additionalInformation, target)
 
-  fun getContactRestrictionUpsertedInfo(domainEvent: DomainEvent): ContactRestrictionUpsertedInfo {
-    val contactRestrictionUpsertedInfo = getAdditionalInfo(domainEvent, ContactRestrictionUpsertedInfo::class.java)
+  fun getPrisonerContactRestrictionUpsertedInfo(domainEvent: DomainEvent): PrisonerContactRestrictionUpsertedInfo {
+    val prisonerContactRestrictionUpsertedInfo = getAdditionalInfo(domainEvent, PrisonerContactRestrictionUpsertedInfo::class.java)
     val prisonerId = domainEvent.personReference?.identifiers?.firstOrNull { it.type == Identifier.NOMS }?.value
     val contactId = domainEvent.personReference?.identifiers?.firstOrNull { it.type == Identifier.DPS_CONTACT_ID }?.value
-    contactRestrictionUpsertedInfo.prisonerNumber = prisonerId
+    prisonerContactRestrictionUpsertedInfo.prisonerNumber = prisonerId
+    prisonerContactRestrictionUpsertedInfo.contactId = contactId
+
+    return prisonerContactRestrictionUpsertedInfo
+  }
+
+  fun getContactRestrictionUpsertedInfo(domainEvent: DomainEvent): ContactRestrictionUpsertedInfo {
+    val contactRestrictionUpsertedInfo = getAdditionalInfo(domainEvent, ContactRestrictionUpsertedInfo::class.java)
+    val contactId = domainEvent.personReference?.identifiers?.firstOrNull { it.type == Identifier.DPS_CONTACT_ID }?.value
     contactRestrictionUpsertedInfo.contactId = contactId
 
     return contactRestrictionUpsertedInfo

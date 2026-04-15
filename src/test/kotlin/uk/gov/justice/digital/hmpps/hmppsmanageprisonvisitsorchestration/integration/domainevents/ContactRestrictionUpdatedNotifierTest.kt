@@ -9,79 +9,75 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import software.amazon.awssdk.services.sns.model.PublishRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_CONTACT_RESTRICTION_UPSERTED_PATH
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerContactRestrictionUpsertedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_CONTACT_RESTRICTION_UPSERTED_PATH
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.ContactRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.Identifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.PersonIdentifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.PersonReference
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CONTACT_RESTRICTION_UPDATED_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.EventNotifier
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_CONTACT_RESTRICTION_CREATED_TYPE
 import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 
-class PrisonerContactRestrictionCreatedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
+class ContactRestrictionUpdatedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
 
   @Test
-  fun `when valid contact restriction created event received then event is successfully processed`() {
+  fun `when valid contact global restriction updated event received then event is successfully processed`() {
     // Given
-    val sentRequestToVsip = PrisonerContactRestrictionUpsertedNotificationDto(
-      prisonerNumber = "Test",
+    val sentRequestToVsip = ContactRestrictionUpsertedNotificationDto(
       contactId = 103L,
-      prisonerContactId = 102L,
       restrictionId = 101L,
     )
 
     val personReference = PersonReference(
       listOf(
-        PersonIdentifier(Identifier.NOMS, "Test"),
         PersonIdentifier(Identifier.DPS_CONTACT_ID, "103"),
       ),
     )
 
     val domainEvent = createDomainEventJson(
-      PRISONER_CONTACT_RESTRICTION_CREATED_TYPE,
-      "Contact restriction created",
-      createPrisonerContactRestrictionAdditionalInformationJson(
-        prisonerContactRestrictionId = 101L,
-        prisonerContactId = 102L,
+      CONTACT_RESTRICTION_UPDATED_TYPE,
+      "Contact restriction updated",
+      createContactRestrictionAdditionalInformationJson(
+        contactRestrictionId = 101L,
       ),
       objectMapper.writeValueAsString(personReference),
     )
 
-    val publishRequest = createDomainEventPublishRequest(PRISONER_CONTACT_RESTRICTION_CREATED_TYPE, domainEvent)
+    val publishRequest = createDomainEventPublishRequest(CONTACT_RESTRICTION_UPDATED_TYPE, domainEvent)
 
-    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_CONTACT_RESTRICTION_UPSERTED_PATH)
+    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_CONTACT_RESTRICTION_UPSERTED_PATH)
     // When
     sendSqSMessage(publishRequest)
 
     // Then
-    assertStandardCalls(prisonerContactRestrictionCreatedNotifierSpy, VISIT_NOTIFICATION_PRISONER_CONTACT_RESTRICTION_UPSERTED_PATH, sentRequestToVsip)
+    assertStandardCalls(contactRestrictionUpdatedNotifierSpy, VISIT_NOTIFICATION_CONTACT_RESTRICTION_UPSERTED_PATH, sentRequestToVsip)
   }
 
   @Test
-  fun `when invalid contact restriction created event received then event is not processed`() {
+  fun `when invalid contact global restriction updated event received then event is not processed`() {
     // Given
+
     // invalid person reference - prisoner number and contact ID missing
     val personReference = PersonReference(emptyList())
 
     val domainEvent = createDomainEventJson(
-      PRISONER_CONTACT_RESTRICTION_CREATED_TYPE,
-      "Contact restriction created",
-      createPrisonerContactRestrictionAdditionalInformationJson(
-        prisonerContactRestrictionId = 101L,
-        prisonerContactId = 102L,
+      CONTACT_RESTRICTION_UPDATED_TYPE,
+      "Contact restriction updated",
+      createContactRestrictionAdditionalInformationJson(
+        contactRestrictionId = 101L,
       ),
       objectMapper.writeValueAsString(personReference),
     )
 
-    val publishRequest = createDomainEventPublishRequest(PRISONER_CONTACT_RESTRICTION_CREATED_TYPE, domainEvent)
+    val publishRequest = createDomainEventPublishRequest(CONTACT_RESTRICTION_UPDATED_TYPE, domainEvent)
 
-    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_CONTACT_RESTRICTION_UPSERTED_PATH)
+    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_CONTACT_RESTRICTION_UPSERTED_PATH)
     // When
     sendSqSMessage(publishRequest)
 
     // Then
     awaitVisitsDlqHasOneMessage()
-    verify(visitSchedulerClient, times(0)).processPrisonerContactRestrictionUpserted(any())
+    verify(visitSchedulerClient, times(0)).processContactRestrictionUpserted(any())
   }
 
   private fun sendSqSMessage(publishRequest: PublishRequest?) {
