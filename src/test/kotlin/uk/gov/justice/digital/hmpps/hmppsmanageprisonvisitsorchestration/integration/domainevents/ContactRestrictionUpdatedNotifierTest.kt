@@ -57,7 +57,7 @@ class ContactRestrictionUpdatedNotifierTest : PrisonVisitsEventsIntegrationTestB
   fun `when invalid contact global restriction updated event received then event is not processed`() {
     // Given
 
-    // invalid person reference - prisoner number and contact ID missing
+    // invalid person reference - contact ID missing
     val personReference = PersonReference(emptyList())
 
     val domainEvent = createDomainEventJson(
