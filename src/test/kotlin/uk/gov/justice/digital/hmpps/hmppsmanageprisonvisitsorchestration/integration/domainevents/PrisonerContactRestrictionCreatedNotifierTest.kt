@@ -10,7 +10,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import software.amazon.awssdk.services.sns.model.PublishRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_CONTACT_RESTRICTION_UPSERTED_PATH
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.ContactRestrictionUpsertedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerContactRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.Identifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.PersonIdentifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.PersonReference
@@ -23,7 +23,7 @@ class PrisonerContactRestrictionCreatedNotifierTest : PrisonVisitsEventsIntegrat
   @Test
   fun `when valid contact restriction created event received then event is successfully processed`() {
     // Given
-    val sentRequestToVsip = ContactRestrictionUpsertedNotificationDto(
+    val sentRequestToVsip = PrisonerContactRestrictionUpsertedNotificationDto(
       prisonerNumber = "Test",
       contactId = 103L,
       prisonerContactId = 102L,
@@ -40,7 +40,7 @@ class PrisonerContactRestrictionCreatedNotifierTest : PrisonVisitsEventsIntegrat
     val domainEvent = createDomainEventJson(
       PRISONER_CONTACT_RESTRICTION_CREATED_TYPE,
       "Contact restriction created",
-      createContactRestrictionAdditionalInformationJson(
+      createPrisonerContactRestrictionAdditionalInformationJson(
         prisonerContactRestrictionId = 101L,
         prisonerContactId = 102L,
       ),
@@ -66,7 +66,7 @@ class PrisonerContactRestrictionCreatedNotifierTest : PrisonVisitsEventsIntegrat
     val domainEvent = createDomainEventJson(
       PRISONER_CONTACT_RESTRICTION_CREATED_TYPE,
       "Contact restriction created",
-      createContactRestrictionAdditionalInformationJson(
+      createPrisonerContactRestrictionAdditionalInformationJson(
         prisonerContactRestrictionId = 101L,
         prisonerContactId = 102L,
       ),
@@ -81,7 +81,7 @@ class PrisonerContactRestrictionCreatedNotifierTest : PrisonVisitsEventsIntegrat
 
     // Then
     awaitVisitsDlqHasOneMessage()
-    verify(visitSchedulerClient, times(0)).processContactRestrictionUpserted(any())
+    verify(visitSchedulerClient, times(0)).processPrisonerContactRestrictionUpserted(any())
   }
 
   private fun sendSqSMessage(publishRequest: PublishRequest?) {

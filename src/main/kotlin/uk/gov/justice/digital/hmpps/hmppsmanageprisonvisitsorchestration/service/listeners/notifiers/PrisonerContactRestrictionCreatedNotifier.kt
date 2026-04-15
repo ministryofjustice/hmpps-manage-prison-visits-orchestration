@@ -9,14 +9,14 @@ const val PRISONER_CONTACT_RESTRICTION_CREATED_TYPE = "contacts-api.prisoner-con
 class PrisonerContactRestrictionCreatedNotifier : EventNotifier() {
 
   override fun processEvent(domainEvent: DomainEvent) {
-    val contactRestrictionCreatedInfo = getContactRestrictionUpsertedInfo(domainEvent)
-    if (contactRestrictionCreatedInfo.prisonerNumber == null || contactRestrictionCreatedInfo.contactId == null) {
+    val prisonerContactRestrictionCreatedInfo = getPrisonerContactRestrictionUpsertedInfo(domainEvent)
+    if (prisonerContactRestrictionCreatedInfo.prisonerNumber == null || prisonerContactRestrictionCreatedInfo.contactId == null) {
       LOG.error("Prisoner or Contact ID not found in contact restriction created event, {}", domainEvent)
-      throw RuntimeException("Prisoner or Contact ID not found in event, cannot process ContactRestrictionCreated event")
+      throw RuntimeException("Prisoner or Contact ID not found in event, cannot process PrisonerContactRestrictionCreated event")
     }
 
-    LOG.debug("Enter ContactRestrictionCreatedNotifier Info: {}", contactRestrictionCreatedInfo)
-    getVisitSchedulerService().processPrisonerContactRestrictionUpserted(contactRestrictionCreatedInfo)
+    LOG.debug("Enter PrisonerContactRestrictionCreatedNotifier Info: {}", prisonerContactRestrictionCreatedInfo)
+    getVisitSchedulerService().processPrisonerContactRestrictionUpserted(prisonerContactRestrictionCreatedInfo)
   }
 
   override fun isProcessableEvent(domainEvent: DomainEvent): Boolean = true

@@ -35,6 +35,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.EventFeatureSwitch
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.PersonReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerReceivedInfo
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.ContactRestrictionCreatedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.ContactRestrictionUpdatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentCancelledNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentCreatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentDeletedNotifier
@@ -137,6 +139,12 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
 
   @MockitoSpyBean
   lateinit var prisonerContactRestrictionUpdatedNotifierSpy: PrisonerContactRestrictionUpdatedNotifier
+
+  @MockitoSpyBean
+  lateinit var contactRestrictionCreatedNotifierSpy: ContactRestrictionCreatedNotifier
+
+  @MockitoSpyBean
+  lateinit var contactRestrictionUpdatedNotifierSpy: ContactRestrictionUpdatedNotifier
 
   @MockitoSpyBean
   lateinit var domainEventListenerServiceSpy: DomainEventListenerService
@@ -304,13 +312,22 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     return createAdditionalInformationJson(jsonValues)
   }
 
-  fun createContactRestrictionAdditionalInformationJson(
+  fun createPrisonerContactRestrictionAdditionalInformationJson(
     prisonerContactRestrictionId: Long,
     prisonerContactId: Long,
   ): String {
     val jsonValues = HashMap<String, Any>()
     jsonValues["prisonerContactRestrictionId"] = prisonerContactRestrictionId
     jsonValues["prisonerContactId"] = prisonerContactId
+
+    return createAdditionalInformationJson(jsonValues)
+  }
+
+  fun createContactRestrictionAdditionalInformationJson(
+    contactRestrictionId: Long,
+  ): String {
+    val jsonValues = HashMap<String, Any>()
+    jsonValues["contactRestrictionId"] = contactRestrictionId
 
     return createAdditionalInformationJson(jsonValues)
   }
