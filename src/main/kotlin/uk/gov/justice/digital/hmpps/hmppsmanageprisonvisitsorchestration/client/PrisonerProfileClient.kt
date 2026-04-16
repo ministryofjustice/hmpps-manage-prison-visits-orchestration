@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.ale
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitBalancesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSummaryDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AlertsService.Companion.predicateFilterSupportedCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.Comparators.Companion.alertsComparatorDateUpdatedOrCreatedDateDesc

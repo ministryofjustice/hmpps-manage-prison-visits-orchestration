@@ -23,7 +23,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderPrisonerBalanceDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.PrisonerBalanceAdjustmentValidationException
 import java.time.Duration
