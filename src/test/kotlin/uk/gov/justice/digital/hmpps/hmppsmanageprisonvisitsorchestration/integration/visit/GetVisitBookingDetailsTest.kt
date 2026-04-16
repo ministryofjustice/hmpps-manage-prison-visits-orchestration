@@ -674,7 +674,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
 
     val reference = "aa-bb-cc-dd"
     val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
-    val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors, startTimestamp = LocalDateTime.now().minusDays(1), endTimestamp = LocalDateTime.now().minusDays(1))
+    val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors, startTimestamp = LocalDateTime.now().minusDays(1))
     val contactsList = listOf(visitor1, visitor2, visitor3)
     val eventList = listOf(eventAudit1, eventAudit2, eventAudit3, eventAudit4, eventAudit5)
     val expectedEventActionedByFullNames = listOf("abcd", null, "Test User", "test-user1", "test-user2")
