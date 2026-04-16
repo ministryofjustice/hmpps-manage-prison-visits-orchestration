@@ -660,6 +660,8 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     assertVisitBookingDetails(visitBookingResponse, visit, prison, releasedPrisoner, emptyList(), OffenderRestrictionsDto(null, emptyList()), contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
     verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(any())
     verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
+    verify(alertsApiClientSpy, times(0)).getPrisonerAlertsAsMono(any())
+    verify(prisonApiClientSpy, times(0)).getPrisonerRestrictionsAsMono(any())
   }
 
   @Test
@@ -700,6 +702,8 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, emptyList(), OffenderRestrictionsDto(null, emptyList()), contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
     verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(any())
     verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
+    verify(alertsApiClientSpy, times(0)).getPrisonerAlertsAsMono(any())
+    verify(prisonApiClientSpy, times(0)).getPrisonerRestrictionsAsMono(any())
   }
 
   @Test

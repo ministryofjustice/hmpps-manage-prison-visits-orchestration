@@ -47,54 +47,53 @@ class VisitBookingDetailsClient(
     val visit = visitSchedulerClient.getVisitByReference(visitReference) ?: throw NotFoundException("Visit with reference - $visitReference not found")
 
     val prisonDetailsMono = prisonRegisterClient.getPrisonAsMonoEmptyIfNotFound(visit.prisonCode)
+    val prisonerDetailsMono = prisonerSearchClient.getPrisonerByIdAsMono(visit.prisonerId)
     val visitorsMono = prisonerContactRegistryClient.getPrisonersSocialContactsAsMono(prisonerId = visit.prisonerId)
     val eventsMono = visitSchedulerClient.getVisitHistoryByReferenceAsMono(visitReference)
     val notificationsMono = visitSchedulerClient.getNotificationEventsForBookingReferenceAsMono(visitReference)
 
-    val visitBookingDetails = prisonerSearchClient.getPrisonerByIdAsMono(visit.prisonerId)
-      .flatMap { prisoner ->
+    val visitBookingDetails = Mono.zip(
+      prisonDetailsMono,
+      prisonerDetailsMono,
+      visitorsMono,
+      eventsMono,
+      notificationsMono,
+    ).flatMap { visitBookingDetailsCoreInfo ->
 
-        val isPastVisit = visit.startTimestamp.isBefore(LocalDateTime.now())
-        val prisonerOutOfPrison = prisoner.inOutStatus != "IN"
-        val skipAlertsAndRestrictions = isPastVisit || prisonerOutOfPrison
+      val prison = visitBookingDetailsCoreInfo.t1.getOrNull() ?: PrisonRegisterPrisonDto(prisonId = visit.prisonCode, prisonName = visit.prisonCode)
+      val prisoner = visitBookingDetailsCoreInfo.t2
+      val allVisitorsForPrisoner = visitBookingDetailsCoreInfo.t3
+      val events = visitBookingDetailsCoreInfo.t4
+      val notifications = visitBookingDetailsCoreInfo.t5
 
-        // If the prisoner is out of prison OR the visit is in the past, we do NOT want to display alerts
-        val prisonerAlertsMono =
-          if (skipAlertsAndRestrictions) {
-            Mono.just(RestPage.empty<AlertResponseDto>())
-          } else {
-            alertsApiClient.getPrisonerAlertsAsMono(visit.prisonerId)
-          }
+      val isPastVisit = visit.startTimestamp.isBefore(LocalDateTime.now())
+      val prisonerOutOfPrison = prisoner.inOutStatus != "IN"
+      val skipAlertsAndRestrictions = isPastVisit || prisonerOutOfPrison
 
-        // If the prisoner is out of prison OR the visit is in the past, we do NOT want to display restrictions
-        val prisonerRestrictionsMono =
-          if (skipAlertsAndRestrictions) {
-            Mono.just(OffenderRestrictionsDto(offenderRestrictions = emptyList()))
-          } else {
-            prisonApiClient.getPrisonerRestrictionsAsMono(visit.prisonerId)
-          }
+      val prisonerAlertsMono: Mono<RestPage<AlertResponseDto>> =
+        if (skipAlertsAndRestrictions) {
+          Mono.just(RestPage.empty())
+        } else {
+          alertsApiClient.getPrisonerAlertsAsMono(visit.prisonerId)
+        }
 
-        Mono.zip(
-          prisonDetailsMono,
-          prisonerAlertsMono,
-          prisonerRestrictionsMono,
-          visitorsMono,
-          eventsMono,
-          notificationsMono,
-        ).map { visitBookingDetailsMono ->
-          val prison = visitBookingDetailsMono.t1.getOrNull() ?: PrisonRegisterPrisonDto(prisonId = visit.prisonCode, prisonName = visit.prisonCode)
+      val prisonerRestrictionsMono: Mono<OffenderRestrictionsDto> =
+        if (skipAlertsAndRestrictions) {
+          Mono.just(OffenderRestrictionsDto(offenderRestrictions = emptyList()))
+        } else {
+          prisonApiClient.getPrisonerRestrictionsAsMono(visit.prisonerId)
+        }
 
-          val prisonerAlerts = visitBookingDetailsMono.t2.content
+      Mono.zip(prisonerAlertsMono, prisonerRestrictionsMono)
+        .map { optionalAlertsAndRestrictionsInfo ->
+          val prisonerAlerts = optionalAlertsAndRestrictionsInfo.t1.content
             .filter { predicateFilterSupportedCodes.test(it) }
             .sortedWith(alertsComparatorDateUpdatedOrCreatedDateDesc)
             .map { alertResponse -> AlertDto(alertResponse) }
 
-          val prisonerRestrictions = (visitBookingDetailsMono.t3.offenderRestrictions ?: emptyList())
+          val prisonerRestrictions = (optionalAlertsAndRestrictionsInfo.t2.offenderRestrictions ?: emptyList())
             .sortedWith(restrictionsComparatorDatCreatedDesc)
 
-          val allVisitorsForPrisoner = visitBookingDetailsMono.t4
-          val events = visitBookingDetailsMono.t5
-          val notifications = visitBookingDetailsMono.t6
           val visitors = mutableListOf<PrisonerContactDto>()
 
           visit.visitors?.forEach { visitVisitor ->
@@ -127,11 +126,10 @@ class VisitBookingDetailsClient(
             notifications = notifications,
           )
         }
-      }
+    }
       .block(apiTimeout)
 
     return visitBookingDetails?.let {
-      // update the full names for event audit entries
       updateEventUserNames(it)
     }
   }
