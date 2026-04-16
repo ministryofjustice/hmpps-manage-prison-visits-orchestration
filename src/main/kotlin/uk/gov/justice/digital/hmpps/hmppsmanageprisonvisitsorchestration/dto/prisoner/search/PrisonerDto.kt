@@ -33,4 +33,7 @@ data class PrisonerDto(
 
   @param:Schema(description = "Convicted Status", example = "Convicted", allowableValues = ["Convicted", "Remand"])
   val convictedStatus: String? = null,
+
+  @param:Schema(description = "In / Out status", example = "OUT", allowableValues = ["IN, OUT, TRN"])
+  val inOutStatus: String? = null,
 )

@@ -103,7 +103,7 @@ class VisitAllocationApiClient(
     val visitOrderHistoryListMono = getPrisonerVisitOrderHistoryAsMono(prisonerId, fromDate)
     return Mono.zip(inmateDetailMono, visitOrderHistoryListMono)
       .map { visitOrderHistoryMonos ->
-        val inmateDetails = visitOrderHistoryMonos.t1 ?: throw InvalidPrisonerProfileException("Unable to retrieve inmate details from Prison API")
+        val inmateDetails = visitOrderHistoryMonos.t1
 
         val visitOrderHistoryList = visitOrderHistoryMonos.t2.sortedBy { it.createdTimeStamp }
         VisitOrderHistoryDetailsDto(
