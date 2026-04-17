@@ -289,7 +289,7 @@ abstract class IntegrationTestBase {
     visitStatus: VisitStatus = VisitStatus.BOOKED,
     visitSubStatus: VisitSubStatus = VisitSubStatus.AUTO_APPROVED,
     visitRestriction: VisitRestriction = VisitRestriction.OPEN,
-    startTimestamp: LocalDateTime = LocalDateTime.now(),
+    startTimestamp: LocalDateTime = LocalDateTime.now().plusDays(1),
     endTimestamp: LocalDateTime = startTimestamp.plusHours(1),
     outcomeStatus: OutcomeStatus? = null,
     createdTimestamp: LocalDateTime = LocalDateTime.now(),
@@ -658,6 +658,7 @@ abstract class IntegrationTestBase {
     cellLocation: String? = null,
     currentIncentive: CurrentIncentive? = null,
     convictedStatus: String?,
+    inOutStatus: String = "IN",
   ): PrisonerDto = PrisonerDto(
     prisonerNumber = prisonerId,
     firstName = firstName,
@@ -668,6 +669,7 @@ abstract class IntegrationTestBase {
     cellLocation = cellLocation,
     currentIncentive = currentIncentive,
     convictedStatus = convictedStatus,
+    inOutStatus = inOutStatus,
   )
 
   final fun createContactsList(visitorDetails: List<VisitorDetails>): List<PrisonerContactDto> = visitorDetails.stream().map {

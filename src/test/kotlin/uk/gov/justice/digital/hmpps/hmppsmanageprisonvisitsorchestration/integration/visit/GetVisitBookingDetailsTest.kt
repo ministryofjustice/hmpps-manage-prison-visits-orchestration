@@ -136,14 +136,6 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     notification2 = createNotificationEvent(NotificationEventType.VISITOR_RESTRICTION_UPSERTED_EVENT, additionalData = listOf(eventAttribute1, eventAttribute2, eventAttribute3))
   }
 
-  fun callGetVisitFullDetailsByReference(
-    webTestClient: WebTestClient,
-    reference: String,
-    authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec = webTestClient.get().uri("/visits/$reference/detailed")
-    .headers(authHttpHeaders)
-    .exchange()
-
   @Test
   fun `when visit exists search by reference returns the full booking details for that visit`() {
     // Given
@@ -618,6 +610,100 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isNotFound
     verify(manageUsersApiClientSpy, times(0)).getUsersByUsernames(any())
+  }
+
+  @Test
+  fun `when prisoner is not in prison then alerts and restrictions calls are skipped and empty lists are returned`() {
+    // Given
+    val userIds = listOf("test-user", "test-user1", "test-user2")
+    val userNamesMap = mapOf(
+      "test-user" to UserExtendedDetailsDto("test-user", "Test", "User"),
+    )
+
+    val releasedPrisoner = createPrisoner(
+      prisonerId = prisonerId,
+      firstName = "FirstName",
+      lastName = "LastName",
+      dateOfBirth = LocalDate.of(2000, 1, 31),
+      prisonId = prisonCode,
+      convictedStatus = "Convicted",
+      inOutStatus = "OUT",
+    )
+
+    val reference = "aa-bb-cc-dd"
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
+    val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors)
+    val contactsList = listOf(visitor1, visitor2, visitor3)
+    val eventList = listOf(eventAudit1, eventAudit2, eventAudit3, eventAudit4, eventAudit5)
+    val expectedEventActionedByFullNames = listOf("abcd", null, "Test User", "test-user1", "test-user2")
+    val notifications = listOf(notification1, notification2)
+
+    visitSchedulerMockServer.stubGetVisit(reference, visit)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, releasedPrisoner)
+    prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
+
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList)
+    visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
+    visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
+    manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
+
+    // When
+    val responseSpec = callGetVisitFullDetailsByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isOk
+    val visitBookingResponse = getResult(responseSpec.expectBody())
+    val expectedVisitContact = VisitContactDto(
+      contactDto = visit.visitContact!!,
+      visitContactId = visitor3.personId,
+    )
+    assertVisitBookingDetails(visitBookingResponse, visit, prison, releasedPrisoner, emptyList(), OffenderRestrictionsDto(null, emptyList()), contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
+    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(any())
+    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
+    verify(alertsApiClientSpy, times(0)).getPrisonerAlertsAsMono(any())
+    verify(prisonApiClientSpy, times(0)).getPrisonerRestrictionsAsMono(any())
+  }
+
+  @Test
+  fun `when visit is in the past then alerts and restrictions calls are skipped and empty lists are returned`() {
+    // Given
+    val userIds = listOf("test-user", "test-user1", "test-user2")
+    val userNamesMap = mapOf(
+      "test-user" to UserExtendedDetailsDto("test-user", "Test", "User"),
+    )
+
+    val reference = "aa-bb-cc-dd"
+    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
+    val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors, startTimestamp = LocalDateTime.now().minusDays(1))
+    val contactsList = listOf(visitor1, visitor2, visitor3)
+    val eventList = listOf(eventAudit1, eventAudit2, eventAudit3, eventAudit4, eventAudit5)
+    val expectedEventActionedByFullNames = listOf("abcd", null, "Test User", "test-user1", "test-user2")
+    val notifications = listOf(notification1, notification2)
+
+    visitSchedulerMockServer.stubGetVisit(reference, visit)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
+
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList)
+    visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
+    visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
+    manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
+
+    // When
+    val responseSpec = callGetVisitFullDetailsByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isOk
+    val visitBookingResponse = getResult(responseSpec.expectBody())
+    val expectedVisitContact = VisitContactDto(
+      contactDto = visit.visitContact!!,
+      visitContactId = visitor3.personId,
+    )
+    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, emptyList(), OffenderRestrictionsDto(null, emptyList()), contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
+    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(any())
+    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
+    verify(alertsApiClientSpy, times(0)).getPrisonerAlertsAsMono(any())
+    verify(prisonApiClientSpy, times(0)).getPrisonerRestrictionsAsMono(any())
   }
 
   @Test
@@ -1164,4 +1250,12 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     assertThat(notification.createdDateTime).isEqualTo(visitNotificationEventDto.createdDateTime)
     assertThat(notification.additionalData).isEqualTo(visitNotificationEventDto.additionalData)
   }
+
+  private fun callGetVisitFullDetailsByReference(
+    webTestClient: WebTestClient,
+    reference: String,
+    authHttpHeaders: (HttpHeaders) -> Unit,
+  ): WebTestClient.ResponseSpec = webTestClient.get().uri("/visits/$reference/detailed")
+    .headers(authHttpHeaders)
+    .exchange()
 }
