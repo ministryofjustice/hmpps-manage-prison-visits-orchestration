@@ -5,11 +5,14 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.EventAuditOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitBookingDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AlertsService.Companion.predicateFilterSupportedCodes
@@ -18,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.Comparators.Companion.alertsComparatorDateUpdatedOrCreatedDateDesc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.Comparators.Companion.restrictionsComparatorDatCreatedDesc
 import java.time.Duration
+import java.time.LocalDateTime
 import kotlin.jvm.optionals.getOrNull
 
 @Component
@@ -39,72 +43,94 @@ class VisitBookingDetailsClient(
     visitReference: String,
   ): VisitBookingDetailsDto? {
     LOG.debug("getVisitDetails for visit reference - {}", visitReference)
+
     val visit = visitSchedulerClient.getVisitByReference(visitReference) ?: throw NotFoundException("Visit with reference - $visitReference not found")
 
     val prisonDetailsMono = prisonRegisterClient.getPrisonAsMonoEmptyIfNotFound(visit.prisonCode)
     val prisonerDetailsMono = prisonerSearchClient.getPrisonerByIdAsMono(visit.prisonerId)
-    val prisonerAlertsMono = alertsApiClient.getPrisonerAlertsAsMono(visit.prisonerId)
-    val prisonerRestrictionsMono = prisonApiClient.getPrisonerRestrictionsAsMono(visit.prisonerId)
-    val visitorsMono = prisonerContactRegistryClient.getPrisonersSocialContactsAsMono(
-      prisonerId = visit.prisonerId,
-
-    )
+    val visitorsMono = prisonerContactRegistryClient.getPrisonersSocialContactsAsMono(prisonerId = visit.prisonerId)
     val eventsMono = visitSchedulerClient.getVisitHistoryByReferenceAsMono(visitReference)
-
     val notificationsMono = visitSchedulerClient.getNotificationEventsForBookingReferenceAsMono(visitReference)
 
-    val visitBookingDetails = Mono.zip(prisonDetailsMono, prisonerDetailsMono, prisonerAlertsMono, prisonerRestrictionsMono, visitorsMono, eventsMono, notificationsMono)
-      .map { visitBookingDetailsMono ->
-        val prison = visitBookingDetailsMono.t1.getOrNull() ?: PrisonRegisterPrisonDto(prisonId = visit.prisonCode, prisonName = visit.prisonCode)
-        val prisoner = visitBookingDetailsMono.t2
-        val prisonerAlerts = visitBookingDetailsMono.t3.content.filter {
-          predicateFilterSupportedCodes.test(it)
-        }.sortedWith(alertsComparatorDateUpdatedOrCreatedDateDesc)
-          .map { alertResponse -> AlertDto(alertResponse) }
+    val visitBookingDetails = Mono.zip(
+      prisonDetailsMono,
+      prisonerDetailsMono,
+      visitorsMono,
+      eventsMono,
+      notificationsMono,
+    ).flatMap { visitBookingDetailsCoreInfo ->
 
-        val prisonerRestrictions = (visitBookingDetailsMono.t4.offenderRestrictions ?: emptyList()).sortedWith(
-          restrictionsComparatorDatCreatedDesc,
-        )
-        val allVisitorsForPrisoner = visitBookingDetailsMono.t5
-        val events = visitBookingDetailsMono.t6
-        val notifications = visitBookingDetailsMono.t7
-        val visitors = mutableListOf<PrisonerContactDto>()
+      val prison = visitBookingDetailsCoreInfo.t1.getOrNull() ?: PrisonRegisterPrisonDto(prisonId = visit.prisonCode, prisonName = visit.prisonCode)
+      val prisoner = visitBookingDetailsCoreInfo.t2
+      val allVisitorsForPrisoner = visitBookingDetailsCoreInfo.t3
+      val events = visitBookingDetailsCoreInfo.t4
+      val notifications = visitBookingDetailsCoreInfo.t5
 
-        visit.visitors?.forEach { visitVisitor ->
-          allVisitorsForPrisoner.firstOrNull { it.personId == visitVisitor.nomisPersonId }?.let {
-            visitors.add(it)
-          }
+      val isPastVisit = visit.startTimestamp.isBefore(LocalDateTime.now())
+      val prisonerOutOfPrison = prisoner.inOutStatus != "IN"
+      val skipAlertsAndRestrictions = isPastVisit || prisonerOutOfPrison
+
+      val prisonerAlertsMono: Mono<RestPage<AlertResponseDto>> =
+        if (skipAlertsAndRestrictions) {
+          Mono.just(RestPage.empty())
+        } else {
+          alertsApiClient.getPrisonerAlertsAsMono(visit.prisonerId)
         }
 
-        val eventAuditDetails = events.map {
-          EventAuditOrchestrationDto(
-            eventAuditDto = it,
-            actionedByFullName = it.actionedBy.userName,
+      val prisonerRestrictionsMono: Mono<OffenderRestrictionsDto> =
+        if (skipAlertsAndRestrictions) {
+          Mono.just(OffenderRestrictionsDto(offenderRestrictions = emptyList()))
+        } else {
+          prisonApiClient.getPrisonerRestrictionsAsMono(visit.prisonerId)
+        }
+
+      Mono.zip(prisonerAlertsMono, prisonerRestrictionsMono)
+        .map { optionalAlertsAndRestrictionsInfo ->
+          val prisonerAlerts = optionalAlertsAndRestrictionsInfo.t1.content
+            .filter { predicateFilterSupportedCodes.test(it) }
+            .sortedWith(alertsComparatorDateUpdatedOrCreatedDateDesc)
+            .map { alertResponse -> AlertDto(alertResponse) }
+
+          val prisonerRestrictions = (optionalAlertsAndRestrictionsInfo.t2.offenderRestrictions ?: emptyList())
+            .sortedWith(restrictionsComparatorDatCreatedDesc)
+
+          val visitors = mutableListOf<PrisonerContactDto>()
+
+          visit.visitors?.forEach { visitVisitor ->
+            allVisitorsForPrisoner.firstOrNull { it.personId == visitVisitor.nomisPersonId }?.let {
+              visitors.add(it)
+            }
+          }
+
+          val eventAuditDetails = events.map {
+            EventAuditOrchestrationDto(
+              eventAuditDto = it,
+              actionedByFullName = it.actionedBy.userName,
+            )
+          }
+
+          val visitContact = visit.visitContact?.let { contact ->
+            val contactId = visit.visitors?.firstOrNull { it.visitContact == true }?.nomisPersonId
+            VisitContactDto(contact, contactId)
+          }
+
+          VisitBookingDetailsDto(
+            visit = visit,
+            prison = prison,
+            prisonerDto = prisoner,
+            prisonerAlerts = prisonerAlerts,
+            prisonerRestrictions = prisonerRestrictions,
+            visitVisitors = visitors,
+            visitContact = visitContact,
+            events = eventAuditDetails,
+            notifications = notifications,
           )
         }
-
-        val visitContact = visit.visitContact?.let { contact ->
-          val contactId = visit.visitors?.firstOrNull { it.visitContact == true }?.nomisPersonId
-          VisitContactDto(contact, contactId)
-        }
-
-        VisitBookingDetailsDto(
-          visit = visit,
-          prison = prison,
-          prisonerDto = prisoner,
-          prisonerAlerts = prisonerAlerts,
-          prisonerRestrictions = prisonerRestrictions,
-          visitVisitors = visitors,
-          visitContact = visitContact,
-          events = eventAuditDetails,
-          notifications = notifications,
-        )
-      }
+    }
       .block(apiTimeout)
 
     return visitBookingDetails?.let {
-      // update the full names for event audit entries
-      updateEventUserNames(visitBookingDetails)
+      updateEventUserNames(it)
     }
   }
 

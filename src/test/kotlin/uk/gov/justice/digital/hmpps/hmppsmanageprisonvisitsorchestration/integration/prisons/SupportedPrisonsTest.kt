@@ -35,8 +35,8 @@ class SupportedPrisonsTest : IntegrationTestBase() {
     .headers(authHttpHeaders)
     .exchange()
 
-  val prison1Dto = PrisonRegisterPrisonDto("BLI", "BLI Prison")
-  val prison2Dto = PrisonRegisterPrisonDto("HEI", "HEI Prison")
+  val prison1Dto = PrisonRegisterPrisonDto("BLI", "BLI Prison", prisonNameInWelsh = "BLI Prison (Cymru)")
+  val prison2Dto = PrisonRegisterPrisonDto("HEI", "HEI Prison", prisonNameInWelsh = "HEI Prison (Cymru)")
 
   @Test
   fun `when active prisons exist then all active prisons are returned`() {

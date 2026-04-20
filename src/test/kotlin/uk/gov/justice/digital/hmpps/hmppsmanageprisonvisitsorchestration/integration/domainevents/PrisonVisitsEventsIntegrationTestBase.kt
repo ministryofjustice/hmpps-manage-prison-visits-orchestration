@@ -1,5 +1,8 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.domainevents
 
+import org.awaitility.kotlin.await
+import org.awaitility.kotlin.matches
+import org.awaitility.kotlin.untilCallTo
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
@@ -17,6 +20,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import software.amazon.awssdk.services.sns.model.PublishRequest
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.PurgeQueueRequest
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
@@ -29,13 +33,18 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.DomainEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.EventFeatureSwitch
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.PersonReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerReceivedInfo
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.ContactRestrictionCreatedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.ContactRestrictionUpdatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentCancelledNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentCreatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentDeletedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentUpdatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PersonRestrictionUpsertedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertsUpdatedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerContactRestrictionCreatedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerContactRestrictionUpdatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerIncentivesDeletedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerIncentivesInsertedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerIncentivesUpdatedNotifier
@@ -48,12 +57,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.hmpps.sqs.HmppsQueue
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.HmppsTopic
+import uk.gov.justice.hmpps.sqs.countAllMessagesOnQueue
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @ExtendWith(HmppsAuthExtension::class)
 @AutoConfigureWebTestClient
 abstract class PrisonVisitsEventsIntegrationTestBase {
+  @Autowired lateinit var objectMapper: ObjectMapper
 
   companion object {
     private val localStackContainer = LocalStackContainer.instance
@@ -124,6 +135,18 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
   lateinit var visitorRestrictionChangedNotifierSpy: VisitorRestrictionChangedNotifier
 
   @MockitoSpyBean
+  lateinit var prisonerContactRestrictionCreatedNotifierSpy: PrisonerContactRestrictionCreatedNotifier
+
+  @MockitoSpyBean
+  lateinit var prisonerContactRestrictionUpdatedNotifierSpy: PrisonerContactRestrictionUpdatedNotifier
+
+  @MockitoSpyBean
+  lateinit var contactRestrictionCreatedNotifierSpy: ContactRestrictionCreatedNotifier
+
+  @MockitoSpyBean
+  lateinit var contactRestrictionUpdatedNotifierSpy: ContactRestrictionUpdatedNotifier
+
+  @MockitoSpyBean
   lateinit var domainEventListenerServiceSpy: DomainEventListenerService
 
   @MockitoSpyBean
@@ -182,7 +205,7 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     client.purgeQueue(PurgeQueueRequest.builder().queueUrl(url).build()).get()
   }
 
-  fun createDomainEvent(eventType: String, additionalInformation: String = "test"): DomainEvent = DomainEvent(eventType = eventType, additionalInformation)
+  fun createDomainEvent(eventType: String, additionalInformation: String = "test", personReference: PersonReference = PersonReference(emptyList())): DomainEvent = DomainEvent(eventType = eventType, additionalInformation = additionalInformation, description = null, personReference = personReference)
 
   fun createDomainEventPublishRequest(eventType: String, domainEvent: String): PublishRequest? = PublishRequest.builder()
     .topicArn(topicArn)
@@ -195,6 +218,8 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
   fun createDomainEventJson(eventType: String, additionalInformation: String): String = "{\"eventType\":\"$eventType\",\"additionalInformation\":$additionalInformation}"
 
   fun createDomainEventJson(eventType: String, description: String, additionalInformation: String): String = "{\"eventType\":\"$eventType\",\"description\":\"$description\",\"additionalInformation\":$additionalInformation}"
+
+  fun createDomainEventJson(eventType: String, description: String, additionalInformation: String, personReference: String): String = "{\"eventType\":\"$eventType\",\"description\":\"$description\",\"additionalInformation\":$additionalInformation,\"personReference\":$personReference}"
   fun createNonAssociationAdditionalInformationJson(): String {
     val jsonValues = HashMap<String, String>()
     jsonValues["nsPrisonerNumber1"] = "A8713DY"
@@ -287,6 +312,26 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     return createAdditionalInformationJson(jsonValues)
   }
 
+  fun createPrisonerContactRestrictionAdditionalInformationJson(
+    prisonerContactRestrictionId: Long,
+    prisonerContactId: Long,
+  ): String {
+    val jsonValues = HashMap<String, Any>()
+    jsonValues["prisonerContactRestrictionId"] = prisonerContactRestrictionId
+    jsonValues["prisonerContactId"] = prisonerContactId
+
+    return createAdditionalInformationJson(jsonValues)
+  }
+
+  fun createContactRestrictionAdditionalInformationJson(
+    contactRestrictionId: Long,
+  ): String {
+    val jsonValues = HashMap<String, Any>()
+    jsonValues["contactRestrictionId"] = contactRestrictionId
+
+    return createAdditionalInformationJson(jsonValues)
+  }
+
   fun createCourtVideoAppointmentAdditionalInformationJson(
     appointmentInstanceId: String,
     categoryCode: String,
@@ -325,6 +370,12 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
 
     return createAdditionalInformationJson(jsonValues)
   }
+
+  fun awaitVisitsDlqHasOneMessage() {
+    await untilCallTo { getNumberOfMessagesCurrentlyOnVisitsDlq() } matches { it == 1 }
+  }
+
+  fun getNumberOfMessagesCurrentlyOnVisitsDlq(): Int = sqsPrisonVisitsEventsDlqClient!!.countAllMessagesOnQueue(prisonVisitsEventsQueue.dlqUrl!!).get()
 
   private fun createAdditionalInformationJson(jsonValues: Map<String, Any>): String {
     val builder = StringBuilder()
