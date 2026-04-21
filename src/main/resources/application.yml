@@ -132,3 +132,9 @@ api:
   timeout: 10s
   health:
     timeout: 2s
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
