@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
-data class PrisonerVOBalanceDto(
+data class PrisonerVOBalanceDetailedDto(
   @param:Schema(description = "nomsNumber of the prisoner", example = "AA123456", required = true)
   val prisonerId: String,
 

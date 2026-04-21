@@ -14,8 +14,10 @@ spring:
 
   jackson:
     date-format: "yyyy-MM-dd HH:mm:ss"
-    serialization:
-      WRITE_DATES_AS_TIMESTAMPS: false
+    default-property-inclusion: non_null
+    datatype:
+      datetime:
+        WRITE_DATES_AS_TIMESTAMPS: false
 
   profiles:
     group:
@@ -29,23 +31,19 @@ spring:
           jwk-set-uri: ${hmpps.auth.url}/.well-known/jwks.json
       client:
         registration:
-          visit-scheduler:
+          hmpps-api:
             provider: hmpps-auth
             client-id: ${system.client.id}
             client-secret: ${system.client.secret}
             authorization-grant-type: client_credentials
             scope: read, write
 
-          other-hmpps-apis:
-            provider: hmpps-auth
-            client-id: ${system.client.id}
-            client-secret: ${system.client.secret}
-            authorization-grant-type: client_credentials
-            scope: read
-
         provider:
           hmpps-auth:
             token-uri: ${hmpps.auth.url}/oauth/token
+  web:
+    error:
+      include-message: always
 
 server:
   port: 8080
@@ -58,8 +56,6 @@ server:
       protocol-header: x-forwarded-proto
       internal-proxies: 10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.1[6-9]{1}\.\d{1,3}\.\d{1,3}|172\.2[0-9]{1}\.\d{1,3}\.\d{1,3}|172\.3[0-1]{1}\.\d{1,3}\.\d{1,3}|0:0:0:0:0:0:0:1|::1|100\.6[4-9]\.\d{1,3}\.\d{1,3}|100\.[7-9][0-9]{1}\.\d{1,3}\.\d{1,3}|100\.1[0-1][0-9]{1}\.\d{1,3}\.\d{1,3}|100\.12[0-7]\.\d{1,3}\.\d{1,3}
   shutdown: graceful
-  error:
-    include-message: always
 
 management:
   endpoints:
@@ -117,6 +113,10 @@ visit-allocation:
   api:
     timeout: 10s
 
+incentives:
+  api:
+    timeout: 10s
+
 cache:
   evict:
     bank-holidays:
@@ -127,3 +127,14 @@ public:
   service:
     from-date-override: 2
     to-date-override: 28
+
+api:
+  timeout: 10s
+  health:
+    timeout: 2s
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

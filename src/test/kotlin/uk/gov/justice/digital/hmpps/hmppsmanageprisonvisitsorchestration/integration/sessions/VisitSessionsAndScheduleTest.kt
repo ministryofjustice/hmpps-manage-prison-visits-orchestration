@@ -8,13 +8,11 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.WhereAboutsApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.VisitSessionsAndScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -28,12 +26,6 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
   private val minDays = 2
   private val maxDays = 12
   private val today = LocalDate.now()
-
-  @MockitoSpyBean
-  private lateinit var visitSchedulerClientSpy: VisitSchedulerClient
-
-  @MockitoSpyBean
-  private lateinit var whereAboutsApiClientSpy: WhereAboutsApiClient
 
   fun callGetVisitSessionsAndSchedule(
     webTestClient: WebTestClient,
@@ -276,5 +268,5 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     }
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): VisitSessionsAndScheduleDto = objectMapper.readValue(returnResult.returnResult().responseBody, VisitSessionsAndScheduleDto::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): VisitSessionsAndScheduleDto = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, VisitSessionsAndScheduleDto::class.java)
 }

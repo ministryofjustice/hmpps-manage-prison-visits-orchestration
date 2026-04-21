@@ -2,31 +2,55 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integr
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.client.WireMock.put
 import org.springframework.http.HttpStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.PrisonerBalanceAdjustmentValidationErrorResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDetailedDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderPrisonerBalanceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.createJsonResponseBuilder
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.getJsonString
 import java.time.LocalDate
 
 class VisitAllocationApiMockServer : WireMockServer(8101) {
 
-  fun stubGetPrisonerVOBalance(
+  fun stubGetPrisonerVOBalanceDetailed(
     prisonerId: String,
-    prisonerVOBalanceDto: PrisonerVOBalanceDto?,
+    prisonerVOBalanceDetailedDto: PrisonerVOBalanceDetailedDto?,
     httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
   ) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
       WireMock.get("/visits/allocation/prisoner/$prisonerId/balance/detailed")
         .willReturn(
-          if (prisonerVOBalanceDto == null) {
+          if (prisonerVOBalanceDetailedDto == null) {
             responseBuilder
               .withStatus(httpStatus.value())
           } else {
             responseBuilder
               .withStatus(HttpStatus.OK.value())
-              .withBody(getJsonString(prisonerVOBalanceDto))
+              .withBody(getJsonString(prisonerVOBalanceDetailedDto))
+          },
+        ),
+    )
+  }
+
+  fun stubGetPrisonerVOBalance(
+    prisonerId: String,
+    prisonerBalance: VisitOrderPrisonerBalanceDto?,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      WireMock.get("/visits/allocation/prisoner/$prisonerId/balance")
+        .willReturn(
+          if (prisonerBalance == null) {
+            responseBuilder
+              .withStatus(httpStatus.value())
+          } else {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(prisonerBalance))
           },
         ),
     )
@@ -50,6 +74,34 @@ class VisitAllocationApiMockServer : WireMockServer(8101) {
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(visitOrderHistoryList))
           },
+        ),
+    )
+  }
+
+  fun stubAdjustPrisonersVisitOrderBalance(prisonerId: String, response: VisitOrderPrisonerBalanceDto?, httpStatus: HttpStatus = HttpStatus.OK) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      put("/visits/allocation/prisoner/$prisonerId/balance")
+        .willReturn(
+          if (response == null) {
+            responseBuilder.withStatus(httpStatus.value())
+          } else {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(response))
+          },
+        ),
+    )
+  }
+
+  fun stubAdjustPrisonersVisitOrderBalanceValidationFailure(prisonerId: String, errorResponse: PrisonerBalanceAdjustmentValidationErrorResponse) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      WireMock.put("/visits/allocation/prisoner/$prisonerId/balance")
+        .willReturn(
+          responseBuilder
+            .withStatus(HttpStatus.UNPROCESSABLE_CONTENT.value())
+            .withBody(getJsonString(errorResponse)),
         ),
     )
   }

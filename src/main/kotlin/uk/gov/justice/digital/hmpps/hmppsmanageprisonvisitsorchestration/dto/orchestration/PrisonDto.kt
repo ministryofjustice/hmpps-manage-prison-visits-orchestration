@@ -16,6 +16,9 @@ data class PrisonDto(
   @param:Schema(description = "prison name", example = "HMP Hewell", required = true)
   val prisonName: String,
 
+  @param:Schema(description = "Name of the prison in Welsh", example = "Carchar Brynbuga", required = false)
+  val prisonNameInWelsh: String? = null,
+
   @param:Schema(description = "is prison active", example = "true", required = true)
   val active: Boolean = false,
 
@@ -49,6 +52,7 @@ data class PrisonDto(
   constructor(visitSchedulerPrisonDto: VisitSchedulerPrisonDto, prisonRegisterPrisonDto: PrisonRegisterPrisonDto, prisonRegisterContactDetailsDto: PrisonRegisterContactDetailsDto) : this(
     code = visitSchedulerPrisonDto.code,
     prisonName = prisonRegisterPrisonDto.prisonName,
+    prisonNameInWelsh = prisonRegisterPrisonDto.prisonNameInWelsh,
     active = visitSchedulerPrisonDto.active,
     maxTotalVisitors = visitSchedulerPrisonDto.maxTotalVisitors,
     maxAdultVisitors = visitSchedulerPrisonDto.maxAdultVisitors,

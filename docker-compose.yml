@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   local-stack-aws:
-    image: localstack/localstack:4
+    image: localstack/localstack:community-archive
     networks:
       - hmpps
     container_name: local-stack-aws-vsip-orc
@@ -10,7 +10,6 @@ services:
       - "4566:4566"
     environment:
       - SERVICES=sqs,sns
-      - DEFAULT_REGION=eu-west-2
     volumes:
       - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
 

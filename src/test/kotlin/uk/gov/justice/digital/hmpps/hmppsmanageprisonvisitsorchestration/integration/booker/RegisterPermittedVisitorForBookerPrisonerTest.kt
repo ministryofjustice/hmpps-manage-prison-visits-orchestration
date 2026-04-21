@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.control
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterVisitorForBookerPrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 
 @DisplayName("$PUBLIC_BOOKER_VISITORS_CONTROLLER_PATH - Register a visitor for a public booker's prisoner")
 class RegisterPermittedVisitorForBookerPrisonerTest : IntegrationTestBase() {
@@ -77,7 +78,7 @@ class RegisterPermittedVisitorForBookerPrisonerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isForbidden
   }
 
-  fun getResponse(responseSpec: WebTestClient.ResponseSpec): PermittedVisitorsForPermittedPrisonerBookerDto = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, PermittedVisitorsForPermittedPrisonerBookerDto::class.java)
+  fun getResponse(responseSpec: WebTestClient.ResponseSpec): PermittedVisitorsForPermittedPrisonerBookerDto = TestObjectMapper.mapper.readValue(responseSpec.expectBody().returnResult().responseBody, PermittedVisitorsForPermittedPrisonerBookerDto::class.java)
 
   fun callRegisterVisitorForBookerPrisoner(
     bookerReference: String,

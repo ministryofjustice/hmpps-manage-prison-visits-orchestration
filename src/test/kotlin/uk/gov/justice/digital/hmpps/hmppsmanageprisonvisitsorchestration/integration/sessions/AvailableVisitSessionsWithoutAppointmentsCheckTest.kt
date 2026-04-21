@@ -9,8 +9,6 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.HttpStatus.NOT_FOUND
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionsDto
@@ -21,23 +19,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.OPEN
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AppointmentsService
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonerProfileService
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 import java.time.LocalTime
 
 @DisplayName("Get available visit sessions without appointments check")
 class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase() {
-
-  @MockitoSpyBean
-  private lateinit var visitSchedulerClient: VisitSchedulerClient
-
-  @MockitoSpyBean
-  private lateinit var appointmentsService: AppointmentsService
-
-  @MockitoSpyBean
-  private lateinit var prisonerProfileService: PrisonerProfileService
-
   @Test
   fun `when visit sessions for parameters are available then these sessions are returned`() {
     // Given
@@ -63,7 +50,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(3)
-    verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
+    verify(appointmentsServiceSpy, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
   @Test
@@ -109,7 +96,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(1)
-    verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
+    verify(appointmentsServiceSpy, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
   @Test
@@ -136,9 +123,9 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
       .expectBody()
       .jsonPath("$.size()").isEqualTo(0)
 
-    verify(prisonerProfileService, times(1)).getBannedRestrictionDateRage(any(), any(), any())
-    verify(visitSchedulerClient, times(0)).getAvailableVisitSessions(any(), any(), any(), any(), any(), anyOrNull(), any())
-    verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
+    verify(prisonerProfileServiceSpy, times(1)).getBannedRestrictionDateRage(any(), any(), any())
+    verify(visitSchedulerClientSpy, times(0)).getAvailableVisitSessions(any(), any(), any(), any(), any(), anyOrNull(), any())
+    verify(appointmentsServiceSpy, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
   @Test
@@ -154,7 +141,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     // Then
 
     val returnResult = responseSpec.expectStatus().isBadRequest.expectBody()
-    val errorResponse = objectMapper.readValue(returnResult.returnResult().responseBody, ErrorResponse::class.java)
+    val errorResponse = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, ErrorResponse::class.java)
     assertThat(errorResponse.userMessage).isEqualTo("400 BAD_REQUEST \"Validation failure\"")
   }
 
@@ -190,7 +177,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(1)
-    verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
+    verify(appointmentsServiceSpy, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
   @Test
@@ -232,7 +219,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(1)
-    verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
+    verify(appointmentsServiceSpy, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
   @Test
@@ -275,7 +262,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(1)
-    verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
+    verify(appointmentsServiceSpy, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
   @Test
@@ -310,7 +297,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(1)
-    verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
+    verify(appointmentsServiceSpy, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
   @Test
@@ -344,7 +331,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(0)
-    verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
+    verify(appointmentsServiceSpy, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
   @Test
@@ -376,8 +363,8 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
 
     // Then
     responseSpec.expectStatus().isNotFound
-    verify(visitSchedulerClient, times(1)).getAvailableVisitSessions(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any())
-    verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
+    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any())
+    verify(appointmentsServiceSpy, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
   @Test
@@ -409,8 +396,8 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
 
     // Then
     responseSpec.expectStatus().isNotFound
-    verify(visitSchedulerClient, times(0)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, userType = PUBLIC)
-    verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
+    verify(visitSchedulerClientSpy, times(0)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, userType = PUBLIC)
+    verify(appointmentsServiceSpy, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
   @Test
@@ -442,8 +429,8 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
 
     // Then
     responseSpec.expectStatus().is5xxServerError
-    verify(visitSchedulerClient, times(0)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, userType = PUBLIC)
-    verify(appointmentsService, times(0)).getHigherPriorityAppointments(any(), any(), any())
+    verify(visitSchedulerClientSpy, times(0)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, userType = PUBLIC)
+    verify(appointmentsServiceSpy, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
   @Test

@@ -160,8 +160,8 @@ data class VisitorDetailsDto(
     dateOfBirth = prisonerContactDto.dateOfBirth,
     relationshipDescription = prisonerContactDto.relationshipDescription,
     restrictions = prisonerContactDto.restrictions,
-    // first primary address or first address in the list or null
-    primaryAddress = prisonerContactDto.addresses.firstOrNull { it.primary } ?: prisonerContactDto.addresses.firstOrNull(),
+    // Address (primary if address.primary is true)
+    primaryAddress = prisonerContactDto.address,
   )
 }
 

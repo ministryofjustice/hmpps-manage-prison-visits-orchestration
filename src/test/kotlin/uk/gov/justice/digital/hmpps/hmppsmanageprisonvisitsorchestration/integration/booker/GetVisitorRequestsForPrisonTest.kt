@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.booker
 
-import com.fasterxml.jackson.core.type.TypeReference
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -9,22 +8,19 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
+import tools.jackson.core.type.TypeReference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_PRISON_CODE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_VISITOR_REQUESTS_COUNT_BY_PRISON_CODE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestListEntryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestsStatus.REQUESTED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 
 @DisplayName("Get list of visitor requests for prison - $PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_PRISON_CODE")
 class GetVisitorRequestsForPrisonTest : IntegrationTestBase() {
-
-  @MockitoSpyBean
-  lateinit var prisonVisitBookerRegistryClientSpy: PrisonVisitBookerRegistryClient
 
   @Test
   fun `when call to get list of active visitor requests for prison, then count is returned`() {
@@ -104,7 +100,7 @@ class GetVisitorRequestsForPrisonTest : IntegrationTestBase() {
     verify(prisonVisitBookerRegistryClientSpy, times(0)).getVisitorRequestsByPrisonCode(any())
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<PrisonVisitorRequestListEntryDto> = objectMapper.readValue(returnResult.returnResult().responseBody, object : TypeReference<List<PrisonVisitorRequestListEntryDto>>() {})
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<PrisonVisitorRequestListEntryDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, object : TypeReference<List<PrisonVisitorRequestListEntryDto>>() {})
 
   fun callGetVisitorRequestsByPrisonCode(
     webTestClient: WebTestClient,

@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 
 @DisplayName("Get visits by session template for a date and status")
@@ -164,7 +165,7 @@ class VisitsBySessionTemplateTest : IntegrationTestBase() {
     assertVisitDetails(visit2, visitDto2.visitReference, prisonerId2, prisonerId2, prisonerId2)
   }
 
-  private fun getResults(responseSpec: WebTestClient.ResponseSpec): Array<VisitPreviewDto> = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, Array<VisitPreviewDto>::class.java)
+  private fun getResults(responseSpec: WebTestClient.ResponseSpec): Array<VisitPreviewDto> = TestObjectMapper.mapper.readValue(responseSpec.expectBody().returnResult().responseBody, Array<VisitPreviewDto>::class.java)
 
   private fun assertVisitDetails(visit: VisitPreviewDto, visitReference: String, prisonerId: String, firstName: String, lastName: String) {
     Assertions.assertThat(visit.visitReference).isEqualTo(visitReference)

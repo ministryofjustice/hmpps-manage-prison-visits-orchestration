@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationValidationErrorCodes.APPLICATION_INVALID_VISIT_DATE_BLOCKED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 
 @DisplayName("Book Visit")
 class BookVisitTest : IntegrationTestBase() {
@@ -56,14 +57,14 @@ class BookVisitTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when book visit slot fails application validation then UNPROCESSABLE_ENTITY status is returned`() {
+  fun `when book visit slot fails application validation then UNPROCESSABLE_CONTENT status is returned`() {
     // Given
     val applicationReference = "aaa-bbb-ccc-ddd"
     visitSchedulerMockServer.stubGetBookedVisitByApplicationReference(applicationReference, null)
     visitSchedulerMockServer.stubBookVisitApplicationValidationFailure(
       applicationReference,
       ApplicationValidationErrorResponse(
-        status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+        status = HttpStatus.UNPROCESSABLE_CONTENT.value(),
         validationErrors = listOf(APPLICATION_INVALID_NON_ASSOCIATION_VISITS, APPLICATION_INVALID_NO_VO_BALANCE),
       ),
     )
@@ -74,7 +75,7 @@ class BookVisitTest : IntegrationTestBase() {
     val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT)
     val errorResponse = getValidationErrorResponse(responseSpec)
     assertThat(errorResponse.validationErrors.size).isEqualTo(2)
     assertThat(errorResponse.validationErrors).contains(APPLICATION_INVALID_NON_ASSOCIATION_VISITS)
@@ -82,14 +83,14 @@ class BookVisitTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when book visit slot fails due to prison date being blocked then UNPROCESSABLE_ENTITY status and appropriate error code is returned`() {
+  fun `when book visit slot fails due to prison date being blocked then UNPROCESSABLE_CONTENT status and appropriate error code is returned`() {
     // Given
     val applicationReference = "aaa-bbb-ccc-ddd"
     visitSchedulerMockServer.stubGetBookedVisitByApplicationReference(applicationReference, null)
     visitSchedulerMockServer.stubBookVisitApplicationValidationFailure(
       applicationReference,
       ApplicationValidationErrorResponse(
-        status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+        status = HttpStatus.UNPROCESSABLE_CONTENT.value(),
         validationErrors = listOf(APPLICATION_INVALID_VISIT_DATE_BLOCKED),
       ),
     )
@@ -100,21 +101,21 @@ class BookVisitTest : IntegrationTestBase() {
     val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT)
     val errorResponse = getValidationErrorResponse(responseSpec)
     assertThat(errorResponse.validationErrors.size).isEqualTo(1)
     assertThat(errorResponse.validationErrors).contains(APPLICATION_INVALID_VISIT_DATE_BLOCKED)
   }
 
   @Test
-  fun `when book visit slot fails due to session date being blocked then UNPROCESSABLE_ENTITY status and appropriate error code is returned`() {
+  fun `when book visit slot fails due to session date being blocked then UNPROCESSABLE_CONTENT status and appropriate error code is returned`() {
     // Given
     val applicationReference = "aaa-bbb-ccc-ddd"
     visitSchedulerMockServer.stubGetBookedVisitByApplicationReference(applicationReference, null)
     visitSchedulerMockServer.stubBookVisitApplicationValidationFailure(
       applicationReference,
       ApplicationValidationErrorResponse(
-        status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+        status = HttpStatus.UNPROCESSABLE_CONTENT.value(),
         validationErrors = listOf(APPLICATION_INVALID_SESSION_DATE_BLOCKED),
       ),
     )
@@ -125,14 +126,14 @@ class BookVisitTest : IntegrationTestBase() {
     val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT)
     val errorResponse = getValidationErrorResponse(responseSpec)
     assertThat(errorResponse.validationErrors.size).isEqualTo(1)
     assertThat(errorResponse.validationErrors).contains(APPLICATION_INVALID_SESSION_DATE_BLOCKED)
   }
 
   @Test
-  fun `when book visit slot fails application validation parsing then INTERNAL_SERVER_ERROR status is returned`() {
+  fun `when book visit slot fails application validation parsing then UNPROCESSABLE_CONTENT status is returned`() {
     // Given
     val applicationReference = "aaa-bbb-ccc-ddd"
     visitSchedulerMockServer.stubGetBookedVisitByApplicationReference(applicationReference, null)
@@ -146,7 +147,7 @@ class BookVisitTest : IntegrationTestBase() {
     val responseSpec = callBookVisit(webTestClient, applicationReference, requestDto, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    responseSpec.expectStatus().isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
+    responseSpec.expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT)
   }
 
   private fun callBookVisit(
@@ -159,5 +160,5 @@ class BookVisitTest : IntegrationTestBase() {
     .headers(authHttpHeaders)
     .exchange()
 
-  fun getValidationErrorResponse(responseSpec: WebTestClient.ResponseSpec): ApplicationValidationErrorResponse = objectMapper.readValue(responseSpec.expectBody().returnResult().responseBody, ApplicationValidationErrorResponse::class.java)
+  fun getValidationErrorResponse(responseSpec: WebTestClient.ResponseSpec): ApplicationValidationErrorResponse = TestObjectMapper.mapper.readValue(responseSpec.expectBody().returnResult().responseBody, ApplicationValidationErrorResponse::class.java)
 }

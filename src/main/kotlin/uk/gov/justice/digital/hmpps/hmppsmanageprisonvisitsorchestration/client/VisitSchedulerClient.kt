@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -13,6 +12,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Mono
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isNotFoundError
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isUnprocessableEntityError
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient.Companion.logger
@@ -41,11 +41,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.ContactRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.CourtVideoAppointmentNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertsAddedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerContactRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerRestrictionChangeNotificationDto
@@ -77,6 +79,8 @@ const val VISIT_NOTIFICATION_NON_ASSOCIATION_CHANGE_PATH: String = "$VISIT_NOTIF
 const val VISIT_NOTIFICATION_PRISONER_RECEIVED_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/received"
 const val VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/released"
 const val VISIT_NOTIFICATION_PRISONER_RESTRICTION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/restriction/changed"
+const val VISIT_NOTIFICATION_PRISONER_CONTACT_RESTRICTION_UPSERTED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/contact/restriction/upserted"
+const val VISIT_NOTIFICATION_CONTACT_RESTRICTION_UPSERTED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/contact/restriction/upserted"
 
 const val VISIT_NOTIFICATION_PERSON_RESTRICTION_UPSERTED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/person/restriction/upserted"
 
@@ -166,7 +170,7 @@ class VisitSchedulerClient(
         .queryParam("fromDate", sessionDate)
         .queryParam("toDate", sessionDate)
         .queryParamIfPresent("visitRestrictions", Optional.ofNullable(visitRestrictions))
-        .queryParam("visitStatus", visitStatusList)
+        .queryParam("visitStatus", visitStatusList.joinToString(separator = ","))
         .queryParam("prisonCode", prisonCode)
         .queryParam("page", page)
         .queryParam("size", size)
@@ -424,6 +428,26 @@ class VisitSchedulerClient(
       .block(apiTimeout)
   }
 
+  fun processPrisonerContactRestrictionUpserted(sendDto: PrisonerContactRestrictionUpsertedNotificationDto) {
+    webClient.post()
+      .uri(VISIT_NOTIFICATION_PRISONER_CONTACT_RESTRICTION_UPSERTED_PATH)
+      .body(BodyInserters.fromValue(sendDto))
+      .retrieve()
+      .toBodilessEntity()
+      .doOnError { e -> LOG.error("Could not processPrisonerContactRestrictionUpserted :", e) }
+      .block(apiTimeout)
+  }
+
+  fun processContactRestrictionUpserted(sendDto: ContactRestrictionUpsertedNotificationDto) {
+    webClient.post()
+      .uri(VISIT_NOTIFICATION_CONTACT_RESTRICTION_UPSERTED_PATH)
+      .body(BodyInserters.fromValue(sendDto))
+      .retrieve()
+      .toBodilessEntity()
+      .doOnError { e -> LOG.error("Could not processContactRestrictionUpserted :", e) }
+      .block(apiTimeout)
+  }
+
   fun processVisitorRestrictionUpserted(sendDto: VisitorRestrictionUpsertedNotificationDto) {
     webClient.post()
       .uri(VISIT_NOTIFICATION_VISITOR_RESTRICTION_UPSERTED_PATH)
@@ -636,7 +660,7 @@ class VisitSchedulerClient(
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParamIfPresent("prisonId", Optional.ofNullable(visitSearchRequestFilter.prisonCode))
     uriBuilder.queryParamIfPresent("prisonerId", Optional.ofNullable(visitSearchRequestFilter.prisonerId))
-    uriBuilder.queryParam("visitStatus", visitSearchRequestFilter.visitStatusList)
+    uriBuilder.queryParam("visitStatus", visitSearchRequestFilter.visitStatusList.joinToString(separator = ","))
     uriBuilder.queryParamIfPresent("visitStartDate", Optional.ofNullable(visitSearchRequestFilter.visitStartDate))
     uriBuilder.queryParamIfPresent("visitEndDate", Optional.ofNullable(visitSearchRequestFilter.visitEndDate))
     uriBuilder.queryParam("page", visitSearchRequestFilter.page)

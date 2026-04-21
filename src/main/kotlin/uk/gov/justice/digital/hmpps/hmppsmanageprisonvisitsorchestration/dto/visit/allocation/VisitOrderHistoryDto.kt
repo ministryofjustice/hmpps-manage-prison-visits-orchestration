@@ -1,14 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation
 
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.enums.VisitOrderHistoryType
 import java.time.LocalDateTime
 
 data class VisitOrderHistoryDto(
-  @param:Schema(description = "nomsNumber of the prisoner", example = "AA123456", required = true)
-  val prisonerId: String,
-
   @param:Schema(description = "Visit Order History Type", example = "VO_ALLOCATION", required = true)
-  val visitOrderHistoryType: String,
+  val visitOrderHistoryType: VisitOrderHistoryType,
 
   @param:Schema(description = "Visit order history created data and time", example = "2018-12-01T13:45:00", required = true)
   val createdTimeStamp: LocalDateTime,

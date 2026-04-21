@@ -14,6 +14,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.BookerPrisonerRegistrationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.BookerPrisonerValidationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestValidationErrorCodes
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.enums.PrisonerBalanceAdjustmentValidationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationValidationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.ApplicationValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerAuthFailureException
@@ -22,11 +23,16 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.excepti
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerVisitorRequestValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.PrisonerBalanceAdjustmentValidationException
 
 @RestControllerAdvice
 class OrchestrationExceptionHandler {
+  companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
+  }
+
   @ExceptionHandler(InvalidPrisonerProfileException::class)
-  fun handleInvalidPrisonerProfileException(e: InvalidPrisonerProfileException): ResponseEntity<ErrorResponse?>? {
+  fun handleInvalidPrisonerProfileException(e: InvalidPrisonerProfileException): ResponseEntity<ErrorResponse>? {
     log.error("Prisoner profile not found exception caught: {}", e.message)
     return ResponseEntity
       .status(HttpStatus.NOT_FOUND)
@@ -40,7 +46,7 @@ class OrchestrationExceptionHandler {
   }
 
   @ExceptionHandler(NotFoundException::class)
-  fun handleNotFoundException(e: NotFoundException): ResponseEntity<ErrorResponse?>? {
+  fun handleNotFoundException(e: NotFoundException): ResponseEntity<ErrorResponse>? {
     log.error("Not Found exception caught: {}", e.message)
     return ResponseEntity
       .status(HttpStatus.NOT_FOUND)
@@ -54,7 +60,7 @@ class OrchestrationExceptionHandler {
   }
 
   @ExceptionHandler(BookerAuthFailureException::class)
-  fun handleBookerAuthFailureException(e: BookerAuthFailureException): ResponseEntity<ErrorResponse?>? {
+  fun handleBookerAuthFailureException(e: BookerAuthFailureException): ResponseEntity<ErrorResponse>? {
     log.error("Booker auth failure exception caught: {}", e.message)
     return ResponseEntity
       .status(HttpStatus.NOT_FOUND)
@@ -129,13 +135,13 @@ class OrchestrationExceptionHandler {
     log.debug("Application Validation exception: {}, {}", e.message, e.errorCodes)
     val message = e.localizedMessage
     val error = ApplicationValidationErrorResponse(
-      status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+      status = HttpStatus.UNPROCESSABLE_CONTENT.value(),
       userMessage = "Application validation failed",
       developerMessage = message,
       validationErrors = e.errorCodes,
     )
 
-    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error)
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(error)
   }
 
   @ExceptionHandler(BookerPrisonerValidationException::class)
@@ -143,13 +149,13 @@ class OrchestrationExceptionHandler {
     log.debug("Prisoner Validation exception: {}, {}", e.message, e.errorCode)
     val message = e.localizedMessage
     val error = BookerPrisonerValidationErrorResponse(
-      status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+      status = HttpStatus.UNPROCESSABLE_CONTENT.value(),
       userMessage = "Prisoner validation failed",
       developerMessage = message,
       validationError = e.errorCode,
     )
 
-    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error)
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(error)
   }
 
   @ExceptionHandler(BookerPrisonerRegistrationException::class)
@@ -157,13 +163,13 @@ class OrchestrationExceptionHandler {
     log.debug("Prisoner failed registration with exception: {}, {}", e.message, e.errorCode)
     val message = e.localizedMessage
     val error = BookerPrisonerRegistrationErrorResponse(
-      status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+      status = HttpStatus.UNPROCESSABLE_CONTENT.value(),
       userMessage = "Prisoner registration failed",
       developerMessage = message,
       validationError = e.errorCode,
     )
 
-    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error)
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(error)
   }
 
   @ExceptionHandler(BookerVisitorRequestValidationException::class)
@@ -171,17 +177,27 @@ class OrchestrationExceptionHandler {
     log.debug("Create visitor request failed with exception: {}, {}", e.message, e.errorCode)
     val message = e.localizedMessage
     val error = BookerVisitorRequestValidationErrorResponse(
-      status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
-      userMessage = "Prisoner registration failed",
+      status = HttpStatus.UNPROCESSABLE_CONTENT.value(),
+      userMessage = "Create visitor request failed",
       developerMessage = message,
       validationError = e.errorCode,
     )
 
-    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error)
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(error)
   }
 
-  companion object {
-    val log: Logger = LoggerFactory.getLogger(this::class.java)
+  @ExceptionHandler(PrisonerBalanceAdjustmentValidationException::class)
+  fun handlePrisonerBalanceAdjustmentValidationException(e: PrisonerBalanceAdjustmentValidationException): ResponseEntity<ValidationErrorResponse> {
+    log.debug("Manually adjust prisoner balance on visit-allocation-api failed with exception: {}, {}", e.message, e.errorCodes)
+    val message = e.localizedMessage
+    val error = PrisonerBalanceAdjustmentValidationErrorResponse(
+      status = HttpStatus.UNPROCESSABLE_CONTENT.value(),
+      userMessage = "Manually adjust prisoner balance request failed",
+      developerMessage = message,
+      validationErrors = e.errorCodes,
+    )
+
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(error)
   }
 }
 
@@ -237,4 +253,12 @@ data class BookerVisitorRequestValidationErrorResponse(
   override val userMessage: String? = null,
   override val developerMessage: String? = null,
   val validationError: VisitorRequestValidationErrorCodes,
+) : ValidationErrorResponse(status, errorCode, userMessage, developerMessage)
+
+data class PrisonerBalanceAdjustmentValidationErrorResponse(
+  override val status: Int,
+  override val errorCode: Int? = null,
+  override val userMessage: String? = null,
+  override val developerMessage: String? = null,
+  val validationErrors: List<PrisonerBalanceAdjustmentValidationErrorCodes>,
 ) : ValidationErrorResponse(status, errorCode, userMessage, developerMessage)

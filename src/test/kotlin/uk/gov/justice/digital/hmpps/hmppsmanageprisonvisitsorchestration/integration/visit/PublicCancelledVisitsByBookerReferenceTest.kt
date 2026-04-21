@@ -6,27 +6,19 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.times
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus.CANCELLED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 @DisplayName("Get public cancelled visits by booker reference")
 class PublicCancelledVisitsByBookerReferenceTest : IntegrationTestBase() {
-  @MockitoSpyBean
-  private lateinit var prisonerContactRegistryClient: PrisonerContactRegistryClient
-
-  @MockitoSpyBean
-  private lateinit var prisonerSearchClient: PrisonerSearchClient
-
   private lateinit var visitDto: VisitDto
   private lateinit var visitDto2: VisitDto
   private lateinit var prisoner: PrisonerDto
@@ -70,7 +62,7 @@ class PublicCancelledVisitsByBookerReferenceTest : IntegrationTestBase() {
     val visitsList = mutableListOf(visitDto, visitDto2)
     visitSchedulerMockServer.stubPublicCancelledVisitsByBookerReference(prisonerId, visitsList)
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisoner)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = false, contactsList = listOf(contact1, contact2, contact3))
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, contactsList = listOf(contact1, contact2, contact3))
 
     // When
     val responseSpec = callPublicCancelledVisits(webTestClient, prisonerId, roleVSIPOrchestrationServiceHttpHeaders)
@@ -89,7 +81,7 @@ class PublicCancelledVisitsByBookerReferenceTest : IntegrationTestBase() {
     val visitsList = mutableListOf(visitDto, visitDto2)
     visitSchedulerMockServer.stubPublicCancelledVisitsByBookerReference(prisonerId, visitsList)
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisoner)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = false, contactsList = listOf(contact1, contact2, contact3))
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, contactsList = listOf(contact1, contact2, contact3))
 
     // When
     val responseSpec = callPublicCancelledVisits(webTestClient, prisonerId, roleVSIPOrchestrationServiceHttpHeaders)
@@ -106,8 +98,8 @@ class PublicCancelledVisitsByBookerReferenceTest : IntegrationTestBase() {
     assertVisitorDetails(visits[0].visitors, contacts)
     assertVisitorDetails(visits[1].visitors, contacts)
 
-    Mockito.verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false)
-    Mockito.verify(prisonerSearchClient, times(1)).getPrisonerById(prisonerId)
+    Mockito.verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId)
+    Mockito.verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
   }
 
   @Test
@@ -133,7 +125,7 @@ class PublicCancelledVisitsByBookerReferenceTest : IntegrationTestBase() {
     val visitsList = mutableListOf(visitDto, visitDto2)
     visitSchedulerMockServer.stubPublicCancelledVisitsByBookerReference(prisonerId, visitsList)
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisoner)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = false, contactsList = null)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, contactsList = null)
 
     // When
     val responseSpec = callPublicCancelledVisits(webTestClient, prisonerId, roleVSIPOrchestrationServiceHttpHeaders)
@@ -158,8 +150,8 @@ class PublicCancelledVisitsByBookerReferenceTest : IntegrationTestBase() {
       Assertions.assertThat(visitor.lastName).isNull()
     }
 
-    Mockito.verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false)
-    Mockito.verify(prisonerSearchClient, times(1)).getPrisonerById(prisonerId)
+    Mockito.verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId)
+    Mockito.verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
   }
 
   @Test
@@ -168,7 +160,7 @@ class PublicCancelledVisitsByBookerReferenceTest : IntegrationTestBase() {
     val visitsList = mutableListOf(visitDto, visitDto2)
     visitSchedulerMockServer.stubPublicCancelledVisitsByBookerReference(prisonerId, visitsList)
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, null)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, withAddress = false, contactsList = listOf(contact1, contact2, contact3))
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, contactsList = listOf(contact1, contact2, contact3))
 
     // When
     val responseSpec = callPublicCancelledVisits(webTestClient, prisonerId, roleVSIPOrchestrationServiceHttpHeaders)
@@ -185,9 +177,9 @@ class PublicCancelledVisitsByBookerReferenceTest : IntegrationTestBase() {
     assertVisitorDetails(visits[0].visitors, contacts)
     assertVisitorDetails(visits[1].visitors, contacts)
 
-    Mockito.verify(prisonerContactRegistryClient, times(1)).getPrisonersSocialContacts(prisonerId, withAddress = false)
-    Mockito.verify(prisonerSearchClient, times(1)).getPrisonerById(prisonerId)
+    Mockito.verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContacts(prisonerId)
+    Mockito.verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<OrchestrationVisitDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<OrchestrationVisitDto>::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<OrchestrationVisitDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<OrchestrationVisitDto>::class.java)
 }

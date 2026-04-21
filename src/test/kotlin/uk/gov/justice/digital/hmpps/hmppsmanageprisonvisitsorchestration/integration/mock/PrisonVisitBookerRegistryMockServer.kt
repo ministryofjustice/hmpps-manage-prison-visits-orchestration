@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerReference
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.CreateVisitorRequestResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
@@ -137,7 +138,7 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
       WireMock.get(VALIDATE_PRISONER.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerNumber))
         .willReturn(
           responseBuilder
-            .withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+            .withStatus(HttpStatus.UNPROCESSABLE_CONTENT.value())
             .withBody(getJsonString(errorResponse)),
         ),
     )
@@ -206,7 +207,7 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
     )
   }
 
-  fun stubAddVisitorRequest(bookerReference: String, prisonerId: String, addVisitorToBookerPrisonerRequestDto: AddVisitorToBookerPrisonerRequestDto, httpStatus: HttpStatus = HttpStatus.OK) {
+  fun stubAddVisitorRequest(bookerReference: String, prisonerId: String, addVisitorToBookerPrisonerRequestDto: AddVisitorToBookerPrisonerRequestDto, response: CreateVisitorRequestResponseDto, httpStatus: HttpStatus = HttpStatus.OK) {
     val responseBuilder = createJsonResponseBuilder()
     val uri = ADD_VISITOR_REQUEST.replace("{bookerReference}", bookerReference).replace("{prisonerId}", prisonerId)
     stubFor(
@@ -214,7 +215,8 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
         .withRequestBody(equalToJson(getJsonString(addVisitorToBookerPrisonerRequestDto)))
         .willReturn(
           responseBuilder
-            .withStatus(httpStatus.value()),
+            .withStatus(httpStatus.value())
+            .withBody(getJsonString(response)),
         ),
     )
   }
@@ -226,7 +228,7 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
       WireMock.post(uri)
         .willReturn(
           responseBuilder
-            .withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
+            .withStatus(HttpStatus.UNPROCESSABLE_CONTENT.value())
             .withBody(getJsonString(errorResponse)),
         ),
     )

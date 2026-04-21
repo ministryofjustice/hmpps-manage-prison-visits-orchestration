@@ -7,28 +7,21 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonRegisterClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterContactDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 
 @DisplayName("Get prison tests")
 class GetPrisonTest : IntegrationTestBase() {
-  @MockitoSpyBean
-  lateinit var prisonRegisterClientSpy: PrisonRegisterClient
-
-  @MockitoSpyBean
-  lateinit var visitSchedulerClientSpy: VisitSchedulerClient
 
   final val prisonCode = "HEI"
   val visitSchedulerPrisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18)
-  val prisonRegisterPrisonDto = PrisonRegisterPrisonDto(prisonCode, "HMP Hewell")
+  val prisonRegisterPrisonDto = PrisonRegisterPrisonDto(prisonCode, "HMP Hewell", prisonNameInWelsh = "HMP Hewell (Cymru)")
   val prisonRegisterPrisonContactDetailsDto = PrisonRegisterContactDetailsDto("example@email.com", "07777777777", "https://www.example.com")
 
   fun callGetSupportedPrisons(
@@ -159,5 +152,5 @@ class GetPrisonTest : IntegrationTestBase() {
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
   }
 
-  private fun getResult(returnResult: WebTestClient.BodyContentSpec): PrisonDto = objectMapper.readValue(returnResult.returnResult().responseBody, PrisonDto::class.java)
+  private fun getResult(returnResult: WebTestClient.BodyContentSpec): PrisonDto = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, PrisonDto::class.java)
 }

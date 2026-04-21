@@ -1,9 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.visit.external.system
 
+import org.awaitility.Awaitility
+import org.awaitility.Awaitility.await
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilAsserted
 import org.awaitility.kotlin.untilCallTo
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -30,23 +33,36 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.domainevents.PrisonVisitsEventsIntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PRISON_VISITS_WRITES_QUEUE_CONFIG_KEY
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.VisitFromExternalSystemEvent
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
 import uk.gov.justice.hmpps.sqs.countAllMessagesOnQueue
+import java.time.Duration
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 @DisplayName("Visit from external system events")
 class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase() {
-  @Autowired
-  protected lateinit var hmppsQueueService: HmppsQueueService
 
-  protected val vweQueueConfig by lazy {
-    hmppsQueueService.findByQueueId(PRISON_VISITS_WRITES_QUEUE_CONFIG_KEY) ?: throw MissingQueueException("HmppsQueue $PRISON_VISITS_WRITES_QUEUE_CONFIG_KEY not found")
+  companion object {
+    @JvmStatic
+    @BeforeAll
+    fun awaitilityDefaults() {
+      Awaitility.setDefaultTimeout(Duration.ofSeconds(30))
+    }
   }
+
+  @Autowired
+  private lateinit var hmppsQueueService: HmppsQueueService
+
+  private val vweQueueConfig by lazy {
+    hmppsQueueService.findByQueueId(PRISON_VISITS_WRITES_QUEUE_CONFIG_KEY)
+      ?: throw MissingQueueException("HmppsQueue $PRISON_VISITS_WRITES_QUEUE_CONFIG_KEY not found")
+  }
+
   internal val vweQueueSqsClient by lazy { vweQueueConfig.sqsClient }
   internal val vweQueueUrl by lazy { vweQueueConfig.queueUrl }
   internal val vweSqsDlqClient by lazy { vweQueueConfig.sqsDlqClient as SqsAsyncClient }
@@ -54,6 +70,23 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
 
   fun getNumberOfMessagesCurrentlyOnQueue(): Int = vweQueueSqsClient.countAllMessagesOnQueue(vweQueueUrl).get()
   fun getNumberOfMessagesCurrentlyOnDlq(): Int = vweSqsDlqClient.countAllMessagesOnQueue(vweDlqUrl).get()
+
+  private fun awaitQueueEmpty() {
+    await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
+  }
+
+  private fun awaitDlqHasOneMessage() {
+    await untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 1 }
+  }
+
+  private fun awaitQueuesEmptyAfterPurge() {
+    await().atMost(Duration.ofSeconds(30))
+      .untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
+
+    await().atMost(Duration.ofSeconds(30))
+      .untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 0 }
+  }
+
   private val visitDto = VisitDto(
     reference = "v9-d7-ed-7u",
     prisonerId = "A1243B",
@@ -88,15 +121,18 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
   )
 
   @BeforeEach
-  fun `clear queues`() {
-    vweQueueSqsClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(vweQueueUrl).build())
-    vweSqsDlqClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(vweDlqUrl).build())
+  fun clearQueues() {
+    vweQueueSqsClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(vweQueueUrl).build()).get()
+    vweSqsDlqClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(vweDlqUrl).build()).get()
+
+    awaitQueuesEmptyAfterPurge()
   }
 
   @Nested
   @DisplayName("create visit from external system")
   inner class CreateVisit {
     private val messageId = UUID.randomUUID().toString()
+
     private val visitFromExternalSystemEvent = VisitFromExternalSystemEvent(
       messageId = messageId,
       eventType = "VisitCreated",
@@ -132,43 +168,47 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
     fun `will process a visit write create event`() {
       visitSchedulerMockServer.stubPostVisitFromExternalSystem(createVisitFromExternalSystemDto, visitDto)
 
-      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
       vweQueueSqsClient.sendMessage(
         SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
       )
 
-      await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 1 }
-      await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
-
-      await untilAsserted { verify(visitSchedulerClient, times(1)).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>()) }
+      await untilAsserted {
+        verify(visitSchedulerClient, times(1)).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())
+      }
+      awaitQueueEmpty()
     }
 
     @Test
     fun `if visit scheduler returns error, expect event to be added to the dlq`() {
-      visitSchedulerMockServer.stubPostVisitFromExternalSystem(createVisitFromExternalSystemDto, visitDto, status = HttpStatus.BAD_REQUEST)
+      visitSchedulerMockServer.stubPostVisitFromExternalSystem(
+        createVisitFromExternalSystemDto,
+        visitDto,
+        status = HttpStatus.BAD_REQUEST,
+      )
 
-      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
       vweQueueSqsClient.sendMessage(
         SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
       )
 
-      await untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 1 }
-      await untilAsserted { verify(visitSchedulerClient, times(1)).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>()) }
+      awaitDlqHasOneMessage()
+      await untilAsserted {
+        verify(visitSchedulerClient, times(1)).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())
+      }
     }
 
     @Test
     fun `will throw an exception if message attributes are invalid`() {
-      val message = objectMapper.writeValueAsString(invalidVisitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(invalidVisitFromExternalSystemEvent)
       vweQueueSqsClient.sendMessage(
         SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
       )
 
-      await untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 1 }
+      awaitDlqHasOneMessage()
+
       await untilAsserted {
-        verify(
-          visitSchedulerClient,
-          times(0),
-        ).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())
+        verify(visitSchedulerClient, times(0)).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())
       }
     }
   }
@@ -177,6 +217,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
   @DisplayName("Update visit from external system")
   inner class UpdateVisit {
     private val messageId = UUID.randomUUID().toString()
+
     private val visitFromExternalSystemEvent = VisitFromExternalSystemEvent(
       messageId = messageId,
       eventType = "VisitUpdated",
@@ -208,43 +249,42 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
     fun `will process a visit write update event`() {
       visitSchedulerMockServer.stubPutVisitFromExternalSystem(updateVisitFromExternalSystemDto, visitDto)
 
-      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
       vweQueueSqsClient.sendMessage(
         SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
       )
 
-      await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 1 }
-      await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
-
-      await untilAsserted { verify(visitSchedulerClient, times(1)).updateVisitFromExternalSystem(any<UpdateVisitFromExternalSystemDto>()) }
+      await untilAsserted {
+        verify(visitSchedulerClient, times(1)).updateVisitFromExternalSystem(any<UpdateVisitFromExternalSystemDto>())
+      }
+      awaitQueueEmpty()
     }
 
     @Test
     fun `if visit scheduler returns error, expect event to be added to the dlq`() {
       visitSchedulerMockServer.stubPutVisitFromExternalSystem(updateVisitFromExternalSystemDto, visitDto, status = HttpStatus.BAD_REQUEST)
 
-      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
       vweQueueSqsClient.sendMessage(
         SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
       )
 
-      await untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 1 }
-      await untilAsserted { verify(visitSchedulerClient, times(1)).updateVisitFromExternalSystem(any<UpdateVisitFromExternalSystemDto>()) }
+      awaitDlqHasOneMessage()
+      await untilAsserted {
+        verify(visitSchedulerClient, times(1)).updateVisitFromExternalSystem(any<UpdateVisitFromExternalSystemDto>())
+      }
     }
 
     @Test
     fun `will throw an exception if message attributes are invalid`() {
-      val message = objectMapper.writeValueAsString(invalidVisitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(invalidVisitFromExternalSystemEvent)
       vweQueueSqsClient.sendMessage(
         SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
       )
 
-      await untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 1 }
+      awaitDlqHasOneMessage()
       await untilAsserted {
-        verify(
-          visitSchedulerClient,
-          times(0),
-        ).updateVisitFromExternalSystem(any<UpdateVisitFromExternalSystemDto>())
+        verify(visitSchedulerClient, times(0)).updateVisitFromExternalSystem(any<UpdateVisitFromExternalSystemDto>())
       }
     }
   }
@@ -276,15 +316,13 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
       val visitRef = visitFromExternalSystemEvent.messageAttributes["visitReference"].toString()
       visitSchedulerMockServer.stubCancelVisit(visitRef, visitDto)
 
-      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
       vweQueueSqsClient.sendMessage(
         SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
       )
 
-      await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 1 }
-      await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
-
       await untilAsserted { verify(visitSchedulerClient, times(1)).cancelVisit(any(), any<CancelVisitDto>()) }
+      awaitQueueEmpty()
     }
 
     @Test
@@ -292,27 +330,24 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
       val visitRef = visitFromExternalSystemEvent.messageAttributes["visitReference"].toString()
       visitSchedulerMockServer.stubCancelVisit(visitRef, null)
 
-      val message = objectMapper.writeValueAsString(visitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
       vweQueueSqsClient.sendMessage(
         SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
       )
 
-      await untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 1 }
+      awaitDlqHasOneMessage()
     }
 
     @Test
     fun `will throw an exception if message attributes are invalid`() {
-      val message = objectMapper.writeValueAsString(invalidVisitFromExternalSystemEvent)
+      val message = TestObjectMapper.mapper.writeValueAsString(invalidVisitFromExternalSystemEvent)
       vweQueueSqsClient.sendMessage(
         SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
       )
 
-      await untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 1 }
+      awaitDlqHasOneMessage()
       await untilAsserted {
-        verify(
-          visitSchedulerClient,
-          times(0),
-        ).cancelVisit(any(), any<CancelVisitDto>())
+        verify(visitSchedulerClient, times(0)).cancelVisit(any(), any<CancelVisitDto>())
       }
     }
   }
@@ -350,6 +385,6 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
       SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
     )
 
-    await untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 1 }
+    awaitDlqHasOneMessage()
   }
 }

@@ -4,11 +4,13 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
+import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.manage.users.UserDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.manage.users.UserExtendedDetailsDto
 
 @Component
 class ManageUsersApiClient(
@@ -29,6 +31,27 @@ class ManageUsersApiClient(
           return@onErrorResume Mono.just(UserDetailsDto(userName))
         }
         LOG.error("Failed to acquire user information from hmpps-manage-users-api $userName ", e)
+        Mono.error(e)
+      }
+  }
+
+  fun getUsersByUsernames(userIds: Set<String>): Map<String, UserExtendedDetailsDto> = findUsersByUsernames(userIds).block() ?: emptyMap()
+
+  private fun findUsersByUsernames(userIds: Set<String>): Mono<Map<String, UserExtendedDetailsDto>> {
+    LOG.info("Getting users by usernames: {}", userIds)
+    return webClient.post()
+      .uri("/prisonusers/find-by-usernames")
+      .body(BodyInserters.fromValue(userIds.toList()))
+      .retrieve()
+      .bodyToMono<Map<String, UserExtendedDetailsDto>>()
+      .onErrorResume { e ->
+        Mono.error(e)
+      }.onErrorResume { e ->
+        if (e is WebClientResponseException) {
+          LOG.warn("Failed to acquire users by usernames from hmpps-manage-users-api - ${userIds.joinToString()}} ", e)
+          return@onErrorResume Mono.empty()
+        }
+        LOG.warn("Failed to acquire users by usernames from hmpps-manage-users-api - ${userIds.joinToString()}} ", e)
         Mono.error(e)
       }
   }

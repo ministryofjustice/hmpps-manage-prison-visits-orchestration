@@ -26,12 +26,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitRequestsCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.ContactRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.CourtVideoAppointmentNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertsAddedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerContactRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerRestrictionChangeNotificationDto
@@ -39,10 +41,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.ContactRestrictionUpsertedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.CourtVideoAppointmentInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.NonAssociationChangedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PersonRestrictionUpsertedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerAlertsUpdatedNotificationInfo
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerContactRestrictionUpsertedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerReceivedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerReleasedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerRestrictionChangeInfo
@@ -141,6 +145,14 @@ class VisitSchedulerService(
     visitSchedulerClient.processPrisonerRestrictionChange(PrisonerRestrictionChangeNotificationDto(info))
   }
 
+  fun processPrisonerContactRestrictionUpserted(info: PrisonerContactRestrictionUpsertedInfo) {
+    visitSchedulerClient.processPrisonerContactRestrictionUpserted(PrisonerContactRestrictionUpsertedNotificationDto(info))
+  }
+
+  fun processContactRestrictionUpserted(info: ContactRestrictionUpsertedInfo) {
+    visitSchedulerClient.processContactRestrictionUpserted(ContactRestrictionUpsertedNotificationDto(info))
+  }
+
   fun processVisitorRestrictionUpserted(info: VisitorRestrictionUpsertedInfo) {
     visitSchedulerClient.processVisitorRestrictionUpserted(VisitorRestrictionUpsertedNotificationDto(info))
   }
@@ -181,6 +193,11 @@ class VisitSchedulerService(
 
   fun getFutureVisitsWithNotifications(prisonCode: String, notificationEventTypes: List<NotificationEventType>?): List<OrchestrationVisitNotificationsDto> {
     val visitsWithNotifications = visitSchedulerClient.getFutureVisitsWithNotifications(prisonCode, notificationEventTypes?.map { it.name }?.toList())
+    var staffUserNames: Map<String, String> = emptyMap()
+    if (visitsWithNotifications != null && visitsWithNotifications.isNotEmpty()) {
+      val actionedByList = visitsWithNotifications.map { it.bookedBy }.distinct()
+      staffUserNames = manageUsersService.getFullNamesFromActionedByDetails(actionedByList)
+    }
 
     return visitsWithNotifications?.map {
       OrchestrationVisitNotificationsDto(
@@ -188,7 +205,7 @@ class VisitSchedulerService(
         bookedByUserName = getUsernameFromActionedBy(it.bookedBy),
         visitDate = it.visitDate,
         visitReference = it.visitReference,
-        bookedByName = manageUsersService.getFullNameFromActionedBy(it.bookedBy),
+        bookedByName = manageUsersService.getFullNameFromActionedBy(it.bookedBy, staffUserNames),
         notifications = it.notifications,
       )
     } ?: emptyList()

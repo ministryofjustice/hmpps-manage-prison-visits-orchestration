@@ -9,19 +9,15 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 
 @DisplayName("Get active visitor requests for booker")
 class GetActiveVisitorRequestsForBookerTest : IntegrationTestBase() {
-
-  @MockitoSpyBean
-  lateinit var prisonVisitBookerRegistryClientSpy: PrisonVisitBookerRegistryClient
 
   @Test
   fun `when booker has active visitor requests then all active visitor requests are returned`() {
@@ -121,7 +117,7 @@ class GetActiveVisitorRequestsForBookerTest : IntegrationTestBase() {
     Assertions.assertThat(bookerPrisonerVisitorRequestDto.dateOfBirth).isEqualTo(requestedVisitorRequestDto.dateOfBirth)
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerPrisonerVisitorRequestDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<BookerPrisonerVisitorRequestDto>::class.java).toList()
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerPrisonerVisitorRequestDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<BookerPrisonerVisitorRequestDto>::class.java).toList()
 
   fun callGetActiveVisitorRequestsForBooker(
     webTestClient: WebTestClient,

@@ -32,7 +32,7 @@ class BookerPrisonerInfoClient(
     val prisonerId = bookerPrisoner.prisonerId
 
     val offenderSearchPrisonerDtoMono = prisonerSearchClient.getPrisonerByIdAsMonoEmptyIfNotFound(prisonerId)
-    val prisonerVOBalanceMono = visitAllocationApiClient.getPrisonerVOBalanceAsMono(prisonerId)
+    val prisonerVOBalanceMono = visitAllocationApiClient.getPrisonerVOBalanceDetailedAsMono(prisonerId)
     val registeredPrisonMono = prisonRegisterClient.getPrisonAsMonoEmptyIfNotFound(prisonCode)
 
     Mono.zip(offenderSearchPrisonerDtoMono, prisonerVOBalanceMono, registeredPrisonMono).block(apiTimeout).also { bookerPrisonerInfoMonos ->

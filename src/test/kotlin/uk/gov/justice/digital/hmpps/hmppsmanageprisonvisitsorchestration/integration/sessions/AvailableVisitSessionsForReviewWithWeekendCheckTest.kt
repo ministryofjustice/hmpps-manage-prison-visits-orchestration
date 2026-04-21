@@ -4,10 +4,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mockito
-import org.mockito.junit.jupiter.MockitoExtension
-import org.springframework.test.annotation.DirtiesContext
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.CacheManager
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.enums.PrisonerSupportedAlertCodeType
@@ -22,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.OPEN
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.CurrentDateUtils
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -29,9 +29,10 @@ import java.time.LocalTime
 import java.time.temporal.TemporalAdjusters
 
 @DisplayName("Get available visit sessions marked for review test")
-@ExtendWith(MockitoExtension::class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase() {
+  @Autowired
+  lateinit var cacheManager: CacheManager
+
   @MockitoBean
   private lateinit var currentDateUtils: CurrentDateUtils
 
@@ -47,6 +48,8 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
 
   @BeforeEach
   fun setupMocks() {
+    cacheManager.getCache("bank-holidays")?.clear()
+    Mockito.reset(currentDateUtils)
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
     prisonerContactRegistryMockServer.stubDoVisitorsHaveClosedRestrictions(prisonerId, visitorIds = visitorIds, result = false)
   }
@@ -109,11 +112,11 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
     // as this is a weekend this session will not be available
     val saturdaySession = AvailableVisitSessionDto(today.plusDays(4), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
     // as this is a weekend this session will not be available
-    val sundaySession = AvailableVisitSessionDto(today.plusDays(5), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val sundaySession = AvailableVisitSessionDto(today.plusDays(5), "session5", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
     // this should be the first session available
-    val mondaySession = AvailableVisitSessionDto(today.plusDays(6), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val mondaySession = AvailableVisitSessionDto(today.plusDays(6), "session6", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
     // this should be the next session available
-    val nextTuesdaySession = AvailableVisitSessionDto(today.plusDays(7), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val nextTuesdaySession = AvailableVisitSessionDto(today.plusDays(7), "session7", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
 
     val alert1 = createAlertResponseDto(code = PrisonerSupportedAlertCodeType.CC1.name, activeFrom = LocalDate.now(), activeTo = null)
 
@@ -422,5 +425,5 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
     assertThat(availableSessions[0].sessionForReview).isTrue
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<AvailableVisitSessionDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<AvailableVisitSessionDto>::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<AvailableVisitSessionDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<AvailableVisitSessionDto>::class.java)
 }

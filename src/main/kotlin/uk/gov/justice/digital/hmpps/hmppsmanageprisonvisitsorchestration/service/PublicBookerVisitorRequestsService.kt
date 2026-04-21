@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.ApproveVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.CreateVisitorRequestResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestListEntryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RejectVisitorRequestDto
@@ -25,9 +26,9 @@ class PublicBookerVisitorRequestsService(
     private val LOG: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun createAddVisitorRequest(bookerReference: String, prisonerNumber: String, addVisitorToBookerPrisonerRequestDto: AddVisitorToBookerPrisonerRequestDto) {
+  fun createAddVisitorRequest(bookerReference: String, prisonerNumber: String, addVisitorToBookerPrisonerRequestDto: AddVisitorToBookerPrisonerRequestDto): CreateVisitorRequestResponseDto {
     LOG.info("Entered PublicBookerVisitorRequestsService - addVisitorToBookerPrisoner - for booker {}, prisoner {}, addVisitorToBookerRequestDto {}", bookerReference, prisonerNumber, addVisitorToBookerPrisonerRequestDto)
-    prisonVisitBookerRegistryClient.createAddVisitorRequest(bookerReference, prisonerNumber, addVisitorToBookerPrisonerRequestDto)
+    return prisonVisitBookerRegistryClient.createAddVisitorRequest(bookerReference, prisonerNumber, addVisitorToBookerPrisonerRequestDto)
   }
 
   fun getActiveVisitorRequestsForBooker(bookerReference: String): List<BookerPrisonerVisitorRequestDto> {

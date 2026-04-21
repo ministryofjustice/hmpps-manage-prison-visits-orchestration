@@ -8,19 +8,16 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonRegisterClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 
 @DisplayName("Get supported prisons")
 class SupportedPrisonsTest : IntegrationTestBase() {
-  @MockitoSpyBean
-  private lateinit var prisonRegisterClientSpy: PrisonRegisterClient
 
   fun callGetSupportedPrisons(
     type: UserType,
@@ -38,8 +35,8 @@ class SupportedPrisonsTest : IntegrationTestBase() {
     .headers(authHttpHeaders)
     .exchange()
 
-  val prison1Dto = PrisonRegisterPrisonDto("BLI", "BLI Prison")
-  val prison2Dto = PrisonRegisterPrisonDto("HEI", "HEI Prison")
+  val prison1Dto = PrisonRegisterPrisonDto("BLI", "BLI Prison", prisonNameInWelsh = "BLI Prison (Cymru)")
+  val prison2Dto = PrisonRegisterPrisonDto("HEI", "HEI Prison", prisonNameInWelsh = "HEI Prison (Cymru)")
 
   @Test
   fun `when active prisons exist then all active prisons are returned`() {
@@ -228,7 +225,7 @@ class SupportedPrisonsTest : IntegrationTestBase() {
     responseSpec.expectStatus().is5xxServerError
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<String> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<String>::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<String> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<String>::class.java)
 
-  private fun getPrisonDetailsResults(returnResult: WebTestClient.BodyContentSpec): Array<PrisonRegisterPrisonDto> = objectMapper.readValue(returnResult.returnResult().responseBody, Array<PrisonRegisterPrisonDto>::class.java)
+  private fun getPrisonDetailsResults(returnResult: WebTestClient.BodyContentSpec): Array<PrisonRegisterPrisonDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<PrisonRegisterPrisonDto>::class.java)
 }
