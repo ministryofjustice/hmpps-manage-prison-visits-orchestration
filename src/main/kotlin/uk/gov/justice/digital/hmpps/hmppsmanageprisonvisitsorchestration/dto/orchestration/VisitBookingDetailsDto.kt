@@ -59,6 +59,9 @@ data class VisitBookingDetailsDto(
   val visitors: List<VisitorDetailsDto>,
   val events: List<EventAuditOrchestrationDto>,
   val notifications: List<VisitNotificationDto>,
+
+  @param:Schema(description = "Prisoner details", required = true)
+  val skipAlertsAndRestrictions: Boolean,
 ) {
   constructor(
     visit: VisitDto,
@@ -70,6 +73,7 @@ data class VisitBookingDetailsDto(
     visitContact: VisitContactDto?,
     events: List<EventAuditOrchestrationDto>,
     notifications: List<VisitNotificationEventDto>,
+    skipAlertsAndRestrictions: Boolean,
   ) : this(
     reference = visit.reference,
     visitRoom = visit.visitRoom,
@@ -88,6 +92,7 @@ data class VisitBookingDetailsDto(
     visitors = visitVisitors.map { VisitorDetailsDto(it) }.toList(),
     events = events,
     notifications = notifications.map { VisitNotificationDto(it) },
+    skipAlertsAndRestrictions = skipAlertsAndRestrictions,
   )
 }
 
@@ -121,6 +126,9 @@ data class PrisonerDetailsDto(
 
   @param:Schema(description = "Prisoner restrictions")
   val prisonerRestrictions: List<OffenderRestrictionDto> = emptyList(),
+
+  @param:Schema(description = "In / Out status", example = "OUT", allowableValues = ["IN", "OUT", "TRN"])
+  val inOutStatus: String? = null,
 ) {
   constructor(prisonerNumber: String, prisonerDto: PrisonerDto, prisonerAlerts: List<AlertDto>, prisonerRestrictions: List<OffenderRestrictionDto>) : this(
     prisonerNumber = prisonerNumber,
@@ -133,6 +141,7 @@ data class PrisonerDetailsDto(
     locationDescription = prisonerDto.locationDescription,
     prisonerAlerts = prisonerAlerts,
     prisonerRestrictions = prisonerRestrictions,
+    inOutStatus = prisonerDto.inOutStatus,
   )
 }
 
