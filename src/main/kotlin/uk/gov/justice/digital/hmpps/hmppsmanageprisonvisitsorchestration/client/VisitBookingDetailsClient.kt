@@ -64,7 +64,7 @@ class VisitBookingDetailsClient(
       val notifications = visitBookingDetailsCoreInfo.t4
 
       val isPastVisit = visit.startTimestamp.isBefore(LocalDateTime.now())
-      val prisonerOutOfPrison = prisoner.inOutStatus != "IN"
+      val prisonerOutOfPrison = prisoner.inOutStatus == "OUT"
       val skipAlertsAndRestrictions = isPastVisit || prisonerOutOfPrison
 
       val prisonerAlertsMono: Mono<RestPage<AlertResponseDto>> =
@@ -127,6 +127,7 @@ class VisitBookingDetailsClient(
             visitContact = visitContact,
             events = eventAuditDetails,
             notifications = notifications,
+            skipAlertsAndRestrictions = skipAlertsAndRestrictions,
           )
         }
     }
