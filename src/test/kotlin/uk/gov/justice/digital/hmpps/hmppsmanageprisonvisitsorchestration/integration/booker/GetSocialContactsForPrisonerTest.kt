@@ -92,7 +92,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     ).map { VisitorLastApprovedDatesDto(it.key, it.value) }
 
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(bookerReference, booker)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, hasDateOfBirth = null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, hasDateOfBirth = null, contactsList = contactsList)
     visitSchedulerMockServer.stubGetVisitorsLastApprovedDates(prisonerId, listOf(visitor1.personId, visitor2.personId, visitor5.personId), lastApprovedDatesList)
 
     // When
@@ -140,7 +140,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     ).map { VisitorLastApprovedDatesDto(it.key, it.value) }
 
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(bookerReference, booker)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, hasDateOfBirth = null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, hasDateOfBirth = null, contactsList = contactsList)
     visitSchedulerMockServer.stubGetVisitorsLastApprovedDates(prisonerId, listOf(visitor1.personId, visitor2.personId, visitor3.personId, visitor4.personId, visitor5.personId), lastApprovedDatesList)
 
     // When
@@ -203,7 +203,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     val contactsList = createContactsList(listOf(visitor1, visitor2, visitor3, visitor4, visitor5))
 
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(bookerReference, booker)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, hasDateOfBirth = null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, hasDateOfBirth = null, contactsList = contactsList)
 
     // When
     val responseSpec = callGetSocialContactsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, bookerReference, incorrectPrisonerId)
@@ -250,7 +250,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     )
 
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(bookerReference, booker)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, hasDateOfBirth = null, null, HttpStatus.NOT_FOUND)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, hasDateOfBirth = null, contactsList = null, httpStatus = HttpStatus.NOT_FOUND)
 
     // When
     val responseSpec = callGetSocialContactsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, bookerReference, prisonerId)
@@ -283,7 +283,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     )
 
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(bookerReference, booker)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, hasDateOfBirth = null, null, HttpStatus.INTERNAL_SERVER_ERROR)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, hasDateOfBirth = null, contactsList = null, httpStatus = HttpStatus.INTERNAL_SERVER_ERROR)
 
     // When
     val responseSpec = callGetSocialContactsByBookersPrisoner(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, bookerReference, prisonerId)
@@ -311,7 +311,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     val lastApprovedDatesList = null
 
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(bookerReference, booker)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, hasDateOfBirth = null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, hasDateOfBirth = null, contactsList = contactsList)
     // call to visit-scheduler returns a 404
     visitSchedulerMockServer.stubGetVisitorsLastApprovedDates(prisonerId, listOf(visitor1.personId, visitor2.personId, visitor3.personId, visitor4.personId, visitor5.personId), lastApprovedDatesList, HttpStatus.NOT_FOUND)
 
@@ -357,7 +357,7 @@ class GetSocialContactsForPrisonerTest : IntegrationTestBase() {
     val lastApprovedDatesList = null
 
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(bookerReference, booker)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, hasDateOfBirth = null, contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, hasDateOfBirth = null, contactsList = contactsList)
     // call to visit-scheduler returns a 500 error
     visitSchedulerMockServer.stubGetVisitorsLastApprovedDates(prisonerId, listOf(visitor1.personId, visitor2.personId, visitor3.personId, visitor4.personId, visitor5.personId), lastApprovedDatesList, HttpStatus.INTERNAL_SERVER_ERROR)
 
