@@ -642,7 +642,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, releasedPrisoner)
     prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
 
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList, withRestrictions = false)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
@@ -662,6 +662,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
     verify(alertsApiClientSpy, times(0)).getPrisonerAlertsAsMono(any())
     verify(prisonApiClientSpy, times(0)).getPrisonerRestrictionsAsMono(any())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContactsAsMono(prisonerId, null, false)
   }
 
   @Test
@@ -684,7 +685,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
     prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
 
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList, withRestrictions = false)
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
@@ -704,6 +705,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
     verify(alertsApiClientSpy, times(0)).getPrisonerAlertsAsMono(any())
     verify(prisonApiClientSpy, times(0)).getPrisonerRestrictionsAsMono(any())
+    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContactsAsMono(prisonerId, null, false)
   }
 
   @Test

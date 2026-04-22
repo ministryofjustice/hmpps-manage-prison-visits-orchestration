@@ -39,24 +39,6 @@ class PrisonerContactRegistryClient(
     const val CONTACT_REGISTRY_REVIEW_RESTRICTIONS_DATE_RANGES_PATH: String = "$CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_RESTRICTIONS_PATH/visit-request/date-ranges"
   }
 
-  fun getPrisonersApprovedSocialContacts(prisonerId: String, hasDateOfBirth: Boolean? = null): List<PrisonerContactDto> {
-    val uri = CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_PATH.replace("{prisonerId}", prisonerId)
-    return webClient.get().uri(uri) {
-      getSocialContactsUriBuilder(hasDateOfBirth, it).build()
-    }.retrieve()
-      .bodyToMono<List<PrisonerContactDto>>()
-      .onErrorResume { e ->
-        if (!isNotFoundError(e)) {
-          LOG.error("getPrisonersApprovedSocialContacts Failed for get request $uri")
-          Mono.error(e)
-        } else {
-          LOG.error("getPrisonersApprovedSocialContacts NOT_FOUND for get request $uri")
-          Mono.error { NotFoundException("Approved social contacts for prisonerId - $prisonerId not found on prisoner-contact-registry") }
-        }
-      }
-      .blockOptional(apiTimeout).orElseThrow { NotFoundException("Approved social contacts for prisonerId - $prisonerId not found on prisoner-contact-registry") }
-  }
-
   fun getPrisonersSocialContacts(prisonerId: String, hasDateOfBirth: Boolean? = null): List<PrisonerContactDto> {
     val uri = CONTACT_REGISTRY_SOCIAL_CONTACTS_PATH.replace("{prisonerId}", prisonerId)
     return getPrisonersSocialContactsAsMono(prisonerId, hasDateOfBirth)
@@ -72,18 +54,18 @@ class PrisonerContactRegistryClient(
       .blockOptional(apiTimeout).orElseThrow { NotFoundException("Social Contacts for prisonerId - $prisonerId not found on prisoner-contact-registry") }
   }
 
-  fun getPrisonersSocialContactsAsMono(prisonerId: String, hasDateOfBirth: Boolean? = null): Mono<List<PrisonerContactDto>> {
+  fun getPrisonersSocialContactsAsMono(prisonerId: String, hasDateOfBirth: Boolean? = null, withRestrictions: Boolean = true): Mono<List<PrisonerContactDto>> {
     val uri = CONTACT_REGISTRY_SOCIAL_CONTACTS_PATH.replace("{prisonerId}", prisonerId)
     return webClient.get().uri(uri) {
-      getSocialContactsUriBuilder(hasDateOfBirth, it).build()
+      getSocialContactsUriBuilder(hasDateOfBirth, withRestrictions, it).build()
     }
       .retrieve()
       .bodyToMono<List<PrisonerContactDto>>()
   }
 
-  private fun getSocialContactsUriBuilder(hasDateOfBirth: Boolean? = null, uriBuilder: UriBuilder): UriBuilder {
+  private fun getSocialContactsUriBuilder(hasDateOfBirth: Boolean? = null, withRestrictions: Boolean = true, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParamIfPresent("hasDateOfBirth", Optional.ofNullable(hasDateOfBirth))
-    uriBuilder.queryParam("withRestrictions", true)
+    uriBuilder.queryParam("withRestrictions", withRestrictions)
     return uriBuilder
   }
 
