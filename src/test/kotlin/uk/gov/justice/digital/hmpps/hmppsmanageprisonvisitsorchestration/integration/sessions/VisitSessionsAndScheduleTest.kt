@@ -178,7 +178,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     // session has NON_ASSOCIATION conflict
     val visitSessionDto1 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(today.plusDays(3), sessionStartTime), endTimestamp = LocalDateTime.of(today.plusDays(3), sessionEndTime), sessionConflicts = setOf(SessionConflict.NON_ASSOCIATION))
     // no conflicts
-    val visitSessionDto2 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(today.plusDays(4), sessionStartTime), endTimestamp = LocalDateTime.of(today.plusDays(3), sessionEndTime))
+    val visitSessionDto2 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(today.plusDays(4), sessionStartTime), endTimestamp = LocalDateTime.of(today.plusDays(4), sessionEndTime))
 
     visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2), userType = STAFF)
 
