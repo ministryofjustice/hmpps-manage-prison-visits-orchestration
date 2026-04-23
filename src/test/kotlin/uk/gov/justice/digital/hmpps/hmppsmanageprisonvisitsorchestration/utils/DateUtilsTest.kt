@@ -27,7 +27,7 @@ class DateUtilsTest {
   )
 
   @Test
-  fun `works out date range correctly with given prison object`() {
+  fun `works out date range correctly with given prison client`() {
     // When
     val dateRange = dateUtils.getToDaysDateRange(prisonClient)
 
