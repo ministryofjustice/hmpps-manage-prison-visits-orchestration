@@ -503,7 +503,11 @@ class VisitSchedulerSessionsService(
       // if there are session date conflicts - do not get schedules
       SessionsAndScheduleDto(sessionDate, visitSessionsForDate, emptyList(), sessionDateConflicts.toList())
     } else {
-      val prisonerScheduleForDate = prisonerSchedules.filter { it.eventDate == sessionDate }.map { PrisonerScheduledEventDto(it) }
+      val prisonerScheduleForDate = if (visitSessionsForDate.isNotEmpty()) {
+        prisonerSchedules.filter { it.eventDate == sessionDate }.map { PrisonerScheduledEventDto(it) }
+      } else {
+        emptyList()
+      }
       SessionsAndScheduleDto(sessionDate, visitSessionsForDate, prisonerScheduleForDate)
     }
   }
