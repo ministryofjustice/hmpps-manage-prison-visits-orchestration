@@ -11,10 +11,10 @@ data class PrisonUserClientDto(
   @field:NotNull
   val userType: UserType,
 
-  @param:Schema(description = "minimum number of days notice from the current date to booked a visit", example = "2", required = true)
+  @param:Schema(description = "minimum number of days notice from the current date to book a visit", example = "2", required = true)
   val policyNoticeDaysMin: Int,
 
-  @param:Schema(description = "maximum number of days notice from the current date to booked a visit", example = "28", required = true)
+  @param:Schema(description = "maximum number of days notice from the current date to book a visit", example = "28", required = true)
   val policyNoticeDaysMax: Int,
 
   @param:Schema(description = "is prison user client active", example = "true", required = true)
