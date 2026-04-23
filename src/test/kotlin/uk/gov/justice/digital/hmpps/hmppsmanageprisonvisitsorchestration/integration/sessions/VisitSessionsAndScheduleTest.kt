@@ -246,7 +246,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 4, 6, 3, 3, 18)
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
     visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, emptyList(), userType = STAFF)
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
+    whereaboutsApiMockServer.stubGetEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(4), events = emptyList())
 
     // When
     val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, roleVSIPOrchestrationServiceHttpHeaders)
