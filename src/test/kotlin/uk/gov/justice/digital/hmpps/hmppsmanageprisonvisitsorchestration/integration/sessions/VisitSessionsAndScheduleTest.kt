@@ -165,7 +165,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(
       sessionsAndScheduleDto.sessionsAndSchedule
         .filter { datesWithNoSessionsOrSchedule.contains(it.date) }
-        .all { it.scheduledEvents.size == 0 },
+        .all { it.scheduledEvents.isEmpty() },
     ).isTrue
 
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
@@ -193,7 +193,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(sessionsAndScheduleDto.scheduledEventsAvailable).isTrue
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule.size).isEqualTo(13)
 
-    var visitSessionWithDateConflict = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto1.startTimestamp.toLocalDate() }
+    val visitSessionWithDateConflict = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto1.startTimestamp.toLocalDate() }
     assertThat(visitSessionWithDateConflict.sessionDateConflicts.size).isEqualTo(1)
     assertThat(visitSessionWithDateConflict.sessionDateConflicts.first().sessionDateConflict).isEqualTo(SessionDateConflict.NON_ASSOCIATION)
     assertThat(visitSessionWithDateConflict.visitSessions.size).isEqualTo(1)
