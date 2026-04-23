@@ -515,7 +515,11 @@ class VisitSchedulerSessionsService(
     .flatten()
     .mapNotNull { sessionConflictDto ->
       SessionDateConflict.get(sessionConflictDto.sessionConflict)?.let {
-        SessionDateConflictDto(it, sessionConflictDto.additionalAttributes)
+        it to sessionConflictDto.additionalAttributes
       }
+    }
+    .distinctBy { (sessionDateConflict, additionalAttributes) -> sessionDateConflict to additionalAttributes }
+    .map { (sessionDateConflict, additionalAttributes) ->
+      SessionDateConflictDto(sessionDateConflict, additionalAttributes)
     }
 }
