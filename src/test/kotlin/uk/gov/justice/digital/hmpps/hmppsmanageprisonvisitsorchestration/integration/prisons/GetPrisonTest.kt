@@ -50,6 +50,7 @@ class GetPrisonTest : IntegrationTestBase() {
     Assertions.assertThat(result.active).isEqualTo(visitSchedulerPrisonDto.active)
     Assertions.assertThat(result.code).isEqualTo(visitSchedulerPrisonDto.code)
     Assertions.assertThat(result.prisonName).isEqualTo(prisonRegisterPrisonDto.prisonName)
+    Assertions.assertThat(result.prisonNameInWelsh).isEqualTo(prisonRegisterPrisonDto.prisonNameInWelsh)
     Assertions.assertThat(result.clients.first { it.userType == STAFF }).isEqualTo(visitSchedulerPrisonDto.clients.first { it.userType == STAFF })
     Assertions.assertThat(result.clients.first { it.userType == PUBLIC }).isEqualTo(visitSchedulerPrisonDto.clients.first { it.userType == PUBLIC })
     Assertions.assertThat(result.maxAdultVisitors).isEqualTo(visitSchedulerPrisonDto.maxAdultVisitors)
