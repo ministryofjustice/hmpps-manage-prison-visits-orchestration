@@ -446,7 +446,7 @@ abstract class IntegrationTestBase {
     openVisitCapacity = 30,
     startTimestamp = startTimestamp,
     endTimestamp = endTimestamp,
-    sessionConflicts = sessionConflicts.map { createSessionConflictDto(it) },
+    sessionConflicts = sessionConflicts.sortedBy { it.name }.map { createSessionConflictDto(it) },
   )
 
   final fun createPrisonNameDto(prisonCode: String, name: String): PrisonNameDto = PrisonNameDto(
