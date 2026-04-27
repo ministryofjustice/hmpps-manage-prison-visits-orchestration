@@ -173,7 +173,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when visit sessions  are returned with NON_ASSOCIATION conflicts the session date is marked with appropriate conflict flag`() {
+  fun `when visit sessions are returned with NON_ASSOCIATION conflicts the session date is marked with appropriate conflict flag`() {
     // Given
     // session has NON_ASSOCIATION conflict
     val visitSessionDto1 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(today.plusDays(3), sessionStartTime), endTimestamp = LocalDateTime.of(today.plusDays(3), sessionEndTime), sessionConflicts = setOf(SessionConflict.NON_ASSOCIATION))
@@ -201,6 +201,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     val visitSessionWithNoDateConflict = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto2.startTimestamp.toLocalDate() }
     assertThat(visitSessionWithNoDateConflict.sessionDateConflicts).isEmpty()
     assertThat(visitSessionWithNoDateConflict.visitSessions).isNotEmpty
+    assertThat(visitSessionWithNoDateConflict.scheduledEvents).isEmpty()
 
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
     verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
@@ -234,13 +235,14 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     val visitSessionWithNoDateConflict = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto2.startTimestamp.toLocalDate() }
     assertThat(visitSessionWithNoDateConflict.sessionDateConflicts).isEmpty()
     assertThat(visitSessionWithNoDateConflict.visitSessions).isNotEmpty
+    assertThat(visitSessionWithNoDateConflict.scheduledEvents).isEmpty()
 
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
     verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
   }
 
   @Test
-  fun `visit sessions outside the date range are returned with OUT_OF_BOOKING_WINDOW conflict flag`() {
+  fun `visit sessions outside the date range are returned with OUTSIDE_BOOKING_WINDOW conflict flag`() {
     // Given
     val prisonCode = "XYZ"
     val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 4, 6, 3, 3, 18)
@@ -260,16 +262,19 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[0].sessionDateConflicts.size).isEqualTo(1)
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[0].sessionDateConflicts.first().sessionDateConflict).isEqualTo(SessionDateConflict.OUTSIDE_BOOKING_WINDOW)
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[0].visitSessions).isEmpty()
+    assertThat(sessionsAndScheduleDto.sessionsAndSchedule[0].scheduledEvents).isEmpty()
 
     // today + 1 - out of booking window
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[1].sessionDateConflicts.size).isEqualTo(1)
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[1].sessionDateConflicts.first().sessionDateConflict).isEqualTo(SessionDateConflict.OUTSIDE_BOOKING_WINDOW)
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[1].visitSessions).isEmpty()
+    assertThat(sessionsAndScheduleDto.sessionsAndSchedule[0].scheduledEvents).isEmpty()
 
     // today + 2 - out of booking window
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[2].sessionDateConflicts.size).isEqualTo(1)
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[2].sessionDateConflicts.first().sessionDateConflict).isEqualTo(SessionDateConflict.OUTSIDE_BOOKING_WINDOW)
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[2].visitSessions).isEmpty()
+    assertThat(sessionsAndScheduleDto.sessionsAndSchedule[0].scheduledEvents).isEmpty()
 
     // today + 3 - not out of booking window
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[3].sessionDateConflicts).isEmpty()
