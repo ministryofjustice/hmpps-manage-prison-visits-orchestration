@@ -227,7 +227,7 @@ class PrisonVisitBookerRegistryClient(
           logger.error("unlinkBookerPrisonerVisitor Failed to complete unlink request $uri")
           Mono.error(e)
         } else {
-          logger.error("unlinkBookerPrisonerVisitor NOT_FOUND on unlink request $uri, returning 200")
+          logger.warn("unlinkBookerPrisonerVisitor NOT_FOUND on unlink request $uri, returning 200")
           Mono.empty()
         }
       }
