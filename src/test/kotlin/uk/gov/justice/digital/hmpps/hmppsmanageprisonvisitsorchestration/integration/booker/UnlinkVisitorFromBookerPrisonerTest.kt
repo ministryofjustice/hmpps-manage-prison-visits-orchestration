@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.control
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.StaffUsernameDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
-@DisplayName("Delete - Unlink visitor from booker prisoner - $UNLINK_VISITOR")
+@DisplayName("POST - Unlink visitor from booker prisoner - $PUBLIC_BOOKER_UNLINK_VISITOR_CONTROLLER_PATH")
 class UnlinkVisitorFromBookerPrisonerTest : IntegrationTestBase() {
 
   val bookerReference = "reference"
