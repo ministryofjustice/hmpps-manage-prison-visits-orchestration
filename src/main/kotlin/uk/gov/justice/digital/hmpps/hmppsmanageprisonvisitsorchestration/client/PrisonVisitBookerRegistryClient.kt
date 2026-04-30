@@ -34,6 +34,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.SearchBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.BookerPrisonerRegistrationErrorCodes
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.StaffUsernameDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerPrisonerRegistrationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerPrisonerValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerVisitorRequestValidationException
@@ -210,22 +211,23 @@ class PrisonVisitBookerRegistryClient(
     .retrieve()
     .bodyToMono<List<BookerAuditDto>>()
 
-  fun unlinkBookerPrisonerVisitor(bookerReference: String, prisonerNumber: String, visitorId: String) {
+  fun unlinkBookerPrisonerVisitor(bookerReference: String, prisonerNumber: String, visitorId: String, actionedBy: StaffUsernameDto) {
     val uri = UNLINK_VISITOR
       .replace("{bookerReference}", bookerReference)
       .replace("{prisonerId}", prisonerNumber)
       .replace("{visitorId}", visitorId)
 
-    webClient.delete()
+    webClient.post()
       .uri(uri)
+      .body(BodyInserters.fromValue(actionedBy))
       .retrieve()
       .toBodilessEntity()
       .onErrorResume { e ->
         if (!ClientUtils.isNotFoundError(e)) {
-          logger.error("unlinkBookerPrisonerVisitor Failed to complete delete request $uri")
+          logger.error("unlinkBookerPrisonerVisitor Failed to complete unlink request $uri")
           Mono.error(e)
         } else {
-          logger.error("unlinkBookerPrisonerVisitor NOT_FOUND on delete request $uri, returning 200")
+          logger.error("unlinkBookerPrisonerVisitor NOT_FOUND on unlink request $uri, returning 200")
           Mono.empty()
         }
       }

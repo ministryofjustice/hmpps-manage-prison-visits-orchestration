@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.con
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.RestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorRestrictionType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.StaffUsernameDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerAuthFailureException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerPrisonerValidationException
@@ -162,10 +163,10 @@ class PublicBookerService(
     return prisonVisitBookerRegistryClient.registerVisitorForBookerPrisoner(bookerReference, prisonerId, registerVisitorForBookerPrisonerDto)
   }
 
-  fun unlinkBookerPrisonerVisitor(bookerReference: String, prisonerNumber: String, visitorId: String) {
-    logger.trace("Entered PublicBookerService - unlinkBookerPrisonerVisitor - for booker $bookerReference, prisoner $prisonerNumber, visitor $visitorId")
+  fun unlinkBookerPrisonerVisitor(bookerReference: String, prisonerNumber: String, visitorId: String, actionedBy: StaffUsernameDto) {
+    logger.trace("Entered PublicBookerService - unlinkBookerPrisonerVisitor - for booker $bookerReference, prisoner $prisonerNumber, visitor $visitorId, actionedBy = ${actionedBy.username}")
 
-    prisonVisitBookerRegistryClient.unlinkBookerPrisonerVisitor(bookerReference, prisonerNumber, visitorId)
+    prisonVisitBookerRegistryClient.unlinkBookerPrisonerVisitor(bookerReference, prisonerNumber, visitorId, actionedBy)
   }
 
   private fun isPrisonSupportedOnVisits(prisonId: String): Boolean = visitSchedulerClient.getSupportedPrisons(PUBLIC).map { it.uppercase() }.contains(prisonId.uppercase())
