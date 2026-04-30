@@ -7,7 +7,6 @@ import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.test.web.reactive.server.WebTestClient
-import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_UNLINK_VISITOR_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.StaffUsernameDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
@@ -23,7 +22,7 @@ class UnlinkVisitorFromBookerPrisonerTest : IntegrationTestBase() {
   fun `when call to unlink visitor, then call is successfully forwarded to booker registry`() {
     // Given
     val staffUsername = StaffUsernameDto("TEST_USER")
-
+    prisonVisitBookerRegistryMockServer.stubUnlinkVisitor(bookerReference, prisonerId, visitorId, staffUsername, HttpStatus.OK)
     // When
     val responseSpec = callUnlinkVisitor(bookerReference, prisonerId, visitorId, staffUsername, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
 
@@ -75,7 +74,7 @@ class UnlinkVisitorFromBookerPrisonerTest : IntegrationTestBase() {
       .replace("{visitorId}", visitorId)
 
     // When
-    val responseSpec = webTestClient.post().uri(uri).body(BodyInserters.fromValue(staffUsername)).exchange()
+    val responseSpec = webTestClient.post().uri(uri).bodyValue(staffUsername).exchange()
 
     // Then
     responseSpec.expectStatus().isUnauthorized
