@@ -11,7 +11,6 @@ import jakarta.validation.constraints.NotNull
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -44,6 +43,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.SearchBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.BookerPrisonerRegistrationErrorCodes
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.StaffUsernameDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PublicBookerService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PublicBookerVisitorRequestsService
 
@@ -405,7 +405,7 @@ class PublicBookerController(
   ): BookerDetailedInfoDto = publicBookerService.getBookerDetails(bookerReference)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
-  @DeleteMapping(PUBLIC_BOOKER_UNLINK_VISITOR_CONTROLLER_PATH)
+  @PostMapping(PUBLIC_BOOKER_UNLINK_VISITOR_CONTROLLER_PATH)
   @ResponseStatus(HttpStatus.OK)
   @Operation(
     summary = "unlink booker prisoner visitor",
@@ -442,7 +442,10 @@ class PublicBookerController(
     @PathVariable(value = "visitorId", required = true)
     @NotNull
     visitorId: String,
-  ) = publicBookerService.unlinkBookerPrisonerVisitor(bookerReference, prisonerId, visitorId)
+    @RequestBody
+    @Valid
+    actionedByDto: StaffUsernameDto,
+  ) = publicBookerService.unlinkBookerPrisonerVisitor(bookerReference, prisonerId, visitorId, actionedByDto)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(PUBLIC_BOOKER_GET_SOCIAL_CONTACTS_BY_PRISONER_PATH)
