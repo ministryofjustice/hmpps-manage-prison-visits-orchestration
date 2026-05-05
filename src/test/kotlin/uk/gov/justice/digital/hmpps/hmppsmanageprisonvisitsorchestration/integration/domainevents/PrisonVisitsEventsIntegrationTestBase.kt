@@ -41,7 +41,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentCreatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentDeletedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentUpdatedNotifier
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PersonRestrictionUpsertedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertsUpdatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerContactRestrictionCreatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerContactRestrictionUpdatedNotifier
@@ -52,7 +51,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerReceivedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerReleasedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.VisitorApprovedNotifier
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.VisitorRestrictionChangedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.VisitorUnapprovedNotifier
 import uk.gov.justice.hmpps.sqs.HmppsQueue
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
@@ -105,9 +103,6 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
   lateinit var prisonerIncentivesDeletedNotifierSpy: PrisonerIncentivesDeletedNotifier
 
   @MockitoSpyBean
-  lateinit var personRestrictionUpsertedNotifierSpy: PersonRestrictionUpsertedNotifier
-
-  @MockitoSpyBean
   lateinit var courtVideoAppointmentCreatedNotifierSpy: CourtVideoAppointmentCreatedNotifier
 
   @MockitoSpyBean
@@ -130,9 +125,6 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
 
   @MockitoSpyBean
   lateinit var prisonerReleasedNotifierSpy: PrisonerReleasedNotifier
-
-  @MockitoSpyBean
-  lateinit var visitorRestrictionChangedNotifierSpy: VisitorRestrictionChangedNotifier
 
   @MockitoSpyBean
   lateinit var prisonerContactRestrictionCreatedNotifierSpy: PrisonerContactRestrictionCreatedNotifier
@@ -281,37 +273,6 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     return createAdditionalInformationJson(jsonValues)
   }
 
-  fun createPersonRestrictionAdditionalInformationJson(
-    nomsNumber: String? = null,
-    visitorId: String? = null,
-    effectiveDate: String? = null,
-    expiryDate: String? = null,
-    restrictionType: String? = null,
-    offenderPersonRestrictionId: String? = null,
-  ): String {
-    val jsonValues = HashMap<String, Any>()
-    nomsNumber?.let {
-      jsonValues["nomsNumber"] = nomsNumber
-    }
-    visitorId?.let {
-      jsonValues["personId"] = visitorId
-    }
-    effectiveDate?.let {
-      jsonValues["effectiveDate"] = effectiveDate
-    }
-    expiryDate?.let {
-      jsonValues["expiryDate"] = expiryDate
-    }
-    restrictionType?.let {
-      jsonValues["restrictionType"] = restrictionType
-    }
-    offenderPersonRestrictionId?.let {
-      jsonValues["offenderPersonRestrictionId"] = offenderPersonRestrictionId
-    }
-
-    return createAdditionalInformationJson(jsonValues)
-  }
-
   fun createPrisonerContactRestrictionAdditionalInformationJson(
     prisonerContactRestrictionId: Long,
     prisonerContactId: Long,
@@ -340,33 +301,6 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
 
     jsonValues["appointmentInstanceId"] = appointmentInstanceId
     jsonValues["categoryCode"] = categoryCode
-
-    return createAdditionalInformationJson(jsonValues)
-  }
-
-  fun createVisitorRestrictionAdditionalInformationJson(
-    visitorId: String? = null,
-    effectiveDate: String? = null,
-    expiryDate: String? = null,
-    restrictionType: String? = null,
-    visitorRestrictionId: String? = null,
-  ): String {
-    val jsonValues = HashMap<String, Any>()
-    visitorId?.let {
-      jsonValues["personId"] = visitorId
-    }
-    effectiveDate?.let {
-      jsonValues["effectiveDate"] = effectiveDate
-    }
-    expiryDate?.let {
-      jsonValues["expiryDate"] = expiryDate
-    }
-    restrictionType?.let {
-      jsonValues["restrictionType"] = restrictionType
-    }
-    visitorRestrictionId?.let {
-      jsonValues["visitorRestrictionId"] = visitorRestrictionId
-    }
 
     return createAdditionalInformationJson(jsonValues)
   }
