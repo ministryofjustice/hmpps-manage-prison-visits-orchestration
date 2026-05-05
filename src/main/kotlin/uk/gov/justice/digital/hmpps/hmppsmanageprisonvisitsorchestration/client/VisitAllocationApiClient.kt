@@ -23,7 +23,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderPrisonerBalanceDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.PrisonerBalanceAdjustmentValidationException
 import java.time.Duration
@@ -103,7 +102,7 @@ class VisitAllocationApiClient(
     val visitOrderHistoryListMono = getPrisonerVisitOrderHistoryAsMono(prisonerId, fromDate)
     return Mono.zip(inmateDetailMono, visitOrderHistoryListMono)
       .map { visitOrderHistoryMonos ->
-        val inmateDetails = visitOrderHistoryMonos.t1 ?: throw InvalidPrisonerProfileException("Unable to retrieve inmate details from Prison API")
+        val inmateDetails = visitOrderHistoryMonos.t1
 
         val visitOrderHistoryList = visitOrderHistoryMonos.t2.sortedBy { it.createdTimeStamp }
         VisitOrderHistoryDetailsDto(

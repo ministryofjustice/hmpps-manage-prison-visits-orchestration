@@ -17,15 +17,16 @@ class PrisonerContactRegistryMockServer : WireMockServer(8095) {
   fun stubGetPrisonerContacts(
     prisonerId: String,
     hasDateOfBirth: Boolean? = null,
+    withRestrictions: Boolean = true,
     contactsList: List<PrisonerContactDto>?,
     httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
   ) {
     val responseBuilder = createJsonResponseBuilder()
 
     val uri = if (hasDateOfBirth != null) {
-      "/v2/prisoners/$prisonerId/contacts/social?hasDateOfBirth=$hasDateOfBirth&withRestrictions=true"
+      "/v2/prisoners/$prisonerId/contacts/social?hasDateOfBirth=$hasDateOfBirth&withRestrictions=$withRestrictions"
     } else {
-      "/v2/prisoners/$prisonerId/contacts/social?withRestrictions=true"
+      "/v2/prisoners/$prisonerId/contacts/social?withRestrictions=$withRestrictions"
     }
 
     stubFor(

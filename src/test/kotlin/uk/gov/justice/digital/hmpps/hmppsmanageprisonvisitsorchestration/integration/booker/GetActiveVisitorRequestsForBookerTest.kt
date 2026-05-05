@@ -23,10 +23,10 @@ class GetActiveVisitorRequestsForBookerTest : IntegrationTestBase() {
   fun `when booker has active visitor requests then all active visitor requests are returned`() {
     // Given
     val bookerReference = "booker-ref"
-    val request1 = BookerPrisonerVisitorRequestDto(reference = "1", prisonerId = "A11", firstName = "VisitorOne", lastName = "First", dateOfBirth = LocalDate.of(1980, 1, 1))
-    val request2 = BookerPrisonerVisitorRequestDto(reference = "2", prisonerId = "A11", firstName = "VisitorTwo", lastName = "Second", dateOfBirth = LocalDate.of(1990, 2, 2))
-    val request3 = BookerPrisonerVisitorRequestDto(reference = "3", prisonerId = "A12", firstName = "VisitorThree", lastName = "Third", dateOfBirth = LocalDate.of(2000, 3, 3))
-    val request4 = BookerPrisonerVisitorRequestDto(reference = "4", prisonerId = "A12", firstName = "VisitorFour", lastName = "Fourth", dateOfBirth = LocalDate.of(2010, 4, 4))
+    val request1 = BookerPrisonerVisitorRequestDto(reference = "1", prisonerId = "A11", firstName = "VisitorOne", lastName = "First", dateOfBirth = LocalDate.of(1980, 1, 1), requestedOn = LocalDate.of(2026, 1, 31))
+    val request2 = BookerPrisonerVisitorRequestDto(reference = "2", prisonerId = "A11", firstName = "VisitorTwo", lastName = "Second", dateOfBirth = LocalDate.of(1990, 2, 2), requestedOn = LocalDate.of(2026, 2, 28))
+    val request3 = BookerPrisonerVisitorRequestDto(reference = "3", prisonerId = "A12", firstName = "VisitorThree", lastName = "Third", dateOfBirth = LocalDate.of(2000, 3, 3), requestedOn = LocalDate.of(2026, 3, 31))
+    val request4 = BookerPrisonerVisitorRequestDto(reference = "4", prisonerId = "A12", firstName = "VisitorFour", lastName = "Fourth", dateOfBirth = LocalDate.of(2010, 4, 4), requestedOn = LocalDate.of(2026, 4, 30))
     prisonVisitBookerRegistryMockServer.stubGetActiveVisitorRequestsForBooker(bookerReference, listOf(request1, request2, request3, request4))
 
     // When
@@ -115,6 +115,7 @@ class GetActiveVisitorRequestsForBookerTest : IntegrationTestBase() {
     Assertions.assertThat(bookerPrisonerVisitorRequestDto.firstName).isEqualTo(requestedVisitorRequestDto.firstName)
     Assertions.assertThat(bookerPrisonerVisitorRequestDto.lastName).isEqualTo(requestedVisitorRequestDto.lastName)
     Assertions.assertThat(bookerPrisonerVisitorRequestDto.dateOfBirth).isEqualTo(requestedVisitorRequestDto.dateOfBirth)
+    Assertions.assertThat(bookerPrisonerVisitorRequestDto.requestedOn).isEqualTo(requestedVisitorRequestDto.requestedOn)
   }
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerPrisonerVisitorRequestDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<BookerPrisonerVisitorRequestDto>::class.java).toList()
