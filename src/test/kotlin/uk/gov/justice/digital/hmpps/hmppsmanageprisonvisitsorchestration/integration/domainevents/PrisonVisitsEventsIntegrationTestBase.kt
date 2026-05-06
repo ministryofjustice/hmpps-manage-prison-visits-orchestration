@@ -41,6 +41,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentCreatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentDeletedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentUpdatedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertAddedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertsUpdatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerContactRestrictionCreatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerContactRestrictionUpdatedNotifier
@@ -137,6 +138,9 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
 
   @MockitoSpyBean
   lateinit var contactRestrictionUpdatedNotifierSpy: ContactRestrictionUpdatedNotifier
+
+  @MockitoSpyBean
+  lateinit var prisonerAlertAddedNotifierSpy: PrisonerAlertAddedNotifier
 
   @MockitoSpyBean
   lateinit var domainEventListenerServiceSpy: DomainEventListenerService
@@ -301,6 +305,17 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
 
     jsonValues["appointmentInstanceId"] = appointmentInstanceId
     jsonValues["categoryCode"] = categoryCode
+
+    return createAdditionalInformationJson(jsonValues)
+  }
+
+  fun createAddAlertAdditionalInformationJson(
+    alertCode: String,
+    alertUUID: String,
+  ): String {
+    val jsonValues = HashMap<String, Any>()
+    jsonValues["alertCode"] = alertCode
+    jsonValues["alertUuid"] = alertUUID
 
     return createAdditionalInformationJson(jsonValues)
   }

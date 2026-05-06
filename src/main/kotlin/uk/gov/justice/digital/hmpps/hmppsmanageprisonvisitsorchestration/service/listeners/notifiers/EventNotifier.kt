@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.DomainEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.Identifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.ContactRestrictionUpsertedInfo
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerAlertAddedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerContactRestrictionUpsertedInfo
 
 interface IEventNotifier {
@@ -51,6 +52,13 @@ abstract class EventNotifier : IEventNotifier {
     contactRestrictionUpsertedInfo.contactId = contactId
 
     return contactRestrictionUpsertedInfo
+  }
+
+  fun getPrisonerAlertAddedInfo(domainEvent: DomainEvent): PrisonerAlertAddedInfo {
+    val prisonerAlertAddedInfo = getAdditionalInfo(domainEvent, PrisonerAlertAddedInfo::class.java)
+    val prisonerId = domainEvent.personReference?.identifiers?.firstOrNull { it.type == Identifier.NOMS }?.value
+    prisonerAlertAddedInfo.prisonerNumber = prisonerId
+    return prisonerAlertAddedInfo
   }
 
   fun getVisitSchedulerService() = visitSchedulerService
