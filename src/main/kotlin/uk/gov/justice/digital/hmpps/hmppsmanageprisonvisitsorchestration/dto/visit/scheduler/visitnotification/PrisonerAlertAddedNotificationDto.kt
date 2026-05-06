@@ -11,7 +11,7 @@ data class PrisonerAlertAddedNotificationDto(
   val alertCode: String,
 
   @field:NotBlank
-  val alertUUID: String,
+  val alertUuid: String,
 
   @field:NotBlank
   val description: String,
@@ -19,7 +19,7 @@ data class PrisonerAlertAddedNotificationDto(
   constructor(info: PrisonerAlertAddedInfo, description: String) : this(
     prisonerNumber = requireNotNull(info.prisonerNumber) { "Prisoner number is required" },
     alertCode = info.alertCode,
-    alertUUID = info.alertUUID,
+    alertUuid = info.alertUuid,
     description = description,
   )
 }

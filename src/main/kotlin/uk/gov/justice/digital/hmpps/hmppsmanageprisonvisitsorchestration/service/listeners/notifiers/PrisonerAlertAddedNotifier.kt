@@ -19,11 +19,11 @@ class PrisonerAlertAddedNotifier : EventNotifier() {
       if (prisonerSupportedAlertCodes.contains(prisonerAlertAddedInfo.alertCode)) {
         true
       } else {
-        LOG.info("Alert code {} not in list of supported alert codes, {}, ignoring event", prisonerAlertAddedInfo.alertCode, domainEvent)
+        LOG.info("Alert code {} not in list of supported alert codes, ignoring add alert event for prisoner {}", prisonerAlertAddedInfo.alertCode, prisonerAlertAddedInfo.prisonerNumber)
         false
       }
     } else {
-      LOG.info("Prisoner Number not found in prisoner alert added event, {}, ignoring event", domainEvent)
+      LOG.info("Prisoner Number not found in prisoner alert added event, ignoring event")
       false
     }
   }

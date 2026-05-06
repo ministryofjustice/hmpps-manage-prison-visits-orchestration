@@ -15,11 +15,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.Identifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.PersonIdentifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.PersonReference
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.EventNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_ALERT_ADDED
 import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 
-class PrisonAlertAddedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
+class PrisonerAlertAddedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
 
   @Test
   fun `when a supported alert code is added then event is successfully processed`() {
@@ -32,7 +31,7 @@ class PrisonAlertAddedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
     val sentRequestToVsip = PrisonerAlertAddedNotificationDto(
       prisonerNumber = prisonerNumber,
       alertCode = alertCode,
-      alertUUID = alertUUID,
+      alertUuid = alertUUID,
       description = alertDescription,
     )
 
@@ -59,7 +58,7 @@ class PrisonAlertAddedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
     sendSqSMessage(publishRequest)
 
     // Then
-    assertStandardCalls(prisonerAlertAddedNotifierSpy, VISIT_NOTIFICATION_PRISONER_ALERT_ADDED_PATH, sentRequestToVsip)
+    assertStandardCalls(sentRequestToVsip)
   }
 
   @Test
@@ -95,7 +94,7 @@ class PrisonAlertAddedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
     sendSqSMessage(publishRequest)
 
     // Then
-    verify(prisonerAlertAddedNotifierSpy, times(0)).processEvent(any())
+    assertEventNotProcessed()
   }
 
   @Test
@@ -130,18 +129,21 @@ class PrisonAlertAddedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
     sendSqSMessage(publishRequest)
 
     // Then
-    verify(prisonerAlertAddedNotifierSpy, times(0)).processEvent(any())
+    assertEventNotProcessed()
   }
 
   private fun sendSqSMessage(publishRequest: PublishRequest?) {
     awsSnsClient.publish(publishRequest).get()
   }
 
-  private fun assertStandardCalls(eventNotifierSpy: EventNotifier, notificationEndPoint: String? = null, expectedRequestBody: Any? = null) {
+  private fun assertStandardCalls(expectedRequestBody: Any? = null) {
     await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
-    await untilAsserted { verify(eventNotifierSpy, times(1)).processEvent(any()) }
-    notificationEndPoint?.let {
-      await untilAsserted { visitSchedulerMockServer.verifyPost(notificationEndPoint, expectedRequestBody) }
-    }
+    await untilAsserted { verify(prisonerAlertAddedNotifierSpy, times(1)).processEvent(any()) }
+    await untilAsserted { visitSchedulerMockServer.verifyPost(VISIT_NOTIFICATION_PRISONER_ALERT_ADDED_PATH, expectedRequestBody) }
+  }
+
+  private fun assertEventNotProcessed() {
+    await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
+    verify(prisonerAlertAddedNotifierSpy, times(0)).processEvent(any())
   }
 }
