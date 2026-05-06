@@ -68,7 +68,7 @@ const val BOOKER_ADMIN_ENDPOINT = "$PUBLIC_BOOKER_CONTROLLER_PATH/config"
 const val SEARCH_FOR_BOOKER: String = "$BOOKER_ADMIN_ENDPOINT/search"
 const val GET_BOOKER_BY_BOOKING_REFERENCE: String = "$BOOKER_ADMIN_ENDPOINT/{bookerReference}"
 const val LINK_VISITOR: String = "$BOOKER_ADMIN_ENDPOINT/{bookerReference}/prisoner/{prisonerId}/visitor"
-const val UNLINK_VISITOR: String = "$BOOKER_ADMIN_ENDPOINT/{bookerReference}/prisoner/{prisonerId}/visitor/{visitorId}"
+const val UNLINK_VISITOR: String = "$BOOKER_ADMIN_ENDPOINT/{bookerReference}/prisoner/{prisonerId}/visitor/{visitorId}/unlink"
 
 @Component
 class PrisonVisitBookerRegistryClient(
