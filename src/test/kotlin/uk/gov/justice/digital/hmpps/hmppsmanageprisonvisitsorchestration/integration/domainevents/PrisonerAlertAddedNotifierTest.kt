@@ -26,12 +26,12 @@ class PrisonerAlertAddedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
     val prisonerNumber = "AB123456C"
     val alertCode = PrisonerSupportedAlertCodeType.C1.name
     val alertDescription = "Prisoner alert added"
-    val alertUUID = "12345678-1234-1234-1234-123456789012"
+    val alertUuid = "12345678-1234-1234-1234-123456789012"
 
     val sentRequestToVsip = PrisonerAlertAddedNotificationDto(
       prisonerNumber = prisonerNumber,
       alertCode = alertCode,
-      alertUuid = alertUUID,
+      alertUuid = alertUuid,
       description = alertDescription,
     )
 
@@ -46,7 +46,7 @@ class PrisonerAlertAddedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
       description = alertDescription,
       additionalInformation = createAddAlertAdditionalInformationJson(
         alertCode = alertCode,
-        alertUUID = alertUUID,
+        alertUuid = alertUuid,
       ),
       personReference = objectMapper.writeValueAsString(personReference),
     )
@@ -68,7 +68,7 @@ class PrisonerAlertAddedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
     // alert code not in list of supported codes
     val alertCode = "NOT_SUPPORTED"
     val alertDescription = "Prisoner alert added"
-    val alertUUID = "12345678-1234-1234-1234-123456789012"
+    val alertUuid = "12345678-1234-1234-1234-123456789012"
 
     // Given
     val personReference = PersonReference(
@@ -82,7 +82,7 @@ class PrisonerAlertAddedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
       description = alertDescription,
       additionalInformation = createAddAlertAdditionalInformationJson(
         alertCode = alertCode,
-        alertUUID = alertUUID,
+        alertUuid = alertUuid,
       ),
       personReference = objectMapper.writeValueAsString(personReference),
     )
@@ -95,6 +95,7 @@ class PrisonerAlertAddedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
 
     // Then
     assertEventNotProcessed()
+    verify(visitSchedulerClient, times(0)).processPrisonerAlertAdded(sendDto = any())
   }
 
   @Test
@@ -103,7 +104,7 @@ class PrisonerAlertAddedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
     val prisonerNumber = "AB123456C"
     val alertCode = PrisonerSupportedAlertCodeType.SSHO.name
     val alertDescription = "Prisoner alert added"
-    val alertUUID = "12345678-1234-1234-1234-123456789012"
+    val alertUuid = "12345678-1234-1234-1234-123456789012"
 
     // Person reference identifier is not NOMS
     val personReference = PersonReference(
@@ -117,7 +118,7 @@ class PrisonerAlertAddedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
       description = alertDescription,
       additionalInformation = createAddAlertAdditionalInformationJson(
         alertCode = alertCode,
-        alertUUID = alertUUID,
+        alertUuid = alertUuid,
       ),
       personReference = objectMapper.writeValueAsString(personReference),
     )
@@ -130,6 +131,7 @@ class PrisonerAlertAddedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
 
     // Then
     assertEventNotProcessed()
+    verify(visitSchedulerClient, times(0)).processPrisonerAlertAdded(sendDto = any())
   }
 
   private fun sendSqSMessage(publishRequest: PublishRequest?) {
