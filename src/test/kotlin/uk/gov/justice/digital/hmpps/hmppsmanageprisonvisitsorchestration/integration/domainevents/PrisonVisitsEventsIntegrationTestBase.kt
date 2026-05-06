@@ -311,11 +311,11 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
 
   fun createAddAlertAdditionalInformationJson(
     alertCode: String,
-    alertUUID: String,
+    alertUuid: String,
   ): String {
     val jsonValues = HashMap<String, Any>()
     jsonValues["alertCode"] = alertCode
-    jsonValues["alertUuid"] = alertUUID
+    jsonValues["alertUuid"] = alertUuid
 
     return createAdditionalInformationJson(jsonValues)
   }
