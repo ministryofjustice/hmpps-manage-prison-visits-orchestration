@@ -23,4 +23,7 @@ data class BookerPrisonerVisitorRequestDto(
 
   @param:Schema(description = "Date of birth, as entered on visitor request", example = "2000-01-01", required = true)
   val dateOfBirth: LocalDate,
+
+  @param:Schema(description = "Date when the visitor request was added", example = "2000-01-01", required = true)
+  val requestedOn: LocalDate,
 )
