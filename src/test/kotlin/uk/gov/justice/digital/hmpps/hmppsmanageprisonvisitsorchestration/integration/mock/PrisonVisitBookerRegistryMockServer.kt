@@ -35,6 +35,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.SearchBookerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.StaffUsernameDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.createJsonResponseBuilder
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.getJsonString
 
@@ -190,7 +191,7 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
     )
   }
 
-  fun stubUnlinkVisitor(bookerReference: String, prisonerId: String, visitorId: String, httpStatus: HttpStatus = HttpStatus.OK) {
+  fun stubUnlinkVisitor(bookerReference: String, prisonerId: String, visitorId: String, staffUsername: StaffUsernameDto, httpStatus: HttpStatus = HttpStatus.OK) {
     val responseBuilder = createJsonResponseBuilder()
 
     val uri = UNLINK_VISITOR
@@ -199,7 +200,7 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
       .replace("{visitorId}", visitorId)
 
     stubFor(
-      WireMock.delete(uri)
+      WireMock.post(uri).withRequestBody(equalToJson(getJsonString(staffUsername)))
         .willReturn(
           responseBuilder
             .withStatus(httpStatus.value()),
