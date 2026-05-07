@@ -45,7 +45,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.CourtVideoAppointmentNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertAddedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertsAddedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerContactRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
@@ -86,6 +86,7 @@ const val VISIT_NOTIFICATION_VISITOR_UNAPPROVED_PATH: String = "$VISIT_NOTIFICAT
 
 const val VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alerts/updated"
 const val VISIT_NOTIFICATION_PRISONER_ALERT_ADDED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alert/added"
+const val VISIT_NOTIFICATION_PRISONER_ALERT_UPDATED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alert/updated"
 
 const val GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/booked/future"
 const val GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/cancelled"
@@ -495,7 +496,7 @@ class VisitSchedulerClient(
       .block(apiTimeout)
   }
 
-  fun processPrisonerAlertAdded(sendDto: PrisonerAlertAddedNotificationDto) {
+  fun processPrisonerAlertAdded(sendDto: PrisonerAlertUpsertedNotificationDto) {
     webClient.post()
       .uri(VISIT_NOTIFICATION_PRISONER_ALERT_ADDED_PATH)
       .body(BodyInserters.fromValue(sendDto))
@@ -504,6 +505,17 @@ class VisitSchedulerClient(
       .doOnError { e -> LOG.error("Could not process prisoner alert added event :", e) }
       .block(apiTimeout)
   }
+
+  fun processPrisonerAlertUpdated(sendDto: PrisonerAlertUpsertedNotificationDto) {
+    webClient.post()
+      .uri(VISIT_NOTIFICATION_PRISONER_ALERT_UPDATED_PATH)
+      .body(BodyInserters.fromValue(sendDto))
+      .retrieve()
+      .toBodilessEntity()
+      .doOnError { e -> LOG.error("Could not process prisoner alert updated event :", e) }
+      .block(apiTimeout)
+  }
+
 
   fun getNotificationCountForPrison(prisonCode: String, notificationEventTypes: List<String>?): NotificationCountDto? = webClient.get()
     .uri("/visits/notification/$prisonCode/count") {

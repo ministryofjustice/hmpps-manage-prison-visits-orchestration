@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo
 
-data class PrisonerAlertAddedInfo(
+data class PrisonerAlertUpsertedInfo(
   var prisonerNumber: String?,
 
   val alertCode: String,

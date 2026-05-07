@@ -42,6 +42,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentDeletedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentUpdatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertAddedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertUpdatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertsUpdatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerContactRestrictionCreatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerContactRestrictionUpdatedNotifier
@@ -141,6 +142,9 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
 
   @MockitoSpyBean
   lateinit var prisonerAlertAddedNotifierSpy: PrisonerAlertAddedNotifier
+
+  @MockitoSpyBean
+  lateinit var prisonerAlertUpdatedNotifierSpy: PrisonerAlertUpdatedNotifier
 
   @MockitoSpyBean
   lateinit var domainEventListenerServiceSpy: DomainEventListenerService
