@@ -95,7 +95,7 @@ class PrisonerAlertUpdatedNotifierTest : PrisonVisitsEventsIntegrationTestBase()
 
     // Then
     assertEventNotProcessed()
-    verify(visitSchedulerClient, times(0)).processPrisonerAlertAdded(sendDto = any())
+    verify(visitSchedulerClient, times(0)).processPrisonerAlertUpdated(sendDto = any())
   }
 
   @Test
@@ -131,7 +131,7 @@ class PrisonerAlertUpdatedNotifierTest : PrisonVisitsEventsIntegrationTestBase()
 
     // Then
     assertEventNotProcessed()
-    verify(visitSchedulerClient, times(0)).processPrisonerAlertAdded(sendDto = any())
+    verify(visitSchedulerClient, times(0)).processPrisonerAlertUpdated(sendDto = any())
   }
 
   private fun sendSqSMessage(publishRequest: PublishRequest?) {
