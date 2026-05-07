@@ -186,7 +186,6 @@ class VisitSchedulerService(
     visitSchedulerClient.processPrisonerAlertAdded(sendDto = prisonerAlertAddedNotification)
   }
 
-
   fun processPrisonerAlertUpdated(info: PrisonerAlertUpsertedInfo, description: String?) {
     val prisonerAlertUpdatedNotification = PrisonerAlertUpsertedNotificationDto(
       info,

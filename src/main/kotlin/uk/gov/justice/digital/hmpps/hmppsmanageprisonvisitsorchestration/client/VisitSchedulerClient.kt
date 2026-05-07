@@ -516,7 +516,6 @@ class VisitSchedulerClient(
       .block(apiTimeout)
   }
 
-
   fun getNotificationCountForPrison(prisonCode: String, notificationEventTypes: List<String>?): NotificationCountDto? = webClient.get()
     .uri("/visits/notification/$prisonCode/count") {
       visitNotificationTypesUriBuilder(notificationEventTypes, it).build()
