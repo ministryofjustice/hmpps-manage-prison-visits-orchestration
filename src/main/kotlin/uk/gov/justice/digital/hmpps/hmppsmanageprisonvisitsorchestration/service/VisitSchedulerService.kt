@@ -195,6 +195,15 @@ class VisitSchedulerService(
     visitSchedulerClient.processPrisonerAlertUpdated(sendDto = prisonerAlertUpdatedNotification)
   }
 
+  fun processPrisonerAlertDeleted(info: PrisonerAlertUpsertedInfo, description: String?) {
+    val prisonerAlertDeletedNotification = PrisonerAlertUpsertedNotificationDto(
+      info,
+      description ?: "${info.alertCode} alert deleted for prisoner = ${info.prisonerNumber}.",
+    )
+
+    visitSchedulerClient.processPrisonerAlertDeleted(sendDto = prisonerAlertDeletedNotification)
+  }
+
   fun getNotificationCountForPrison(prisonCode: String, notificationEventTypes: List<NotificationEventType>?): NotificationCountDto? = visitSchedulerClient.getNotificationCountForPrison(prisonCode, notificationEventTypes?.map { it.name }?.toList())
 
   fun getVisitRequestsCountForPrison(prisonCode: String): VisitRequestsCountDto? = visitSchedulerClient.getVisitRequestsCountForPrison(prisonCode)
