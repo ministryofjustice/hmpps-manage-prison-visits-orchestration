@@ -45,7 +45,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.CourtVideoAppointmentNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertUpsertedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertsAddedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerContactRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
@@ -497,7 +497,7 @@ class VisitSchedulerClient(
       .block(apiTimeout)
   }
 
-  fun processPrisonerAlertAdded(sendDto: PrisonerAlertUpsertedNotificationDto) {
+  fun processPrisonerAlertAdded(sendDto: PrisonerAlertNotificationDto) {
     webClient.post()
       .uri(VISIT_NOTIFICATION_PRISONER_ALERT_ADDED_PATH)
       .body(BodyInserters.fromValue(sendDto))
@@ -507,7 +507,7 @@ class VisitSchedulerClient(
       .block(apiTimeout)
   }
 
-  fun processPrisonerAlertUpdated(sendDto: PrisonerAlertUpsertedNotificationDto) {
+  fun processPrisonerAlertUpdated(sendDto: PrisonerAlertNotificationDto) {
     webClient.post()
       .uri(VISIT_NOTIFICATION_PRISONER_ALERT_UPDATED_PATH)
       .body(BodyInserters.fromValue(sendDto))
@@ -517,7 +517,7 @@ class VisitSchedulerClient(
       .block(apiTimeout)
   }
 
-  fun processPrisonerAlertDeleted(sendDto: PrisonerAlertUpsertedNotificationDto) {
+  fun processPrisonerAlertDeleted(sendDto: PrisonerAlertNotificationDto) {
     webClient.post()
       .uri(VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_PATH)
       .body(BodyInserters.fromValue(sendDto))

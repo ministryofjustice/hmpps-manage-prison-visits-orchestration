@@ -9,12 +9,12 @@ const val PRISONER_ALERT_DELETED = "person.alert.deleted"
 @Component(value = PRISONER_ALERT_DELETED)
 class PrisonerAlertDeletedNotifier : EventNotifier() {
   override fun processEvent(domainEvent: DomainEvent) {
-    val info = getPrisonerAlertUpsertedInfo(domainEvent)
+    val info = getPrisonerAlertNotificationInfo(domainEvent)
     getVisitSchedulerService().processPrisonerAlertDeleted(info, domainEvent.description)
   }
 
   override fun isProcessableEvent(domainEvent: DomainEvent): Boolean {
-    val prisonerAlertDeletedInfo = getPrisonerAlertUpsertedInfo(domainEvent)
+    val prisonerAlertDeletedInfo = getPrisonerAlertNotificationInfo(domainEvent)
     return if (prisonerAlertDeletedInfo.prisonerNumber != null) {
       if (prisonerSupportedAlertCodes.contains(prisonerAlertDeletedInfo.alertCode)) {
         true

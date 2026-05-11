@@ -11,7 +11,7 @@ import org.mockito.kotlin.verify
 import software.amazon.awssdk.services.sns.model.PublishRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_ALERT_ADDED_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.enums.PrisonerSupportedAlertCodeType
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertUpsertedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.Identifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.PersonIdentifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.PersonReference
@@ -28,7 +28,7 @@ class PrisonerAlertAddedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
     val alertDescription = "Prisoner alert added"
     val alertUuid = "12345678-1234-1234-1234-123456789012"
 
-    val sentRequestToVsip = PrisonerAlertUpsertedNotificationDto(
+    val sentRequestToVsip = PrisonerAlertNotificationDto(
       prisonerNumber = prisonerNumber,
       alertCode = alertCode,
       alertUuid = alertUuid,
