@@ -9,12 +9,12 @@ const val PRISONER_ALERT_UPDATED = "person.alert.updated"
 @Component(value = PRISONER_ALERT_UPDATED)
 class PrisonerAlertUpdatedNotifier : EventNotifier() {
   override fun processEvent(domainEvent: DomainEvent) {
-    val info = getPrisonerAlertUpsertedInfo(domainEvent)
+    val info = getPrisonerAlertNotificationInfo(domainEvent)
     getVisitSchedulerService().processPrisonerAlertUpdated(info, domainEvent.description)
   }
 
   override fun isProcessableEvent(domainEvent: DomainEvent): Boolean {
-    val prisonerAlertUpdatedInfo = getPrisonerAlertUpsertedInfo(domainEvent)
+    val prisonerAlertUpdatedInfo = getPrisonerAlertNotificationInfo(domainEvent)
     return if (prisonerAlertUpdatedInfo.prisonerNumber != null) {
       if (prisonerSupportedAlertCodes.contains(prisonerAlertUpdatedInfo.alertCode)) {
         true
