@@ -55,10 +55,10 @@ abstract class EventNotifier : IEventNotifier {
   }
 
   fun getPrisonerAlertNotificationInfo(domainEvent: DomainEvent): PrisonerAlertNotificationInfo {
-    val prisonerAlertUpsertedInfo = getAdditionalInfo(domainEvent, PrisonerAlertNotificationInfo::class.java)
+    val prisonerAlertNotificationInfo = getAdditionalInfo(domainEvent, PrisonerAlertNotificationInfo::class.java)
     val prisonerId = domainEvent.personReference?.identifiers?.firstOrNull { it.type == Identifier.NOMS }?.value
-    prisonerAlertUpsertedInfo.prisonerNumber = prisonerId
-    return prisonerAlertUpsertedInfo
+    prisonerAlertNotificationInfo.prisonerNumber = prisonerId
+    return prisonerAlertNotificationInfo
   }
 
   fun getVisitSchedulerService() = visitSchedulerService
