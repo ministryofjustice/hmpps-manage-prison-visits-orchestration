@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.DomainEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.Identifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.ContactRestrictionUpsertedInfo
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerAlertUpsertedInfo
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerAlertNotificationInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerContactRestrictionUpsertedInfo
 
 interface IEventNotifier {
@@ -54,11 +54,11 @@ abstract class EventNotifier : IEventNotifier {
     return contactRestrictionUpsertedInfo
   }
 
-  fun getPrisonerAlertUpsertedInfo(domainEvent: DomainEvent): PrisonerAlertUpsertedInfo {
-    val prisonerAlertUpsertedInfo = getAdditionalInfo(domainEvent, PrisonerAlertUpsertedInfo::class.java)
+  fun getPrisonerAlertNotificationInfo(domainEvent: DomainEvent): PrisonerAlertNotificationInfo {
+    val prisonerAlertNotificationInfo = getAdditionalInfo(domainEvent, PrisonerAlertNotificationInfo::class.java)
     val prisonerId = domainEvent.personReference?.identifiers?.firstOrNull { it.type == Identifier.NOMS }?.value
-    prisonerAlertUpsertedInfo.prisonerNumber = prisonerId
-    return prisonerAlertUpsertedInfo
+    prisonerAlertNotificationInfo.prisonerNumber = prisonerId
+    return prisonerAlertNotificationInfo
   }
 
   fun getVisitSchedulerService() = visitSchedulerService
