@@ -4,13 +4,13 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AlertsService.Companion.prisonerSupportedAlertCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.DomainEvent
 
-const val PRISONER_ALERT_ADDED = "person.alert.created"
+const val PRISONER_ALERT_CREATED = "person.alert.created"
 
-@Component(value = PRISONER_ALERT_ADDED)
-class PrisonerAlertAddedNotifier : EventNotifier() {
+@Component(value = PRISONER_ALERT_CREATED)
+class PrisonerAlertCreatedNotifier : EventNotifier() {
   override fun processEvent(domainEvent: DomainEvent) {
     val info = getPrisonerAlertUpsertedInfo(domainEvent)
-    getVisitSchedulerService().processPrisonerAlertAdded(info, domainEvent.description)
+    getVisitSchedulerService().processPrisonerAlertCreated(info, domainEvent.description)
   }
 
   override fun isProcessableEvent(domainEvent: DomainEvent): Boolean {
@@ -23,7 +23,7 @@ class PrisonerAlertAddedNotifier : EventNotifier() {
         false
       }
     } else {
-      LOG.info("Prisoner Number not found in prisoner alert added event, ignoring event")
+      LOG.info("Prisoner Number not found in prisoner alert created event, ignoring event")
       false
     }
   }
