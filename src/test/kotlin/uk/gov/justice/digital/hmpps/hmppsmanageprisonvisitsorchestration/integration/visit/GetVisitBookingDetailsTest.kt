@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.control
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.AddressDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactWithOptionalPrisonerRelationshipDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.manage.users.UserExtendedDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.EventAuditOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.PrisonerDetailsDto
@@ -57,9 +57,9 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
 
   private lateinit var offenderRestrictions: OffenderRestrictionsDto
 
-  private lateinit var visitor1: PrisonerContactDto
-  private lateinit var visitor2: PrisonerContactDto
-  private lateinit var visitor3: PrisonerContactDto
+  private lateinit var visitor1: ContactWithOptionalPrisonerRelationshipDto
+  private lateinit var visitor2: ContactWithOptionalPrisonerRelationshipDto
+  private lateinit var visitor3: ContactWithOptionalPrisonerRelationshipDto
 
   private lateinit var prison: PrisonRegisterPrisonDto
   private lateinit var alert1: AlertResponseDto
@@ -98,13 +98,28 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     )
 
     // visitor 1 has a primary address
-    visitor1 = createContactDto(1, "First", "VisitorA", address = createAddressDto(street = "ABC Street", primary = true))
+    visitor1 = createContactWithOptionalPrisonerRelationshipDto(
+      personId = 1,
+      firstName = "First",
+      lastName = "VisitorA",
+      address = createAddressDto(street = "ABC Street", primary = true),
+    )
 
     // visitor2 has only a secondary address
-    visitor2 = createContactDto(2, "Second", "VisitorB", address = createAddressDto(street = "ABC Street", primary = false))
+    visitor2 = createContactWithOptionalPrisonerRelationshipDto(
+      personId = 2,
+      firstName = "Second",
+      lastName = "VisitorB",
+      address = createAddressDto(street = "ABC Street", primary = false),
+    )
 
     // visitor 3 has no address
-    visitor3 = createContactDto(3, "Third", "VisitorC", address = null)
+    visitor3 = createContactWithOptionalPrisonerRelationshipDto(
+      personId = 3,
+      firstName = "Third",
+      lastName = "VisitorC",
+      address = null,
+    )
 
     prison = PrisonRegisterPrisonDto(prisonCode, "Prison-MDI")
 
@@ -158,7 +173,11 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // alert 3's alert code is not relevant for visits so should be ignored
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
+      prisonerId = prisonerId,
+      contactIds = contactsList.map { it.contactId },
+      contactsList = contactsList,
+    )
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
@@ -171,54 +190,8 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     val visitBookingResponse = getResult(responseSpec.expectBody())
     val expectedVisitContact = VisitContactDto(
       contactDto = visit.visitContact!!,
-      visitContactId = visitor3.personId,
+      visitContactId = visitor3.contactId,
     )
-    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
-    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(any())
-    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
-  }
-
-  @Test
-  fun `when a visit's visitor is no longer in contact list that visitor is not returned for that visit`() {
-    // Given
-    val userIds = listOf("test-user")
-    val userNamesMap = mapOf(
-      "test-user" to UserExtendedDetailsDto("test-user", "Test", "User A"),
-    )
-
-    val reference = "aa-bb-cc-dd"
-    val prisonerId = "prisoner-id"
-    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, true))
-    val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors)
-    // contacts returned does not have visitor 3
-    val contactsList = listOf(visitor1, visitor2)
-    val eventList = mutableListOf(eventAudit1, eventAudit2, eventAudit3)
-    val expectedEventActionedByFullNames = listOf("abcd", null, "Test User A")
-
-    val notifications = emptyList<VisitNotificationEventDto>()
-
-    visitSchedulerMockServer.stubGetVisit(reference, visit)
-    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
-    prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
-    // alert 3's alert code is not relevant for visits so should be ignored
-    alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
-    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, hasDateOfBirth = null, contactsList = contactsList)
-    visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
-    visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
-    manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
-
-    // When
-    val responseSpec = callGetVisitFullDetailsByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
-
-    // Then
-    responseSpec.expectStatus().isOk
-    val visitBookingResponse = getResult(responseSpec.expectBody())
-    val expectedVisitContact = VisitContactDto(
-      contactDto = visit.visitContact!!,
-      visitContactId = visitor3.personId,
-    )
-
     assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
     verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(any())
     verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
@@ -250,7 +223,11 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // alert 3's alert code is not relevant for visits so should be ignored
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, hasDateOfBirth = null, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
+      prisonerId = prisonerId,
+      contactIds = contactsList.map { it.contactId },
+      contactsList = contactsList,
+    )
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
@@ -267,56 +244,6 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when a visit's contact is not from the contact list then visitContactDetails are populated without contactId for that visit`() {
-    // Given
-    val userIds = listOf("test-user")
-    val userNamesMap = mapOf(
-      "test-user" to UserExtendedDetailsDto("test-user", "Test", "User A"),
-    )
-
-    val reference = "aa-bb-cc-dd"
-    val prisonerId = "prisoner-id"
-
-    // none of the 3 visitors are main contacts
-    val visitors = listOf(createVisitorDto(visitor1, false), createVisitorDto(visitor2, false), createVisitorDto(visitor3, false))
-
-    // main contact details
-    val contact = ContactDto("Johnny Doe", "01234567890", "email@example.com")
-    val visit = createVisitDto(reference = reference, prisonCode = prisonCode, prisonerId = prisonerId, visitors = visitors, contact = contact)
-    // contacts returned does not have visitor 3
-    val contactsList = listOf(visitor1, visitor2)
-    val eventList = mutableListOf(eventAudit1, eventAudit2, eventAudit3)
-    val expectedEventActionedByFullNames = listOf("abcd", null, "Test User A")
-
-    val notifications = emptyList<VisitNotificationEventDto>()
-
-    visitSchedulerMockServer.stubGetVisit(reference, visit)
-    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
-    prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
-    // alert 3's alert code is not relevant for visits so should be ignored
-    alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
-    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, hasDateOfBirth = null, contactsList = contactsList)
-    visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
-    visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
-    manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
-
-    // When
-    val responseSpec = callGetVisitFullDetailsByReference(webTestClient, reference, roleVSIPOrchestrationServiceHttpHeaders)
-
-    // Then
-    responseSpec.expectStatus().isOk
-    val visitBookingResponse = getResult(responseSpec.expectBody())
-    val expectedVisitContact = VisitContactDto(
-      contactDto = visit.visitContact!!,
-      visitContactId = null,
-    )
-    assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
-    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(any())
-    verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
-  }
-
-  @Test
   fun `when a visit's visitor has no primary address then the address is still populated on the visit booking details`() {
     // Given
     val userIds = listOf("test-user")
@@ -328,10 +255,10 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     val prisonerId = "prisoner-id"
 
     // address3 is the first address on the list
-    val visitorWithNoPrimaryAddress = createContactDto(
-      21,
-      "Visitor",
-      "TwentyOne",
+    val visitorWithNoPrimaryAddress = createContactWithOptionalPrisonerRelationshipDto(
+      personId = 21,
+      firstName = "Visitor",
+      lastName = "TwentyOne",
       address = createAddressDto(street = "ABC Street", primary = false),
     )
 
@@ -352,7 +279,11 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // alert 3's alert code is not relevant for visits so should be ignored
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, hasDateOfBirth = null, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
+      prisonerId = prisonerId,
+      contactIds = contactsList.map { it.contactId },
+      contactsList = contactsList,
+    )
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
@@ -365,7 +296,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     val visitBookingResponse = getResult(responseSpec.expectBody())
     val expectedVisitContact = VisitContactDto(
       contactDto = visit.visitContact!!,
-      visitContactId = visitorWithNoPrimaryAddress.personId,
+      visitContactId = visitorWithNoPrimaryAddress.contactId,
     )
     assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
     assertThat(visitBookingResponse.visitors[0].primaryAddress).isEqualTo(createAddressDto(street = "ABC Street", primary = false))
@@ -385,11 +316,11 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     val prisonerId = "prisoner-id"
 
     // address3 is the first address on the list
-    val visitorWithNoAddress = createContactDto(
-      21,
-      "Visitor",
-      "TwentyOne",
-      address = null, // the visitor has no address
+    val visitorWithNoAddress = createContactWithOptionalPrisonerRelationshipDto(
+      personId = 21,
+      firstName = "Visitor",
+      lastName = "TwentyOne",
+      address = null,
     )
     val visitors = listOf(createVisitorDto(visitorWithNoAddress, true))
 
@@ -409,7 +340,11 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // alert 3's alert code is not relevant for visits so should be ignored
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId = prisonerId, hasDateOfBirth = null, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
+      prisonerId = prisonerId,
+      contactIds = contactsList.map { it.contactId },
+      contactsList = contactsList,
+    )
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
@@ -422,7 +357,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     val visitBookingResponse = getResult(responseSpec.expectBody())
     val expectedVisitContact = VisitContactDto(
       contactDto = visit.visitContact!!,
-      visitContactId = visitorWithNoAddress.personId,
+      visitContactId = visitorWithNoAddress.contactId,
     )
     assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
     assertThat(visitBookingResponse.visitors[0].primaryAddress).isNull()
@@ -448,7 +383,11 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
+      prisonerId = prisonerId,
+      contactIds = contactsList.map { it.contactId },
+      contactsList = contactsList,
+    )
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
 
@@ -477,7 +416,11 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
+      prisonerId = prisonerId,
+      contactIds = contactsList.map { it.contactId },
+      contactsList = contactsList,
+    )
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
 
@@ -507,7 +450,11 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     prisonRegisterMockServer.stubGetPrison(prisonCode, null, HttpStatus.NOT_FOUND)
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
+      prisonerId = prisonerId,
+      contactIds = contactsList.map { it.contactId },
+      contactsList = contactsList,
+    )
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
 
@@ -522,7 +469,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     val expectedPrison = PrisonRegisterPrisonDto(prisonCode, prisonCode)
     val expectedVisitContact = VisitContactDto(
       contactDto = visit.visitContact!!,
-      visitContactId = visitor3.personId,
+      visitContactId = visitor3.contactId,
     )
 
     assertVisitBookingDetails(visitBookingResponse, visit, expectedPrison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
@@ -545,7 +492,11 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     prisonRegisterMockServer.stubGetPrison(prisonCode, null, HttpStatus.INTERNAL_SERVER_ERROR)
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
+      prisonerId = prisonerId,
+      contactIds = contactsList.map { it.contactId },
+      contactsList = contactsList,
+    )
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
 
     // When
@@ -572,7 +523,11 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // alert API returns a 500
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, null, HttpStatus.INTERNAL_SERVER_ERROR)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
+      prisonerId = prisonerId,
+      contactIds = contactsList.map { it.contactId },
+      contactsList = contactsList,
+    )
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
 
@@ -600,7 +555,11 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     // prison API returns a 404
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, null, HttpStatus.NOT_FOUND)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
+      prisonerId = prisonerId,
+      contactIds = contactsList.map { it.contactId },
+      contactsList = contactsList,
+    )
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
 
@@ -642,7 +601,12 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, releasedPrisoner)
     prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
 
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList, withRestrictions = false)
+    prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
+      prisonerId = prisonerId,
+      contactIds = contactsList.map { it.contactId },
+      contactsList = contactsList,
+      withRestrictions = false,
+    )
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
@@ -655,14 +619,14 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     val visitBookingResponse = getResult(responseSpec.expectBody())
     val expectedVisitContact = VisitContactDto(
       contactDto = visit.visitContact!!,
-      visitContactId = visitor3.personId,
+      visitContactId = visitor3.contactId,
     )
     assertVisitBookingDetails(visitBookingResponse, visit, prison, releasedPrisoner, emptyList(), OffenderRestrictionsDto(null, emptyList()), contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
     verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(any())
     verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
     verify(alertsApiClientSpy, times(0)).getPrisonerAlertsAsMono(any())
     verify(prisonApiClientSpy, times(0)).getPrisonerRestrictionsAsMono(any())
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContactsAsMono(prisonerId, null, false)
+    verify(prisonerContactRegistryClientSpy, times(1)).searchPrisonerContacts(prisonerId, contactsList.map { it.contactId }, false)
   }
 
   @Test
@@ -685,7 +649,12 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
     prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
 
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList, withRestrictions = false)
+    prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
+      prisonerId = prisonerId,
+      contactIds = contactsList.map { it.contactId },
+      contactsList = contactsList,
+      withRestrictions = false,
+    )
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
@@ -698,14 +667,14 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     val visitBookingResponse = getResult(responseSpec.expectBody())
     val expectedVisitContact = VisitContactDto(
       contactDto = visit.visitContact!!,
-      visitContactId = visitor3.personId,
+      visitContactId = visitor3.contactId,
     )
     assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, emptyList(), OffenderRestrictionsDto(null, emptyList()), contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
     verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(any())
     verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
     verify(alertsApiClientSpy, times(0)).getPrisonerAlertsAsMono(any())
     verify(prisonApiClientSpy, times(0)).getPrisonerRestrictionsAsMono(any())
-    verify(prisonerContactRegistryClientSpy, times(1)).getPrisonersSocialContactsAsMono(prisonerId, null, false)
+    verify(prisonerContactRegistryClientSpy, times(1)).searchPrisonerContacts(prisonerId, contactsList.map { it.contactId }, false)
   }
 
   @Test
@@ -724,7 +693,11 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     // prison API returns a 404
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, null, HttpStatus.INTERNAL_SERVER_ERROR)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
+      prisonerId = prisonerId,
+      contactIds = contactsList.map { it.contactId },
+      contactsList = contactsList,
+    )
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
 
@@ -751,7 +724,12 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
     // prisoner contact registry API returns a 404
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = null, httpStatus = HttpStatus.NOT_FOUND)
+    prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
+      prisonerId = prisonerId,
+      contactIds = visitors.map { it.nomisPersonId },
+      contactsList = null,
+      httpStatus = HttpStatus.NOT_FOUND,
+    )
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
 
@@ -778,8 +756,13 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    // prisoner contact registry API returns a 404
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = null, httpStatus = HttpStatus.INTERNAL_SERVER_ERROR)
+    // prisoner contact registry API returns a 500
+    prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
+      prisonerId = prisonerId,
+      contactIds = visitors.map { it.nomisPersonId },
+      contactsList = null,
+      httpStatus = HttpStatus.INTERNAL_SERVER_ERROR,
+    )
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
 
     // When
@@ -804,7 +787,11 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
+      prisonerId = prisonerId,
+      contactIds = contactsList.map { it.contactId },
+      contactsList = contactsList,
+    )
     // visits get history - returns a 404
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, emptyList(), HttpStatus.NOT_FOUND)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
@@ -831,7 +818,11 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
+      prisonerId = prisonerId,
+      contactIds = contactsList.map { it.contactId },
+      contactsList = contactsList,
+    )
     // visits get history - returns a 500
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, emptyList(), HttpStatus.INTERNAL_SERVER_ERROR)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
@@ -858,7 +849,11 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
+      prisonerId = prisonerId,
+      contactIds = contactsList.map { it.contactId },
+      contactsList = contactsList,
+    )
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     // visits get notifications - returns a 404
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, null, HttpStatus.NOT_FOUND)
@@ -885,9 +880,13 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
+      prisonerId = prisonerId,
+      contactIds = contactsList.map { it.contactId },
+      contactsList = contactsList,
+    )
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
-    // visits get notifications - returns a 404
+    // visits get notifications - returns a 500
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, null, HttpStatus.INTERNAL_SERVER_ERROR)
 
     // When
@@ -917,7 +916,11 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // alert 3's alert code is not relevant for visits so should be ignored
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
+      prisonerId = prisonerId,
+      contactIds = contactsList.map { it.contactId },
+      contactsList = contactsList,
+    )
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetMultipleUserDetails(listOf("test-user"), null, HttpStatus.NOT_FOUND)
@@ -930,7 +933,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     val visitBookingResponse = getResult(responseSpec.expectBody())
     val expectedVisitContact = VisitContactDto(
       contactDto = visit.visitContact!!,
-      visitContactId = visitor3.personId,
+      visitContactId = visitor3.contactId,
     )
 
     assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
@@ -955,7 +958,11 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     // alert 3's alert code is not relevant for visits so should be ignored
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
+      prisonerId = prisonerId,
+      contactIds = contactsList.map { it.contactId },
+      contactsList = contactsList,
+    )
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetMultipleUserDetails(listOf("test-user"), null, HttpStatus.INTERNAL_SERVER_ERROR)
@@ -967,7 +974,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     val visitBookingResponse = getResult(responseSpec.expectBody())
     val expectedVisitContact = VisitContactDto(
       contactDto = visit.visitContact!!,
-      visitContactId = visitor3.personId,
+      visitContactId = visitor3.contactId,
     )
 
     assertVisitBookingDetails(visitBookingResponse, visit, prison, prisonerDto, listOf(alert1, alert2), offenderRestrictions, contactsList, expectedVisitContact, eventList, expectedEventActionedByFullNames, notifications)
@@ -1006,7 +1013,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     val alert6 = createAlertResponseDto(alertTypeCode = "F", lastModifiedAt = null, createdAt = LocalDateTime.now().minusYears(1).minusMinutes(1))
     // alert 7 - updated today, created last month
     val alert7 = createAlertResponseDto(alertTypeCode = "G", lastModifiedAt = LocalDateTime.now(), createdAt = LocalDateTime.now().minusMonths(1))
-    // alert 7 - updated today, created today
+    // alert 8 - updated today, created today
     val alert8 = createAlertResponseDto(alertTypeCode = "H", lastModifiedAt = LocalDateTime.now().minusMinutes(1), createdAt = LocalDateTime.now().minusMinutes(1))
     // alert 9 - created 3 years back, not updated, active to is 2 months from today
     val alert9 = createAlertResponseDto(alertTypeCode = "I", lastModifiedAt = null, createdAt = LocalDateTime.now().minusYears(3), activeFrom = LocalDate.now().minusYears(3), activeTo = LocalDate.now().plusMonths(2))
@@ -1020,7 +1027,11 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
 
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3, alert4, alert5, alert6, alert7, alert8, alert9, alert10, alert11))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
+      prisonerId = prisonerId,
+      contactIds = contactsList.map { it.contactId },
+      contactsList = contactsList,
+    )
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
@@ -1073,7 +1084,11 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     val expectedRestrictions = listOf(restriction2, restriction1, restriction4, restriction6, restriction5, restriction3)
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, listOf(alert1, alert2, alert3))
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(1, listOf(restriction1, restriction2, restriction3, restriction4, restriction5, restriction6)))
-    prisonerContactRegistryMockServer.stubGetPrisonerContacts(prisonerId, contactsList = contactsList)
+    prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
+      prisonerId = prisonerId,
+      contactIds = contactsList.map { it.contactId },
+      contactsList = contactsList,
+    )
     visitSchedulerMockServer.stubGetVisitHistory(visit.reference, eventList)
     visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, notifications)
     manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
@@ -1097,7 +1112,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     prisonerDto: PrisonerDto,
     relevantPrisonerAlerts: List<AlertResponseDto>,
     prisonerRestrictions: OffenderRestrictionsDto,
-    visitors: List<PrisonerContactDto>,
+    visitors: List<ContactWithOptionalPrisonerRelationshipDto>,
     expectedVisitContact: VisitContactDto?,
     events: List<EventAuditDto>,
     expectedEventActionedByFullNames: List<String?>,
@@ -1189,7 +1204,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
 
   private fun assertVisitors(
     visitBookingDetailsDto: VisitBookingDetailsDto,
-    contacts: List<PrisonerContactDto>,
+    contacts: List<ContactWithOptionalPrisonerRelationshipDto>,
   ) {
     for (i in visitBookingDetailsDto.visitors.indices) {
       val primaryAddress = contacts[i].address
@@ -1199,13 +1214,13 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
 
   private fun assertVisitor(
     visitorDetailsDto: VisitorDetailsDto,
-    contactDto: PrisonerContactDto,
+    contactDto: ContactWithOptionalPrisonerRelationshipDto,
     primaryAddressDto: AddressDto?,
   ) {
     assertThat(visitorDetailsDto.lastName).isEqualTo(contactDto.lastName)
     assertThat(visitorDetailsDto.dateOfBirth).isEqualTo(contactDto.dateOfBirth)
     assertThat(visitorDetailsDto.firstName).isEqualTo(contactDto.firstName)
-    assertThat(visitorDetailsDto.personId).isEqualTo(contactDto.personId)
+    assertThat(visitorDetailsDto.personId).isEqualTo(contactDto.contactId)
     assertThat(visitorDetailsDto.primaryAddress).isEqualTo(primaryAddressDto)
     assertThat(visitorDetailsDto.relationshipDescription).isEqualTo(contactDto.relationshipDescription)
     assertThat(visitorDetailsDto.restrictions).isEqualTo(contactDto.restrictions)

@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.AddressDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactWithOptionalPrisonerRelationshipDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.RestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionDto
@@ -55,12 +56,13 @@ data class VisitBookingDetailsDto(
   val prison: PrisonRegisterPrisonDto,
   @param:Schema(description = "Prisoner details", required = true)
   val prisoner: PrisonerDetailsDto,
-  @param:Schema(description = "Prisoner details", required = true)
+  @param:Schema(description = "Visitor details", required = true)
   val visitors: List<VisitorDetailsDto>,
+  @param:Schema(description = "Events tied to visit booking", required = true)
   val events: List<EventAuditOrchestrationDto>,
+  @param:Schema(description = "Notifications tied to visit booking", required = true)
   val notifications: List<VisitNotificationDto>,
-
-  @param:Schema(description = "Prisoner details", required = true)
+  @param:Schema(description = "Boolean to signify if alerts and restrictions retrieval was intentionally skipped", required = true)
   val skipAlertsAndRestrictions: Boolean,
 ) {
   constructor(
@@ -69,7 +71,7 @@ data class VisitBookingDetailsDto(
     prisonerDto: PrisonerDto,
     prisonerAlerts: List<AlertDto>,
     prisonerRestrictions: List<OffenderRestrictionDto>,
-    visitVisitors: List<PrisonerContactDto>,
+    visitVisitors: List<ContactWithOptionalPrisonerRelationshipDto>,
     visitContact: VisitContactDto?,
     events: List<EventAuditOrchestrationDto>,
     notifications: List<VisitNotificationEventDto>,
@@ -171,6 +173,16 @@ data class VisitorDetailsDto(
     restrictions = prisonerContactDto.restrictions,
     // Address (primary if address.primary is true)
     primaryAddress = prisonerContactDto.address,
+  )
+
+  constructor(contactWithOptionalPrisonerRelationshipDto: ContactWithOptionalPrisonerRelationshipDto) : this(
+    personId = contactWithOptionalPrisonerRelationshipDto.contactId,
+    firstName = contactWithOptionalPrisonerRelationshipDto.firstName,
+    lastName = contactWithOptionalPrisonerRelationshipDto.lastName,
+    dateOfBirth = contactWithOptionalPrisonerRelationshipDto.dateOfBirth,
+    relationshipDescription = contactWithOptionalPrisonerRelationshipDto.relationshipDescription,
+    restrictions = contactWithOptionalPrisonerRelationshipDto.restrictions,
+    primaryAddress = contactWithOptionalPrisonerRelationshipDto.address,
   )
 }
 

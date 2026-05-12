@@ -12,6 +12,7 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isNotFoundError
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactWithOptionalPrisonerRelationshipDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.HasClosedRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
@@ -31,6 +32,7 @@ class PrisonerContactRegistryClient(
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
     const val CONTACT_REGISTRY_CONTACTS_PATH: String = "/v2/prisoners/{prisonerId}/contacts"
+    const val CONTACT_REGISTRY_SEARCH_CONTACTS_PATH: String = "$CONTACT_REGISTRY_CONTACTS_PATH/search"
     const val CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_PATH: String = "$CONTACT_REGISTRY_CONTACTS_PATH/social/approved"
     const val CONTACT_REGISTRY_SOCIAL_CONTACTS_PATH: String = "$CONTACT_REGISTRY_CONTACTS_PATH/social"
     const val CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_RESTRICTIONS_PATH: String = "$CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_PATH/restrictions"
@@ -133,6 +135,21 @@ class PrisonerContactRegistryClient(
         }
         Mono.error(e)
       }.block(apiTimeout)
+  }
+
+  fun searchPrisonerContacts(prisonerId: String, contactIds: List<Long>, withRestrictions: Boolean = true): Mono<List<ContactWithOptionalPrisonerRelationshipDto>> {
+    val uri = CONTACT_REGISTRY_SEARCH_CONTACTS_PATH.replace("{prisonerId}", prisonerId)
+    return webClient.get().uri(uri) {
+      getSearchPrisonerContactsUriBuilder(contactIds, withRestrictions, it).build()
+    }
+      .retrieve()
+      .bodyToMono<List<ContactWithOptionalPrisonerRelationshipDto>>()
+  }
+
+  private fun getSearchPrisonerContactsUriBuilder(contactIds: List<Long>, withRestrictions: Boolean = true, uriBuilder: UriBuilder): UriBuilder {
+    uriBuilder.queryParam("contactIds", contactIds.joinToString(","))
+    uriBuilder.queryParam("withRestrictions", withRestrictions)
+    return uriBuilder
   }
 
   private fun getVisitorsHaveClosedRestrictionsParams(visitorIds: List<Long>, uriBuilder: UriBuilder): URI {

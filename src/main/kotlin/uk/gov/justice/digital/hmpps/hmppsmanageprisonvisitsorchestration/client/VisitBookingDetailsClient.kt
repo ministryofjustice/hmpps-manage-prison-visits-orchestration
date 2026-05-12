@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertResponseDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactWithOptionalPrisonerRelationshipDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.EventAuditOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitBookingDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitContactDto
@@ -81,26 +81,27 @@ class VisitBookingDetailsClient(
           prisonApiClient.getPrisonerRestrictionsAsMono(visit.prisonerId)
         }
 
-      val visitorsMono = prisonerContactRegistryClient.getPrisonersSocialContactsAsMono(
+      val visitorsMono = prisonerContactRegistryClient.searchPrisonerContacts(
         prisonerId = visit.prisonerId,
+        contactIds = visit.visitors!!.map { it.nomisPersonId },
         withRestrictions = !skipAlertsAndRestrictions,
       )
 
       Mono.zip(prisonerAlertsMono, prisonerRestrictionsMono, visitorsMono)
-        .map { optionalAlertsAndRestrictionsInfo ->
-          val prisonerAlerts = optionalAlertsAndRestrictionsInfo.t1.content
+        .map { alertsRestrictionsAndVisitors ->
+          val prisonerAlerts = alertsRestrictionsAndVisitors.t1.content
             .filter { predicateFilterSupportedCodes.test(it) }
             .sortedWith(alertsComparatorDateUpdatedOrCreatedDateDesc)
             .map { alertResponse -> AlertDto(alertResponse) }
 
-          val prisonerRestrictions = (optionalAlertsAndRestrictionsInfo.t2.offenderRestrictions ?: emptyList())
+          val prisonerRestrictions = (alertsRestrictionsAndVisitors.t2.offenderRestrictions ?: emptyList())
             .sortedWith(restrictionsComparatorDatCreatedDesc)
 
-          val allVisitorsForPrisoner = optionalAlertsAndRestrictionsInfo.t3
+          val allVisitorsForPrisoner = alertsRestrictionsAndVisitors.t3
 
-          val visitors = mutableListOf<PrisonerContactDto>()
-          visit.visitors?.forEach { visitVisitor ->
-            allVisitorsForPrisoner.firstOrNull { it.personId == visitVisitor.nomisPersonId }?.let {
+          val visitors = mutableListOf<ContactWithOptionalPrisonerRelationshipDto>()
+          visit.visitors.forEach { visitVisitor ->
+            allVisitorsForPrisoner.firstOrNull { it.contactId == visitVisitor.nomisPersonId }?.let {
               visitors.add(it)
             }
           }
