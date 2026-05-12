@@ -626,7 +626,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
     verify(alertsApiClientSpy, times(0)).getPrisonerAlertsAsMono(any())
     verify(prisonApiClientSpy, times(0)).getPrisonerRestrictionsAsMono(any())
-    verify(prisonerContactRegistryClientSpy, times(1)).searchPrisonerContacts(prisonerId, contactsList.map { it.contactId }, false)
+    verify(prisonerContactRegistryClientSpy, times(1)).searchPrisonerContactsAsMono(prisonerId, contactsList.map { it.contactId }, false)
   }
 
   @Test
@@ -674,7 +674,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
     verify(alertsApiClientSpy, times(0)).getPrisonerAlertsAsMono(any())
     verify(prisonApiClientSpy, times(0)).getPrisonerRestrictionsAsMono(any())
-    verify(prisonerContactRegistryClientSpy, times(1)).searchPrisonerContacts(prisonerId, contactsList.map { it.contactId }, false)
+    verify(prisonerContactRegistryClientSpy, times(1)).searchPrisonerContactsAsMono(prisonerId, contactsList.map { it.contactId }, false)
   }
 
   @Test
