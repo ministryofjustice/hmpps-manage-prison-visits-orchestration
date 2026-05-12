@@ -517,13 +517,13 @@ class VisitSchedulerClient(
       .block(apiTimeout)
   }
 
-  fun processPrisonerAlertDeleted(sendDto: PrisonerAlertNotificationDto) {
+  fun processPrisonerAlertInactivatedOrDeleted(sendDto: PrisonerAlertNotificationDto) {
     webClient.post()
       .uri(VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_PATH)
       .body(BodyInserters.fromValue(sendDto))
       .retrieve()
       .toBodilessEntity()
-      .doOnError { e -> LOG.error("Could not process prisoner alert deleted event :", e) }
+      .doOnError { e -> LOG.error("Could not process prisoner alert deleted or inactivated event :", e) }
       .block(apiTimeout)
   }
 
