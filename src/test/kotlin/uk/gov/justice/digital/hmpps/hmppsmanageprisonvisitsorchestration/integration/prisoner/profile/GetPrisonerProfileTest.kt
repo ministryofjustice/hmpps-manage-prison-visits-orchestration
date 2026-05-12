@@ -411,7 +411,6 @@ class GetPrisonerProfileTest(
     prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, listOf(prisonerRestrictionDto)))
     prisonRegisterMockServer.stubGetPrisonNames(prisons)
 
-    // as we are passing null as contacts parameter a 404 will be returned
     prisonerContactRegistryMockServer.stubSearchPrisonerContacts(
       prisonerId = PRISONER_ID,
       contactIds = getContactIdsFromVisits(listOf(visit1, visit2)),
