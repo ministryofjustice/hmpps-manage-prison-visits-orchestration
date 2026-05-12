@@ -87,7 +87,7 @@ const val VISIT_NOTIFICATION_VISITOR_UNAPPROVED_PATH: String = "$VISIT_NOTIFICAT
 const val VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alerts/updated"
 const val VISIT_NOTIFICATION_PRISONER_ALERT_CREATED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alert/created"
 const val VISIT_NOTIFICATION_PRISONER_ALERT_UPDATED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alert/updated"
-const val VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alert/deleted"
+const val VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_OR_INACTIVATED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alert/deleted"
 
 const val GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/booked/future"
 const val GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/cancelled"
@@ -519,7 +519,7 @@ class VisitSchedulerClient(
 
   fun processPrisonerAlertInactivatedOrDeleted(sendDto: PrisonerAlertNotificationDto) {
     webClient.post()
-      .uri(VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_PATH)
+      .uri(VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_OR_INACTIVATED_PATH)
       .body(BodyInserters.fromValue(sendDto))
       .retrieve()
       .toBodilessEntity()

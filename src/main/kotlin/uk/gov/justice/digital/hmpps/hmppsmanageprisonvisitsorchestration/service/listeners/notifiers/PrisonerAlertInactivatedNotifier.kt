@@ -14,12 +14,12 @@ class PrisonerAlertInactivatedNotifier : EventNotifier() {
   }
 
   override fun isProcessableEvent(domainEvent: DomainEvent): Boolean {
-    val prisonerAlertDeletedInfo = getPrisonerAlertNotificationInfo(domainEvent)
-    return if (prisonerAlertDeletedInfo.prisonerNumber != null) {
-      if (prisonerSupportedAlertCodes.contains(prisonerAlertDeletedInfo.alertCode)) {
+    val prisonerAlertInactivatedInfo = getPrisonerAlertNotificationInfo(domainEvent)
+    return if (prisonerAlertInactivatedInfo.prisonerNumber != null) {
+      if (prisonerSupportedAlertCodes.contains(prisonerAlertInactivatedInfo.alertCode)) {
         true
       } else {
-        LOG.info("Alert code {} not in list of supported alert codes, ignoring alert inactivated event for prisoner {}", prisonerAlertDeletedInfo.alertCode, prisonerAlertDeletedInfo.prisonerNumber)
+        LOG.info("Alert code {} not in list of supported alert codes, ignoring alert inactivated event for prisoner {}", prisonerAlertInactivatedInfo.alertCode, prisonerAlertInactivatedInfo.prisonerNumber)
         false
       }
     } else {

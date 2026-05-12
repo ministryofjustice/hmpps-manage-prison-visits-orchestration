@@ -9,7 +9,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import software.amazon.awssdk.services.sns.model.PublishRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_PATH
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_OR_INACTIVATED_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.enums.PrisonerSupportedAlertCodeType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.Identifier
@@ -53,7 +53,7 @@ class PrisonerAlertInactivatedNotifierTest : PrisonVisitsEventsIntegrationTestBa
 
     val publishRequest = createDomainEventPublishRequest(PRISONER_ALERT_INACTIVATED, domainEvent)
 
-    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_PATH)
+    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_OR_INACTIVATED_PATH)
     // When
     sendSqSMessage(publishRequest)
 
@@ -89,7 +89,7 @@ class PrisonerAlertInactivatedNotifierTest : PrisonVisitsEventsIntegrationTestBa
 
     val publishRequest = createDomainEventPublishRequest(PRISONER_ALERT_INACTIVATED, domainEvent)
 
-    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_PATH)
+    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_OR_INACTIVATED_PATH)
     // When
     sendSqSMessage(publishRequest)
 
@@ -125,7 +125,7 @@ class PrisonerAlertInactivatedNotifierTest : PrisonVisitsEventsIntegrationTestBa
 
     val publishRequest = createDomainEventPublishRequest(PRISONER_ALERT_INACTIVATED, domainEvent)
 
-    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_PATH)
+    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_OR_INACTIVATED_PATH)
     // When
     sendSqSMessage(publishRequest)
 
@@ -141,7 +141,7 @@ class PrisonerAlertInactivatedNotifierTest : PrisonVisitsEventsIntegrationTestBa
   private fun assertStandardCalls(expectedRequestBody: Any? = null) {
     await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
     await untilAsserted { verify(prisonerAlertInactivatedNotifierSpy, times(1)).processEvent(any()) }
-    await untilAsserted { visitSchedulerMockServer.verifyPost(VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_PATH, expectedRequestBody) }
+    await untilAsserted { visitSchedulerMockServer.verifyPost(VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_OR_INACTIVATED_PATH, expectedRequestBody) }
   }
 
   private fun assertEventNotProcessed() {
