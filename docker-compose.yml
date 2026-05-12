@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   local-stack-aws:
     image: localstack/localstack:community-archive

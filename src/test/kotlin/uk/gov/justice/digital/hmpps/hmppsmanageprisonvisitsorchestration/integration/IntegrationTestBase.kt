@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.control
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertCodeSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.AddressDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactWithOptionalPrisonerRelationshipDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.RestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitorDto
@@ -648,6 +649,32 @@ abstract class IntegrationTestBase {
     address = address,
   )
 
+  final fun createContactWithOptionalPrisonerRelationshipDto(
+    personId: Long = ThreadLocalRandom.current().nextLong(),
+    firstName: String = "John",
+    middleName: String? = null,
+    lastName: String = "Smith",
+    dateOfBirth: LocalDate? = null,
+    relationshipCode: String? = "OTH",
+    relationshipDescription: String? = "Other",
+    contactType: String? = "S",
+    contactTypeDescription: String? = "Social",
+    restrictions: List<RestrictionDto> = emptyList(),
+    address: AddressDto? = null,
+  ): ContactWithOptionalPrisonerRelationshipDto = ContactWithOptionalPrisonerRelationshipDto(
+    contactId = personId,
+    firstName = firstName,
+    middleName = middleName,
+    lastName = lastName,
+    dateOfBirth = dateOfBirth,
+    relationshipCode = relationshipCode,
+    relationshipDescription = relationshipDescription,
+    contactType = contactType,
+    contactTypeDescription = contactTypeDescription,
+    restrictions = restrictions,
+    address = address,
+  )
+
   final fun createPrisoner(
     prisonerId: String,
     firstName: String,
@@ -690,6 +717,14 @@ abstract class IntegrationTestBase {
     visitContact: Boolean = false,
   ): VisitorDto = VisitorDto(
     nomisPersonId = contact.personId!!,
+    visitContact = visitContact,
+  )
+
+  final fun createVisitorDto(
+    contact: ContactWithOptionalPrisonerRelationshipDto,
+    visitContact: Boolean = false,
+  ): VisitorDto = VisitorDto(
+    nomisPersonId = contact.contactId,
     visitContact = visitContact,
   )
 
