@@ -41,7 +41,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentCreatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentDeletedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentUpdatedNotifier
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertAddedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertCreatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertDeletedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertUpdatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertsUpdatedNotifier
@@ -142,7 +142,7 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
   lateinit var contactRestrictionUpdatedNotifierSpy: ContactRestrictionUpdatedNotifier
 
   @MockitoSpyBean
-  lateinit var prisonerAlertAddedNotifierSpy: PrisonerAlertAddedNotifier
+  lateinit var prisonerAlertCreatedNotifierSpy: PrisonerAlertCreatedNotifier
 
   @MockitoSpyBean
   lateinit var prisonerAlertUpdatedNotifierSpy: PrisonerAlertUpdatedNotifier

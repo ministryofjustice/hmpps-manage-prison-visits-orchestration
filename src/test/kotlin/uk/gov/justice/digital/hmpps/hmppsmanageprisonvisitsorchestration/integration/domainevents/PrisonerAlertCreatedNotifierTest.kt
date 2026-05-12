@@ -9,16 +9,16 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import software.amazon.awssdk.services.sns.model.PublishRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_ALERT_ADDED_PATH
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_ALERT_CREATED_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.enums.PrisonerSupportedAlertCodeType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.Identifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.PersonIdentifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.PersonReference
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_ALERT_ADDED
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_ALERT_CREATED
 import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 
-class PrisonerAlertAddedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
+class PrisonerAlertCreatedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
 
   @Test
   fun `when a supported alert code is added then event is successfully processed`() {
@@ -42,7 +42,7 @@ class PrisonerAlertAddedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
     )
 
     val domainEvent = createDomainEventJson(
-      eventType = PRISONER_ALERT_ADDED,
+      eventType = PRISONER_ALERT_CREATED,
       description = alertDescription,
       additionalInformation = createAddAlertAdditionalInformationJson(
         alertCode = alertCode,
@@ -51,9 +51,9 @@ class PrisonerAlertAddedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
       personReference = objectMapper.writeValueAsString(personReference),
     )
 
-    val publishRequest = createDomainEventPublishRequest(PRISONER_ALERT_ADDED, domainEvent)
+    val publishRequest = createDomainEventPublishRequest(PRISONER_ALERT_CREATED, domainEvent)
 
-    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERT_ADDED_PATH)
+    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERT_CREATED_PATH)
     // When
     sendSqSMessage(publishRequest)
 
@@ -78,7 +78,7 @@ class PrisonerAlertAddedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
     )
 
     val domainEvent = createDomainEventJson(
-      eventType = PRISONER_ALERT_ADDED,
+      eventType = PRISONER_ALERT_CREATED,
       description = alertDescription,
       additionalInformation = createAddAlertAdditionalInformationJson(
         alertCode = alertCode,
@@ -87,15 +87,15 @@ class PrisonerAlertAddedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
       personReference = objectMapper.writeValueAsString(personReference),
     )
 
-    val publishRequest = createDomainEventPublishRequest(PRISONER_ALERT_ADDED, domainEvent)
+    val publishRequest = createDomainEventPublishRequest(PRISONER_ALERT_CREATED, domainEvent)
 
-    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERT_ADDED_PATH)
+    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERT_CREATED_PATH)
     // When
     sendSqSMessage(publishRequest)
 
     // Then
     assertEventNotProcessed()
-    verify(visitSchedulerClient, times(0)).processPrisonerAlertAdded(sendDto = any())
+    verify(visitSchedulerClient, times(0)).processPrisonerAlertCreated(sendDto = any())
   }
 
   @Test
@@ -114,7 +114,7 @@ class PrisonerAlertAddedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
     )
 
     val domainEvent = createDomainEventJson(
-      eventType = PRISONER_ALERT_ADDED,
+      eventType = PRISONER_ALERT_CREATED,
       description = alertDescription,
       additionalInformation = createAddAlertAdditionalInformationJson(
         alertCode = alertCode,
@@ -123,15 +123,15 @@ class PrisonerAlertAddedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
       personReference = objectMapper.writeValueAsString(personReference),
     )
 
-    val publishRequest = createDomainEventPublishRequest(PRISONER_ALERT_ADDED, domainEvent)
+    val publishRequest = createDomainEventPublishRequest(PRISONER_ALERT_CREATED, domainEvent)
 
-    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERT_ADDED_PATH)
+    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERT_CREATED_PATH)
     // When
     sendSqSMessage(publishRequest)
 
     // Then
     assertEventNotProcessed()
-    verify(visitSchedulerClient, times(0)).processPrisonerAlertAdded(sendDto = any())
+    verify(visitSchedulerClient, times(0)).processPrisonerAlertCreated(sendDto = any())
   }
 
   private fun sendSqSMessage(publishRequest: PublishRequest?) {
@@ -140,12 +140,12 @@ class PrisonerAlertAddedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
 
   private fun assertStandardCalls(expectedRequestBody: Any? = null) {
     await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
-    await untilAsserted { verify(prisonerAlertAddedNotifierSpy, times(1)).processEvent(any()) }
-    await untilAsserted { visitSchedulerMockServer.verifyPost(VISIT_NOTIFICATION_PRISONER_ALERT_ADDED_PATH, expectedRequestBody) }
+    await untilAsserted { verify(prisonerAlertCreatedNotifierSpy, times(1)).processEvent(any()) }
+    await untilAsserted { visitSchedulerMockServer.verifyPost(VISIT_NOTIFICATION_PRISONER_ALERT_CREATED_PATH, expectedRequestBody) }
   }
 
   private fun assertEventNotProcessed() {
     await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
-    verify(prisonerAlertAddedNotifierSpy, times(0)).processEvent(any())
+    verify(prisonerAlertCreatedNotifierSpy, times(0)).processEvent(any())
   }
 }

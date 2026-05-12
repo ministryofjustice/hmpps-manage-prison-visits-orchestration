@@ -85,7 +85,7 @@ const val VISIT_NOTIFICATION_VISITOR_APPROVED_PATH: String = "$VISIT_NOTIFICATIO
 const val VISIT_NOTIFICATION_VISITOR_UNAPPROVED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/visitor/unapproved"
 
 const val VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alerts/updated"
-const val VISIT_NOTIFICATION_PRISONER_ALERT_ADDED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alert/added"
+const val VISIT_NOTIFICATION_PRISONER_ALERT_CREATED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alert/created"
 const val VISIT_NOTIFICATION_PRISONER_ALERT_UPDATED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alert/updated"
 const val VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alert/deleted"
 
@@ -497,13 +497,13 @@ class VisitSchedulerClient(
       .block(apiTimeout)
   }
 
-  fun processPrisonerAlertAdded(sendDto: PrisonerAlertNotificationDto) {
+  fun processPrisonerAlertCreated(sendDto: PrisonerAlertNotificationDto) {
     webClient.post()
-      .uri(VISIT_NOTIFICATION_PRISONER_ALERT_ADDED_PATH)
+      .uri(VISIT_NOTIFICATION_PRISONER_ALERT_CREATED_PATH)
       .body(BodyInserters.fromValue(sendDto))
       .retrieve()
       .toBodilessEntity()
-      .doOnError { e -> LOG.error("Could not process prisoner alert added event :", e) }
+      .doOnError { e -> LOG.error("Could not process prisoner alert created event :", e) }
       .block(apiTimeout)
   }
 
