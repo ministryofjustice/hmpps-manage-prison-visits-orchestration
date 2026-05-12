@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.PrisonerProfileDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactWithOptionalPrisonerRelationshipDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitBalancesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
@@ -88,10 +88,20 @@ class PrisonerProfileClient(
     }
   }
 
-  private fun getContactsForPrisoner(prisonerProfile: PrisonerProfileDto): Map<Long?, PrisonerContactDto>? {
+  private fun getContactsForPrisoner(prisonerProfile: PrisonerProfileDto): Map<Long?, ContactWithOptionalPrisonerRelationshipDto>? {
     try {
-      val contacts = prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerProfile.prisonerId)
-      return contacts.associateBy { it.personId }
+      val contactIds = prisonerProfile.visits
+        .flatMap { it.visitors.orEmpty() }
+        .map { it.nomisPersonId }
+        .distinct()
+
+      val contacts = prisonerContactRegistryClient.searchPrisonerContacts(
+        prisonerId = prisonerProfile.prisonerId,
+        contactIds = contactIds,
+        withRestrictions = false,
+      )
+
+      return contacts.associateBy { it.contactId }
     } catch (e: Exception) {
       // log a message if there is an error but do not terminate the call
       LOG.warn("Exception thrown on prisoner contact registry call - /prisoners/${prisonerProfile.prisonerId}/contacts", e)
@@ -111,7 +121,7 @@ class PrisonerProfileClient(
     null
   }
 
-  private fun setVisitorNames(visitSummary: VisitSummaryDto, contactsMap: Map<Long?, PrisonerContactDto>) {
+  private fun setVisitorNames(visitSummary: VisitSummaryDto, contactsMap: Map<Long?, ContactWithOptionalPrisonerRelationshipDto>) {
     visitSummary.visitors?.forEach { visitor ->
       visitor.firstName = contactsMap[visitor.nomisPersonId]?.firstName
       visitor.lastName = contactsMap[visitor.nomisPersonId]?.lastName
