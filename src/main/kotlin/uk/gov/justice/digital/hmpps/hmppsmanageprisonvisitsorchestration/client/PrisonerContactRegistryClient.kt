@@ -137,7 +137,17 @@ class PrisonerContactRegistryClient(
       }.block(apiTimeout)
   }
 
-  fun searchPrisonerContacts(prisonerId: String, contactIds: List<Long>, withRestrictions: Boolean = true): Mono<List<ContactWithOptionalPrisonerRelationshipDto>> {
+  fun searchPrisonerContacts(prisonerId: String, contactIds: List<Long>, withRestrictions: Boolean = true): List<ContactWithOptionalPrisonerRelationshipDto> {
+    val uri = CONTACT_REGISTRY_SEARCH_CONTACTS_PATH.replace("{prisonerId}", prisonerId)
+    return searchPrisonerContactsAsMono(prisonerId, contactIds, withRestrictions)
+      .onErrorResume { e ->
+        LOG.error("searchPrisonerContacts error for get request $uri")
+        Mono.error(e)
+      }
+      .blockOptional(apiTimeout).orElseThrow { IllegalStateException("Timeout seaching contacts for request $uri") }
+  }
+
+  fun searchPrisonerContactsAsMono(prisonerId: String, contactIds: List<Long>, withRestrictions: Boolean = true): Mono<List<ContactWithOptionalPrisonerRelationshipDto>> {
     val uri = CONTACT_REGISTRY_SEARCH_CONTACTS_PATH.replace("{prisonerId}", prisonerId)
     return webClient.get().uri(uri) {
       getSearchPrisonerContactsUriBuilder(contactIds, withRestrictions, it).build()
