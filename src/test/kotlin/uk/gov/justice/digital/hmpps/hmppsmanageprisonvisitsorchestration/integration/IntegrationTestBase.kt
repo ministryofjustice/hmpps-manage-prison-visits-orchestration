@@ -661,6 +661,10 @@ abstract class IntegrationTestBase {
     contactTypeDescription: String? = "Social",
     restrictions: List<RestrictionDto> = emptyList(),
     address: AddressDto? = null,
+    approvedVisitor: Boolean? = true,
+    emergencyContact: Boolean? = false,
+    nextOfKin: Boolean? = false,
+    comments: String? = null,
   ): ContactWithOptionalPrisonerRelationshipDto = ContactWithOptionalPrisonerRelationshipDto(
     contactId = personId,
     firstName = firstName,
@@ -673,6 +677,10 @@ abstract class IntegrationTestBase {
     contactTypeDescription = contactTypeDescription,
     restrictions = restrictions,
     address = address,
+    approvedVisitor = approvedVisitor,
+    emergencyContact = emergencyContact,
+    nextOfKin = nextOfKin,
+    comments = comments,
   )
 
   final fun createPrisoner(

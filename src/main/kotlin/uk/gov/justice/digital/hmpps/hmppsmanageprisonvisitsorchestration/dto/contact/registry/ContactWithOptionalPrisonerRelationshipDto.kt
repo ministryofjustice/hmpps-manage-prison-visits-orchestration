@@ -37,4 +37,16 @@ data class ContactWithOptionalPrisonerRelationshipDto(
 
   @param:Schema(description = "Address associated with the contact", required = false)
   var address: AddressDto? = null,
+
+  @param:Schema(description = "Is this prisoner's contact relationship approved?", example = "true")
+  val approvedVisitor: Boolean? = null,
+
+  @param:Schema(description = "Is this prisoner's contact relationship the emergency contact?", example = "true")
+  val emergencyContact: Boolean? = null,
+
+  @param:Schema(description = "Is this prisoner's contact relationship the next of kin?", example = "true")
+  val nextOfKin: Boolean? = null,
+
+  @param:Schema(description = "comments of the relationship", nullable = true)
+  val comments: String?,
 )
