@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertsAddedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerContactRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
@@ -42,6 +43,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.ContactRestrictionUpsertedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.CourtVideoAppointmentInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.NonAssociationChangedInfo
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerAlertNotificationInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerAlertsUpdatedNotificationInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerContactRestrictionUpsertedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerReceivedInfo
@@ -173,6 +175,42 @@ class VisitSchedulerService(
     )
 
     visitSchedulerClient.processPrisonerAlertsUpdated(sendDto = prisonerAlertsAddedNotificationDto)
+  }
+
+  fun processPrisonerAlertCreated(info: PrisonerAlertNotificationInfo, description: String?) {
+    val prisonerAlertCreatedNotification = PrisonerAlertNotificationDto(
+      info,
+      description ?: "${info.alertCode} alert created for prisoner = ${info.prisonerNumber}.",
+    )
+
+    visitSchedulerClient.processPrisonerAlertCreated(sendDto = prisonerAlertCreatedNotification)
+  }
+
+  fun processPrisonerAlertUpdated(info: PrisonerAlertNotificationInfo, description: String?) {
+    val prisonerAlertUpdatedNotification = PrisonerAlertNotificationDto(
+      info,
+      description ?: "${info.alertCode} alert updated for prisoner = ${info.prisonerNumber}.",
+    )
+
+    visitSchedulerClient.processPrisonerAlertUpdated(sendDto = prisonerAlertUpdatedNotification)
+  }
+
+  fun processPrisonerAlertDeleted(info: PrisonerAlertNotificationInfo, description: String?) {
+    val prisonerAlertDeletedNotification = PrisonerAlertNotificationDto(
+      info,
+      description ?: "${info.alertCode} alert deleted for prisoner = ${info.prisonerNumber}.",
+    )
+
+    visitSchedulerClient.processPrisonerAlertInactivatedOrDeleted(sendDto = prisonerAlertDeletedNotification)
+  }
+
+  fun processPrisonerAlertInactivated(info: PrisonerAlertNotificationInfo, description: String?) {
+    val prisonerAlertInactivatedNotification = PrisonerAlertNotificationDto(
+      info,
+      description ?: "${info.alertCode} alert inactivated for prisoner = ${info.prisonerNumber}.",
+    )
+
+    visitSchedulerClient.processPrisonerAlertInactivatedOrDeleted(sendDto = prisonerAlertInactivatedNotification)
   }
 
   fun getNotificationCountForPrison(prisonCode: String, notificationEventTypes: List<NotificationEventType>?): NotificationCountDto? = visitSchedulerClient.getNotificationCountForPrison(prisonCode, notificationEventTypes?.map { it.name }?.toList())

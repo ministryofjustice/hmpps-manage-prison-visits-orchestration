@@ -855,6 +855,7 @@ abstract class IntegrationTestBase {
     active: Boolean = true,
     description: String = "Alert code comment",
   ): AlertResponseDto = AlertResponseDto(
+    alertUuid = UUID.randomUUID().toString(),
     alertCode = alertCodeSummary,
     activeFrom = activeFrom,
     createdAt = createdAt,
@@ -876,7 +877,8 @@ abstract class IntegrationTestBase {
     active: Boolean = true,
     description: String = "Alert code comment",
   ): AlertResponseDto = AlertResponseDto(
-    AlertCodeSummaryDto(alertTypeCode, alertTypeDescription, code, alertCodeDescription),
+    alertUuid = UUID.randomUUID().toString(),
+    alertCode = AlertCodeSummaryDto(alertTypeCode, alertTypeDescription, code, alertCodeDescription),
     activeFrom = activeFrom,
     createdAt = createdAt,
     lastModifiedAt = lastModifiedAt,

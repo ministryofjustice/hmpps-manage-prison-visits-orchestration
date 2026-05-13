@@ -41,6 +41,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentCreatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentDeletedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentUpdatedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertCreatedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertDeletedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertInactivatedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertUpdatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertsUpdatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerContactRestrictionCreatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerContactRestrictionUpdatedNotifier
@@ -137,6 +141,18 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
 
   @MockitoSpyBean
   lateinit var contactRestrictionUpdatedNotifierSpy: ContactRestrictionUpdatedNotifier
+
+  @MockitoSpyBean
+  lateinit var prisonerAlertCreatedNotifierSpy: PrisonerAlertCreatedNotifier
+
+  @MockitoSpyBean
+  lateinit var prisonerAlertUpdatedNotifierSpy: PrisonerAlertUpdatedNotifier
+
+  @MockitoSpyBean
+  lateinit var prisonerAlertDeletedNotifierSpy: PrisonerAlertDeletedNotifier
+
+  @MockitoSpyBean
+  lateinit var prisonerAlertInactivatedNotifierSpy: PrisonerAlertInactivatedNotifier
 
   @MockitoSpyBean
   lateinit var domainEventListenerServiceSpy: DomainEventListenerService
@@ -301,6 +317,17 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
 
     jsonValues["appointmentInstanceId"] = appointmentInstanceId
     jsonValues["categoryCode"] = categoryCode
+
+    return createAdditionalInformationJson(jsonValues)
+  }
+
+  fun createAddAlertAdditionalInformationJson(
+    alertCode: String,
+    alertUuid: String,
+  ): String {
+    val jsonValues = HashMap<String, Any>()
+    jsonValues["alertCode"] = alertCode
+    jsonValues["alertUuid"] = alertUuid
 
     return createAdditionalInformationJson(jsonValues)
   }
