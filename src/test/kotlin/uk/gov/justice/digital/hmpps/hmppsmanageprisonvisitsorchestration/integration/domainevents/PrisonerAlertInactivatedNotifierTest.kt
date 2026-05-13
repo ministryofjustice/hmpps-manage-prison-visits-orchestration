@@ -15,17 +15,17 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.Identifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.PersonIdentifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.PersonReference
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_ALERT_DELETED
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_ALERT_INACTIVATED
 import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 
-class PrisonerAlertDeletedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
+class PrisonerAlertInactivatedNotifierTest : PrisonVisitsEventsIntegrationTestBase() {
 
   @Test
-  fun `when a supported alert code is deleted then event is successfully processed`() {
+  fun `when a supported alert code is inactivated then event is successfully processed`() {
     // Given
     val prisonerNumber = "AB123456C"
     val alertCode = PrisonerSupportedAlertCodeType.C1.name
-    val alertDescription = "Prisoner alert deleted"
+    val alertDescription = "Prisoner alert inactivated"
     val alertUuid = "12345678-1234-1234-1234-123456789012"
 
     val sentRequestToVsip = PrisonerAlertNotificationDto(
@@ -42,7 +42,7 @@ class PrisonerAlertDeletedNotifierTest : PrisonVisitsEventsIntegrationTestBase()
     )
 
     val domainEvent = createDomainEventJson(
-      eventType = PRISONER_ALERT_DELETED,
+      eventType = PRISONER_ALERT_INACTIVATED,
       description = alertDescription,
       additionalInformation = createAddAlertAdditionalInformationJson(
         alertCode = alertCode,
@@ -51,7 +51,7 @@ class PrisonerAlertDeletedNotifierTest : PrisonVisitsEventsIntegrationTestBase()
       personReference = objectMapper.writeValueAsString(personReference),
     )
 
-    val publishRequest = createDomainEventPublishRequest(PRISONER_ALERT_DELETED, domainEvent)
+    val publishRequest = createDomainEventPublishRequest(PRISONER_ALERT_INACTIVATED, domainEvent)
 
     visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_OR_INACTIVATED_PATH)
     // When
@@ -62,12 +62,12 @@ class PrisonerAlertDeletedNotifierTest : PrisonVisitsEventsIntegrationTestBase()
   }
 
   @Test
-  fun `when a non supported alert code is deleted then event is not processed`() {
+  fun `when a non supported alert code is inactivated then event is not processed`() {
     // Given
     val prisonerNumber = "AB123456C"
     // alert code not in list of supported codes
     val alertCode = "NOT_SUPPORTED"
-    val alertDescription = "Prisoner alert deleted"
+    val alertDescription = "Prisoner alert inactivated"
     val alertUuid = "12345678-1234-1234-1234-123456789012"
 
     // Given
@@ -78,7 +78,7 @@ class PrisonerAlertDeletedNotifierTest : PrisonVisitsEventsIntegrationTestBase()
     )
 
     val domainEvent = createDomainEventJson(
-      eventType = PRISONER_ALERT_DELETED,
+      eventType = PRISONER_ALERT_INACTIVATED,
       description = alertDescription,
       additionalInformation = createAddAlertAdditionalInformationJson(
         alertCode = alertCode,
@@ -87,7 +87,7 @@ class PrisonerAlertDeletedNotifierTest : PrisonVisitsEventsIntegrationTestBase()
       personReference = objectMapper.writeValueAsString(personReference),
     )
 
-    val publishRequest = createDomainEventPublishRequest(PRISONER_ALERT_DELETED, domainEvent)
+    val publishRequest = createDomainEventPublishRequest(PRISONER_ALERT_INACTIVATED, domainEvent)
 
     visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_OR_INACTIVATED_PATH)
     // When
@@ -103,7 +103,7 @@ class PrisonerAlertDeletedNotifierTest : PrisonVisitsEventsIntegrationTestBase()
     // Given
     val prisonerNumber = "AB123456C"
     val alertCode = PrisonerSupportedAlertCodeType.CPRC.name
-    val alertDescription = "Prisoner alert deleted"
+    val alertDescription = "Prisoner alert inactivated"
     val alertUuid = "12345678-1234-1234-1234-123456789012"
 
     // Person reference identifier is not NOMS
@@ -114,7 +114,7 @@ class PrisonerAlertDeletedNotifierTest : PrisonVisitsEventsIntegrationTestBase()
     )
 
     val domainEvent = createDomainEventJson(
-      eventType = PRISONER_ALERT_DELETED,
+      eventType = PRISONER_ALERT_INACTIVATED,
       description = alertDescription,
       additionalInformation = createAddAlertAdditionalInformationJson(
         alertCode = alertCode,
@@ -123,7 +123,7 @@ class PrisonerAlertDeletedNotifierTest : PrisonVisitsEventsIntegrationTestBase()
       personReference = objectMapper.writeValueAsString(personReference),
     )
 
-    val publishRequest = createDomainEventPublishRequest(PRISONER_ALERT_DELETED, domainEvent)
+    val publishRequest = createDomainEventPublishRequest(PRISONER_ALERT_INACTIVATED, domainEvent)
 
     visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_OR_INACTIVATED_PATH)
     // When
@@ -140,12 +140,12 @@ class PrisonerAlertDeletedNotifierTest : PrisonVisitsEventsIntegrationTestBase()
 
   private fun assertStandardCalls(expectedRequestBody: Any? = null) {
     await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
-    await untilAsserted { verify(prisonerAlertDeletedNotifierSpy, times(1)).processEvent(any()) }
+    await untilAsserted { verify(prisonerAlertInactivatedNotifierSpy, times(1)).processEvent(any()) }
     await untilAsserted { visitSchedulerMockServer.verifyPost(VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_OR_INACTIVATED_PATH, expectedRequestBody) }
   }
 
   private fun assertEventNotProcessed() {
     await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
-    verify(prisonerAlertDeletedNotifierSpy, times(0)).processEvent(any())
+    verify(prisonerAlertInactivatedNotifierSpy, times(0)).processEvent(any())
   }
 }
