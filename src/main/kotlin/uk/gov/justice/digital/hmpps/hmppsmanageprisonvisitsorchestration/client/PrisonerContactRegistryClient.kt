@@ -31,14 +31,15 @@ class PrisonerContactRegistryClient(
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
-    const val CONTACT_REGISTRY_CONTACTS_PATH: String = "/v2/prisoners/{prisonerId}/contacts"
-    const val CONTACT_REGISTRY_SEARCH_CONTACTS_PATH: String = "$CONTACT_REGISTRY_CONTACTS_PATH/search"
-    const val CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_PATH: String = "$CONTACT_REGISTRY_CONTACTS_PATH/social/approved"
-    const val CONTACT_REGISTRY_SOCIAL_CONTACTS_PATH: String = "$CONTACT_REGISTRY_CONTACTS_PATH/social"
+    const val CONTACT_REGISTRY_PRISONER_CONTACTS_PATH: String = "/v2/prisoners/{prisonerId}/contacts"
+    const val CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_PATH: String = "$CONTACT_REGISTRY_PRISONER_CONTACTS_PATH/social/approved"
+    const val CONTACT_REGISTRY_SOCIAL_CONTACTS_PATH: String = "$CONTACT_REGISTRY_PRISONER_CONTACTS_PATH/social"
     const val CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_RESTRICTIONS_PATH: String = "$CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_PATH/restrictions"
     const val CONTACT_REGISTRY_BANNED_RESTRICTION_DATE_RANGE_PATH: String = "$CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_RESTRICTIONS_PATH/banned/dateRange"
     const val CONTACT_REGISTRY_HAS_CLOSED_RESTRICTIONS_PATH: String = "$CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_RESTRICTIONS_PATH/closed"
     const val CONTACT_REGISTRY_REVIEW_RESTRICTIONS_DATE_RANGES_PATH: String = "$CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_RESTRICTIONS_PATH/visit-request/date-ranges"
+
+    const val CONTACT_REGISTRY_SEARCH_CONTACTS_PATH: String = "/v2/contacts/search"
   }
 
   fun getPrisonersSocialContacts(prisonerId: String, hasDateOfBirth: Boolean? = null): List<PrisonerContactDto> {
@@ -137,28 +138,25 @@ class PrisonerContactRegistryClient(
       }.block(apiTimeout)
   }
 
-  fun searchPrisonerContacts(prisonerId: String, contactIds: List<Long>, withRestrictions: Boolean = true): List<ContactWithOptionalPrisonerRelationshipDto> {
-    val uri = CONTACT_REGISTRY_SEARCH_CONTACTS_PATH.replace("{prisonerId}", prisonerId)
-    return searchPrisonerContactsAsMono(prisonerId, contactIds, withRestrictions)
-      .onErrorResume { e ->
-        LOG.error("searchPrisonerContacts error for get request $uri, $e")
-        Mono.error(e)
-      }
-      .blockOptional(apiTimeout).orElseThrow { IllegalStateException("Timeout searching contacts for request $uri") }
-  }
-
-  fun searchPrisonerContactsAsMono(prisonerId: String, contactIds: List<Long>, withRestrictions: Boolean = true): Mono<List<ContactWithOptionalPrisonerRelationshipDto>> {
-    val uri = CONTACT_REGISTRY_SEARCH_CONTACTS_PATH.replace("{prisonerId}", prisonerId)
-    return webClient.get().uri(uri) {
-      getSearchPrisonerContactsUriBuilder(contactIds, withRestrictions, it).build()
+  fun searchContacts(contactIds: List<Long>, prisonerId: String? = null, withRestrictions: Boolean = true): List<ContactWithOptionalPrisonerRelationshipDto> = searchContactsAsMono(contactIds, prisonerId, withRestrictions)
+    .onErrorResume { e ->
+      LOG.error("searchContacts error for get request $CONTACT_REGISTRY_SEARCH_CONTACTS_PATH, $e")
+      Mono.error(e)
     }
-      .retrieve()
-      .bodyToMono<List<ContactWithOptionalPrisonerRelationshipDto>>()
-  }
+    .blockOptional(apiTimeout).orElseThrow { IllegalStateException("Timeout searching contacts for request $CONTACT_REGISTRY_SEARCH_CONTACTS_PATH") }
 
-  private fun getSearchPrisonerContactsUriBuilder(contactIds: List<Long>, withRestrictions: Boolean = true, uriBuilder: UriBuilder): UriBuilder {
+  fun searchContactsAsMono(contactIds: List<Long>, prisonerId: String? = null, withRestrictions: Boolean = true): Mono<List<ContactWithOptionalPrisonerRelationshipDto>> = webClient.get().uri(CONTACT_REGISTRY_SEARCH_CONTACTS_PATH) {
+    getSearchContactsUriBuilder(contactIds, prisonerId, withRestrictions, it).build()
+  }
+    .retrieve()
+    .bodyToMono<List<ContactWithOptionalPrisonerRelationshipDto>>()
+
+  private fun getSearchContactsUriBuilder(contactIds: List<Long>, prisonerId: String? = null, withRestrictions: Boolean = true, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParam("contactIds", contactIds.joinToString(","))
     uriBuilder.queryParam("withRestrictions", withRestrictions)
+
+    prisonerId?.let { uriBuilder.queryParam("prisonerId", it) }
+
     return uriBuilder
   }
 
