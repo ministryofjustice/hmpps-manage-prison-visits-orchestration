@@ -81,9 +81,9 @@ class VisitBookingDetailsClient(
           prisonApiClient.getPrisonerRestrictionsAsMono(visit.prisonerId)
         }
 
-      val visitorsMono = prisonerContactRegistryClient.searchPrisonerContactsAsMono(
-        prisonerId = visit.prisonerId,
+      val visitorsMono = prisonerContactRegistryClient.searchContactsAsMono(
         contactIds = visit.visitors!!.map { it.nomisPersonId },
+        prisonerId = visit.prisonerId,
         withRestrictions = !skipAlertsAndRestrictions,
       )
 
@@ -114,7 +114,7 @@ class VisitBookingDetailsClient(
           }
 
           val visitContact = visit.visitContact?.let { contact ->
-            val contactId = visit.visitors?.firstOrNull { it.visitContact == true }?.nomisPersonId
+            val contactId = visit.visitors.firstOrNull { it.visitContact == true }?.nomisPersonId
             VisitContactDto(contact, contactId)
           }
 

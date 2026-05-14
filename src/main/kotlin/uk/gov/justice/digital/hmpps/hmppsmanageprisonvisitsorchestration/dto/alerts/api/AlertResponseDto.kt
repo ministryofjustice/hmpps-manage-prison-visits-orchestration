@@ -7,6 +7,9 @@ import java.time.LocalDateTime
 
 @Schema(description = "Alert dto response from alerts API")
 data class AlertResponseDto(
+  @param:Schema(description = "The unique identifier assigned to the alert", example = "8cdadcf3-b003-4116-9956-c99bd8df6a00")
+  val alertUuid: String,
+
   @param:Schema(description = "A summary of the alert", example = "2020-08-20", required = true)
   val alertCode: AlertCodeSummaryDto,
 
