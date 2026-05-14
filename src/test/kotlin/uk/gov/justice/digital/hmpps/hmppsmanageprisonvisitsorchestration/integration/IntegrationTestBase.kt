@@ -661,6 +661,10 @@ abstract class IntegrationTestBase {
     contactTypeDescription: String? = "Social",
     restrictions: List<RestrictionDto> = emptyList(),
     address: AddressDto? = null,
+    approvedVisitor: Boolean? = true,
+    emergencyContact: Boolean? = false,
+    nextOfKin: Boolean? = false,
+    comments: String? = null,
   ): ContactWithOptionalPrisonerRelationshipDto = ContactWithOptionalPrisonerRelationshipDto(
     contactId = personId,
     firstName = firstName,
@@ -673,6 +677,10 @@ abstract class IntegrationTestBase {
     contactTypeDescription = contactTypeDescription,
     restrictions = restrictions,
     address = address,
+    approvedVisitor = approvedVisitor,
+    emergencyContact = emergencyContact,
+    nextOfKin = nextOfKin,
+    comments = comments,
   )
 
   final fun createPrisoner(
@@ -847,6 +855,7 @@ abstract class IntegrationTestBase {
     active: Boolean = true,
     description: String = "Alert code comment",
   ): AlertResponseDto = AlertResponseDto(
+    alertUuid = UUID.randomUUID().toString(),
     alertCode = alertCodeSummary,
     activeFrom = activeFrom,
     createdAt = createdAt,
@@ -868,7 +877,8 @@ abstract class IntegrationTestBase {
     active: Boolean = true,
     description: String = "Alert code comment",
   ): AlertResponseDto = AlertResponseDto(
-    AlertCodeSummaryDto(alertTypeCode, alertTypeDescription, code, alertCodeDescription),
+    alertUuid = UUID.randomUUID().toString(),
+    alertCode = AlertCodeSummaryDto(alertTypeCode, alertTypeDescription, code, alertCodeDescription),
     activeFrom = activeFrom,
     createdAt = createdAt,
     lastModifiedAt = lastModifiedAt,

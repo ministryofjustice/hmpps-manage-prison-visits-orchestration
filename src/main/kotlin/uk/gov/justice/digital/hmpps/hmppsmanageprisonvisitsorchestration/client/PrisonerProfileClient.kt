@@ -95,9 +95,9 @@ class PrisonerProfileClient(
         .map { it.nomisPersonId }
         .distinct()
 
-      val contacts = prisonerContactRegistryClient.searchPrisonerContacts(
-        prisonerId = prisonerProfile.prisonerId,
+      val contacts = prisonerContactRegistryClient.searchContacts(
         contactIds = contactIds,
+        prisonerId = prisonerProfile.prisonerId,
         withRestrictions = false,
       )
 
