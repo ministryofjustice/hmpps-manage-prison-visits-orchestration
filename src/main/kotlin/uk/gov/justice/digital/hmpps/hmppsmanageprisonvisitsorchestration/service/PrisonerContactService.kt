@@ -36,9 +36,15 @@ class PrisonerContactService(
     return prisonersContactMap.toMap()
   }
 
-  fun searchPrisonerContacts(prisonerId: String, contactIds: List<Long>, withRestrictions: Boolean = true): List<ContactWithOptionalPrisonerRelationshipDto> {
-    LOG.debug("Searching for contacts for prisoner - {}, contactIds - {}, withRestrictions - {}", prisonerId, contactIds, withRestrictions)
-    return prisonerContactRegistryClient.searchPrisonerContacts(prisonerId, contactIds, withRestrictions)
+  fun searchContacts(contactIds: List<Long>, prisonerId: String? = null, withRestrictions: Boolean = true): List<ContactWithOptionalPrisonerRelationshipDto> {
+    LOG.debug(
+      "searchContact called with contactIds: {}, prisonerId: {}, withRestrictions: {}",
+      contactIds,
+      prisonerId,
+      withRestrictions,
+    )
+
+    return prisonerContactRegistryClient.searchContacts(contactIds, prisonerId, withRestrictions)
   }
 
   fun getPrisonerSocialContacts(prisonerId: String): List<PrisonerContactDto> = prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerId = prisonerId)

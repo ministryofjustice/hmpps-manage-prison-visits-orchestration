@@ -183,9 +183,9 @@ class PublicBookerService(
 
     val foundContacts: List<ContactWithOptionalPrisonerRelationshipDto> =
       try {
-        prisonerContactService.searchPrisonerContacts(
-          prisonerNumber,
+        prisonerContactService.searchContacts(
           associatedVisitors.map { it.visitorId },
+          prisonerNumber,
           true,
         )
       } catch (e: WebClientResponseException.NotFound) {
