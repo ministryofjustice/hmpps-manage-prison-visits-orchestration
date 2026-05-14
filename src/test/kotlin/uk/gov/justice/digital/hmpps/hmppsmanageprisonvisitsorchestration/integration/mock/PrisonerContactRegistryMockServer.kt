@@ -45,16 +45,20 @@ class PrisonerContactRegistryMockServer : WireMockServer(8095) {
     )
   }
 
-  fun stubSearchPrisonerContacts(
-    prisonerId: String,
+  fun stubSearchContacts(
     contactIds: List<Long>,
+    prisonerId: String? = null,
     withRestrictions: Boolean = true,
     contactsList: List<ContactWithOptionalPrisonerRelationshipDto>?,
     httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
   ) {
     val responseBuilder = createJsonResponseBuilder()
 
-    val uri = "/v2/prisoners/$prisonerId/contacts/search?contactIds=${contactIds.joinToString(",")}&withRestrictions=$withRestrictions"
+    val uri = if (prisonerId != null) {
+      "/v2/contacts/search?contactIds=${contactIds.joinToString(",")}&withRestrictions=$withRestrictions&prisonerId=$prisonerId"
+    } else {
+      "/v2/contacts/search?contactIds=${contactIds.joinToString(",")}&withRestrictions=$withRestrictions"
+    }
 
     stubFor(
       get(uri)

@@ -4,6 +4,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactWithOptionalPrisonerRelationshipDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 
@@ -33,6 +34,17 @@ class PrisonerContactService(
     }
 
     return prisonersContactMap.toMap()
+  }
+
+  fun searchContacts(contactIds: List<Long>, prisonerId: String? = null, withRestrictions: Boolean = true): List<ContactWithOptionalPrisonerRelationshipDto> {
+    LOG.debug(
+      "searchContacts called with contactIds: {}, prisonerId: {}, withRestrictions: {}",
+      contactIds,
+      prisonerId,
+      withRestrictions,
+    )
+
+    return prisonerContactRegistryClient.searchContacts(contactIds, prisonerId, withRestrictions)
   }
 
   fun getPrisonerSocialContacts(prisonerId: String): List<PrisonerContactDto> = prisonerContactRegistryClient.getPrisonersSocialContacts(prisonerId = prisonerId)

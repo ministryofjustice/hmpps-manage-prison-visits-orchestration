@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.servic
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.BookerAuditHistoryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.BookerPrisonerInfoClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient
@@ -22,7 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.SearchBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.BookerPrisonerValidationErrorCodes.REGISTERED_PRISON_NOT_SUPPORTED
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactWithOptionalPrisonerRelationshipDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.RestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorRestrictionType
@@ -172,33 +173,43 @@ class PublicBookerService(
   private fun isPrisonSupportedOnVisits(prisonId: String): Boolean = visitSchedulerClient.getSupportedPrisons(PUBLIC).map { it.uppercase() }.contains(prisonId.uppercase())
 
   private fun getValidVisitors(bookerReference: String, prisonerNumber: String): List<VisitorInfoDto> {
-    val visitorDetailsList = mutableListOf<VisitorInfoDto>()
-    val associatedVisitors = prisonVisitBookerRegistryClient.getPermittedVisitorsForBookersAssociatedPrisoner(bookerReference, prisonerNumber)
+    val associatedVisitors =
+      prisonVisitBookerRegistryClient.getPermittedVisitorsForBookersAssociatedPrisoner(bookerReference, prisonerNumber)
 
-    if (associatedVisitors.isNotEmpty()) {
-      // get approved visitors for a prisoner with a DOB and not BANNED
-      var allValidContacts = emptyList<PrisonerContactDto>()
-      try {
-        allValidContacts = getAllValidContacts(prisonerNumber)
-      } catch (nfe: NotFoundException) {
-        logger.error("No valid contacts found for prisoner id - $prisonerNumber")
-      }
-
-      // filter them through the associated visitor list
-      if (allValidContacts.isNotEmpty()) {
-        associatedVisitors.forEach { associatedVisitor ->
-          allValidContacts.firstOrNull { it.personId == associatedVisitor.visitorId }?.let { contact ->
-            val visitorRestrictions = getRestrictions(contact.restrictions)
-            visitorDetailsList.add(VisitorInfoDto(contact, visitorRestrictions))
-          }
-        }
-      }
+    if (associatedVisitors.isEmpty()) {
+      logger.error("Booker has no visitors for prisoner id - {}", prisonerNumber)
+      return emptyList()
     }
 
-    return visitorDetailsList.toList()
-  }
+    val foundContacts: List<ContactWithOptionalPrisonerRelationshipDto> =
+      try {
+        prisonerContactService.searchContacts(
+          associatedVisitors.map { it.visitorId },
+          prisonerNumber,
+          true,
+        )
+      } catch (e: WebClientResponseException.NotFound) {
+        logger.error("No valid contacts found for prisoner id - {}", prisonerNumber, e)
+        emptyList()
+      }
 
-  private fun getAllValidContacts(prisonerNumber: String): List<PrisonerContactDto> = prisonerContactService.getPrisonersSocialContactsWithDOB(prisonerNumber)
+    if (foundContacts.isEmpty()) {
+      return emptyList()
+    }
+
+    val associatedVisitorIds = associatedVisitors.map { it.visitorId }.toSet()
+
+    return foundContacts
+      .filter { contact ->
+        contact.contactType == "S" &&
+          contact.dateOfBirth != null &&
+          contact.contactId in associatedVisitorIds
+      }
+      .map { contact ->
+        val visitorRestrictions = getRestrictions(contact.restrictions)
+        VisitorInfoDto(contact, visitorRestrictions)
+      }
+  }
 
   private fun getMaxExpiryDate(restrictions: List<RestrictionDto>): LocalDate? {
     val expiryDates = restrictions.map { it.expiryDate }
