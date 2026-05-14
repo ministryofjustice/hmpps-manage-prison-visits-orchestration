@@ -46,7 +46,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertNotificationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertsAddedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerContactRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
@@ -84,7 +83,6 @@ const val VISIT_NOTIFICATION_CONTACT_RESTRICTION_UPSERTED_PATH: String = "$VISIT
 const val VISIT_NOTIFICATION_VISITOR_APPROVED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/visitor/approved"
 const val VISIT_NOTIFICATION_VISITOR_UNAPPROVED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/visitor/unapproved"
 
-const val VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alerts/updated"
 const val VISIT_NOTIFICATION_PRISONER_ALERT_CREATED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alert/created"
 const val VISIT_NOTIFICATION_PRISONER_ALERT_UPDATED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alert/updated"
 const val VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_OR_INACTIVATED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alert/deleted"
@@ -484,16 +482,6 @@ class VisitSchedulerClient(
       .retrieve()
       .toBodilessEntity()
       .doOnError { e -> LOG.error("Could not processVisitorApproved :", e) }
-      .block(apiTimeout)
-  }
-
-  fun processPrisonerAlertsUpdated(sendDto: PrisonerAlertsAddedNotificationDto) {
-    webClient.post()
-      .uri(VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH)
-      .body(BodyInserters.fromValue(sendDto))
-      .retrieve()
-      .toBodilessEntity()
-      .doOnError { e -> LOG.error("Could not process prisoner alert updates :", e) }
       .block(apiTimeout)
   }
 

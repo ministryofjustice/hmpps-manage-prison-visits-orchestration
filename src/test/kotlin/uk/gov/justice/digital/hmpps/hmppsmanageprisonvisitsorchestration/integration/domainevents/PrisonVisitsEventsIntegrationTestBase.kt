@@ -45,7 +45,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertDeletedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertInactivatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertUpdatedNotifier
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertsUpdatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerContactRestrictionCreatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerContactRestrictionUpdatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerIncentivesDeletedNotifier
@@ -166,9 +165,6 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
   @MockitoSpyBean
   lateinit var prisonerNonAssociationCreatedNotifier: PrisonerNonAssociationNotifierCreatedNotifier
 
-  @MockitoSpyBean
-  lateinit var prisonerAlertsUpdatedNotifier: PrisonerAlertsUpdatedNotifier
-
   @Autowired
   private lateinit var hmppsQueueService: HmppsQueueService
 
@@ -242,20 +238,6 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     jsonValues["prisonId"] = prisonerReceivedInfo.prisonCode
     jsonValues["reason"] = prisonerReceivedInfo.reason.name
 
-    return createAdditionalInformationJson(jsonValues)
-  }
-
-  fun createAlertsUpdatedAdditionalInformationJson(
-    prisonerNumber: String,
-    bookingId: Long,
-    alertsAdded: List<String>? = emptyList(),
-    alertsRemoved: List<String>? = emptyList(),
-  ): String {
-    val jsonValues = HashMap<String, Any>()
-    jsonValues["nomsNumber"] = prisonerNumber
-    jsonValues["bookingId"] = bookingId
-    jsonValues["alertsAdded"] = alertsAdded ?: emptyList<String>()
-    jsonValues["alertsRemoved"] = alertsRemoved ?: emptyList<String>()
     return createAdditionalInformationJson(jsonValues)
   }
 
