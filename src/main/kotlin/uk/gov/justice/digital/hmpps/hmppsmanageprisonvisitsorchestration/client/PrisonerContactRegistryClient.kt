@@ -140,7 +140,7 @@ class PrisonerContactRegistryClient(
 
   fun searchContacts(contactIds: List<Long>, prisonerId: String? = null, withRestrictions: Boolean = true): List<ContactWithOptionalPrisonerRelationshipDto> = searchContactsAsMono(contactIds, prisonerId, withRestrictions)
     .onErrorResume { e ->
-      LOG.error("searchPrisonerContacts error for get request $CONTACT_REGISTRY_SEARCH_CONTACTS_PATH, $e")
+      LOG.error("searchContacts error for get request $CONTACT_REGISTRY_SEARCH_CONTACTS_PATH, $e")
       Mono.error(e)
     }
     .blockOptional(apiTimeout).orElseThrow { IllegalStateException("Timeout searching contacts for request $CONTACT_REGISTRY_SEARCH_CONTACTS_PATH") }

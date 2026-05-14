@@ -38,7 +38,7 @@ class PrisonerContactService(
 
   fun searchContacts(contactIds: List<Long>, prisonerId: String? = null, withRestrictions: Boolean = true): List<ContactWithOptionalPrisonerRelationshipDto> {
     LOG.debug(
-      "searchContact called with contactIds: {}, prisonerId: {}, withRestrictions: {}",
+      "searchContacts called with contactIds: {}, prisonerId: {}, withRestrictions: {}",
       contactIds,
       prisonerId,
       withRestrictions,
