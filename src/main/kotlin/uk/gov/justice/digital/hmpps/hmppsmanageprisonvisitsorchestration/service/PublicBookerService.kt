@@ -201,7 +201,6 @@ class PublicBookerService(
 
     return foundContacts
       .filter { contact ->
-        contact.contactType == "S" &&
           contact.dateOfBirth != null &&
           contact.contactId in associatedVisitorIds
       }
