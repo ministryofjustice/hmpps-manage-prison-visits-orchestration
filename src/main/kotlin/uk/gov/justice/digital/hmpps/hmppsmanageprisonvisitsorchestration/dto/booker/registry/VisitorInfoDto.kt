@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.bo
 
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactWithOptionalPrisonerRelationshipDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorRestrictionDto
 import java.time.LocalDate
 
@@ -21,21 +20,14 @@ data class VisitorInfoDto(
   @param:Schema(description = "A flag to signify if the visitor is on the approved social contact list", example = "true", required = true)
   val approved: Boolean,
 ) {
-  constructor(contact: PrisonerContactDto, visitorRestrictions: Set<VisitorRestrictionDto>) : this(
-    visitorId = contact.personId!!,
-    firstName = contact.firstName,
-    lastName = contact.lastName,
-    dateOfBirth = contact.dateOfBirth,
-    approved = contact.approvedVisitor,
-    visitorRestrictions = visitorRestrictions,
-  )
-
   constructor(contact: ContactWithOptionalPrisonerRelationshipDto, visitorRestrictions: Set<VisitorRestrictionDto>) : this(
     visitorId = contact.contactId,
     firstName = contact.firstName,
     lastName = contact.lastName,
     dateOfBirth = contact.dateOfBirth,
-    approved = contact.approvedVisitor!!, // Force assignment because we only map contacts with a relationship so this cannot be null
+    approved = isApprovedVisitor(contact),
     visitorRestrictions = visitorRestrictions,
   )
 }
+
+private fun isApprovedVisitor(contact: ContactWithOptionalPrisonerRelationshipDto): Boolean = contact.approvedVisitor == true && contact.contactType == "S" && contact.dateOfBirth != null
