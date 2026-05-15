@@ -201,8 +201,7 @@ class PublicBookerService(
 
     return foundContacts
       .filter { contact ->
-          contact.dateOfBirth != null &&
-          contact.contactId in associatedVisitorIds
+        contact.dateOfBirth != null && contact.contactId in associatedVisitorIds
       }
       .map { contact ->
         val visitorRestrictions = getRestrictions(contact.restrictions)
