@@ -11,7 +11,8 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.PrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterContactDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 
@@ -19,7 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 class GetPrisonTest : IntegrationTestBase() {
 
   final val prisonCode = "HEI"
-  val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18)
+  val visitSchedulerPrisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18)
   val prisonRegisterPrisonDto = PrisonRegisterPrisonDto(prisonCode, "HMP Hewell", prisonNameInWelsh = "HMP Hewell (Cymru)")
   val prisonRegisterPrisonContactDetailsDto = PrisonRegisterContactDetailsDto("example@email.com", "07777777777", "https://www.example.com")
 
@@ -50,8 +51,8 @@ class GetPrisonTest : IntegrationTestBase() {
     Assertions.assertThat(result.code).isEqualTo(visitSchedulerPrisonDto.code)
     Assertions.assertThat(result.prisonName).isEqualTo(prisonRegisterPrisonDto.prisonName)
     Assertions.assertThat(result.prisonNameInWelsh).isEqualTo(prisonRegisterPrisonDto.prisonNameInWelsh)
-    Assertions.assertThat(result.policyNoticeDaysMin).isEqualTo(visitSchedulerPrisonDto.policyNoticeDaysMin)
-    Assertions.assertThat(result.policyNoticeDaysMax).isEqualTo(visitSchedulerPrisonDto.policyNoticeDaysMax)
+    Assertions.assertThat(result.clients.first { it.userType == STAFF }).isEqualTo(visitSchedulerPrisonDto.clients.first { it.userType == STAFF })
+    Assertions.assertThat(result.clients.first { it.userType == PUBLIC }).isEqualTo(visitSchedulerPrisonDto.clients.first { it.userType == PUBLIC })
     Assertions.assertThat(result.maxAdultVisitors).isEqualTo(visitSchedulerPrisonDto.maxAdultVisitors)
     Assertions.assertThat(result.maxChildVisitors).isEqualTo(visitSchedulerPrisonDto.maxChildVisitors)
     Assertions.assertThat(result.maxTotalVisitors).isEqualTo(visitSchedulerPrisonDto.maxTotalVisitors)
@@ -78,8 +79,8 @@ class GetPrisonTest : IntegrationTestBase() {
     Assertions.assertThat(result.active).isEqualTo(visitSchedulerPrisonDto.active)
     Assertions.assertThat(result.code).isEqualTo(visitSchedulerPrisonDto.code)
     Assertions.assertThat(result.prisonName).isEqualTo(prisonRegisterPrisonDto.prisonName)
-    Assertions.assertThat(result.policyNoticeDaysMin).isEqualTo(visitSchedulerPrisonDto.policyNoticeDaysMin)
-    Assertions.assertThat(result.policyNoticeDaysMax).isEqualTo(visitSchedulerPrisonDto.policyNoticeDaysMax)
+    Assertions.assertThat(result.clients.first { it.userType == STAFF }).isEqualTo(visitSchedulerPrisonDto.clients.first { it.userType == STAFF })
+    Assertions.assertThat(result.clients.first { it.userType == PUBLIC }).isEqualTo(visitSchedulerPrisonDto.clients.first { it.userType == PUBLIC })
     Assertions.assertThat(result.maxAdultVisitors).isEqualTo(visitSchedulerPrisonDto.maxAdultVisitors)
     Assertions.assertThat(result.maxChildVisitors).isEqualTo(visitSchedulerPrisonDto.maxChildVisitors)
     Assertions.assertThat(result.maxTotalVisitors).isEqualTo(visitSchedulerPrisonDto.maxTotalVisitors)
