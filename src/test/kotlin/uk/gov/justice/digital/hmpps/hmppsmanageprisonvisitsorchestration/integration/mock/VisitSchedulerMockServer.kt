@@ -124,7 +124,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
 
   fun stubGetVisits(
     prisonCode: String? = null,
-    prisonerId: String,
+    prisonerId: String? = null,
     visitStatus: List<String>,
     startDate: LocalDate?,
     endDate: LocalDate?,

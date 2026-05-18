@@ -157,7 +157,7 @@ abstract class IntegrationTestBase {
 
     fun getVisitsQueryParams(
       prisonCode: String?,
-      prisonerId: String,
+      prisonerId: String?,
       visitStatus: List<String>,
       startDateTime: LocalDate? = null,
       endDateTime: LocalDate? = null,
@@ -168,7 +168,9 @@ abstract class IntegrationTestBase {
       prisonCode?.let {
         queryParams.add("prisonId=$prisonCode")
       }
-      queryParams.add("prisonerId=$prisonerId")
+      prisonerId?.let {
+        queryParams.add("prisonerId=$prisonerId")
+      }
       if (visitStatus.isNotEmpty()) {
         queryParams.add("visitStatus=${visitStatus.joinToString(",")}")
       }

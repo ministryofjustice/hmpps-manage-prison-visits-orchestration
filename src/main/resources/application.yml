@@ -93,6 +93,10 @@ prisoner:
     future-visits:
       duration-in-months: P12M
 
+visit:
+  passes:
+    timeout: 10s
+
 hmpps:
   auth:
     timeout: 10s
