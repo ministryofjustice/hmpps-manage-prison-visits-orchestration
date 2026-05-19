@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration
 
+import com.microsoft.applicationinsights.TelemetryClient
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -232,6 +233,9 @@ abstract class IntegrationTestBase {
 
   @MockitoSpyBean
   protected lateinit var prisonVisitBookerRegistryClientSpy: PrisonVisitBookerRegistryClient
+
+  @MockitoSpyBean
+  protected lateinit var telemetryClientSpy: TelemetryClient
 
   @BeforeEach
   internal fun setUp() {

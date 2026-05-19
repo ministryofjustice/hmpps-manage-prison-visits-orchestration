@@ -6,6 +6,8 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.isNull
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
@@ -25,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import kotlin.random.Random
 
 @DisplayName("Get Visit passes for a prison and for a given date")
@@ -129,6 +132,17 @@ class GetVisitPassesTest : IntegrationTestBase() {
     verify(visitSchedulerClientSpy, times(1)).getVisits(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonersByPrisonerIdsAttributeSearchAsMono(any())
     verify(prisonerContactRegistryClientSpy, times(1)).searchContactsAsMono(any(), anyOrNull(), any())
+
+    verify(telemetryClientSpy).trackEvent(
+      eq("print-visit-passes"),
+      org.mockito.kotlin.check {
+        assertThat(it["prisonCode"]).isEqualTo(prisonCode)
+        assertThat(it["visitDate"]).isEqualTo(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
+        assertThat(it["actionedBy"]).isEqualTo("STAFF_USER")
+        assertThat(it["totalVisits"]).isEqualTo("8")
+      },
+      isNull(),
+    )
   }
 
   @Test
@@ -148,6 +162,16 @@ class GetVisitPassesTest : IntegrationTestBase() {
     verify(visitSchedulerClientSpy, times(1)).getVisits(any())
     verify(prisonerSearchClientSpy, times(0)).getPrisonersByPrisonerIdsAttributeSearchAsMono(any())
     verify(prisonerContactRegistryClientSpy, times(0)).searchContactsAsMono(any(), anyOrNull(), any())
+    verify(telemetryClientSpy).trackEvent(
+      eq("print-visit-passes"),
+      org.mockito.kotlin.check {
+        assertThat(it["prisonCode"]).isEqualTo(prisonCode)
+        assertThat(it["visitDate"]).isEqualTo(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
+        assertThat(it["actionedBy"]).isEqualTo("STAFF_USER1")
+        assertThat(it["totalVisits"]).isEqualTo("0")
+      },
+      isNull(),
+    )
   }
 
   @Test
@@ -171,6 +195,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     verify(visitSchedulerClientSpy, times(1)).getVisits(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonersByPrisonerIdsAttributeSearchAsMono(any())
     verify(prisonerContactRegistryClientSpy, times(1)).searchContactsAsMono(any(), anyOrNull(), any())
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), anyOrNull(), anyOrNull())
   }
 
   @Test
@@ -194,6 +219,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     verify(visitSchedulerClientSpy, times(1)).getVisits(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonersByPrisonerIdsAttributeSearchAsMono(any())
     verify(prisonerContactRegistryClientSpy, times(1)).searchContactsAsMono(any(), anyOrNull(), any())
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), anyOrNull(), anyOrNull())
   }
 
   @Test
@@ -216,6 +242,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     verify(visitSchedulerClientSpy, times(1)).getVisits(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonersByPrisonerIdsAttributeSearchAsMono(any())
     verify(prisonerContactRegistryClientSpy, times(1)).searchContactsAsMono(any(), anyOrNull(), any())
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), anyOrNull(), anyOrNull())
   }
 
   @Test
@@ -238,6 +265,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     verify(visitSchedulerClientSpy, times(1)).getVisits(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonersByPrisonerIdsAttributeSearchAsMono(any())
     verify(prisonerContactRegistryClientSpy, times(1)).searchContactsAsMono(any(), anyOrNull(), any())
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), anyOrNull(), anyOrNull())
   }
 
   @Test
@@ -260,6 +288,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     verify(visitSchedulerClientSpy, times(1)).getVisits(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonersByPrisonerIdsAttributeSearchAsMono(any())
     verify(prisonerContactRegistryClientSpy, times(1)).searchContactsAsMono(any(), anyOrNull(), any())
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), anyOrNull(), anyOrNull())
   }
 
   @Test
@@ -282,6 +311,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     verify(visitSchedulerClientSpy, times(1)).getVisits(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonersByPrisonerIdsAttributeSearchAsMono(any())
     verify(prisonerContactRegistryClientSpy, times(1)).searchContactsAsMono(any(), anyOrNull(), any())
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), anyOrNull(), anyOrNull())
   }
 
   @Test
@@ -303,6 +333,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     verify(visitSchedulerClientSpy, times(1)).getVisits(any())
     verify(prisonerSearchClientSpy, times(0)).getPrisonersByPrisonerIdsAttributeSearchAsMono(any())
     verify(prisonerContactRegistryClientSpy, times(0)).searchContactsAsMono(any(), anyOrNull(), any())
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), anyOrNull(), anyOrNull())
   }
 
   @Test
@@ -324,6 +355,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     verify(visitSchedulerClientSpy, times(1)).getVisits(any())
     verify(prisonerSearchClientSpy, times(0)).getPrisonersByPrisonerIdsAttributeSearchAsMono(any())
     verify(prisonerContactRegistryClientSpy, times(0)).searchContactsAsMono(any(), anyOrNull(), any())
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), anyOrNull(), anyOrNull())
   }
 
   private fun callGetVisitPasses(

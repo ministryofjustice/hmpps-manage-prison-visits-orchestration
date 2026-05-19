@@ -15,6 +15,7 @@ import java.time.LocalDate
 class VisitPassesService(
   private val visitPassesClient: VisitPassesClient,
   private val visitSchedulerClient: VisitSchedulerClient,
+  private val telemetryClientService: TelemetryClientService,
 ) {
   companion object {
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
@@ -47,6 +48,7 @@ class VisitPassesService(
     }
 
     // TODO - write to app insights
+    telemetryClientService.trackVisitPassesEvent(prisonCode = prisonId, visitDate = visitDate, actionedBy = visitPassRequest.actionedBy, totalVisits = visits.size)
     return visitPasses
   }
 
