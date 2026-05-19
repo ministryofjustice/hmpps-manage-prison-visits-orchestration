@@ -5,8 +5,9 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitPassesClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPassDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.passes.VisitPassDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.passes.VisitPassRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import java.time.LocalDate
 
@@ -20,15 +21,20 @@ class VisitPassesService(
     private const val VISITS_PAGE_SIZE = 300
   }
 
-  fun getVisitPasses(prisonId: String, visitDate: LocalDate): List<VisitPassDto> {
-    logger.info("Getting visit passes for prison - $prisonId, visit date - $visitDate")
+  fun getVisitPasses(prisonId: String, visitPassRequest: VisitPassRequestDto): List<VisitPassDto> {
+    logger.info("Getting visit passes for prison - $prisonId, visit date - ${visitPassRequest.visitDate}")
+    val visitDate = visitPassRequest.visitDate
     val visitSearchRequestFilter = getVisitRequestSearchFilter(prisonId, visitDate)
     val visits = visitSchedulerClient.getVisits(visitSearchRequestFilter)?.toList()
-    return if (!visits.isNullOrEmpty()) {
+
+    val visitPasses = if (!visits.isNullOrEmpty()) {
       visitPassesClient.getVisitPasses(visits)
     } else {
       emptyList()
     }
+
+    // TODO - write to app insights
+    return visitPasses
   }
 
   private fun getVisitRequestSearchFilter(prisonId: String, visitDate: LocalDate) = VisitSearchRequestFilter(

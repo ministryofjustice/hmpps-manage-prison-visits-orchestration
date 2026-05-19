@@ -9,8 +9,8 @@ import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactWithOptionalPrisonerRelationshipDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.AttributeSearchPrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPassDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPassVisitorDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.passes.VisitPassDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.passes.VisitPassVisitorDto
 import java.time.Duration
 
 @Component
@@ -24,12 +24,16 @@ class VisitPassesClient(
   }
 
   fun getVisitPasses(@NotEmpty visits: List<VisitDto>): List<VisitPassDto> {
+    logger.info("Getting visit passes for {} visit(s)", visits.size)
     if (visits.isEmpty()) {
       return emptyList()
     }
-    logger.info("Getting visit passes for {} visit(s)", visits.size)
+
     val visitorIds = visits.mapNotNull { it.visitors }.flatten().map { it.nomisPersonId }.distinct()
     val prisonerIds = visits.map { it.prisonerId }.distinct()
+    logger.info("Getting contact details for {} contact(s)", visitorIds.size)
+    logger.info("Getting prisoner details for {} prisoner(s)", prisonerIds.size)
+
     val prisonerSearchMono = prisonerSearchClient.getPrisonersByPrisonerIdsAttributeSearchAsMono(prisonerIds)
     val visitorsMono = prisonerContactRegistryClient.searchContactsAsMono(visitorIds)
     var prisonerDetails: Map<String, AttributeSearchPrisonerDto> = emptyMap()
