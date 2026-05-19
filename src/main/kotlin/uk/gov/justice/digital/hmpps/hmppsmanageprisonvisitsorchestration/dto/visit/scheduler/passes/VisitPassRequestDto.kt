@@ -10,7 +10,7 @@ data class VisitPassRequestDto(
   @field:NotNull
   val visitDate: LocalDate,
 
-  @param:Schema(description = "STAFF username who approved the visitor", example = "ABC123D", required = true)
+  @param:Schema(description = "STAFF username who triggered the visit passes endpoint.", example = "ABC123D", required = true)
   @field:NotBlank
   val actionedBy: String,
 )

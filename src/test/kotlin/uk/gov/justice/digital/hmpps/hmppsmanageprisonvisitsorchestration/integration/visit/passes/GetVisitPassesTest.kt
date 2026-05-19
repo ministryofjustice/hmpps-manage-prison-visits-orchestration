@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.visit.passes
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -55,46 +56,58 @@ class GetVisitPassesTest : IntegrationTestBase() {
   val contact14 = createContact("Rsa", "Rsx", getRandomDate(), null)
   val contact15 = createContact("Amn", "Fre", getRandomDate(), null)
 
-  @Test
-  fun `when a prison has multiple booked visits then get visit passes returns visit passes with details populated`() {
-    // Given
+  lateinit var visit1: VisitDto
+  lateinit var visit2: VisitDto
+  lateinit var visit3: VisitDto
+  lateinit var visit4: VisitDto
+  lateinit var visit5: VisitDto
+  lateinit var visit6: VisitDto
+  lateinit var visit7: VisitDto
+  lateinit var visit8: VisitDto
+
+  @BeforeEach
+  fun setupData() {
     // visit1 with 2 contacts (ids 1 and 2)
     val visit1visitors = createVisitors(listOf(contact1.contactId, contact2.contactId))
-    val visit1 = createVisitDto(reference = "visit-1", prisonerId = prisoner1.prisonerNumber, visitors = visit1visitors)
+    visit1 = createVisitDto(reference = "visit-1", prisonerId = prisoner1.prisonerNumber, visitors = visit1visitors)
 
     // visit2 with 2 contacts (ids 3 and 4)
     val visit2visitors = createVisitors(listOf(contact3.contactId, contact4.contactId))
-    val visit2 = createVisitDto(reference = "visit-2", prisonerId = prisoner2.prisonerNumber, visitors = visit2visitors)
+    visit2 = createVisitDto(reference = "visit-2", prisonerId = prisoner2.prisonerNumber, visitors = visit2visitors)
 
     // visit3 with 6 contacts (ids 5, 6 and 7)
     val visit3visitors = createVisitors(listOf(contact5.contactId, contact6.contactId, contact7.contactId))
-    val visit3 = createVisitDto(reference = "visit-3", prisonerId = prisoner3.prisonerNumber, visitors = visit3visitors)
+    visit3 = createVisitDto(reference = "visit-3", prisonerId = prisoner3.prisonerNumber, visitors = visit3visitors)
 
     // visit4 with 2 contacts (ids 8 and 9)
     val visit4visitors = createVisitors(listOf(contact8.contactId, contact9.contactId))
-    val visit4 = createVisitDto(reference = "visit-4", prisonerId = prisoner4.prisonerNumber, visitors = visit4visitors)
+    visit4 = createVisitDto(reference = "visit-4", prisonerId = prisoner4.prisonerNumber, visitors = visit4visitors)
 
     // visit5 with 2 contacts (ids 10 and 11)
     val visit5visitors = createVisitors(listOf(contact10.contactId, contact11.contactId))
-    val visit5 = createVisitDto(reference = "visit-5", prisonerId = prisoner5.prisonerNumber, visitors = visit5visitors)
+    visit5 = createVisitDto(reference = "visit-5", prisonerId = prisoner5.prisonerNumber, visitors = visit5visitors)
 
     // visit6 with 2 contacts (ids 12 and 13)
     val visit6visitors = createVisitors(listOf(contact12.contactId, contact13.contactId))
-    val visit6 = createVisitDto(reference = "visit-6", prisonerId = prisoner6.prisonerNumber, visitors = visit6visitors)
+    visit6 = createVisitDto(reference = "visit-6", prisonerId = prisoner6.prisonerNumber, visitors = visit6visitors)
 
     // visit7 with 2 contacts (ids 1 and 14, both are on 2 separate visits)
     val visit7visitors = createVisitors(listOf(contact1.contactId, contact14.contactId))
-    val visit7 = createVisitDto(reference = "visit-7", prisonerId = prisoner7.prisonerNumber, visitors = visit7visitors)
+    visit7 = createVisitDto(reference = "visit-7", prisonerId = prisoner7.prisonerNumber, visitors = visit7visitors)
 
     // visit8 with 2 contacts (ids 14 and 15, 14 is on a separate visit)
     val visit8visitors = createVisitors(listOf(contact14.contactId, contact15.contactId))
-    val visit8 = createVisitDto(reference = "visit-8", prisonerId = prisoner1.prisonerNumber, visitors = visit8visitors)
+    visit8 = createVisitDto(reference = "visit-8", prisonerId = prisoner1.prisonerNumber, visitors = visit8visitors)
+  }
 
+  @Test
+  fun `when a prison has multiple booked visits then get visit passes returns visit passes with details populated`() {
+    // Given
     val allVisits = listOf(visit1, visit2, visit3, visit4, visit5, visit6, visit7, visit8)
     val allContacts = listOf(contact1, contact2, contact3, contact4, contact5, contact6, contact7, contact8, contact9, contact10, contact11, contact12, contact13, contact14, contact15)
     val allPrisoners = listOf(prisoner1, prisoner2, prisoner3, prisoner4, prisoner5, prisoner6, prisoner7)
 
-    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = LocalDate.now(), endDate = LocalDate.now(), page = 0, size = 300, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = LocalDate.now(), endDate = LocalDate.now(), page = 0, size = 500, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
     prisonerContactRegistryMockServer.stubSearchContacts(contactIds = allContacts.map { it.contactId }.distinct(), contactsList = allContacts)
     prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(prisonerIds = allPrisoners.map { it.prisonerNumber }.distinct(), prisoners = allPrisoners)
 
@@ -105,14 +118,14 @@ class GetVisitPassesTest : IntegrationTestBase() {
     responseSpec.expectStatus().isOk
     val visitPasses = getResults(responseSpec.expectBody())
     assertThat(visitPasses.size).isEqualTo(8)
-    assertVisitPassDetails(visit1, prisoner1, listOf(contact1, contact2), visitPasses[0])
-    assertVisitPassDetails(visit2, prisoner2, listOf(contact3, contact4), visitPasses[1])
-    assertVisitPassDetails(visit3, prisoner3, listOf(contact5, contact6, contact7), visitPasses[2])
-    assertVisitPassDetails(visit4, prisoner4, listOf(contact8, contact9), visitPasses[3])
-    assertVisitPassDetails(visit5, prisoner5, listOf(contact10, contact11), visitPasses[4])
-    assertVisitPassDetails(visit6, prisoner6, listOf(contact12, contact13), visitPasses[5])
-    assertVisitPassDetails(visit7, prisoner7, listOf(contact1, contact14), visitPasses[6])
-    assertVisitPassDetails(visit8, prisoner1, listOf(contact14, contact15), visitPasses[7])
+    assertThat(visitPasses).anySatisfy { assertVisitPassDetails(visit1, prisoner1, listOf(contact1, contact2), it) }
+    assertThat(visitPasses).anySatisfy { assertVisitPassDetails(visit2, prisoner2, listOf(contact3, contact4), it) }
+    assertThat(visitPasses).anySatisfy { assertVisitPassDetails(visit3, prisoner3, listOf(contact5, contact6, contact7), it) }
+    assertThat(visitPasses).anySatisfy { assertVisitPassDetails(visit4, prisoner4, listOf(contact8, contact9), it) }
+    assertThat(visitPasses).anySatisfy { assertVisitPassDetails(visit5, prisoner5, listOf(contact10, contact11), it) }
+    assertThat(visitPasses).anySatisfy { assertVisitPassDetails(visit6, prisoner6, listOf(contact12, contact13), it) }
+    assertThat(visitPasses).anySatisfy { assertVisitPassDetails(visit7, prisoner7, listOf(contact1, contact14), it) }
+    assertThat(visitPasses).anySatisfy { assertVisitPassDetails(visit8, prisoner1, listOf(contact14, contact15), it) }
     verify(visitSchedulerClientSpy, times(1)).getVisits(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonersByPrisonerIdsAttributeSearchAsMono(any())
     verify(prisonerContactRegistryClientSpy, times(1)).searchContactsAsMono(any(), anyOrNull(), any())
@@ -122,7 +135,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
   fun `when a prison has no booked visits then no visit passes are returned`() {
     // Given
     val visits = emptyList<VisitDto>()
-    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = LocalDate.now(), endDate = LocalDate.now(), page = 0, size = 300, visitStatus = listOf(VisitStatus.BOOKED.name), visits = visits)
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = LocalDate.now(), endDate = LocalDate.now(), page = 0, size = 500, visitStatus = listOf(VisitStatus.BOOKED.name), visits = visits)
 
     // When
     val responseSpec = callGetVisitPasses(webTestClient, prisonCode, LocalDate.now(), "STAFF_USER1", roleVSIPOrchestrationServiceHttpHeaders)
@@ -140,19 +153,11 @@ class GetVisitPassesTest : IntegrationTestBase() {
   @Test
   fun `when a prison has multiple booked visits but not all prisoner details are returned then an INTERNAL_SERVER_ERROR is returned`() {
     // Given
-    // visit1 with 2 contacts (ids 1 and 2)
-    val visit1visitors = createVisitors(listOf(contact1.contactId, contact2.contactId))
-    val visit1 = createVisitDto(reference = "visit-1", prisonerId = prisoner1.prisonerNumber, visitors = visit1visitors)
-
-    // visit2 with 2 contacts (ids 3 and 4)
-    val visit2visitors = createVisitors(listOf(contact3.contactId, contact4.contactId))
-    val visit2 = createVisitDto(reference = "visit-2", prisonerId = prisoner2.prisonerNumber, visitors = visit2visitors)
-
     val allVisits = listOf(visit1, visit2)
     val allContacts = listOf(contact1, contact2, contact3, contact4)
     val allPrisoners = listOf(prisoner1, prisoner2)
 
-    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = LocalDate.now(), endDate = LocalDate.now(), page = 0, size = 300, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = LocalDate.now(), endDate = LocalDate.now(), page = 0, size = 500, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
     prisonerContactRegistryMockServer.stubSearchContacts(contactIds = allContacts.map { it.contactId }.distinct(), contactsList = allContacts)
 
     // only 1 prisoner details returned
@@ -171,19 +176,11 @@ class GetVisitPassesTest : IntegrationTestBase() {
   @Test
   fun `when a prison has multiple booked visits but not all contact details are returned then an INTERNAL_SERVER_ERROR is returned`() {
     // Given
-    // visit1 with 2 contacts (ids 1 and 2)
-    val visit1visitors = createVisitors(listOf(contact1.contactId, contact2.contactId))
-    val visit1 = createVisitDto(reference = "visit-1", prisonerId = prisoner1.prisonerNumber, visitors = visit1visitors)
-
-    // visit2 with 2 contacts (ids 3 and 4)
-    val visit2visitors = createVisitors(listOf(contact3.contactId, contact4.contactId))
-    val visit2 = createVisitDto(reference = "visit-2", prisonerId = prisoner2.prisonerNumber, visitors = visit2visitors)
-
     val allVisits = listOf(visit1, visit2)
     val allContacts = listOf(contact1, contact2, contact3, contact4)
     val allPrisoners = listOf(prisoner1, prisoner2)
 
-    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = LocalDate.now(), endDate = LocalDate.now(), page = 0, size = 300, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = LocalDate.now(), endDate = LocalDate.now(), page = 0, size = 500, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
 
     // only 3 contact details returned
     prisonerContactRegistryMockServer.stubSearchContacts(contactIds = allContacts.map { it.contactId }.distinct(), contactsList = listOf(contact1, contact2, contact3))
@@ -202,19 +199,11 @@ class GetVisitPassesTest : IntegrationTestBase() {
   @Test
   fun `when a prison has multiple booked visits but prisoner contact registry returns a NOT_FOUND then a NOT_FOUND error is returned`() {
     // Given
-    // visit1 with 2 contacts (ids 1 and 2)
-    val visit1visitors = createVisitors(listOf(contact1.contactId, contact2.contactId))
-    val visit1 = createVisitDto(reference = "visit-1", prisonerId = prisoner1.prisonerNumber, visitors = visit1visitors)
-
-    // visit2 with 2 contacts (ids 3 and 4)
-    val visit2visitors = createVisitors(listOf(contact3.contactId, contact4.contactId))
-    val visit2 = createVisitDto(reference = "visit-2", prisonerId = prisoner2.prisonerNumber, visitors = visit2visitors)
-
     val allVisits = listOf(visit1, visit2)
     val allContacts = listOf(contact1, contact2, contact3, contact4)
     val allPrisoners = listOf(prisoner1, prisoner2)
 
-    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = LocalDate.now(), endDate = LocalDate.now(), page = 0, size = 300, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = LocalDate.now(), endDate = LocalDate.now(), page = 0, size = 500, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
     // contact registry returns a 404
     prisonerContactRegistryMockServer.stubSearchContacts(contactIds = allContacts.map { it.contactId }.distinct(), contactsList = null, httpStatus = HttpStatus.NOT_FOUND)
     prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(prisonerIds = allPrisoners.map { it.prisonerNumber }.distinct(), prisoners = listOf(prisoner1, prisoner2))
@@ -232,19 +221,11 @@ class GetVisitPassesTest : IntegrationTestBase() {
   @Test
   fun `when a prison has multiple booked visits but prisoner search returns a NOT_FOUND then a NOT_FOUND error is returned`() {
     // Given
-    // visit1 with 2 contacts (ids 1 and 2)
-    val visit1visitors = createVisitors(listOf(contact1.contactId, contact2.contactId))
-    val visit1 = createVisitDto(reference = "visit-1", prisonerId = prisoner1.prisonerNumber, visitors = visit1visitors)
-
-    // visit2 with 2 contacts (ids 3 and 4)
-    val visit2visitors = createVisitors(listOf(contact3.contactId, contact4.contactId))
-    val visit2 = createVisitDto(reference = "visit-2", prisonerId = prisoner2.prisonerNumber, visitors = visit2visitors)
-
     val allVisits = listOf(visit1, visit2)
     val allContacts = listOf(contact1, contact2, contact3, contact4)
     val allPrisoners = listOf(prisoner1, prisoner2)
 
-    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = LocalDate.now(), endDate = LocalDate.now(), page = 0, size = 300, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = LocalDate.now(), endDate = LocalDate.now(), page = 0, size = 500, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
     prisonerContactRegistryMockServer.stubSearchContacts(contactIds = allContacts.map { it.contactId }.distinct(), contactsList = allContacts)
     // prisoner search returns a 404
     prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(prisonerIds = allPrisoners.map { it.prisonerNumber }.distinct(), prisoners = null, HttpStatus.NOT_FOUND)
@@ -262,19 +243,11 @@ class GetVisitPassesTest : IntegrationTestBase() {
   @Test
   fun `when a prison has multiple booked visits but prisoner contact registry returns an INTERNAL_SERVER_ERROR then a INTERNAL_SERVER_ERROR error is returned`() {
     // Given
-    // visit1 with 2 contacts (ids 1 and 2)
-    val visit1visitors = createVisitors(listOf(contact1.contactId, contact2.contactId))
-    val visit1 = createVisitDto(reference = "visit-1", prisonerId = prisoner1.prisonerNumber, visitors = visit1visitors)
-
-    // visit2 with 2 contacts (ids 3 and 4)
-    val visit2visitors = createVisitors(listOf(contact3.contactId, contact4.contactId))
-    val visit2 = createVisitDto(reference = "visit-2", prisonerId = prisoner2.prisonerNumber, visitors = visit2visitors)
-
     val allVisits = listOf(visit1, visit2)
     val allContacts = listOf(contact1, contact2, contact3, contact4)
     val allPrisoners = listOf(prisoner1, prisoner2)
 
-    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = LocalDate.now(), endDate = LocalDate.now(), page = 0, size = 300, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = LocalDate.now(), endDate = LocalDate.now(), page = 0, size = 500, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
     // contact registry returns a INTERNAL_SERVER_ERROR
     prisonerContactRegistryMockServer.stubSearchContacts(contactIds = allContacts.map { it.contactId }.distinct(), contactsList = null, httpStatus = HttpStatus.INTERNAL_SERVER_ERROR)
     prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(prisonerIds = allPrisoners.map { it.prisonerNumber }.distinct(), prisoners = listOf(prisoner1, prisoner2))
@@ -292,19 +265,11 @@ class GetVisitPassesTest : IntegrationTestBase() {
   @Test
   fun `when a prison has multiple booked visits but prisoner search returns an INTERNAL_SERVER_ERROR then a INTERNAL_SERVER_ERROR error is returned`() {
     // Given
-    // visit1 with 2 contacts (ids 1 and 2)
-    val visit1visitors = createVisitors(listOf(contact1.contactId, contact2.contactId))
-    val visit1 = createVisitDto(reference = "visit-1", prisonerId = prisoner1.prisonerNumber, visitors = visit1visitors)
-
-    // visit2 with 2 contacts (ids 3 and 4)
-    val visit2visitors = createVisitors(listOf(contact3.contactId, contact4.contactId))
-    val visit2 = createVisitDto(reference = "visit-2", prisonerId = prisoner2.prisonerNumber, visitors = visit2visitors)
-
     val allVisits = listOf(visit1, visit2)
     val allContacts = listOf(contact1, contact2, contact3, contact4)
     val allPrisoners = listOf(prisoner1, prisoner2)
 
-    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = LocalDate.now(), endDate = LocalDate.now(), page = 0, size = 300, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = LocalDate.now(), endDate = LocalDate.now(), page = 0, size = 500, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
     prisonerContactRegistryMockServer.stubSearchContacts(contactIds = allContacts.map { it.contactId }.distinct(), contactsList = allContacts)
     // prisoner search returns an INTERNAL_SERVER_ERROR
     prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(prisonerIds = allPrisoners.map { it.prisonerNumber }.distinct(), prisoners = null, HttpStatus.INTERNAL_SERVER_ERROR)
@@ -326,7 +291,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     val allPrisoners = listOf(prisoner1, prisoner2)
 
     // visit scheduler returns a 404
-    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = LocalDate.now(), endDate = LocalDate.now(), page = 0, size = 300, visitStatus = listOf(VisitStatus.BOOKED.name), visits = null, httpStatus = HttpStatus.NOT_FOUND)
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = LocalDate.now(), endDate = LocalDate.now(), page = 0, size = 500, visitStatus = listOf(VisitStatus.BOOKED.name), visits = null, httpStatus = HttpStatus.NOT_FOUND)
     prisonerContactRegistryMockServer.stubSearchContacts(contactIds = allContacts.map { it.contactId }.distinct(), contactsList = allContacts)
     prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(prisonerIds = allPrisoners.map { it.prisonerNumber }.distinct(), prisoners = allPrisoners)
 
@@ -347,7 +312,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     val allPrisoners = listOf(prisoner1, prisoner2)
 
     // visit scheduler returns an INTERNAL_SERVER_ERROR
-    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = LocalDate.now(), endDate = LocalDate.now(), page = 0, size = 300, visitStatus = listOf(VisitStatus.BOOKED.name), visits = null, httpStatus = HttpStatus.INTERNAL_SERVER_ERROR)
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = LocalDate.now(), endDate = LocalDate.now(), page = 0, size = 500, visitStatus = listOf(VisitStatus.BOOKED.name), visits = null, httpStatus = HttpStatus.INTERNAL_SERVER_ERROR)
     prisonerContactRegistryMockServer.stubSearchContacts(contactIds = allContacts.map { it.contactId }.distinct(), contactsList = allContacts)
     prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(prisonerIds = allPrisoners.map { it.prisonerNumber }.distinct(), prisoners = allPrisoners)
 

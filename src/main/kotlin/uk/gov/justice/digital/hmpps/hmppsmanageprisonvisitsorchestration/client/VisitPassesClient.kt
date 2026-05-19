@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client
 
-import jakarta.validation.constraints.NotEmpty
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -23,7 +22,7 @@ class VisitPassesClient(
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun getVisitPasses(@NotEmpty visits: List<VisitDto>): List<VisitPassDto> {
+  fun getVisitPasses(visits: List<VisitDto>): List<VisitPassDto> {
     logger.info("Getting visit passes for {} visit(s)", visits.size)
     if (visits.isEmpty()) {
       return emptyList()
@@ -36,15 +35,11 @@ class VisitPassesClient(
 
     val prisonerSearchMono = prisonerSearchClient.getPrisonersByPrisonerIdsAttributeSearchAsMono(prisonerIds)
     val visitorsMono = prisonerContactRegistryClient.searchContactsAsMono(visitorIds)
-    var prisonerDetails: Map<String, AttributeSearchPrisonerDto> = emptyMap()
-    var visitorDetails: Map<Long, ContactWithOptionalPrisonerRelationshipDto> = emptyMap()
-
-    // doing mono calls to improve performance
-    Mono.zip(prisonerSearchMono, visitorsMono)
-      .map { prisonerAndVisitorDetails ->
-        prisonerDetails = prisonerAndVisitorDetails.t1.toList().associateBy { it.prisonerNumber }
-        visitorDetails = prisonerAndVisitorDetails.t2.associateBy { it.contactId }
-      }.block(apiTimeout)
+    val prisonerAndVisitorDetails = Mono.zip(prisonerSearchMono, visitorsMono)
+      .block(apiTimeout)
+      ?: throw IllegalStateException("Failed to retrieve prisoner and visitor details")
+    val prisonerDetails = prisonerAndVisitorDetails.t1.toList().associateBy { it.prisonerNumber }
+    val visitorDetails = prisonerAndVisitorDetails.t2.associateBy { it.contactId }
 
     return getVisitPasses(visits, prisonerDetails, visitorDetails)
   }

@@ -18,14 +18,27 @@ class VisitPassesService(
 ) {
   companion object {
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
-    private const val VISITS_PAGE_SIZE = 300
+
+    // max visits per day per prison is around 150, setting an upper limit of 500.
+    private const val VISITS_PAGE_SIZE = 500
   }
 
   fun getVisitPasses(prisonId: String, visitPassRequest: VisitPassRequestDto): List<VisitPassDto> {
     logger.info("Getting visit passes for prison - $prisonId, visit date - ${visitPassRequest.visitDate}")
     val visitDate = visitPassRequest.visitDate
     val visitSearchRequestFilter = getVisitRequestSearchFilter(prisonId, visitDate)
-    val visits = visitSchedulerClient.getVisits(visitSearchRequestFilter)?.toList()
+    val visitsPagedResults = visitSchedulerClient.getVisits(visitSearchRequestFilter)
+
+    val visits = if (visitsPagedResults == null) {
+      emptyList()
+    } else {
+      if (visitsPagedResults.totalElements > VISITS_PAGE_SIZE) {
+        logger.error("More than $VISITS_PAGE_SIZE visits found for prison - $prisonId, visit date - $visitDate, returning an empty list")
+        emptyList()
+      } else {
+        visitsPagedResults.toList()
+      }
+    }
 
     val visitPasses = if (!visits.isNullOrEmpty()) {
       visitPassesClient.getVisitPasses(visits)
