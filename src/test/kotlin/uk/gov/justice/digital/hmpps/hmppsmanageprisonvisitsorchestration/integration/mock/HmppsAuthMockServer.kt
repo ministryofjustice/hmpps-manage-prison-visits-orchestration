@@ -1,12 +1,9 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock
 
 import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
-import com.github.tomakehurst.wiremock.http.HttpHeader
-import com.github.tomakehurst.wiremock.http.HttpHeaders
 import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
@@ -26,14 +23,15 @@ class HmppsAuthExtension :
 
   override fun beforeAll(context: ExtensionContext) {
     hmppsAuthApi.start()
+  }
+
+  override fun beforeEach(context: ExtensionContext) {
+    hmppsAuthApi.resetAll()
+
     hmppsAuthApi.stubGrantToken()
     hmppsAuthApi.stubGetUserDetails("created-user")
     hmppsAuthApi.stubGetUserDetails("updated-user")
     hmppsAuthApi.stubGetUserDetails("cancelled-user")
-  }
-
-  override fun beforeEach(context: ExtensionContext) {
-    hmppsAuthApi.resetRequests()
   }
 
   override fun afterAll(context: ExtensionContext) {
@@ -47,11 +45,13 @@ class HmppsAuthMockServer : WireMockServer(WIREMOCK_PORT) {
   }
 
   fun stubGrantToken() {
+    val responseBuilder = createJsonResponseBuilder()
+
     stubFor(
       post(urlEqualTo("/auth/oauth/token"))
         .willReturn(
-          aResponse()
-            .withHeaders(HttpHeaders(HttpHeader("Content-Type", "application/json")))
+          responseBuilder
+            .withStatus(HttpStatus.OK.value())
             .withBody(
               """
               {
@@ -68,16 +68,16 @@ class HmppsAuthMockServer : WireMockServer(WIREMOCK_PORT) {
     val responseBuilder = createJsonResponseBuilder()
 
     stubFor(
-      get("/auth/api/user/$userId")
+      get(urlEqualTo("/auth/api/user/$userId"))
         .willReturn(
           responseBuilder
             .withStatus(HttpStatus.OK.value())
             .withBody(
               """
               {
-                 "username": "$userId",
-                 "name": "$fullName"
-                }
+                "username": "$userId",
+                "name": "$fullName"
+              }
               """.trimIndent(),
             ),
         ),
