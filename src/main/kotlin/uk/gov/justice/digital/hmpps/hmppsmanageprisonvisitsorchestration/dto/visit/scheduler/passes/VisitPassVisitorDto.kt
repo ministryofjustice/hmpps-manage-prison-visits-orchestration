@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.AddressDto
 import java.time.LocalDate
 
-@Schema(description = "Visit Pass Details")
+@Schema(description = "Visit Pass - Visitor Details")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class VisitPassVisitorDto(
   @param:Schema(description = "Person ID (nomis) of the visitor", example = "1234", required = true)
