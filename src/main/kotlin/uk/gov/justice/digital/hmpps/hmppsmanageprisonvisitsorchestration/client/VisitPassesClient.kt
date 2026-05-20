@@ -89,7 +89,7 @@ class VisitPassesClient(
         nomisPersonId = visitorDetails.contactId,
         firstName = visitorDetails.firstName,
         lastName = visitorDetails.lastName,
-        dob = visitorDetails.dateOfBirth,
+        dateOfBirth = visitorDetails.dateOfBirth,
         address = visitorDetails.address,
       )
     }

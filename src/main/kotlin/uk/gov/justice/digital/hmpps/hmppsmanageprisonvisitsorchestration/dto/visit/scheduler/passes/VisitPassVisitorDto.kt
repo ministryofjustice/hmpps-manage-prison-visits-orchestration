@@ -20,7 +20,7 @@ data class VisitPassVisitorDto(
   var lastName: String,
 
   @param:Schema(description = "Visitor's date of birth", example = "2000-01-01", required = false)
-  var dob: LocalDate?,
+  var dateOfBirth: LocalDate?,
 
   @param:Schema(description = "Address associated with the contact", required = false)
   var address: AddressDto?,

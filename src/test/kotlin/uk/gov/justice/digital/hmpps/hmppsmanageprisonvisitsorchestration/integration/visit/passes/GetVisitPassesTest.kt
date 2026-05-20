@@ -445,7 +445,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
   ) {
     assertThat(visitPassVisitorDto.firstName).isEqualTo(contactDto.firstName)
     assertThat(visitPassVisitorDto.lastName).isEqualTo(contactDto.lastName)
-    assertThat(visitPassVisitorDto.dob).isEqualTo(contactDto.dateOfBirth)
+    assertThat(visitPassVisitorDto.dateOfBirth).isEqualTo(contactDto.dateOfBirth)
     assertThat(visitPassVisitorDto.address).isEqualTo(contactDto.address)
   }
 }
