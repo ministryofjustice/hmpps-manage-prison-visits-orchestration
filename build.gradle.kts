@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.3.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.3.1"
   kotlin("plugin.spring") version "2.3.21"
   id("org.jetbrains.kotlin.plugin.noarg") version "2.3.21"
   id("org.owasp.dependencycheck") version "12.2.2"
@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.2.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.3.0")
   implementation("org.springframework.boot:spring-boot-starter-webclient")
   implementation("org.springframework.boot:spring-boot-starter-cache")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -27,7 +27,7 @@ dependencies {
 
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8")
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.27.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.28.0")
 
   implementation("org.springframework.data:spring-data-commons:4.0.5")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
