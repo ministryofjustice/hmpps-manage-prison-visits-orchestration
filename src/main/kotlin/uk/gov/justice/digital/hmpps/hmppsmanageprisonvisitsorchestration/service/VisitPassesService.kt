@@ -34,14 +34,15 @@ class VisitPassesService(
       emptyList()
     } else {
       if (visitsPagedResults.totalElements > VISITS_PAGE_SIZE) {
-        logger.error("More than $VISITS_PAGE_SIZE visits found for prison - $prisonId, visit date - $visitDate, returning an empty list")
-        emptyList()
+        val errorMessage = "More than $VISITS_PAGE_SIZE visits found for prison - $prisonId, visit date - $visitDate, total visits - ${visitsPagedResults.totalElements}"
+        logger.error(errorMessage)
+        throw IllegalStateException(errorMessage)
       } else {
         visitsPagedResults.toList()
       }
     }
 
-    val visitPasses = if (!visits.isNullOrEmpty()) {
+    val visitPasses = if (visits.isNotEmpty()) {
       visitPassesClient.getVisitPasses(visits)
     } else {
       emptyList()

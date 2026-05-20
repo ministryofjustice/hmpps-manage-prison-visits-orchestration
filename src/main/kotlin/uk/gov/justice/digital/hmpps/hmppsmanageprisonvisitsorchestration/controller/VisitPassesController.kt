@@ -56,6 +56,16 @@ class VisitPassesController(
         description = "Incorrect permissions to get visit passes for a prison on a given date.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Visit passes could not be found for the supplied prison and visit date.",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "500",
+        description = "Internal server error while retrieving visit passes.",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
     ],
   )
   fun getVisitPassesForPrisonOnDate(

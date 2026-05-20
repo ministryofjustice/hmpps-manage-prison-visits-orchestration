@@ -78,7 +78,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     val visit2visitors = createVisitors(listOf(contact3.contactId, contact4.contactId))
     visit2 = createVisitDto(reference = "visit-2", prisonerId = prisoner2.prisonerNumber, visitors = visit2visitors)
 
-    // visit3 with 6 contacts (ids 5, 6 and 7)
+    // visit3 with 3 contacts (ids 5, 6 and 7)
     val visit3visitors = createVisitors(listOf(contact5.contactId, contact6.contactId, contact7.contactId))
     visit3 = createVisitDto(reference = "visit-3", prisonerId = prisoner3.prisonerNumber, visitors = visit3visitors)
 
@@ -430,8 +430,9 @@ class GetVisitPassesTest : IntegrationTestBase() {
     assertThat(visitPassDto.prisonerLastName).isEqualTo(prisonerDto.lastName)
     assertThat(visitPassDto.visitRestriction).isEqualTo(visitDto.visitRestriction)
     assertThat(visitPassDto.visitors.size).isEqualTo(contactDtoList.size)
-    contactDtoList.forEachIndexed { index, contactDto ->
-      assertVisitors(contactDto, visitPassDto.visitors[index])
+    contactDtoList.forEach { contactDto ->
+      assertThat(visitPassDto.visitors.any { it.nomisPersonId == contactDto.contactId }).isTrue
+      assertVisitors(contactDto, visitPassDto.visitors.first { it.nomisPersonId == contactDto.contactId })
     }
   }
 
