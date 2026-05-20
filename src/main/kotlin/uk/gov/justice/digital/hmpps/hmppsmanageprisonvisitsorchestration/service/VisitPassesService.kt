@@ -48,7 +48,7 @@ class VisitPassesService(
       emptyList()
     }
 
-    // TODO - write to app insights
+    // write to app insights
     telemetryClientService.trackVisitPassesEvent(prisonCode = prisonId, visitDate = visitDate, actionedBy = visitPassRequest.actionedBy, totalVisits = visits.size)
     return visitPasses
   }

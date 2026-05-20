@@ -140,7 +140,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
             createJsonResponseBuilder()
               .withStatus(httpStatus.value())
           } else {
-            val restPage = RestPage(content = visits, page = 0, size = size, total = visits.size.toLong())
+            val restPage = RestPage(content = visits, page = page, size = size, total = visits.size.toLong())
             createJsonResponseBuilder()
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(restPage))
