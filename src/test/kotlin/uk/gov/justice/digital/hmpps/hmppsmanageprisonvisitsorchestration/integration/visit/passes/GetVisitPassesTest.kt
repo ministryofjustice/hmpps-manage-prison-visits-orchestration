@@ -75,35 +75,35 @@ class GetVisitPassesTest : IntegrationTestBase() {
   fun setupData() {
     // visit1 with 2 contacts (ids 1 and 2)
     val visit1visitors = createVisitors(listOf(contact1.contactId, contact2.contactId))
-    visit1 = createVisitDto(reference = "visit-1", prisonerId = prisoner1.prisonerNumber, visitors = visit1visitors, prisonCode = prisonCode, startTimestamp = LocalDate.now().atTime(10, 0), endTimestamp = LocalDate.now().atTime(11, 0))
+    visit1 = createVisitDto(reference = "visit-1", prisonerId = prisoner1.prisonerNumber, visitors = visit1visitors, prisonCode = prisonCode, startTimestamp = visitDate.atTime(10, 0), endTimestamp = visitDate.atTime(11, 0))
 
     // visit2 with 2 contacts (ids 3 and 4)
     val visit2visitors = createVisitors(listOf(contact3.contactId, contact4.contactId))
-    visit2 = createVisitDto(reference = "visit-2", prisonerId = prisoner2.prisonerNumber, visitors = visit2visitors, prisonCode = prisonCode, startTimestamp = LocalDate.now().atTime(10, 0), endTimestamp = LocalDate.now().atTime(11, 0))
+    visit2 = createVisitDto(reference = "visit-2", prisonerId = prisoner2.prisonerNumber, visitors = visit2visitors, prisonCode = prisonCode, startTimestamp = visitDate.atTime(10, 0), endTimestamp = visitDate.atTime(11, 0))
 
     // visit3 with 3 contacts (ids 5, 6 and 7)
     val visit3visitors = createVisitors(listOf(contact5.contactId, contact6.contactId, contact7.contactId))
-    visit3 = createVisitDto(reference = "visit-3", prisonerId = prisoner3.prisonerNumber, visitors = visit3visitors, prisonCode = prisonCode, startTimestamp = LocalDate.now().atTime(10, 0), endTimestamp = LocalDate.now().atTime(11, 0))
+    visit3 = createVisitDto(reference = "visit-3", prisonerId = prisoner3.prisonerNumber, visitors = visit3visitors, prisonCode = prisonCode, startTimestamp = visitDate.atTime(10, 0), endTimestamp = visitDate.atTime(11, 0))
 
     // visit4 with 2 contacts (ids 8 and 9)
     val visit4visitors = createVisitors(listOf(contact8.contactId, contact9.contactId))
-    visit4 = createVisitDto(reference = "visit-4", prisonerId = prisoner4.prisonerNumber, visitors = visit4visitors, prisonCode = prisonCode, startTimestamp = LocalDate.now().atTime(10, 0), endTimestamp = LocalDate.now().atTime(11, 0))
+    visit4 = createVisitDto(reference = "visit-4", prisonerId = prisoner4.prisonerNumber, visitors = visit4visitors, prisonCode = prisonCode, startTimestamp = visitDate.atTime(10, 0), endTimestamp = visitDate.atTime(11, 0))
 
     // visit5 with 2 contacts (ids 10 and 11)
     val visit5visitors = createVisitors(listOf(contact10.contactId, contact11.contactId))
-    visit5 = createVisitDto(reference = "visit-5", prisonerId = prisoner5.prisonerNumber, visitors = visit5visitors, prisonCode = prisonCode, startTimestamp = LocalDate.now().atTime(10, 0), endTimestamp = LocalDate.now().atTime(11, 0))
+    visit5 = createVisitDto(reference = "visit-5", prisonerId = prisoner5.prisonerNumber, visitors = visit5visitors, prisonCode = prisonCode, startTimestamp = visitDate.atTime(10, 0), endTimestamp = visitDate.atTime(11, 0))
 
     // visit6 with 2 contacts (ids 12 and 13)
     val visit6visitors = createVisitors(listOf(contact12.contactId, contact13.contactId))
-    visit6 = createVisitDto(reference = "visit-6", prisonerId = prisoner6.prisonerNumber, visitors = visit6visitors, prisonCode = prisonCode, startTimestamp = LocalDate.now().atTime(10, 0), endTimestamp = LocalDate.now().atTime(11, 0))
+    visit6 = createVisitDto(reference = "visit-6", prisonerId = prisoner6.prisonerNumber, visitors = visit6visitors, prisonCode = prisonCode, startTimestamp = visitDate.atTime(10, 0), endTimestamp = visitDate.atTime(11, 0))
 
     // visit7 with 2 contacts (ids 1 and 14, both are on 2 separate visits)
     val visit7visitors = createVisitors(listOf(contact1.contactId, contact14.contactId))
-    visit7 = createVisitDto(reference = "visit-7", prisonerId = prisoner7.prisonerNumber, visitors = visit7visitors, prisonCode = prisonCode, startTimestamp = LocalDate.now().atTime(10, 0), endTimestamp = LocalDate.now().atTime(11, 0))
+    visit7 = createVisitDto(reference = "visit-7", prisonerId = prisoner7.prisonerNumber, visitors = visit7visitors, prisonCode = prisonCode, startTimestamp = visitDate.atTime(11, 0), endTimestamp = visitDate.atTime(12, 0))
 
     // visit8 with 2 contacts (ids 14 and 15, 14 is on a separate visit)
     val visit8visitors = createVisitors(listOf(contact14.contactId, contact15.contactId))
-    visit8 = createVisitDto(reference = "visit-8", prisonerId = prisoner1.prisonerNumber, visitors = visit8visitors, prisonCode = prisonCode, startTimestamp = LocalDate.now().atTime(10, 0), endTimestamp = LocalDate.now().atTime(11, 0))
+    visit8 = createVisitDto(reference = "visit-8", prisonerId = prisoner1.prisonerNumber, visitors = visit8visitors, prisonCode = prisonCode, startTimestamp = visitDate.atTime(11, 0), endTimestamp = visitDate.atTime(12, 0))
   }
 
   @Test
