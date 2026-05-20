@@ -9,6 +9,6 @@ class MockUtils {
   companion object {
     fun getJsonString(obj: Any): String = TestObjectMapper.mapper.writer().writeValueAsString(obj)
 
-    fun createJsonResponseBuilder(): ResponseDefinitionBuilder = WireMock.aResponse().withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+    fun createJsonResponseBuilder(): ResponseDefinitionBuilder = WireMock.aResponse().withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE).withHeader("Connection", "close")
   }
 }
