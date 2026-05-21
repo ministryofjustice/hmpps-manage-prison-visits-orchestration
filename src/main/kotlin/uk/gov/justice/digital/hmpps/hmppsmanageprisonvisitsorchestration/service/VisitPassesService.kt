@@ -54,11 +54,15 @@ class VisitPassesService(
   fun getVisitPass(prisonCode: String, visitReference: String, actionedBy: StaffUsernameDto): VisitPassDto {
     logger.info("Getting visit pass for visit reference - $visitReference, prison code - $prisonCode, actioned by - ${actionedBy.username}")
     val visit = visitSchedulerClient.getVisitByReference(visitReference)
-    return if (visit == null) {
+    if (visit == null) {
       throw NotFoundException("Visit with reference - $visitReference not found")
     } else {
       validateVisit(prisonCode, visit)
-      visitPassesClient.getVisitPass(visit)
+    }
+
+    return visitPassesClient.getVisitPass(visit).also {
+      // write to app insights
+      telemetryClientService.trackVisitPassEvent(prisonCode = prisonCode, visitReference = visitReference, actionedBy = actionedBy.username)
     }
   }
 
