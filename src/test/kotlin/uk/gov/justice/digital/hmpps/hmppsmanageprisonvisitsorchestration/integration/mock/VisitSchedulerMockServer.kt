@@ -124,22 +124,27 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
 
   fun stubGetVisits(
     prisonCode: String? = null,
-    prisonerId: String,
+    prisonerId: String? = null,
     visitStatus: List<String>,
     startDate: LocalDate?,
     endDate: LocalDate?,
     page: Int,
     size: Int,
-    visits: List<VisitDto>,
+    visits: List<VisitDto>?,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
   ) {
-    val restPage = RestPage(content = visits, page = 0, size = size, total = visits.size.toLong())
     stubFor(
       get("/visits/search?${getVisitsQueryParams(prisonCode, prisonerId, visitStatus, startDate, endDate, page, size).joinToString("&")}")
         .willReturn(
-          createJsonResponseBuilder()
-            .withStatus(HttpStatus.OK.value()).withBody(
-              getJsonString(restPage),
-            ),
+          if (visits == null) {
+            createJsonResponseBuilder()
+              .withStatus(httpStatus.value())
+          } else {
+            val restPage = RestPage(content = visits, page = page, size = size, total = visits.size.toLong())
+            createJsonResponseBuilder()
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(restPage))
+          },
         ),
     )
   }

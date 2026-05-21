@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration
 
+import com.microsoft.applicationinsights.TelemetryClient
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -157,7 +158,7 @@ abstract class IntegrationTestBase {
 
     fun getVisitsQueryParams(
       prisonCode: String?,
-      prisonerId: String,
+      prisonerId: String?,
       visitStatus: List<String>,
       startDateTime: LocalDate? = null,
       endDateTime: LocalDate? = null,
@@ -168,7 +169,9 @@ abstract class IntegrationTestBase {
       prisonCode?.let {
         queryParams.add("prisonId=$prisonCode")
       }
-      queryParams.add("prisonerId=$prisonerId")
+      prisonerId?.let {
+        queryParams.add("prisonerId=$prisonerId")
+      }
       if (visitStatus.isNotEmpty()) {
         queryParams.add("visitStatus=${visitStatus.joinToString(",")}")
       }
@@ -230,6 +233,9 @@ abstract class IntegrationTestBase {
 
   @MockitoSpyBean
   protected lateinit var prisonVisitBookerRegistryClientSpy: PrisonVisitBookerRegistryClient
+
+  @MockitoSpyBean
+  protected lateinit var telemetryClientSpy: TelemetryClient
 
   @BeforeEach
   internal fun setUp() {
