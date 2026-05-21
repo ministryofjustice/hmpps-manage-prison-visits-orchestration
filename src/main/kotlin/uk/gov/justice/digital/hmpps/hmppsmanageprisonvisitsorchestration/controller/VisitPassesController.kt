@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.passes.VisitPassRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitPassesService
 
-const val VISIT_PASSES_CONTROLLER_PATH: String = "/visit-passes/prison/{prisonId}"
+const val VISIT_PASSES_CONTROLLER_PATH: String = "/prison/{prisonId}/visit-passes"
 
 @RestController
 class VisitPassesController(

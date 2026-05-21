@@ -8,7 +8,7 @@ import java.time.LocalDate
 data class VisitPassRequestDto(
   @param:Schema(description = "Date for which visit passes are being sought.", example = "2025-01-01", required = true)
   @field:NotNull
-  val visitDate: LocalDate,
+  val date: LocalDate,
 
   @param:Schema(description = "STAFF username who triggered the visit passes endpoint.", example = "ABC123D", required = true)
   @field:NotBlank

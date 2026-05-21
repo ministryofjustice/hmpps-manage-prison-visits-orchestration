@@ -38,35 +38,37 @@ class VisitPassesClient(
     val prisonerAndVisitorDetails = Mono.zip(prisonerSearchMono, visitorsMono)
       .block(apiTimeout)
       ?: throw IllegalStateException("Failed to retrieve prisoner and visitor details")
-    val prisonerDetails = prisonerAndVisitorDetails.t1.toList().associateBy { it.prisonerNumber }
+    val prisonerDetails = prisonerAndVisitorDetails.t1.content.associateBy { it.prisonerNumber }
     val visitorDetails = prisonerAndVisitorDetails.t2.associateBy { it.contactId }
 
     return getVisitPasses(visits, prisonerDetails, visitorDetails)
   }
 
   private fun getVisitPasses(visits: List<VisitDto>, prisonerDetails: Map<String, AttributeSearchPrisonerDto>, visitorDetails: Map<Long, ContactWithOptionalPrisonerRelationshipDto>): List<VisitPassDto> = visits.map { visit ->
-    val prisonerName = getPrisonerName(visit.prisonerId, prisonerDetails)
+    val prisoner = getPrisonerDetails(visit.prisonerId, prisonerDetails)
     val visitors = getVisitorDetails(visit, visitorDetails)
-    VisitPassDto(
-      reference = visit.reference,
-      startTime = visit.startTimestamp.toLocalTime(),
-      endTime = visit.endTimestamp.toLocalTime(),
-      prisonerId = visit.prisonerId,
-      prisonerFirstName = prisonerName.first,
-      prisonerLastName = prisonerName.second,
-      visitRestriction = visit.visitRestriction,
-      visitors = visitors,
-    )
+    getVisitPass(visit, prisoner, visitors)
   }
 
-  private fun getPrisonerName(prisonerId: String, prisonersMap: Map<String, AttributeSearchPrisonerDto>): Pair<String, String> {
+  private fun getVisitPass(visit: VisitDto, prisoner: AttributeSearchPrisonerDto, visitors: List<VisitPassVisitorDto>) = VisitPassDto(
+    reference = visit.reference,
+    startTime = visit.startTimestamp.toLocalTime(),
+    endTime = visit.endTimestamp.toLocalTime(),
+    prisonerId = visit.prisonerId,
+    prisonerFirstName = prisoner.firstName,
+    prisonerLastName = prisoner.lastName,
+    visitRestriction = visit.visitRestriction,
+    visitors = visitors,
+  )
+
+  private fun getPrisonerDetails(prisonerId: String, prisonersMap: Map<String, AttributeSearchPrisonerDto>): AttributeSearchPrisonerDto {
     val prisonerDetails = prisonersMap[prisonerId]
-    return if (prisonerDetails == null) {
+    if (prisonerDetails == null) {
       logger.error("No prisoner found for prisoner id - $prisonerId")
       throw IllegalStateException("No prisoner found for prisoner id - $prisonerId")
-    } else {
-      Pair(prisonerDetails.firstName, prisonerDetails.lastName)
     }
+
+    return prisonerDetails
   }
 
   private fun getVisitorDetails(visitDto: VisitDto, visitorsMap: Map<Long, ContactWithOptionalPrisonerRelationshipDto>): List<VisitPassVisitorDto> {

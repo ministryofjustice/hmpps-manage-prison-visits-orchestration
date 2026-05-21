@@ -113,7 +113,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     val allContacts = listOf(contact1, contact2, contact3, contact4, contact5, contact6, contact7, contact8, contact9, contact10, contact11, contact12, contact13, contact14, contact15)
     val allPrisoners = listOf(prisoner1, prisoner2, prisoner3, prisoner4, prisoner5, prisoner6, prisoner7)
 
-    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 500, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 250, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
     prisonerContactRegistryMockServer.stubSearchContacts(contactIds = allContacts.map { it.contactId }.distinct(), contactsList = allContacts)
     prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(prisonerIds = allPrisoners.map { it.prisonerNumber }.distinct(), prisoners = allPrisoners)
 
@@ -152,7 +152,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
   fun `when a prison has no booked visits then no visit passes are returned`() {
     // Given
     val visits = emptyList<VisitDto>()
-    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 500, visitStatus = listOf(VisitStatus.BOOKED.name), visits = visits)
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 250, visitStatus = listOf(VisitStatus.BOOKED.name), visits = visits)
 
     // When
     val responseSpec = callGetVisitPasses(webTestClient, prisonCode, visitDate, "STAFF_USER1", roleVSIPOrchestrationServiceHttpHeaders)
@@ -184,7 +184,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     val allContacts = listOf(contact1, contact2, contact3, contact4)
     val allPrisoners = listOf(prisoner1, prisoner2)
 
-    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 500, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 250, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
     prisonerContactRegistryMockServer.stubSearchContacts(contactIds = allContacts.map { it.contactId }.distinct(), contactsList = allContacts)
 
     // only 1 prisoner details returned
@@ -208,7 +208,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     val allContacts = listOf(contact1, contact2, contact3, contact4)
     val allPrisoners = listOf(prisoner1, prisoner2)
 
-    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 500, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 250, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
 
     // only 3 contact details returned
     prisonerContactRegistryMockServer.stubSearchContacts(contactIds = allContacts.map { it.contactId }.distinct(), contactsList = listOf(contact1, contact2, contact3))
@@ -232,7 +232,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     val allContacts = listOf(contact1, contact2, contact3, contact4)
     val allPrisoners = listOf(prisoner1, prisoner2)
 
-    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 500, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 250, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
     // contact registry returns a 404
     prisonerContactRegistryMockServer.stubSearchContacts(contactIds = allContacts.map { it.contactId }.distinct(), contactsList = null, httpStatus = HttpStatus.NOT_FOUND)
     prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(prisonerIds = allPrisoners.map { it.prisonerNumber }.distinct(), prisoners = listOf(prisoner1, prisoner2))
@@ -255,7 +255,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     val allContacts = listOf(contact1, contact2, contact3, contact4)
     val allPrisoners = listOf(prisoner1, prisoner2)
 
-    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 500, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 250, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
     prisonerContactRegistryMockServer.stubSearchContacts(contactIds = allContacts.map { it.contactId }.distinct(), contactsList = allContacts)
     // prisoner search returns a 404
     prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(prisonerIds = allPrisoners.map { it.prisonerNumber }.distinct(), prisoners = null, HttpStatus.NOT_FOUND)
@@ -278,7 +278,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     val allContacts = listOf(contact1, contact2, contact3, contact4)
     val allPrisoners = listOf(prisoner1, prisoner2)
 
-    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 500, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 250, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
     // contact registry returns a INTERNAL_SERVER_ERROR
     prisonerContactRegistryMockServer.stubSearchContacts(contactIds = allContacts.map { it.contactId }.distinct(), contactsList = null, httpStatus = HttpStatus.INTERNAL_SERVER_ERROR)
     prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(prisonerIds = allPrisoners.map { it.prisonerNumber }.distinct(), prisoners = listOf(prisoner1, prisoner2))
@@ -301,7 +301,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     val allContacts = listOf(contact1, contact2, contact3, contact4)
     val allPrisoners = listOf(prisoner1, prisoner2)
 
-    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 500, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 250, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
     prisonerContactRegistryMockServer.stubSearchContacts(contactIds = allContacts.map { it.contactId }.distinct(), contactsList = allContacts)
     // prisoner search returns an INTERNAL_SERVER_ERROR
     prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(prisonerIds = allPrisoners.map { it.prisonerNumber }.distinct(), prisoners = null, HttpStatus.INTERNAL_SERVER_ERROR)
@@ -324,7 +324,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     val allPrisoners = listOf(prisoner1, prisoner2)
 
     // visit scheduler returns a 404
-    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 500, visitStatus = listOf(VisitStatus.BOOKED.name), visits = null, httpStatus = HttpStatus.NOT_FOUND)
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 250, visitStatus = listOf(VisitStatus.BOOKED.name), visits = null, httpStatus = HttpStatus.NOT_FOUND)
     prisonerContactRegistryMockServer.stubSearchContacts(contactIds = allContacts.map { it.contactId }.distinct(), contactsList = allContacts)
     prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(prisonerIds = allPrisoners.map { it.prisonerNumber }.distinct(), prisoners = allPrisoners)
 
@@ -346,7 +346,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     val allPrisoners = listOf(prisoner1, prisoner2)
 
     // visit scheduler returns an INTERNAL_SERVER_ERROR
-    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 500, visitStatus = listOf(VisitStatus.BOOKED.name), visits = null, httpStatus = HttpStatus.INTERNAL_SERVER_ERROR)
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 250, visitStatus = listOf(VisitStatus.BOOKED.name), visits = null, httpStatus = HttpStatus.INTERNAL_SERVER_ERROR)
     prisonerContactRegistryMockServer.stubSearchContacts(contactIds = allContacts.map { it.contactId }.distinct(), contactsList = allContacts)
     prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(prisonerIds = allPrisoners.map { it.prisonerNumber }.distinct(), prisoners = allPrisoners)
 
@@ -368,7 +368,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     actionedBy: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
-    val visitPassRequest = VisitPassRequestDto(visitDate = visitDate, actionedBy = actionedBy)
+    val visitPassRequest = VisitPassRequestDto(date = visitDate, actionedBy = actionedBy)
     return webTestClient.post()
       .uri(VISIT_PASSES_CONTROLLER_PATH.replace("{prisonId}", prisonCode))
       .body(BodyInserters.fromValue(visitPassRequest))
