@@ -5,9 +5,12 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitPassesClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.StaffUsernameDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.passes.VisitPassDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.passes.VisitPassRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import java.time.LocalDate
 
@@ -24,17 +27,17 @@ class VisitPassesService(
     private const val VISITS_PAGE_SIZE = 250
   }
 
-  fun getVisitPasses(prisonId: String, visitPassRequest: VisitPassRequestDto): List<VisitPassDto> {
-    logger.info("Getting visit passes for prison - $prisonId, visit date - ${visitPassRequest.date}")
+  fun getVisitPasses(prisonCode: String, visitPassRequest: VisitPassRequestDto): List<VisitPassDto> {
+    logger.info("Getting visit passes for prison - $prisonCode, visit date - ${visitPassRequest.date}")
     val visitDate = visitPassRequest.date
-    val visitSearchRequestFilter = getVisitRequestSearchFilter(prisonId, visitDate)
+    val visitSearchRequestFilter = getVisitRequestSearchFilter(prisonCode, visitDate)
     val visitsPagedResults = visitSchedulerClient.getVisits(visitSearchRequestFilter)
 
     val visits = if (visitsPagedResults == null) {
       emptyList()
     } else {
       if (visitsPagedResults.totalElements > VISITS_PAGE_SIZE) {
-        val errorMessage = "More than $VISITS_PAGE_SIZE visits found for prison - $prisonId, visit date - $visitDate, total visits - ${visitsPagedResults.totalElements}"
+        val errorMessage = "More than $VISITS_PAGE_SIZE visits found for prison - $prisonCode, visit date - $visitDate, total visits - ${visitsPagedResults.totalElements}"
         logger.error(errorMessage)
         throw IllegalStateException(errorMessage)
       } else {
@@ -49,12 +52,35 @@ class VisitPassesService(
     }
 
     // write to app insights
-    telemetryClientService.trackVisitPassesEvent(prisonCode = prisonId, visitDate = visitDate, actionedBy = visitPassRequest.actionedBy, totalVisits = visits.size)
+    telemetryClientService.trackVisitPassesEvent(prisonCode = prisonCode, visitDate = visitDate, actionedBy = visitPassRequest.actionedBy, totalVisits = visits.size)
     return visitPasses
   }
 
-  private fun getVisitRequestSearchFilter(prisonId: String, visitDate: LocalDate) = VisitSearchRequestFilter(
-    prisonCode = prisonId,
+  fun getVisitPass(prisonCode: String, visitReference: String, actionedBy: StaffUsernameDto): VisitPassDto {
+    logger.info("Getting visit pass for visit reference - $visitReference, prison code - $prisonCode, actioned by - ${actionedBy.username}")
+    val visit = visitSchedulerClient.getVisitByReference(visitReference)
+    return if (visit == null) {
+      throw NotFoundException("Visit with reference - $visitReference not found")
+    } else {
+      validateVisit(prisonCode, visit)
+      visitPassesClient.getVisitPass(visit)
+    }
+  }
+
+  private fun validateVisit(prisonCode: String, visit: VisitDto) {
+    // ensure the visit is in the prison
+    if (visit.prisonCode != prisonCode) {
+      throw IllegalStateException("Visit with reference - ${visit.reference} is not in prison - $prisonCode")
+    }
+
+    // ensure the visit is in BOOKED status
+    if (visit.visitStatus != VisitStatus.BOOKED) {
+      throw IllegalStateException("Visit with reference - ${visit.reference} is not in BOOKED status")
+    }
+  }
+
+  private fun getVisitRequestSearchFilter(prisonCode: String, visitDate: LocalDate) = VisitSearchRequestFilter(
+    prisonCode = prisonCode,
     visitStartDate = visitDate,
     visitEndDate = visitDate,
     visitStatusList = listOf(VisitStatus.BOOKED.name),
