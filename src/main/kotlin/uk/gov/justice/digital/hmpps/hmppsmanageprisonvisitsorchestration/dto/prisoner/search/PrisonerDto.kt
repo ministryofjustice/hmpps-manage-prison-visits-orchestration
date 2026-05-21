@@ -31,6 +31,9 @@ data class PrisonerDto(
   @param:Schema(description = "current prison or outside with last movement information.", example = "Outside - released from Leeds")
   val locationDescription: String? = null,
 
+  @param:Schema(required = true, description = "Status of the prisoner", example = "ACTIVE IN")
+  var status: String,
+
   @param:Schema(description = "Convicted Status", example = "Convicted", allowableValues = ["Convicted", "Remand"])
   val convictedStatus: String? = null,
 
