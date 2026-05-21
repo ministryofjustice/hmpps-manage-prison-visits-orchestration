@@ -700,6 +700,7 @@ abstract class IntegrationTestBase {
     currentIncentive: CurrentIncentive? = null,
     convictedStatus: String?,
     inOutStatus: String = "IN",
+    status: String = "ACTIVE",
   ): PrisonerDto = PrisonerDto(
     prisonerNumber = prisonerId,
     firstName = firstName,
@@ -711,6 +712,7 @@ abstract class IntegrationTestBase {
     currentIncentive = currentIncentive,
     convictedStatus = convictedStatus,
     inOutStatus = inOutStatus,
+    status = status,
   )
 
   final fun createContactsList(visitorDetails: List<VisitorDetails>): List<PrisonerContactDto> = visitorDetails.stream().map {
