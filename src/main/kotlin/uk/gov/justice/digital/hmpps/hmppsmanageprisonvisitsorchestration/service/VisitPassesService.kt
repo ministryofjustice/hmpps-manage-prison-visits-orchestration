@@ -45,12 +45,7 @@ class VisitPassesService(
       }
     }
 
-    val visitPasses = if (visits.isNotEmpty()) {
-      visitPassesClient.getVisitPasses(visits)
-    } else {
-      emptyList()
-    }
-
+    val visitPasses = visitPassesClient.getVisitPasses(visits)
     // write to app insights
     telemetryClientService.trackVisitPassesEvent(prisonCode = prisonCode, visitDate = visitDate, actionedBy = visitPassRequest.actionedBy, totalVisits = visits.size)
     return visitPasses
