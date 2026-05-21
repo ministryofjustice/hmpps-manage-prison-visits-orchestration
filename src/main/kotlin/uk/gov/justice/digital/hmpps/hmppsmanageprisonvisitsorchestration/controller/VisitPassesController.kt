@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitPassesService
 
 const val VISIT_PASSES_CONTROLLER_PATH: String = "/prison/{prisonId}/visit-passes"
-const val VISIT_PASS_BY_VISIT_REFERENCE_CONTROLLER_PATH: String = "prison/{prisonId}/visit-passes/visit/{visitReference}"
+const val VISIT_PASS_BY_VISIT_REFERENCE_CONTROLLER_PATH: String = "$VISIT_PASSES_CONTROLLER_PATH/visit/{visitReference}"
 
 @RestController
 class VisitPassesController(
@@ -84,13 +84,13 @@ class VisitPassesController(
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @PostMapping(VISIT_PASS_BY_VISIT_REFERENCE_CONTROLLER_PATH)
   @Operation(
-    summary = "Get visit passes for a prison on a given date.",
-    description = "Get visit passes for a prison on a given date.",
+    summary = "Get visit pass for an individual visit.",
+    description = "Get visit pass for an individual visit.",
     requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
       content = [
         Content(
           mediaType = "application/json",
-          schema = Schema(implementation = VisitPassRequestDto::class),
+          schema = Schema(implementation = StaffUsernameDto::class),
         ),
       ],
     ),
@@ -139,5 +139,5 @@ class VisitPassesController(
     @RequestBody
     @Valid
     staffUsernameDto: StaffUsernameDto,
-  ): VisitPassDto? = visitPassesService.getVisitPass(prisonCode = prisonId, visitReference = visitReference, actionedBy = staffUsernameDto)
+  ): VisitPassDto = visitPassesService.getVisitPass(prisonCode = prisonId, visitReference = visitReference, actionedBy = staffUsernameDto)
 }

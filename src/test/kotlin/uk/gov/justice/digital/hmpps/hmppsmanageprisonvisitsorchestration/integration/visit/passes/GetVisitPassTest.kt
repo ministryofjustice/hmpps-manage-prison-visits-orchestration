@@ -27,7 +27,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
-import kotlin.random.Random
 
 @DisplayName("Get Visit pass for an individual visit")
 class GetVisitPassTest : IntegrationTestBase() {
@@ -135,7 +134,7 @@ class GetVisitPassTest : IntegrationTestBase() {
     val visitReference = "visit-1-ref"
 
     // visit not found
-    visitSchedulerMockServer.stubGetVisit(visit.reference, null)
+    visitSchedulerMockServer.stubGetVisit(visitReference, null)
 
     // When
     val responseSpec = callGetVisitPass(webTestClient, prisonCode, visitReference, "STAFF_USER1", roleVSIPOrchestrationServiceHttpHeaders)
@@ -310,10 +309,10 @@ class GetVisitPassTest : IntegrationTestBase() {
     actionedBy: String,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
-    val actionedBy = StaffUsernameDto(actionedBy)
+    val actionedByDto = StaffUsernameDto(actionedBy)
     return webTestClient.post()
       .uri(VISIT_PASS_BY_VISIT_REFERENCE_CONTROLLER_PATH.replace("{prisonId}", prisonCode).replace("{visitReference}", visitReference))
-      .body(BodyInserters.fromValue(actionedBy))
+      .body(BodyInserters.fromValue(actionedByDto))
       .headers(authHttpHeaders)
       .exchange()
   }
@@ -322,7 +321,7 @@ class GetVisitPassTest : IntegrationTestBase() {
 
   private fun createVisitor(
     visitorId: Long,
-  ): VisitorDto = VisitorDto(visitorId, Random.nextBoolean())
+  ): VisitorDto = VisitorDto(visitorId, false)
 
   private fun getResult(returnResult: WebTestClient.BodyContentSpec): VisitPassDto = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, VisitPassDto::class.java)
 
