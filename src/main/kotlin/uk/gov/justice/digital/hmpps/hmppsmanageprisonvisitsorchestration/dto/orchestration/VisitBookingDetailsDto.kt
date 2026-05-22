@@ -63,7 +63,7 @@ data class VisitBookingDetailsDto(
   val events: List<EventAuditOrchestrationDto>,
   @param:Schema(description = "Notifications tied to visit booking", required = true)
   val notifications: List<VisitNotificationDto>,
-  @param:Schema(description = "Enum denoting why alerts and restrictions were skipped, null if not skipped", required = false)
+  @param:Schema(description = "Enum denoting why alerts and restrictions were skipped; absent if not skipped", required = false)
   val skipAlertsAndRestrictionReason: SkipAlertsAndRestrictionReason?,
 ) {
   @Deprecated(
