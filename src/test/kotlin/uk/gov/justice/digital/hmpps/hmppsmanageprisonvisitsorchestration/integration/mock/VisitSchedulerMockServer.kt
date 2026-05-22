@@ -52,13 +52,13 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 class VisitSchedulerMockServer : WireMockServer(8092) {
-  fun stubGetVisit(reference: String, visitDto: VisitDto?) {
+  fun stubGetVisit(reference: String, visitDto: VisitDto?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
       get("/visits/$reference")
         .willReturn(
           if (visitDto == null) {
-            responseBuilder.withStatus(HttpStatus.NOT_FOUND.value())
+            responseBuilder.withStatus(httpStatus.value())
           } else {
             responseBuilder.withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(visitDto))

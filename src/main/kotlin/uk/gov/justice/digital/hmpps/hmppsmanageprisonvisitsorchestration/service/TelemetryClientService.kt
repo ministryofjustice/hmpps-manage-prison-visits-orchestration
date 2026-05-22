@@ -22,5 +22,16 @@ class TelemetryClientService(
     )
   }
 
+  fun trackVisitPassEvent(prisonCode: String, visitReference: String, actionedBy: String) {
+    telemetryClient.trackEvent(
+      "print-visit-pass",
+      properties = mapOf(
+        "prisonCode" to prisonCode,
+        "visitReference" to visitReference,
+        "actionedBy" to actionedBy,
+      ),
+    )
+  }
+
   private fun formatDateToString(date: LocalDate): String = date.format(DateTimeFormatter.ISO_DATE)
 }
