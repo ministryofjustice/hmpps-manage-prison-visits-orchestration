@@ -12,8 +12,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.con
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.EventAuditOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitBookingDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.enums.SkipAlertsAndRestrictionReason
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AlertsService.Companion.predicateFilterSupportedCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.ManageUsersService
@@ -63,9 +66,9 @@ class VisitBookingDetailsClient(
       val events = visitBookingDetailsCoreInfo.t3
       val notifications = visitBookingDetailsCoreInfo.t4
 
-      val isPastVisit = visit.startTimestamp.isBefore(LocalDateTime.now())
-      val prisonerOutOfPrison = prisoner.inOutStatus == "OUT" && prisoner.status.uppercase().startsWith("INACTIVE")
-      val skipAlertsAndRestrictions = isPastVisit || prisonerOutOfPrison
+      // check if we need to skip getting alerts and restrictions
+      val skipAlertsAndRestrictionReason = getSkipAlertAndRestrictionReason(visit, prisoner)
+      val skipAlertsAndRestrictions = skipAlertsAndRestrictionReason != null
 
       val prisonerAlertsMono: Mono<RestPage<AlertResponseDto>> =
         if (skipAlertsAndRestrictions) {
@@ -128,7 +131,7 @@ class VisitBookingDetailsClient(
             visitContact = visitContact,
             events = eventAuditDetails,
             notifications = notifications,
-            skipAlertsAndRestrictions = skipAlertsAndRestrictions,
+            skipAlertsAndRestrictionReason = skipAlertsAndRestrictionReason,
           )
         }
     }
@@ -148,5 +151,21 @@ class VisitBookingDetailsClient(
       }
 
     return visitBookingDetailsDto
+  }
+
+  private fun getSkipAlertAndRestrictionReason(visit: VisitDto, prisoner: PrisonerDto): SkipAlertsAndRestrictionReason? {
+    val isPastVisit = visit.startTimestamp.isBefore(LocalDateTime.now())
+    val isPrisonerOutOfPrison = prisoner.inOutStatus == "OUT" && prisoner.status.uppercase().startsWith("INACTIVE")
+    val isPrisonerTransferred = prisoner.prisonId != visit.prisonCode
+
+    return if (isPastVisit) {
+      SkipAlertsAndRestrictionReason.VISIT_IN_PAST
+    } else if (isPrisonerOutOfPrison) {
+      SkipAlertsAndRestrictionReason.PRISONER_RELEASED
+    } else if (isPrisonerTransferred) {
+      SkipAlertsAndRestrictionReason.PRISONER_TRANSFERRED
+    } else {
+      null
+    }
   }
 }
