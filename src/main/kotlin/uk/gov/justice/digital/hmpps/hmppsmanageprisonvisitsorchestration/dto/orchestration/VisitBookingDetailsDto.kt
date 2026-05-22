@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.con
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactWithOptionalPrisonerRelationshipDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.RestrictionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.enums.SkipAlertsAndRestrictionReason
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
@@ -62,8 +63,8 @@ data class VisitBookingDetailsDto(
   val events: List<EventAuditOrchestrationDto>,
   @param:Schema(description = "Notifications tied to visit booking", required = true)
   val notifications: List<VisitNotificationDto>,
-  @param:Schema(description = "Boolean to signify if alerts and restrictions retrieval was intentionally skipped", required = true)
-  val skipAlertsAndRestrictions: Boolean,
+  @param:Schema(description = "Enum denoting why alerts and restrictions were skipped; absent if not skipped", required = false)
+  val skipAlertsAndRestrictionReason: SkipAlertsAndRestrictionReason?,
 ) {
   constructor(
     visit: VisitDto,
@@ -75,7 +76,7 @@ data class VisitBookingDetailsDto(
     visitContact: VisitContactDto?,
     events: List<EventAuditOrchestrationDto>,
     notifications: List<VisitNotificationEventDto>,
-    skipAlertsAndRestrictions: Boolean,
+    skipAlertsAndRestrictionReason: SkipAlertsAndRestrictionReason?,
   ) : this(
     reference = visit.reference,
     visitRoom = visit.visitRoom,
@@ -94,7 +95,7 @@ data class VisitBookingDetailsDto(
     visitors = visitVisitors.map { VisitorDetailsDto(it) }.toList(),
     events = events,
     notifications = notifications.map { VisitNotificationDto(it) },
-    skipAlertsAndRestrictions = skipAlertsAndRestrictions,
+    skipAlertsAndRestrictionReason = skipAlertsAndRestrictionReason,
   )
 }
 
