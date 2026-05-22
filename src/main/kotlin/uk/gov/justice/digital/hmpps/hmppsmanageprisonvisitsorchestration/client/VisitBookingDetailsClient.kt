@@ -67,7 +67,7 @@ class VisitBookingDetailsClient(
       val notifications = visitBookingDetailsCoreInfo.t4
 
       // check if we need to skip getting alerts and restrictions
-      val skipAlertsAndRestrictionReason = getSkipAlertAndRestrictionReason(visit, prisoner)
+      val skipAlertsAndRestrictionReason = checkSkipAlertAndRestrictionReason(visit, prisoner)
       val skipAlertsAndRestrictions = skipAlertsAndRestrictionReason != null
 
       val prisonerAlertsMono: Mono<RestPage<AlertResponseDto>> =
@@ -153,7 +153,7 @@ class VisitBookingDetailsClient(
     return visitBookingDetailsDto
   }
 
-  private fun getSkipAlertAndRestrictionReason(visit: VisitDto, prisoner: PrisonerDto): SkipAlertsAndRestrictionReason? {
+  private fun checkSkipAlertAndRestrictionReason(visit: VisitDto, prisoner: PrisonerDto): SkipAlertsAndRestrictionReason? {
     val isPastVisit = visit.startTimestamp.isBefore(LocalDateTime.now())
     val isPrisonerOutOfPrison = prisoner.inOutStatus == "OUT" && prisoner.status.uppercase().startsWith("INACTIVE")
     val isPrisonerTransferred = prisoner.prisonId != visit.prisonCode
