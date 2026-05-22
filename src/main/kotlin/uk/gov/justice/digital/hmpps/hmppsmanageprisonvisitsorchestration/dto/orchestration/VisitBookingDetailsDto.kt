@@ -66,6 +66,17 @@ data class VisitBookingDetailsDto(
   @param:Schema(description = "Enum denoting why alerts and restrictions were skipped, null if not skipped", required = false)
   val skipAlertsAndRestrictionReason: SkipAlertsAndRestrictionReason?,
 ) {
+  @Deprecated(
+    message = "Use skipAlertsAndRestrictionReason instead",
+    replaceWith = ReplaceWith("skipAlertsAndRestrictionReason != null"),
+  )
+  @get:Schema(
+    description = "Whether alerts and restrictions were skipped. Deprecated: use skipAlertsAndRestrictionReason instead.",
+    required = false,
+  )
+  val skipAlertsAndRestrictions: Boolean
+    get() = skipAlertsAndRestrictionReason != null
+
   constructor(
     visit: VisitDto,
     prison: PrisonRegisterPrisonDto,
