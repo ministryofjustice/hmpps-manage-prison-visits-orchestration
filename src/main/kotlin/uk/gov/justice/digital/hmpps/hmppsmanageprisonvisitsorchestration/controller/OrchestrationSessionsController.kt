@@ -476,5 +476,11 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       example = "2023-01-31",
     )
     sessionDate: LocalDate,
-  ): List<SessionScheduleDto>? = visitSchedulerSessionsService.getSessionSchedule(prisonCode, sessionDate)
+    @RequestParam(value = "includeExcludedSessions", required = false)
+    @Parameter(
+      description = "Flag to indicate if excluded sessions should be part of the response. If false, any excluded sessions will not be returned. Defaults to false.",
+      example = "2023-01-31",
+    )
+    includeExcludedSessions: Boolean?,
+  ): List<SessionScheduleDto>? = visitSchedulerSessionsService.getSessionSchedule(prisonCode, sessionDate, includeExcludedSessions ?: false)
 }
