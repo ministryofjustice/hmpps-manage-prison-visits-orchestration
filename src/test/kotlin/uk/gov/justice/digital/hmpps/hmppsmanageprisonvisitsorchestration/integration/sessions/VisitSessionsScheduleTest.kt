@@ -153,7 +153,6 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     includeExcludedSessions?.let {
       uri += "&includeExcludedSessions=$includeExcludedSessions"
     }
-    println(uri)
     return webTestClient.get().uri(uri)
       .headers(authHttpHeaders)
       .exchange()
