@@ -54,6 +54,11 @@ class PrisonerSearchClient(
 
   fun getPrisonersByPrisonerIdsAttributeSearch(prisonerIds: List<String>): RestPage<AttributeSearchPrisonerDto>? {
     logger.info("Calling prisoner-search to get all prisoners for given prisonerIds $prisonerIds")
+    return getPrisonersByPrisonerIdsAttributeSearchAsMono(prisonerIds).block(apiTimeout)
+  }
+
+  fun getPrisonersByPrisonerIdsAttributeSearchAsMono(prisonerIds: List<String>): Mono<RestPage<AttributeSearchPrisonerDto>> {
+    logger.info("Calling prisoner-search to get all prisoners as a mono for given prisonerIds $prisonerIds")
     val responseFields = ATTRIBUTE_SEARCH_RESPONSE_FIELDS.joinToString(separator = ",")
 
     val requestBody = AttributeSearch(
@@ -73,7 +78,6 @@ class PrisonerSearchClient(
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono<RestPage<AttributeSearchPrisonerDto>>()
-      .block(apiTimeout)
   }
 }
 

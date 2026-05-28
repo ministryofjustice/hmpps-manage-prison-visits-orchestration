@@ -35,6 +35,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitRequestSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitRequestsCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerUpdatePrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
@@ -45,7 +46,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.CourtVideoAppointmentNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionUpsertedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertsAddedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerContactRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
@@ -54,7 +55,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorApprovedUnapprovedNotificationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitor.VisitorLastApprovedDateRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitor.VisitorLastApprovedDatesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.ApplicationValidationException
@@ -82,13 +82,13 @@ const val VISIT_NOTIFICATION_PRISONER_RESTRICTION_CHANGE_PATH: String = "$VISIT_
 const val VISIT_NOTIFICATION_PRISONER_CONTACT_RESTRICTION_UPSERTED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/contact/restriction/upserted"
 const val VISIT_NOTIFICATION_CONTACT_RESTRICTION_UPSERTED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/contact/restriction/upserted"
 
-const val VISIT_NOTIFICATION_PERSON_RESTRICTION_UPSERTED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/person/restriction/upserted"
-
-const val VISIT_NOTIFICATION_VISITOR_RESTRICTION_UPSERTED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/visitor/restriction/upserted"
 const val VISIT_NOTIFICATION_VISITOR_APPROVED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/visitor/approved"
 const val VISIT_NOTIFICATION_VISITOR_UNAPPROVED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/visitor/unapproved"
 
 const val VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alerts/updated"
+const val VISIT_NOTIFICATION_PRISONER_ALERT_CREATED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alert/created"
+const val VISIT_NOTIFICATION_PRISONER_ALERT_UPDATED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alert/updated"
+const val VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_OR_INACTIVATED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/alert/deleted"
 
 const val GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/booked/future"
 const val GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE: String = "/public/booker/{bookerReference}/visits/cancelled"
@@ -408,16 +408,6 @@ class VisitSchedulerClient(
       .block(apiTimeout)
   }
 
-  fun processPersonRestrictionUpserted(sendDto: PersonRestrictionUpsertedNotificationDto) {
-    webClient.post()
-      .uri(VISIT_NOTIFICATION_PERSON_RESTRICTION_UPSERTED_PATH)
-      .body(BodyInserters.fromValue(sendDto))
-      .retrieve()
-      .toBodilessEntity()
-      .doOnError { e -> LOG.error("Could not processPersonRestrictionUpserted :", e) }
-      .block(apiTimeout)
-  }
-
   fun processPrisonerRestrictionChange(sendDto: PrisonerRestrictionChangeNotificationDto) {
     webClient.post()
       .uri(VISIT_NOTIFICATION_PRISONER_RESTRICTION_CHANGE_PATH)
@@ -445,16 +435,6 @@ class VisitSchedulerClient(
       .retrieve()
       .toBodilessEntity()
       .doOnError { e -> LOG.error("Could not processContactRestrictionUpserted :", e) }
-      .block(apiTimeout)
-  }
-
-  fun processVisitorRestrictionUpserted(sendDto: VisitorRestrictionUpsertedNotificationDto) {
-    webClient.post()
-      .uri(VISIT_NOTIFICATION_VISITOR_RESTRICTION_UPSERTED_PATH)
-      .body(BodyInserters.fromValue(sendDto))
-      .retrieve()
-      .toBodilessEntity()
-      .doOnError { e -> LOG.error("Could not processVisitorRestrictionUpserted :", e) }
       .block(apiTimeout)
   }
 
@@ -515,6 +495,36 @@ class VisitSchedulerClient(
       .retrieve()
       .toBodilessEntity()
       .doOnError { e -> LOG.error("Could not process prisoner alert updates :", e) }
+      .block(apiTimeout)
+  }
+
+  fun processPrisonerAlertCreated(sendDto: PrisonerAlertNotificationDto) {
+    webClient.post()
+      .uri(VISIT_NOTIFICATION_PRISONER_ALERT_CREATED_PATH)
+      .body(BodyInserters.fromValue(sendDto))
+      .retrieve()
+      .toBodilessEntity()
+      .doOnError { e -> LOG.error("Could not process prisoner alert created event :", e) }
+      .block(apiTimeout)
+  }
+
+  fun processPrisonerAlertUpdated(sendDto: PrisonerAlertNotificationDto) {
+    webClient.post()
+      .uri(VISIT_NOTIFICATION_PRISONER_ALERT_UPDATED_PATH)
+      .body(BodyInserters.fromValue(sendDto))
+      .retrieve()
+      .toBodilessEntity()
+      .doOnError { e -> LOG.error("Could not process prisoner alert updated event :", e) }
+      .block(apiTimeout)
+  }
+
+  fun processPrisonerAlertInactivatedOrDeleted(sendDto: PrisonerAlertNotificationDto) {
+    webClient.post()
+      .uri(VISIT_NOTIFICATION_PRISONER_ALERT_DELETED_OR_INACTIVATED_PATH)
+      .body(BodyInserters.fromValue(sendDto))
+      .retrieve()
+      .toBodilessEntity()
+      .doOnError { e -> LOG.error("Could not process prisoner alert deleted or inactivated event :", e) }
       .block(apiTimeout)
   }
 
@@ -579,6 +589,22 @@ class VisitSchedulerClient(
         }
       }
       .blockOptional(apiTimeout).orElseThrow { NotFoundException("Prison with prison code - $prisonCode not found on visit-scheduler") }
+  }
+
+  fun updatePrison(prisonCode: String, updatePrisonDto: VisitSchedulerUpdatePrisonDto): VisitSchedulerPrisonDto {
+    val uri = "/admin/prisons/prison/$prisonCode"
+
+    return webClient.put()
+      .uri(uri)
+      .accept(MediaType.APPLICATION_JSON)
+      .body(BodyInserters.fromValue(updatePrisonDto))
+      .retrieve()
+      .bodyToMono<VisitSchedulerPrisonDto>()
+      .onErrorResume { e ->
+        LOG.error("updatePrison Failed for get request $uri")
+        Mono.error(e)
+      }
+      .blockOptional(apiTimeout).orElseThrow { IllegalStateException("call to update prison $prisonCode on visit-scheduler failed") }
   }
 
   fun getNotificationEventsForBookingReferenceAsMono(reference: String): Mono<List<VisitNotificationEventDto>> = webClient.get()

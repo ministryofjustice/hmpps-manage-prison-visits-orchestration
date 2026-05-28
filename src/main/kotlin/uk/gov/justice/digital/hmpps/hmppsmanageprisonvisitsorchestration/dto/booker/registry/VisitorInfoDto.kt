@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry
 
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactWithOptionalPrisonerRelationshipDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.VisitorRestrictionDto
 import java.time.LocalDate
@@ -26,6 +27,15 @@ data class VisitorInfoDto(
     lastName = contact.lastName,
     dateOfBirth = contact.dateOfBirth,
     approved = contact.approvedVisitor,
+    visitorRestrictions = visitorRestrictions,
+  )
+
+  constructor(contact: ContactWithOptionalPrisonerRelationshipDto, visitorRestrictions: Set<VisitorRestrictionDto>) : this(
+    visitorId = contact.contactId,
+    firstName = contact.firstName,
+    lastName = contact.lastName,
+    dateOfBirth = contact.dateOfBirth,
+    approved = contact.approvedVisitor!!, // Force assignment because we only map contacts with a relationship so this cannot be null
     visitorRestrictions = visitorRestrictions,
   )
 }

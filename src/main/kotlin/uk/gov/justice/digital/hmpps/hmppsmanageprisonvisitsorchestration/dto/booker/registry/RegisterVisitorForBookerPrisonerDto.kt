@@ -13,4 +13,8 @@ data class RegisterVisitorForBookerPrisonerDto(
   @param:Schema(description = "Flag to determine if the booker should be notified of the registration", example = "true", required = false)
   @field:NotNull
   val sendNotificationFlag: Boolean? = false,
+
+  @param:Schema(description = "STAFF username who registered the visitor", example = "ABC123D", required = true)
+  @field:NotNull
+  val actionedBy: String,
 )

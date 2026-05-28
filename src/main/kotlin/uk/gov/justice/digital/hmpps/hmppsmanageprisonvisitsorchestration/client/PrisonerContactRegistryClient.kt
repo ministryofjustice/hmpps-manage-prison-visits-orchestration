@@ -12,6 +12,7 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isNotFoundError
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactWithOptionalPrisonerRelationshipDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.HasClosedRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
@@ -30,13 +31,15 @@ class PrisonerContactRegistryClient(
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
-    const val CONTACT_REGISTRY_CONTACTS_PATH: String = "/v2/prisoners/{prisonerId}/contacts"
-    const val CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_PATH: String = "$CONTACT_REGISTRY_CONTACTS_PATH/social/approved"
-    const val CONTACT_REGISTRY_SOCIAL_CONTACTS_PATH: String = "$CONTACT_REGISTRY_CONTACTS_PATH/social"
+    const val CONTACT_REGISTRY_PRISONER_CONTACTS_PATH: String = "/v2/prisoners/{prisonerId}/contacts"
+    const val CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_PATH: String = "$CONTACT_REGISTRY_PRISONER_CONTACTS_PATH/social/approved"
+    const val CONTACT_REGISTRY_SOCIAL_CONTACTS_PATH: String = "$CONTACT_REGISTRY_PRISONER_CONTACTS_PATH/social"
     const val CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_RESTRICTIONS_PATH: String = "$CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_PATH/restrictions"
     const val CONTACT_REGISTRY_BANNED_RESTRICTION_DATE_RANGE_PATH: String = "$CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_RESTRICTIONS_PATH/banned/dateRange"
     const val CONTACT_REGISTRY_HAS_CLOSED_RESTRICTIONS_PATH: String = "$CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_RESTRICTIONS_PATH/closed"
     const val CONTACT_REGISTRY_REVIEW_RESTRICTIONS_DATE_RANGES_PATH: String = "$CONTACT_REGISTRY_APPROVED_SOCIAL_CONTACTS_RESTRICTIONS_PATH/visit-request/date-ranges"
+
+    const val CONTACT_REGISTRY_SEARCH_CONTACTS_PATH: String = "/v2/contacts/search"
   }
 
   fun getPrisonersSocialContacts(prisonerId: String, hasDateOfBirth: Boolean? = null): List<PrisonerContactDto> {
@@ -133,6 +136,28 @@ class PrisonerContactRegistryClient(
         }
         Mono.error(e)
       }.block(apiTimeout)
+  }
+
+  fun searchContacts(contactIds: List<Long>, prisonerId: String? = null, withRestrictions: Boolean = true): List<ContactWithOptionalPrisonerRelationshipDto> = searchContactsAsMono(contactIds, prisonerId, withRestrictions)
+    .onErrorResume { e ->
+      LOG.error("searchContacts error for get request $CONTACT_REGISTRY_SEARCH_CONTACTS_PATH, $e")
+      Mono.error(e)
+    }
+    .blockOptional(apiTimeout).orElseThrow { IllegalStateException("Timeout searching contacts for request $CONTACT_REGISTRY_SEARCH_CONTACTS_PATH") }
+
+  fun searchContactsAsMono(contactIds: List<Long>, prisonerId: String? = null, withRestrictions: Boolean = true): Mono<List<ContactWithOptionalPrisonerRelationshipDto>> = webClient.get().uri(CONTACT_REGISTRY_SEARCH_CONTACTS_PATH) {
+    getSearchContactsUriBuilder(contactIds, prisonerId, withRestrictions, it).build()
+  }
+    .retrieve()
+    .bodyToMono<List<ContactWithOptionalPrisonerRelationshipDto>>()
+
+  private fun getSearchContactsUriBuilder(contactIds: List<Long>, prisonerId: String? = null, withRestrictions: Boolean = true, uriBuilder: UriBuilder): UriBuilder {
+    uriBuilder.queryParam("contactIds", contactIds.joinToString(","))
+    uriBuilder.queryParam("withRestrictions", withRestrictions)
+
+    prisonerId?.let { uriBuilder.queryParam("prisonerId", it) }
+
+    return uriBuilder
   }
 
   private fun getVisitorsHaveClosedRestrictionsParams(visitorIds: List<Long>, uriBuilder: UriBuilder): URI {

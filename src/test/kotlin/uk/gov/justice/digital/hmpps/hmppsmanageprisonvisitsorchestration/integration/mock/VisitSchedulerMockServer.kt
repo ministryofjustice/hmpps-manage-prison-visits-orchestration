@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitRequestSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitRequestsCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerUpdatePrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ApplicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
@@ -52,13 +53,13 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 class VisitSchedulerMockServer : WireMockServer(8092) {
-  fun stubGetVisit(reference: String, visitDto: VisitDto?) {
+  fun stubGetVisit(reference: String, visitDto: VisitDto?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
       get("/visits/$reference")
         .willReturn(
           if (visitDto == null) {
-            responseBuilder.withStatus(HttpStatus.NOT_FOUND.value())
+            responseBuilder.withStatus(httpStatus.value())
           } else {
             responseBuilder.withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(visitDto))
@@ -124,22 +125,27 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
 
   fun stubGetVisits(
     prisonCode: String? = null,
-    prisonerId: String,
+    prisonerId: String? = null,
     visitStatus: List<String>,
     startDate: LocalDate?,
     endDate: LocalDate?,
     page: Int,
     size: Int,
-    visits: List<VisitDto>,
+    visits: List<VisitDto>?,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
   ) {
-    val restPage = RestPage(content = visits, page = 0, size = size, total = visits.size.toLong())
     stubFor(
       get("/visits/search?${getVisitsQueryParams(prisonCode, prisonerId, visitStatus, startDate, endDate, page, size).joinToString("&")}")
         .willReturn(
-          createJsonResponseBuilder()
-            .withStatus(HttpStatus.OK.value()).withBody(
-              getJsonString(restPage),
-            ),
+          if (visits == null) {
+            createJsonResponseBuilder()
+              .withStatus(httpStatus.value())
+          } else {
+            val restPage = RestPage(content = visits, page = page, size = size, total = visits.size.toLong())
+            createJsonResponseBuilder()
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(restPage))
+          },
         ),
     )
   }
@@ -676,6 +682,23 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
             createJsonResponseBuilder()
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(visitSchedulerPrisonDto))
+          },
+        ),
+    )
+  }
+
+  fun stubPutUpdatePrison(prisonCode: String, updatePrisonDto: VisitSchedulerUpdatePrisonDto, responsePrisonDto: VisitSchedulerPrisonDto?, status: HttpStatus = HttpStatus.OK) {
+    stubFor(
+      put("/admin/prisons/prison/$prisonCode")
+        .withRequestBody(equalToJson(getJsonString(updatePrisonDto)))
+        .willReturn(
+          if (responsePrisonDto == null) {
+            createJsonResponseBuilder()
+              .withStatus(status.value())
+          } else {
+            createJsonResponseBuilder()
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(responsePrisonDto))
           },
         ),
     )

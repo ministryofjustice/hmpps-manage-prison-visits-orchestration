@@ -21,9 +21,11 @@ class RegisterPermittedVisitorForBookerPrisonerTest : IntegrationTestBase() {
     val bookerReference = "booker-reference"
     val prisonerId = "AA12345"
     val visitorId = 123L
+    val actionedBy = "TEST-USER"
     val registerVisitorForBookerPrisonerDto = RegisterVisitorForBookerPrisonerDto(
-      visitorId,
+      visitorId = visitorId,
       sendNotificationFlag = true,
+      actionedBy = actionedBy,
     )
     val registerResponse = PermittedVisitorsForPermittedPrisonerBookerDto(visitorId)
 
@@ -44,9 +46,12 @@ class RegisterPermittedVisitorForBookerPrisonerTest : IntegrationTestBase() {
     val bookerReference = "booker-reference"
     val prisonerId = "AA12345"
     val visitorId = 123L
+    val actionedBy = "TEST-USER"
+
     val registerVisitorForBookerPrisonerDto = RegisterVisitorForBookerPrisonerDto(
-      visitorId,
+      visitorId = visitorId,
       sendNotificationFlag = true,
+      actionedBy = actionedBy,
     )
     val registerResponse = PermittedVisitorsForPermittedPrisonerBookerDto(visitorId)
 
@@ -66,9 +71,12 @@ class RegisterPermittedVisitorForBookerPrisonerTest : IntegrationTestBase() {
     val bookerReference = "booker-reference"
     val prisonerId = "AA12345"
     val visitorId = 123L
+    val actionedBy = "TEST-USER"
+
     val registerVisitorForBookerPrisonerDto = RegisterVisitorForBookerPrisonerDto(
-      visitorId,
+      visitorId = visitorId,
       sendNotificationFlag = true,
+      actionedBy = actionedBy,
     )
 
     // When

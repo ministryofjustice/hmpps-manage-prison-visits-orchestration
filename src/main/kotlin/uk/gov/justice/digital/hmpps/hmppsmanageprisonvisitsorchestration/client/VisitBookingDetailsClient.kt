@@ -8,12 +8,15 @@ import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.RestPage
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertResponseDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactWithOptionalPrisonerRelationshipDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.EventAuditOrchestrationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitBookingDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.enums.SkipAlertsAndRestrictionReason
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AlertsService.Companion.predicateFilterSupportedCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.ManageUsersService
@@ -63,9 +66,9 @@ class VisitBookingDetailsClient(
       val events = visitBookingDetailsCoreInfo.t3
       val notifications = visitBookingDetailsCoreInfo.t4
 
-      val isPastVisit = visit.startTimestamp.isBefore(LocalDateTime.now())
-      val prisonerOutOfPrison = prisoner.inOutStatus == "OUT"
-      val skipAlertsAndRestrictions = isPastVisit || prisonerOutOfPrison
+      // check if we need to skip getting alerts and restrictions
+      val skipAlertsAndRestrictionReason = checkSkipAlertAndRestrictionReason(visit, prisoner)
+      val skipAlertsAndRestrictions = skipAlertsAndRestrictionReason != null
 
       val prisonerAlertsMono: Mono<RestPage<AlertResponseDto>> =
         if (skipAlertsAndRestrictions) {
@@ -81,26 +84,27 @@ class VisitBookingDetailsClient(
           prisonApiClient.getPrisonerRestrictionsAsMono(visit.prisonerId)
         }
 
-      val visitorsMono = prisonerContactRegistryClient.getPrisonersSocialContactsAsMono(
+      val visitorsMono = prisonerContactRegistryClient.searchContactsAsMono(
+        contactIds = visit.visitors!!.map { it.nomisPersonId },
         prisonerId = visit.prisonerId,
         withRestrictions = !skipAlertsAndRestrictions,
       )
 
       Mono.zip(prisonerAlertsMono, prisonerRestrictionsMono, visitorsMono)
-        .map { optionalAlertsAndRestrictionsInfo ->
-          val prisonerAlerts = optionalAlertsAndRestrictionsInfo.t1.content
+        .map { alertsRestrictionsAndVisitors ->
+          val prisonerAlerts = alertsRestrictionsAndVisitors.t1.content
             .filter { predicateFilterSupportedCodes.test(it) }
             .sortedWith(alertsComparatorDateUpdatedOrCreatedDateDesc)
             .map { alertResponse -> AlertDto(alertResponse) }
 
-          val prisonerRestrictions = (optionalAlertsAndRestrictionsInfo.t2.offenderRestrictions ?: emptyList())
+          val prisonerRestrictions = (alertsRestrictionsAndVisitors.t2.offenderRestrictions ?: emptyList())
             .sortedWith(restrictionsComparatorDatCreatedDesc)
 
-          val allVisitorsForPrisoner = optionalAlertsAndRestrictionsInfo.t3
+          val allVisitorsForPrisoner = alertsRestrictionsAndVisitors.t3
 
-          val visitors = mutableListOf<PrisonerContactDto>()
-          visit.visitors?.forEach { visitVisitor ->
-            allVisitorsForPrisoner.firstOrNull { it.personId == visitVisitor.nomisPersonId }?.let {
+          val visitors = mutableListOf<ContactWithOptionalPrisonerRelationshipDto>()
+          visit.visitors.forEach { visitVisitor ->
+            allVisitorsForPrisoner.firstOrNull { it.contactId == visitVisitor.nomisPersonId }?.let {
               visitors.add(it)
             }
           }
@@ -113,7 +117,7 @@ class VisitBookingDetailsClient(
           }
 
           val visitContact = visit.visitContact?.let { contact ->
-            val contactId = visit.visitors?.firstOrNull { it.visitContact == true }?.nomisPersonId
+            val contactId = visit.visitors.firstOrNull { it.visitContact == true }?.nomisPersonId
             VisitContactDto(contact, contactId)
           }
 
@@ -127,7 +131,7 @@ class VisitBookingDetailsClient(
             visitContact = visitContact,
             events = eventAuditDetails,
             notifications = notifications,
-            skipAlertsAndRestrictions = skipAlertsAndRestrictions,
+            skipAlertsAndRestrictionReason = skipAlertsAndRestrictionReason,
           )
         }
     }
@@ -147,5 +151,21 @@ class VisitBookingDetailsClient(
       }
 
     return visitBookingDetailsDto
+  }
+
+  private fun checkSkipAlertAndRestrictionReason(visit: VisitDto, prisoner: PrisonerDto): SkipAlertsAndRestrictionReason? {
+    val isPastVisit = visit.startTimestamp.isBefore(LocalDateTime.now())
+    val isPrisonerOutOfPrison = prisoner.inOutStatus == "OUT" && prisoner.status.uppercase().startsWith("INACTIVE")
+    val isPrisonerTransferred = prisoner.prisonId != visit.prisonCode
+
+    return if (isPastVisit) {
+      SkipAlertsAndRestrictionReason.VISIT_IN_PAST
+    } else if (isPrisonerOutOfPrison) {
+      SkipAlertsAndRestrictionReason.PRISONER_RELEASED
+    } else if (isPrisonerTransferred) {
+      SkipAlertsAndRestrictionReason.PRISONER_TRANSFERRED
+    } else {
+      null
+    }
   }
 }

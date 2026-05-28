@@ -7,11 +7,11 @@ import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.UNLINK_VISITOR
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_UNLINK_VISITOR_CONTROLLER_PATH
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.StaffUsernameDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 
-@DisplayName("Delete - Unlink visitor from booker prisoner - $UNLINK_VISITOR")
+@DisplayName("POST - Unlink visitor from booker prisoner - $PUBLIC_BOOKER_UNLINK_VISITOR_CONTROLLER_PATH")
 class UnlinkVisitorFromBookerPrisonerTest : IntegrationTestBase() {
 
   val bookerReference = "reference"
@@ -21,47 +21,52 @@ class UnlinkVisitorFromBookerPrisonerTest : IntegrationTestBase() {
   @Test
   fun `when call to unlink visitor, then call is successfully forwarded to booker registry`() {
     // Given
-
+    val staffUsername = StaffUsernameDto("TEST_USER")
+    prisonVisitBookerRegistryMockServer.stubUnlinkVisitor(bookerReference, prisonerId, visitorId, staffUsername, HttpStatus.OK)
     // When
-    val responseSpec = callUnlinkVisitor(bookerReference, prisonerId, visitorId, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callUnlinkVisitor(bookerReference, prisonerId, visitorId, staffUsername, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).unlinkBookerPrisonerVisitor(bookerReference, prisonerId, visitorId)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).unlinkBookerPrisonerVisitor(bookerReference, prisonerId, visitorId, staffUsername)
   }
 
   @Test
   fun `when booker registry returns a internal server error, then internal server error is thrown upwards to caller`() {
     // Given
-    prisonVisitBookerRegistryMockServer.stubUnlinkVisitor(bookerReference, prisonerId, visitorId, HttpStatus.INTERNAL_SERVER_ERROR)
+    val staffUsername = StaffUsernameDto("TEST_USER")
+    prisonVisitBookerRegistryMockServer.stubUnlinkVisitor(bookerReference, prisonerId, visitorId, staffUsername, HttpStatus.INTERNAL_SERVER_ERROR)
 
     // When
-    val responseSpec = callUnlinkVisitor(bookerReference, prisonerId, visitorId, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callUnlinkVisitor(bookerReference, prisonerId, visitorId, staffUsername, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().is5xxServerError
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).unlinkBookerPrisonerVisitor(bookerReference, prisonerId, visitorId)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).unlinkBookerPrisonerVisitor(bookerReference, prisonerId, visitorId, staffUsername)
   }
 
   @Test
   fun `when booker registry returns a 404, then 200 is returned to caller`() {
     // Given
-    prisonVisitBookerRegistryMockServer.stubUnlinkVisitor(bookerReference, prisonerId, visitorId, HttpStatus.NOT_FOUND)
+    val staffUsername = StaffUsernameDto("TEST_USER")
+
+    prisonVisitBookerRegistryMockServer.stubUnlinkVisitor(bookerReference, prisonerId, visitorId, staffUsername, HttpStatus.NOT_FOUND)
 
     // When
-    val responseSpec = callUnlinkVisitor(bookerReference, prisonerId, visitorId, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callUnlinkVisitor(bookerReference, prisonerId, visitorId, staffUsername, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).unlinkBookerPrisonerVisitor(bookerReference, prisonerId, visitorId)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).unlinkBookerPrisonerVisitor(bookerReference, prisonerId, visitorId, staffUsername)
   }
 
   @Test
   fun `when booker registry is called without token then UNAUTHORIZED status is returned`() {
     // Given
+    val staffUsername = StaffUsernameDto("TEST_USER")
 
     val uri = PUBLIC_BOOKER_UNLINK_VISITOR_CONTROLLER_PATH
       .replace("{bookerReference}", bookerReference)
@@ -69,7 +74,7 @@ class UnlinkVisitorFromBookerPrisonerTest : IntegrationTestBase() {
       .replace("{visitorId}", visitorId)
 
     // When
-    val responseSpec = webTestClient.delete().uri(uri).exchange()
+    val responseSpec = webTestClient.post().uri(uri).bodyValue(staffUsername).exchange()
 
     // Then
     responseSpec.expectStatus().isUnauthorized
@@ -79,6 +84,7 @@ class UnlinkVisitorFromBookerPrisonerTest : IntegrationTestBase() {
     bookerReference: String,
     prisonerNumber: String,
     visitorId: String,
+    staffUsername: StaffUsernameDto,
     webTestClient: WebTestClient,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
@@ -87,8 +93,9 @@ class UnlinkVisitorFromBookerPrisonerTest : IntegrationTestBase() {
       .replace("{prisonerId}", prisonerNumber)
       .replace("{visitorId}", visitorId)
 
-    return webTestClient.delete().uri(uri)
+    return webTestClient.post().uri(uri)
       .headers(authHttpHeaders)
+      .bodyValue(staffUsername)
       .exchange()
   }
 }
