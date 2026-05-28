@@ -41,7 +41,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentCreatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentDeletedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.CourtVideoAppointmentUpdatedNotifier
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PersonRestrictionUpsertedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertCreatedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertDeletedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertInactivatedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertUpdatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerAlertsUpdatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerContactRestrictionCreatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerContactRestrictionUpdatedNotifier
@@ -52,7 +55,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerReceivedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerReleasedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.VisitorApprovedNotifier
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.VisitorRestrictionChangedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.VisitorUnapprovedNotifier
 import uk.gov.justice.hmpps.sqs.HmppsQueue
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
@@ -105,9 +107,6 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
   lateinit var prisonerIncentivesDeletedNotifierSpy: PrisonerIncentivesDeletedNotifier
 
   @MockitoSpyBean
-  lateinit var personRestrictionUpsertedNotifierSpy: PersonRestrictionUpsertedNotifier
-
-  @MockitoSpyBean
   lateinit var courtVideoAppointmentCreatedNotifierSpy: CourtVideoAppointmentCreatedNotifier
 
   @MockitoSpyBean
@@ -132,9 +131,6 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
   lateinit var prisonerReleasedNotifierSpy: PrisonerReleasedNotifier
 
   @MockitoSpyBean
-  lateinit var visitorRestrictionChangedNotifierSpy: VisitorRestrictionChangedNotifier
-
-  @MockitoSpyBean
   lateinit var prisonerContactRestrictionCreatedNotifierSpy: PrisonerContactRestrictionCreatedNotifier
 
   @MockitoSpyBean
@@ -145,6 +141,18 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
 
   @MockitoSpyBean
   lateinit var contactRestrictionUpdatedNotifierSpy: ContactRestrictionUpdatedNotifier
+
+  @MockitoSpyBean
+  lateinit var prisonerAlertCreatedNotifierSpy: PrisonerAlertCreatedNotifier
+
+  @MockitoSpyBean
+  lateinit var prisonerAlertUpdatedNotifierSpy: PrisonerAlertUpdatedNotifier
+
+  @MockitoSpyBean
+  lateinit var prisonerAlertDeletedNotifierSpy: PrisonerAlertDeletedNotifier
+
+  @MockitoSpyBean
+  lateinit var prisonerAlertInactivatedNotifierSpy: PrisonerAlertInactivatedNotifier
 
   @MockitoSpyBean
   lateinit var domainEventListenerServiceSpy: DomainEventListenerService
@@ -281,37 +289,6 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     return createAdditionalInformationJson(jsonValues)
   }
 
-  fun createPersonRestrictionAdditionalInformationJson(
-    nomsNumber: String? = null,
-    visitorId: String? = null,
-    effectiveDate: String? = null,
-    expiryDate: String? = null,
-    restrictionType: String? = null,
-    offenderPersonRestrictionId: String? = null,
-  ): String {
-    val jsonValues = HashMap<String, Any>()
-    nomsNumber?.let {
-      jsonValues["nomsNumber"] = nomsNumber
-    }
-    visitorId?.let {
-      jsonValues["personId"] = visitorId
-    }
-    effectiveDate?.let {
-      jsonValues["effectiveDate"] = effectiveDate
-    }
-    expiryDate?.let {
-      jsonValues["expiryDate"] = expiryDate
-    }
-    restrictionType?.let {
-      jsonValues["restrictionType"] = restrictionType
-    }
-    offenderPersonRestrictionId?.let {
-      jsonValues["offenderPersonRestrictionId"] = offenderPersonRestrictionId
-    }
-
-    return createAdditionalInformationJson(jsonValues)
-  }
-
   fun createPrisonerContactRestrictionAdditionalInformationJson(
     prisonerContactRestrictionId: Long,
     prisonerContactId: Long,
@@ -344,29 +321,13 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     return createAdditionalInformationJson(jsonValues)
   }
 
-  fun createVisitorRestrictionAdditionalInformationJson(
-    visitorId: String? = null,
-    effectiveDate: String? = null,
-    expiryDate: String? = null,
-    restrictionType: String? = null,
-    visitorRestrictionId: String? = null,
+  fun createAddAlertAdditionalInformationJson(
+    alertCode: String,
+    alertUuid: String,
   ): String {
     val jsonValues = HashMap<String, Any>()
-    visitorId?.let {
-      jsonValues["personId"] = visitorId
-    }
-    effectiveDate?.let {
-      jsonValues["effectiveDate"] = effectiveDate
-    }
-    expiryDate?.let {
-      jsonValues["expiryDate"] = expiryDate
-    }
-    restrictionType?.let {
-      jsonValues["restrictionType"] = restrictionType
-    }
-    visitorRestrictionId?.let {
-      jsonValues["visitorRestrictionId"] = visitorRestrictionId
-    }
+    jsonValues["alertCode"] = alertCode
+    jsonValues["alertUuid"] = alertUuid
 
     return createAdditionalInformationJson(jsonValues)
   }

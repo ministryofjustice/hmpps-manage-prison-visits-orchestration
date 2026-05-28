@@ -5,6 +5,9 @@ import java.time.LocalDate
 
 @Schema(description = "AlertDto returned from orchestration, made of fields from AlertResponseDto from Alerts API call")
 data class AlertDto(
+  @param:Schema(description = "The unique identifier assigned to the alert", example = "8cdadcf3-b003-4116-9956-c99bd8df6a00")
+  val alertUuid: String,
+
   @param:Schema(required = true, description = "Alert Type", example = "X")
   val alertType: String,
 
@@ -38,6 +41,7 @@ data class AlertDto(
 ) {
   // Secondary constructor that initializes AlertDto from AlertResponseDto
   constructor(alertResponseDto: AlertResponseDto) : this(
+    alertUuid = alertResponseDto.alertUuid,
     alertType = alertResponseDto.alertCode.alertTypeCode,
     alertTypeDescription = alertResponseDto.alertCode.alertTypeDescription,
     alertCode = alertResponseDto.alertCode.code,

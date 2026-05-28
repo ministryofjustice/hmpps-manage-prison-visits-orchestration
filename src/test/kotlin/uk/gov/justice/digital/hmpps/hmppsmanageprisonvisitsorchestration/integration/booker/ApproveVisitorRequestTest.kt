@@ -24,7 +24,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
   @Test
   fun `when call to approve visitor request on booker-registry is successful a successful response code is returned`() {
     // Given
-    val approveVisitorRequestDto = ApproveVisitorRequestDto(visitorId = 123456L)
+    val approveVisitorRequestDto = ApproveVisitorRequestDto(visitorId = 123456L, actionedBy = "TEST-USER")
     val approveVisitorRequestResponse = PrisonVisitorRequestDto(
       requestReference,
       bookerReference = "abc-def-ghi",
@@ -45,13 +45,13 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().is2xxSuccessful
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).approveAndLinkVisitorRequest(any(), any())
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).approveAndLinkVisitorRequest(requestReference, approveVisitorRequestDto)
   }
 
   @Test
   fun `when call to booker registry fails with a NOT_FOUND error then NOT_FOUND error code is returned`() {
     // Given
-    val approveVisitorRequestDto = ApproveVisitorRequestDto(visitorId = 123456L)
+    val approveVisitorRequestDto = ApproveVisitorRequestDto(visitorId = 123456L, actionedBy = "TEST-USER")
 
     prisonVisitBookerRegistryMockServer.stubApproveVisitorRequest(requestReference, null, HttpStatus.NOT_FOUND)
 
@@ -60,13 +60,13 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
 
     // Then
     responseSpec.expectStatus().isNotFound
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).approveAndLinkVisitorRequest(any(), any())
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).approveAndLinkVisitorRequest(requestReference, approveVisitorRequestDto)
   }
 
   @Test
   fun `when call to approve visitor request on booker-registry fails with an INTERNAL_SERVER_ERROR error, then INTERNAL_SERVER_ERROR error code is returned`() {
     // Given
-    val approveVisitorRequestDto = ApproveVisitorRequestDto(visitorId = 123456L)
+    val approveVisitorRequestDto = ApproveVisitorRequestDto(visitorId = 123456L, actionedBy = "TEST-USER")
     PrisonVisitorRequestDto(
       requestReference,
       bookerReference = "abc-def-ghi",
@@ -86,13 +86,13 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
 
     // Then
     responseSpec.expectStatus().is5xxServerError
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).approveAndLinkVisitorRequest(any(), any())
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).approveAndLinkVisitorRequest(requestReference, approveVisitorRequestDto)
   }
 
   @Test
   fun `when call to approve visitor request is made without correct role then FORBIDDEN status is returned`() {
     // Given
-    val approveVisitorRequestDto = ApproveVisitorRequestDto(visitorId = 123456L)
+    val approveVisitorRequestDto = ApproveVisitorRequestDto(visitorId = 123456L, actionedBy = "TEST-USER")
 
     // When
     val responseSpec = callApproveVisitorRequest(webTestClient, requestReference, approveVisitorRequestDto, authHttpHeaders = setAuthorisation(roles = listOf()))

@@ -26,7 +26,7 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
   @Test
   fun `when call to reject visitor request on booker-registry is successful a successful response code is returned`() {
     // Given
-    val rejectVisitorRequestDto = RejectVisitorRequestDto(rejectionReason = VisitorRequestRejectionReason.REJECT)
+    val rejectVisitorRequestDto = RejectVisitorRequestDto(rejectionReason = VisitorRequestRejectionReason.REJECT, actionedBy = "TEST_USER")
 
     val rejectVisitorRequestResponse = PrisonVisitorRequestDto(
       requestReference,
@@ -48,13 +48,13 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().is2xxSuccessful
 
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).rejectVisitorRequest(any(), any())
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).rejectVisitorRequest(requestReference, rejectVisitorRequestDto)
   }
 
   @Test
   fun `when call to booker registry fails with a NOT_FOUND error then NOT_FOUND error code is returned`() {
     // Given
-    val rejectVisitorRequestDto = RejectVisitorRequestDto(rejectionReason = VisitorRequestRejectionReason.REJECT)
+    val rejectVisitorRequestDto = RejectVisitorRequestDto(rejectionReason = VisitorRequestRejectionReason.REJECT, actionedBy = "TEST_USER")
 
     prisonVisitBookerRegistryMockServer.stubRejectVisitorRequest(requestReference, null, HttpStatus.NOT_FOUND)
 
@@ -63,13 +63,13 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
 
     // Then
     responseSpec.expectStatus().isNotFound
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).rejectVisitorRequest(any(), any())
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).rejectVisitorRequest(requestReference, rejectVisitorRequestDto)
   }
 
   @Test
   fun `when call to reject visitor request on booker-registry fails with an INTERNAL_SERVER_ERROR error, then INTERNAL_SERVER_ERROR error code is returned`() {
     // Given
-    val rejectVisitorRequestDto = RejectVisitorRequestDto(rejectionReason = VisitorRequestRejectionReason.REJECT)
+    val rejectVisitorRequestDto = RejectVisitorRequestDto(rejectionReason = VisitorRequestRejectionReason.REJECT, actionedBy = "TEST_USER")
 
     prisonVisitBookerRegistryMockServer.stubRejectVisitorRequest(requestReference, null, HttpStatus.INTERNAL_SERVER_ERROR)
 
@@ -78,13 +78,13 @@ class RejectVisitorRequestTest : IntegrationTestBase() {
 
     // Then
     responseSpec.expectStatus().is5xxServerError
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).rejectVisitorRequest(any(), any())
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).rejectVisitorRequest(requestReference, rejectVisitorRequestDto)
   }
 
   @Test
   fun `when call to reject visitor request is made without correct role then FORBIDDEN status is returned`() {
     // Given
-    val rejectVisitorRequestDto = RejectVisitorRequestDto(rejectionReason = VisitorRequestRejectionReason.REJECT)
+    val rejectVisitorRequestDto = RejectVisitorRequestDto(rejectionReason = VisitorRequestRejectionReason.REJECT, actionedBy = "TEST_USER")
 
     // When
     val responseSpec = callRejectVisitorRequest(webTestClient, requestReference, rejectVisitorRequestDto, authHttpHeaders = setAuthorisation(roles = listOf()))

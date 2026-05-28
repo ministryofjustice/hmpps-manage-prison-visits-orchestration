@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.VisitSessionsAndScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -55,7 +56,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setup() {
-    val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 12, 6, 3, 3, 18)
+    val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 12, 6, 3, 3, 18, DayOfWeek.MONDAY, 3)
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
   }
 

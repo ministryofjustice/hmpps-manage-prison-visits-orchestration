@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration
 
+import com.microsoft.applicationinsights.TelemetryClient
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -31,6 +32,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.control
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertCodeSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.AddressDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactWithOptionalPrisonerRelationshipDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.RestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationVisitorDto
@@ -159,7 +161,7 @@ abstract class IntegrationTestBase {
 
     fun getVisitsQueryParams(
       prisonCode: String?,
-      prisonerId: String,
+      prisonerId: String?,
       visitStatus: List<String>,
       startDateTime: LocalDate? = null,
       endDateTime: LocalDate? = null,
@@ -170,7 +172,9 @@ abstract class IntegrationTestBase {
       prisonCode?.let {
         queryParams.add("prisonId=$prisonCode")
       }
-      queryParams.add("prisonerId=$prisonerId")
+      prisonerId?.let {
+        queryParams.add("prisonerId=$prisonerId")
+      }
       if (visitStatus.isNotEmpty()) {
         queryParams.add("visitStatus=${visitStatus.joinToString(",")}")
       }
@@ -232,6 +236,9 @@ abstract class IntegrationTestBase {
 
   @MockitoSpyBean
   protected lateinit var prisonVisitBookerRegistryClientSpy: PrisonVisitBookerRegistryClient
+
+  @MockitoSpyBean
+  protected lateinit var telemetryClientSpy: TelemetryClient
 
   @BeforeEach
   internal fun setUp() {
@@ -657,6 +664,40 @@ abstract class IntegrationTestBase {
     address = address,
   )
 
+  final fun createContactWithOptionalPrisonerRelationshipDto(
+    personId: Long = ThreadLocalRandom.current().nextLong(),
+    firstName: String = "John",
+    middleName: String? = null,
+    lastName: String = "Smith",
+    dateOfBirth: LocalDate? = null,
+    relationshipCode: String? = "OTH",
+    relationshipDescription: String? = "Other",
+    contactType: String? = "S",
+    contactTypeDescription: String? = "Social",
+    restrictions: List<RestrictionDto> = emptyList(),
+    address: AddressDto? = null,
+    approvedVisitor: Boolean? = true,
+    emergencyContact: Boolean? = false,
+    nextOfKin: Boolean? = false,
+    comments: String? = null,
+  ): ContactWithOptionalPrisonerRelationshipDto = ContactWithOptionalPrisonerRelationshipDto(
+    contactId = personId,
+    firstName = firstName,
+    middleName = middleName,
+    lastName = lastName,
+    dateOfBirth = dateOfBirth,
+    relationshipCode = relationshipCode,
+    relationshipDescription = relationshipDescription,
+    contactType = contactType,
+    contactTypeDescription = contactTypeDescription,
+    restrictions = restrictions,
+    address = address,
+    approvedVisitor = approvedVisitor,
+    emergencyContact = emergencyContact,
+    nextOfKin = nextOfKin,
+    comments = comments,
+  )
+
   final fun createPrisoner(
     prisonerId: String,
     firstName: String,
@@ -668,6 +709,7 @@ abstract class IntegrationTestBase {
     currentIncentive: CurrentIncentive? = null,
     convictedStatus: String?,
     inOutStatus: String = "IN",
+    status: String = "ACTIVE",
   ): PrisonerDto = PrisonerDto(
     prisonerNumber = prisonerId,
     firstName = firstName,
@@ -679,6 +721,7 @@ abstract class IntegrationTestBase {
     currentIncentive = currentIncentive,
     convictedStatus = convictedStatus,
     inOutStatus = inOutStatus,
+    status = status,
   )
 
   final fun createContactsList(visitorDetails: List<VisitorDetails>): List<PrisonerContactDto> = visitorDetails.stream().map {
@@ -699,6 +742,14 @@ abstract class IntegrationTestBase {
     visitContact: Boolean = false,
   ): VisitorDto = VisitorDto(
     nomisPersonId = contact.personId!!,
+    visitContact = visitContact,
+  )
+
+  final fun createVisitorDto(
+    contact: ContactWithOptionalPrisonerRelationshipDto,
+    visitContact: Boolean = false,
+  ): VisitorDto = VisitorDto(
+    nomisPersonId = contact.contactId,
     visitContact = visitContact,
   )
 
@@ -821,6 +872,7 @@ abstract class IntegrationTestBase {
     active: Boolean = true,
     description: String = "Alert code comment",
   ): AlertResponseDto = AlertResponseDto(
+    alertUuid = UUID.randomUUID().toString(),
     alertCode = alertCodeSummary,
     activeFrom = activeFrom,
     createdAt = createdAt,
@@ -842,7 +894,8 @@ abstract class IntegrationTestBase {
     active: Boolean = true,
     description: String = "Alert code comment",
   ): AlertResponseDto = AlertResponseDto(
-    AlertCodeSummaryDto(alertTypeCode, alertTypeDescription, code, alertCodeDescription),
+    alertUuid = UUID.randomUUID().toString(),
+    alertCode = AlertCodeSummaryDto(alertTypeCode, alertTypeDescription, code, alertCodeDescription),
     activeFrom = activeFrom,
     createdAt = createdAt,
     lastModifiedAt = lastModifiedAt,

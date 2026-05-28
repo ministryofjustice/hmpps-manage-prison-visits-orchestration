@@ -7,6 +7,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.post
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient.Companion.CONTACT_REGISTRY_REVIEW_RESTRICTIONS_DATE_RANGES_PATH
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactWithOptionalPrisonerRelationshipDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.HasClosedRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
@@ -27,6 +28,36 @@ class PrisonerContactRegistryMockServer : WireMockServer(8095) {
       "/v2/prisoners/$prisonerId/contacts/social?hasDateOfBirth=$hasDateOfBirth&withRestrictions=$withRestrictions"
     } else {
       "/v2/prisoners/$prisonerId/contacts/social?withRestrictions=$withRestrictions"
+    }
+
+    stubFor(
+      get(uri)
+        .willReturn(
+          if (contactsList == null) {
+            responseBuilder
+              .withStatus(httpStatus.value())
+          } else {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(contactsList))
+          },
+        ),
+    )
+  }
+
+  fun stubSearchContacts(
+    contactIds: List<Long>,
+    prisonerId: String? = null,
+    withRestrictions: Boolean = true,
+    contactsList: List<ContactWithOptionalPrisonerRelationshipDto>?,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    val uri = if (prisonerId != null) {
+      "/v2/contacts/search?contactIds=${contactIds.joinToString(",")}&withRestrictions=$withRestrictions&prisonerId=$prisonerId"
+    } else {
+      "/v2/contacts/search?contactIds=${contactIds.joinToString(",")}&withRestrictions=$withRestrictions"
     }
 
     stubFor(

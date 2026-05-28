@@ -16,12 +16,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_COURT_VIDEO_APPOINTMENT_CREATED_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_COURT_VIDEO_APPOINTMENT_UPDATED_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_NON_ASSOCIATION_CHANGE_PATH
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PERSON_RESTRICTION_UPSERTED_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_ALERTS_UPDATED_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_RECEIVED_CHANGE_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_VISITOR_APPROVED_PATH
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_VISITOR_RESTRICTION_UPSERTED_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_VISITOR_UNAPPROVED_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertCodeSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertResponseDto
@@ -30,12 +28,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.CourtVideoAppointmentNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NonAssociationChangedNotificationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PersonRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertsAddedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorApprovedUnapprovedNotificationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitorRestrictionUpsertedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerReceivedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.COURT_VIDEO_APPOINTMENT_CANCELLED_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.COURT_VIDEO_APPOINTMENT_CREATED_EVENT_TYPE
@@ -45,18 +41,17 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.EventNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.INSERTED_INCENTIVES_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.NonAssociationDomainEventType.NON_ASSOCIATION_CREATED
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PERSON_RESTRICTION_UPSERTED_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_ALERTS_UPDATED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_NON_ASSOCIATION_DETAIL_CREATED_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_RECEIVED_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_RELEASED_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.UPDATED_INCENTIVES_EVENT_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.VISITOR_APPROVED_EVENT_TYPE
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.VISITOR_RESTRICTION_UPSERTED_TYPE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.VISITOR_UNAPPROVED_EVENT_TYPE
 import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.UUID
 
 private const val TEST_TYPE = "incentives.iep-review.test"
 
@@ -96,42 +91,6 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
 
     // Then
     assertStandardCalls(prisonerIncentivesUpdatedNotifierSpy)
-  }
-
-  @Test
-  fun `test person-restriction-upserted is processed`() {
-    // Given
-    val sentRequestToVsip = PersonRestrictionUpsertedNotificationDto(
-      prisonerNumber = "TEST",
-      visitorId = "12345",
-      validFromDate = LocalDate.parse("2023-09-20"),
-      restrictionType = "BAN",
-      restrictionId = "123",
-    )
-
-    val domainEvent =
-      createDomainEventJson(
-        PERSON_RESTRICTION_UPSERTED_TYPE,
-        createPersonRestrictionAdditionalInformationJson(
-          nomsNumber = "TEST",
-          visitorId = "12345",
-          effectiveDate = "2023-09-20",
-          restrictionType = "BAN",
-          offenderPersonRestrictionId = "123",
-        ),
-      )
-
-    val publishRequest = createDomainEventPublishRequest(PERSON_RESTRICTION_UPSERTED_TYPE, domainEvent)
-
-    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PERSON_RESTRICTION_UPSERTED_PATH)
-
-    // When
-    sendSqSMessage(publishRequest)
-
-    // Then
-    assertStandardCalls(personRestrictionUpsertedNotifierSpy, VISIT_NOTIFICATION_PERSON_RESTRICTION_UPSERTED_PATH, sentRequestToVsip)
-    await untilAsserted { verify(visitSchedulerService, times(1)).processPersonRestrictionUpserted(any()) }
-    await untilAsserted { verify(visitSchedulerClient, times(1)).processPersonRestrictionUpserted(any()) }
   }
 
   @Test
@@ -189,39 +148,6 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
   }
 
   @Test
-  fun `test visitor-restriction-upserted is processed`() {
-    // Given
-    val sentRequestToVsip = VisitorRestrictionUpsertedNotificationDto(
-      visitorId = "12345",
-      validFromDate = LocalDate.parse("2023-09-20"),
-      restrictionType = "BAN",
-      restrictionId = "123",
-    )
-
-    val domainEvent =
-      createDomainEventJson(
-        VISITOR_RESTRICTION_UPSERTED_TYPE,
-        createVisitorRestrictionAdditionalInformationJson(
-          visitorId = "12345",
-          effectiveDate = "2023-09-20",
-          restrictionType = "BAN",
-          visitorRestrictionId = "123",
-        ),
-      )
-    val publishRequest = createDomainEventPublishRequest(VISITOR_RESTRICTION_UPSERTED_TYPE, domainEvent)
-
-    visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_VISITOR_RESTRICTION_UPSERTED_PATH)
-
-    // When
-    sendSqSMessage(publishRequest)
-
-    // Then
-    assertStandardCalls(visitorRestrictionChangedNotifierSpy, VISIT_NOTIFICATION_VISITOR_RESTRICTION_UPSERTED_PATH, sentRequestToVsip)
-    await untilAsserted { verify(visitSchedulerService, times(1)).processVisitorRestrictionUpserted(any()) }
-    await untilAsserted { verify(visitSchedulerClient, times(1)).processVisitorRestrictionUpserted(any()) }
-  }
-
-  @Test
   fun `test prisoner non association detail changed is processed`() {
     // Given
 
@@ -276,7 +202,8 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     val alertsRemoved = emptyList<String>()
     val activeAlert = listOf(
       AlertResponseDto(
-        AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "SC", description = "Alert Code Desc"),
+        alertUuid = UUID.randomUUID().toString(),
+        alertCode = AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "SC", description = "Alert Code Desc"),
         activeFrom = LocalDate.of(1995, 12, 3),
         activeTo = null,
         active = true,
@@ -327,7 +254,8 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     val alertsRemoved = emptyList<String>()
     val activeAlert = listOf(
       AlertResponseDto(
-        AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "SC", description = "Alert Code Desc"),
+        alertUuid = UUID.randomUUID().toString(),
+        alertCode = AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "SC", description = "Alert Code Desc"),
         activeFrom = LocalDate.of(1995, 12, 3),
         activeTo = null,
         active = true,
@@ -378,7 +306,8 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     val alertsRemoved = listOf("C1", "C2")
     val activeAlert = listOf(
       AlertResponseDto(
-        AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "C1", description = "Alert Code Desc"),
+        alertUuid = UUID.randomUUID().toString(),
+        alertCode = AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "C1", description = "Alert Code Desc"),
         activeFrom = LocalDate.of(1995, 12, 3),
         activeTo = null,
         active = true,
@@ -499,7 +428,8 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
     val alertsRemoved = listOf("C1", "BAD_CODE")
     val activeAlert = listOf(
       AlertResponseDto(
-        AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "SC", description = "Alert Code Desc"),
+        alertUuid = UUID.randomUUID().toString(),
+        alertCode = AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "SC", description = "Alert Code Desc"),
         activeFrom = LocalDate.of(1995, 12, 3),
         activeTo = null,
         active = true,
@@ -507,7 +437,8 @@ class PrisonVisitsEventsSqsTest : PrisonVisitsEventsIntegrationTestBase() {
         createdAt = LocalDateTime.now(),
       ),
       AlertResponseDto(
-        AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "BAD_CODE", description = "Alert Code Desc"),
+        alertUuid = UUID.randomUUID().toString(),
+        alertCode = AlertCodeSummaryDto(alertTypeCode = "T", alertTypeDescription = "Type Description", code = "BAD_CODE", description = "Alert Code Desc"),
         activeFrom = LocalDate.of(1995, 12, 3),
         activeTo = null,
         active = true,
