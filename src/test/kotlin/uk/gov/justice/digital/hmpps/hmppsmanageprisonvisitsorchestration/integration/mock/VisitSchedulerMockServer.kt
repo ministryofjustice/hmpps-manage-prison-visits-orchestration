@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitRequestSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitRequestsCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerUpdatePrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ApplicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
@@ -680,6 +681,23 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
             createJsonResponseBuilder()
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(visitSchedulerPrisonDto))
+          },
+        ),
+    )
+  }
+
+  fun stubPutUpdatePrison(prisonCode: String, updatePrisonDto: VisitSchedulerUpdatePrisonDto, responsePrisonDto: VisitSchedulerPrisonDto?, status: HttpStatus = HttpStatus.OK) {
+    stubFor(
+      put("/admin/prisons/prison/$prisonCode")
+        .withRequestBody(equalToJson(getJsonString(updatePrisonDto)))
+        .willReturn(
+          if (responsePrisonDto == null) {
+            createJsonResponseBuilder()
+              .withStatus(status.value())
+          } else {
+            createJsonResponseBuilder()
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(responsePrisonDto))
           },
         ),
     )

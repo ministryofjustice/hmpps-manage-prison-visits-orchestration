@@ -40,7 +40,7 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
   private val prisonCode = "MDI"
   private val prisonerId = "AA123456B"
 
-  private val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18)
+  private val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18, DayOfWeek.MONDAY, 3)
   private val visitorIds = listOf(1L, 2L, 3L)
 
   private val visitorRestrictionsForReview = VisitorRestrictionsForReview.entries.map { it.name }

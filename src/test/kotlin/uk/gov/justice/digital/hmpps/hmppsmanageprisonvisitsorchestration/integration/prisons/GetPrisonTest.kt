@@ -14,12 +14,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
+import java.time.DayOfWeek
 
 @DisplayName("Get prison tests")
 class GetPrisonTest : IntegrationTestBase() {
 
   final val prisonCode = "HEI"
-  val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18)
+  val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18, DayOfWeek.MONDAY, 3)
   val prisonRegisterPrisonDto = PrisonRegisterPrisonDto(prisonCode, "HMP Hewell", prisonNameInWelsh = "HMP Hewell (Cymru)")
   val prisonRegisterPrisonContactDetailsDto = PrisonRegisterContactDetailsDto("example@email.com", "07777777777", "https://www.example.com")
 
