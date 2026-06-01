@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.or
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.AlertDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.LanguagePreference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.AddressDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactWithOptionalPrisonerRelationshipDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.PrisonerContactDto
@@ -215,11 +216,14 @@ data class VisitContactDto(
   override val telephone: String? = null,
   @param:Schema(description = "Contact Email Address", example = "email@example.com", required = false)
   override val email: String? = null,
-) : ContactDto(name = name, telephone = telephone, email = email) {
+  @param:Schema(name = "languagePreference", description = "The language in which your correspondence will be sent", defaultValue = "EN", required = false)
+  override val languagePreference: LanguagePreference = LanguagePreference.EN,
+) : ContactDto(name = name, telephone = telephone, email = email, languagePreference = languagePreference) {
   constructor(contactDto: ContactDto, visitContactId: Long?) : this(
     visitContactId = visitContactId,
     name = contactDto.name,
     telephone = contactDto.telephone,
     email = contactDto.email,
+    languagePreference = contactDto.languagePreference,
   )
 }
