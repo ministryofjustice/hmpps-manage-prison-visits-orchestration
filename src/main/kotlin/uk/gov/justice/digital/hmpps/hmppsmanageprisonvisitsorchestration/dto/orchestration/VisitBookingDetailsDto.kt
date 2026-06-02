@@ -216,7 +216,13 @@ data class VisitContactDto(
   override val telephone: String? = null,
   @param:Schema(description = "Contact Email Address", example = "email@example.com", required = false)
   override val email: String? = null,
-  @param:Schema(name = "languagePreference", description = "The language in which your correspondence will be sent", defaultValue = "EN", required = false)
+  @param:Schema(
+    name = "languagePreference",
+    description = "The language in which your correspondence will be sent",
+    defaultValue = "en",
+    allowableValues = ["en", "cy"],
+    required = false,
+  )
   override val languagePreference: LanguagePreference = LanguagePreference.EN,
 ) : ContactDto(name = name, telephone = telephone, email = email, languagePreference = languagePreference) {
   constructor(contactDto: ContactDto, visitContactId: Long?) : this(

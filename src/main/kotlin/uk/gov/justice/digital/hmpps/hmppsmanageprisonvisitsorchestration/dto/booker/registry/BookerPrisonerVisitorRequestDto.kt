@@ -28,6 +28,11 @@ data class BookerPrisonerVisitorRequestDto(
   @param:Schema(description = "Date when the visitor request was added", example = "2000-01-01", required = true)
   val requestedOn: LocalDate,
 
-  @param:Schema(name = "languagePreference", description = "The language in which your correspondence will be sent", required = true)
+  @param:Schema(
+    name = "languagePreference",
+    description = "The language in which your correspondence will be sent",
+    allowableValues = ["en", "cy"],
+    required = true,
+  )
   val languagePreference: LanguagePreference,
 )
