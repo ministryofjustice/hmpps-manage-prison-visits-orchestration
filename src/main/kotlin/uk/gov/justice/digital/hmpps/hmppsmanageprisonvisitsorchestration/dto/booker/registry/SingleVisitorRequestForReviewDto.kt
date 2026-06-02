@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.bo
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.management.SocialContactsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.LanguagePreference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestsStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import java.time.LocalDate
@@ -51,6 +52,14 @@ data class SingleVisitorRequestForReviewDto(
 
   @param:Schema(description = "Date request was submitted", example = "2025-10-28", required = true)
   val socialContacts: List<SocialContactsDto>,
+
+  @param:Schema(
+    name = "languagePreference",
+    description = "The language in which your correspondence will be sent",
+    allowableValues = ["en", "cy"],
+    required = true,
+  )
+  val languagePreference: LanguagePreference,
 ) {
   constructor(request: PrisonVisitorRequestDto, prisonerInfo: PrisonerDto, contacts: List<SocialContactsDto>) : this(
     reference = request.reference,
@@ -65,5 +74,6 @@ data class SingleVisitorRequestForReviewDto(
     requestedOn = request.requestedOn,
     socialContacts = contacts,
     status = request.status,
+    languagePreference = request.languagePreference,
   )
 }

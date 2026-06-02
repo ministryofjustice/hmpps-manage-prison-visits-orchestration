@@ -12,6 +12,7 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_APPROVE_VISITOR_REQUEST
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.ApproveVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.LanguagePreference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestsStatus.APPROVED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import java.time.LocalDate
@@ -35,6 +36,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
       dateOfBirth = LocalDate.now().minusYears(21),
       requestedOn = LocalDate.now(),
       status = APPROVED,
+      languagePreference = LanguagePreference.EN,
     )
 
     prisonVisitBookerRegistryMockServer.stubApproveVisitorRequest(requestReference, approveVisitorRequestResponse, HttpStatus.OK)
@@ -77,6 +79,7 @@ class ApproveVisitorRequestTest : IntegrationTestBase() {
       dateOfBirth = LocalDate.now().minusYears(21),
       requestedOn = LocalDate.now(),
       status = APPROVED,
+      languagePreference = LanguagePreference.EN,
     )
 
     prisonVisitBookerRegistryMockServer.stubApproveVisitorRequest(requestReference, null, HttpStatus.INTERNAL_SERVER_ERROR)
