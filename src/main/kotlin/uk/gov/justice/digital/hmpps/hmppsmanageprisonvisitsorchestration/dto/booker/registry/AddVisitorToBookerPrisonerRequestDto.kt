@@ -17,6 +17,12 @@ data class AddVisitorToBookerPrisonerRequestDto(
   @param:Schema(name = "dateOfBirth", description = "Date of birth of the visitor in request", required = true)
   val dateOfBirth: LocalDate,
 
-  @param:Schema(name = "languagePreference", description = "The language in which your correspondence will be sent", defaultValue = "EN", required = false)
+  @param:Schema(
+    name = "languagePreference",
+    description = "The language in which your correspondence will be sent",
+    defaultValue = "en",
+    allowableValues = ["en", "cy"],
+    required = false,
+  )
   val languagePreference: LanguagePreference = LanguagePreference.EN,
 )
