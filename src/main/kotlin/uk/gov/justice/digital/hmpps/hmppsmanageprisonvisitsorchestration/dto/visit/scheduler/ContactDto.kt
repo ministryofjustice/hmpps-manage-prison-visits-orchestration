@@ -13,7 +13,13 @@ open class ContactDto(
   open val telephone: String? = null,
   @param:Schema(description = "Contact Email Address", example = "email@example.com", required = false)
   open val email: String? = null,
-  @param:Schema(name = "languagePreference", description = "The language in which your correspondence will be sent", defaultValue = "EN", required = false)
+  @param:Schema(
+    name = "languagePreference",
+    description = "The language in which your correspondence will be sent",
+    defaultValue = "en",
+    allowableValues = ["en", "cy"],
+    required = false,
+  )
   open val languagePreference: LanguagePreference = LanguagePreference.EN,
 ) {
   override fun equals(other: Any?): Boolean {

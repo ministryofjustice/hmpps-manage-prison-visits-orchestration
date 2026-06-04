@@ -53,7 +53,12 @@ data class SingleVisitorRequestForReviewDto(
   @param:Schema(description = "Date request was submitted", example = "2025-10-28", required = true)
   val socialContacts: List<SocialContactsDto>,
 
-  @param:Schema(name = "languagePreference", description = "The language in which your correspondence will be sent", required = true)
+  @param:Schema(
+    name = "languagePreference",
+    description = "The language in which your correspondence will be sent",
+    allowableValues = ["en", "cy"],
+    required = true,
+  )
   val languagePreference: LanguagePreference,
 ) {
   constructor(request: PrisonVisitorRequestDto, prisonerInfo: PrisonerDto, contacts: List<SocialContactsDto>) : this(
