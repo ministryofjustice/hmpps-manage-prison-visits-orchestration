@@ -269,13 +269,13 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[1].sessionDateConflicts.size).isEqualTo(1)
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[1].sessionDateConflicts.first().sessionDateConflict).isEqualTo(SessionDateConflict.OUTSIDE_BOOKING_WINDOW)
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[1].visitSessions).isEmpty()
-    assertThat(sessionsAndScheduleDto.sessionsAndSchedule[0].scheduledEvents).isEmpty()
+    assertThat(sessionsAndScheduleDto.sessionsAndSchedule[1].scheduledEvents).isEmpty()
 
     // today + 2 - out of booking window
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[2].sessionDateConflicts.size).isEqualTo(1)
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[2].sessionDateConflicts.first().sessionDateConflict).isEqualTo(SessionDateConflict.OUTSIDE_BOOKING_WINDOW)
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[2].visitSessions).isEmpty()
-    assertThat(sessionsAndScheduleDto.sessionsAndSchedule[0].scheduledEvents).isEmpty()
+    assertThat(sessionsAndScheduleDto.sessionsAndSchedule[2].scheduledEvents).isEmpty()
 
     // today + 3 - not out of booking window
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[3].sessionDateConflicts).isEmpty()
