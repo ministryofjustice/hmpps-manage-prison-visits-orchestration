@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 
 import io.swagger.v3.oas.annotations.media.Schema
 
-class PrisonAndSessionsExcludeDatesDto(
+data class PrisonAndSessionsExcludeDatesDto(
   @param:Schema(description = "Dates excluded for visits (full day exclusions), empty if none.", required = true)
   val fullDateExclusions: List<ExcludeDateDto>,
 
