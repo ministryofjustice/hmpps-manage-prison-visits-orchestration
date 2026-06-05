@@ -53,7 +53,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     val incentiveLevels = listOf(IncentiveLevelDto("STD", "Standard"), IncentiveLevelDto("ENH", "Enhanced"))
     val visitOrderHistory1 = VisitOrderHistoryDto(VisitOrderHistoryType.MIGRATION, LocalDateTime.now().minusDays(10), 10, null, 3, null, userName = "user1", attributes = emptyList())
     val visitOrderHistory2 = VisitOrderHistoryDto(VisitOrderHistoryType.PRISONER_BALANCE_RESET, LocalDateTime.now().minusDays(9), 0, null, 0, null, userName = "user2", attributes = emptyList())
-    val visitOrderHistory3 = VisitOrderHistoryDto(VisitOrderHistoryType.ALLOCATION_USED_BY_VISIT, LocalDateTime.now().minusDays(8), -1, null, 0, null, userName = "SYSTEM", attributes = listOf(VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd")))
+    val visitOrderHistory3 = VisitOrderHistoryDto(VisitOrderHistoryType.ALLOCATION_USED_BY_VISIT, LocalDateTime.now().minusDays(8), -1, null, 0, null, userName = "SYSTEM", attributes = listOf(VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd"), VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_ORDER_TYPE_USED, "VO")))
 
     // this entry needs to be ignored as balance does not change
     val visitOrderHistory4 = VisitOrderHistoryDto(VisitOrderHistoryType.SYNC_FROM_NOMIS, LocalDateTime.now().minusDays(7), -1, null, 0, null, userName = "SYSTEM", attributes = emptyList())
@@ -77,7 +77,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     assertVisitOrderHistory(visitOrderHistory[1], visitOrderHistory4, 0, 0, "SYSTEM")
     assertVisitOrderHistoryAttributes(visitOrderHistory4.attributes, emptyList())
     assertVisitOrderHistory(visitOrderHistory[2], visitOrderHistory3, -1, 0, "SYSTEM")
-    assertVisitOrderHistoryAttributes(visitOrderHistory3.attributes, listOf(Pair(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd")))
+    assertVisitOrderHistoryAttributes(visitOrderHistory3.attributes, listOf(Pair(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd"), Pair(VisitOrderHistoryAttributeType.VISIT_ORDER_TYPE_USED, "VO")))
     assertVisitOrderHistory(visitOrderHistory[3], visitOrderHistory2, -10, -3, "Sarah Jones")
     assertVisitOrderHistoryAttributes(visitOrderHistory2.attributes, emptyList())
     assertVisitOrderHistory(visitOrderHistory[4], visitOrderHistory1, 0, 0, "John Smith")
@@ -121,7 +121,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     val incentiveLevels = listOf(IncentiveLevelDto("STD", "Standard"), IncentiveLevelDto("ENH", "Enhanced"))
     val visitOrderHistory1 = VisitOrderHistoryDto(VisitOrderHistoryType.MIGRATION, LocalDateTime.now().minusDays(10), 10, null, 3, null, userName = "user1", attributes = emptyList())
     val visitOrderHistory2 = VisitOrderHistoryDto(VisitOrderHistoryType.PRISONER_BALANCE_RESET, LocalDateTime.now().minusDays(9), 0, null, 0, null, userName = "user2", attributes = emptyList())
-    val visitOrderHistory3 = VisitOrderHistoryDto(VisitOrderHistoryType.ALLOCATION_USED_BY_VISIT, LocalDateTime.now().minusDays(8), -1, null, 0, null, userName = "SYSTEM", attributes = listOf(VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd")))
+    val visitOrderHistory3 = VisitOrderHistoryDto(VisitOrderHistoryType.ALLOCATION_USED_BY_VISIT, LocalDateTime.now().minusDays(8), -1, null, 0, null, userName = "SYSTEM", attributes = listOf(VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd"), VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_ORDER_TYPE_USED, "VO")))
 
     // this entry needs to be ignored as balance does not change
     val visitOrderHistory4 = VisitOrderHistoryDto(VisitOrderHistoryType.SYNC_FROM_NOMIS, LocalDateTime.now().minusDays(7), -1, null, 0, null, userName = "SYSTEM", attributes = emptyList())
@@ -165,7 +165,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     val incentiveLevels = listOf(IncentiveLevelDto("STD", "Standard"), IncentiveLevelDto("ENH", "Enhanced"))
     val visitOrderHistory1 = VisitOrderHistoryDto(VisitOrderHistoryType.MIGRATION, LocalDateTime.now().minusDays(10), 10, null, 3, null, userName = "user1", attributes = emptyList())
     val visitOrderHistory2 = VisitOrderHistoryDto(VisitOrderHistoryType.PRISONER_BALANCE_RESET, LocalDateTime.now().minusDays(9), 0, null, 0, null, userName = "user2", attributes = emptyList())
-    val visitOrderHistory3 = VisitOrderHistoryDto(VisitOrderHistoryType.ALLOCATION_USED_BY_VISIT, LocalDateTime.now().minusDays(8), -1, null, 0, null, userName = "SYSTEM", attributes = listOf(VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd")))
+    val visitOrderHistory3 = VisitOrderHistoryDto(VisitOrderHistoryType.ALLOCATION_USED_BY_VISIT, LocalDateTime.now().minusDays(8), -1, null, 0, null, userName = "SYSTEM", attributes = listOf(VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd"), VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_ORDER_TYPE_USED, "VO")))
 
     // this entry needs to be ignored as balance does not change
     val visitOrderHistory4 = VisitOrderHistoryDto(VisitOrderHistoryType.SYNC_FROM_NOMIS, LocalDateTime.now().minusDays(7), -1, null, 0, null, userName = "SYSTEM", attributes = emptyList())
@@ -190,7 +190,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     assertVisitOrderHistory(visitOrderHistory[1], visitOrderHistory4, 0, 0, "SYSTEM")
     assertVisitOrderHistoryAttributes(visitOrderHistory4.attributes, emptyList())
     assertVisitOrderHistory(visitOrderHistory[2], visitOrderHistory3, -1, 0, "SYSTEM")
-    assertVisitOrderHistoryAttributes(visitOrderHistory3.attributes, listOf(Pair(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd")))
+    assertVisitOrderHistoryAttributes(visitOrderHistory3.attributes, listOf(Pair(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd"), Pair(VisitOrderHistoryAttributeType.VISIT_ORDER_TYPE_USED, "VO")))
 
     assertVisitOrderHistory(visitOrderHistory[3], visitOrderHistory2, -10, -3, "Sarah Jones")
     assertVisitOrderHistoryAttributes(visitOrderHistory2.attributes, emptyList())
@@ -216,7 +216,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     val incentiveLevels = listOf(IncentiveLevelDto("STD", "Standard"), IncentiveLevelDto("ENH", "Enhanced"))
     val visitOrderHistory1 = VisitOrderHistoryDto(VisitOrderHistoryType.MIGRATION, LocalDateTime.now().minusDays(10), 10, null, 3, null, userName = "user1", attributes = emptyList())
     val visitOrderHistory2 = VisitOrderHistoryDto(VisitOrderHistoryType.PRISONER_BALANCE_RESET, LocalDateTime.now().minusDays(9), 0, null, 0, null, userName = "user2", attributes = emptyList())
-    val visitOrderHistory3 = VisitOrderHistoryDto(VisitOrderHistoryType.ALLOCATION_USED_BY_VISIT, LocalDateTime.now().minusDays(8), -1, null, 0, null, userName = "SYSTEM", attributes = listOf(VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd")))
+    val visitOrderHistory3 = VisitOrderHistoryDto(VisitOrderHistoryType.ALLOCATION_USED_BY_VISIT, LocalDateTime.now().minusDays(8), -1, null, 0, null, userName = "SYSTEM", attributes = listOf(VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd"), VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_ORDER_TYPE_USED, "VO")))
 
     // this entry needs to be ignored as balance does not change
     val visitOrderHistory4 = VisitOrderHistoryDto(VisitOrderHistoryType.SYNC_FROM_NOMIS, LocalDateTime.now().minusDays(7), -1, null, 0, null, userName = "SYSTEM", attributes = emptyList())
@@ -241,7 +241,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     assertVisitOrderHistory(visitOrderHistory[1], visitOrderHistory4, 0, 0, "SYSTEM")
     assertVisitOrderHistoryAttributes(visitOrderHistory4.attributes, emptyList())
     assertVisitOrderHistory(visitOrderHistory[2], visitOrderHistory3, -1, 0, "SYSTEM")
-    assertVisitOrderHistoryAttributes(visitOrderHistory3.attributes, listOf(Pair(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd")))
+    assertVisitOrderHistoryAttributes(visitOrderHistory3.attributes, listOf(Pair(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd"), Pair(VisitOrderHistoryAttributeType.VISIT_ORDER_TYPE_USED, "VO")))
     assertVisitOrderHistory(visitOrderHistory[3], visitOrderHistory2, -10, -3, "Sarah Jones")
     assertVisitOrderHistoryAttributes(visitOrderHistory2.attributes, emptyList())
     assertVisitOrderHistory(visitOrderHistory[4], visitOrderHistory1, 0, 0, "John Smith")
@@ -266,7 +266,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     val incentiveLevels = listOf(IncentiveLevelDto("STD", "Standard"), IncentiveLevelDto("ENH", "Enhanced"))
     val visitOrderHistory1 = VisitOrderHistoryDto(VisitOrderHistoryType.MIGRATION, LocalDateTime.now().minusDays(10), 10, null, 3, null, userName = "user1", attributes = emptyList())
     val visitOrderHistory2 = VisitOrderHistoryDto(VisitOrderHistoryType.PRISONER_BALANCE_RESET, LocalDateTime.now().minusDays(9), 0, null, 0, null, userName = "user2", attributes = emptyList())
-    val visitOrderHistory3 = VisitOrderHistoryDto(VisitOrderHistoryType.ALLOCATION_USED_BY_VISIT, LocalDateTime.now().minusDays(8), -1, null, 0, null, userName = "SYSTEM", attributes = listOf(VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd")))
+    val visitOrderHistory3 = VisitOrderHistoryDto(VisitOrderHistoryType.ALLOCATION_USED_BY_VISIT, LocalDateTime.now().minusDays(8), -1, null, 0, null, userName = "SYSTEM", attributes = listOf(VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd"), VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_ORDER_TYPE_USED, "VO")))
 
     // this entry needs to be ignored as balance does not change
     val visitOrderHistory4 = VisitOrderHistoryDto(VisitOrderHistoryType.SYNC_FROM_NOMIS, LocalDateTime.now().minusDays(7), -1, null, 0, null, userName = "SYSTEM", attributes = emptyList())
@@ -291,7 +291,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     assertVisitOrderHistory(visitOrderHistory[1], visitOrderHistory4, 0, 0, "SYSTEM")
     assertVisitOrderHistoryAttributes(visitOrderHistory4.attributes, emptyList())
     assertVisitOrderHistory(visitOrderHistory[2], visitOrderHistory3, -1, 0, "SYSTEM")
-    assertVisitOrderHistoryAttributes(visitOrderHistory3.attributes, listOf(Pair(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd")))
+    assertVisitOrderHistoryAttributes(visitOrderHistory3.attributes, listOf(Pair(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd"), Pair(VisitOrderHistoryAttributeType.VISIT_ORDER_TYPE_USED, "VO")))
     assertVisitOrderHistory(visitOrderHistory[3], visitOrderHistory2, -10, -3, "Sarah Jones")
     assertVisitOrderHistoryAttributes(visitOrderHistory2.attributes, emptyList())
     assertVisitOrderHistory(visitOrderHistory[4], visitOrderHistory1, 0, 0, "John Smith")
@@ -424,7 +424,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     val incentiveLevels = listOf(IncentiveLevelDto("STD", "Standard"), IncentiveLevelDto("ENH", "Enhanced"))
     val visitOrderHistory1 = VisitOrderHistoryDto(VisitOrderHistoryType.MIGRATION, LocalDateTime.now().minusDays(10), 10, null, 3, null, userName = "user1", attributes = emptyList())
     val visitOrderHistory2 = VisitOrderHistoryDto(VisitOrderHistoryType.PRISONER_BALANCE_RESET, LocalDateTime.now().minusDays(9), 0, null, 0, null, userName = "user2", attributes = emptyList())
-    val visitOrderHistory3 = VisitOrderHistoryDto(VisitOrderHistoryType.ALLOCATION_USED_BY_VISIT, LocalDateTime.now().minusDays(8), -1, null, 0, null, userName = "SYSTEM", attributes = listOf(VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd")))
+    val visitOrderHistory3 = VisitOrderHistoryDto(VisitOrderHistoryType.ALLOCATION_USED_BY_VISIT, LocalDateTime.now().minusDays(8), -1, null, 0, null, userName = "SYSTEM", attributes = listOf(VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd"), VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_ORDER_TYPE_USED, "VO")))
 
     // this entry needs to be ignored as balance does not change
     val visitOrderHistory4 = VisitOrderHistoryDto(VisitOrderHistoryType.SYNC_FROM_NOMIS, LocalDateTime.now().minusDays(7), -1, null, 0, null, userName = "SYSTEM", attributes = emptyList())
@@ -667,7 +667,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     val incentiveLevels = listOf(IncentiveLevelDto("STD", "Standard"), IncentiveLevelDto("ENH", "Enhanced"))
     val visitOrderHistory1 = VisitOrderHistoryDto(VisitOrderHistoryType.MIGRATION, LocalDateTime.now().minusDays(10), 10, null, 3, null, userName = "user1", attributes = emptyList())
     val visitOrderHistory2 = VisitOrderHistoryDto(VisitOrderHistoryType.PRISONER_BALANCE_RESET, LocalDateTime.now().minusDays(9), 0, null, 0, null, userName = "user2", attributes = emptyList())
-    val visitOrderHistory3 = VisitOrderHistoryDto(VisitOrderHistoryType.ALLOCATION_USED_BY_VISIT, LocalDateTime.now().minusDays(8), -1, null, 0, null, userName = "SYSTEM", attributes = listOf(VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd")))
+    val visitOrderHistory3 = VisitOrderHistoryDto(VisitOrderHistoryType.ALLOCATION_USED_BY_VISIT, LocalDateTime.now().minusDays(8), -1, null, 0, null, userName = "SYSTEM", attributes = listOf(VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd"), VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_ORDER_TYPE_USED, "VO")))
 
     // this entry needs to be ignored as balance does not change
     val visitOrderHistory4 = VisitOrderHistoryDto(VisitOrderHistoryType.SYNC_FROM_NOMIS, LocalDateTime.now().minusDays(7), -1, null, 0, null, userName = "SYSTEM", attributes = emptyList())
@@ -691,7 +691,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     assertVisitOrderHistory(visitOrderHistory[1], visitOrderHistory4, 0, 0, "SYSTEM")
     assertVisitOrderHistoryAttributes(visitOrderHistory4.attributes, emptyList())
     assertVisitOrderHistory(visitOrderHistory[2], visitOrderHistory3, -1, 0, "SYSTEM")
-    assertVisitOrderHistoryAttributes(visitOrderHistory3.attributes, listOf(Pair(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd")))
+    assertVisitOrderHistoryAttributes(visitOrderHistory3.attributes, listOf(Pair(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd"), Pair(VisitOrderHistoryAttributeType.VISIT_ORDER_TYPE_USED, "VO")))
     assertVisitOrderHistory(visitOrderHistory[3], visitOrderHistory2, -10, -3, "user2")
     assertVisitOrderHistoryAttributes(visitOrderHistory2.attributes, emptyList())
     assertVisitOrderHistory(visitOrderHistory[4], visitOrderHistory1, 0, 0, "user1")
@@ -712,7 +712,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     val incentiveLevels = listOf(IncentiveLevelDto("STD", "Standard"), IncentiveLevelDto("ENH", "Enhanced"))
     val visitOrderHistory1 = VisitOrderHistoryDto(VisitOrderHistoryType.MIGRATION, LocalDateTime.now().minusDays(10), 10, null, 3, null, userName = "user1", attributes = emptyList())
     val visitOrderHistory2 = VisitOrderHistoryDto(VisitOrderHistoryType.PRISONER_BALANCE_RESET, LocalDateTime.now().minusDays(9), 0, null, 0, null, userName = "user2", attributes = emptyList())
-    val visitOrderHistory3 = VisitOrderHistoryDto(VisitOrderHistoryType.ALLOCATION_USED_BY_VISIT, LocalDateTime.now().minusDays(8), -1, null, 0, null, userName = "SYSTEM", attributes = listOf(VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd")))
+    val visitOrderHistory3 = VisitOrderHistoryDto(VisitOrderHistoryType.ALLOCATION_USED_BY_VISIT, LocalDateTime.now().minusDays(8), -1, null, 0, null, userName = "SYSTEM", attributes = listOf(VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd"), VisitOrderHistoryAttributesDto(VisitOrderHistoryAttributeType.VISIT_ORDER_TYPE_USED, "VO")))
 
     // this entry needs to be ignored as balance does not change
     val visitOrderHistory4 = VisitOrderHistoryDto(VisitOrderHistoryType.SYNC_FROM_NOMIS, LocalDateTime.now().minusDays(7), -1, null, 0, null, userName = "SYSTEM", attributes = emptyList())
@@ -736,7 +736,7 @@ class GetVisitOrderHistoryForPrisonerTest : IntegrationTestBase() {
     assertVisitOrderHistory(visitOrderHistory[1], visitOrderHistory4, 0, 0, "SYSTEM")
     assertVisitOrderHistoryAttributes(visitOrderHistory4.attributes, emptyList())
     assertVisitOrderHistory(visitOrderHistory[2], visitOrderHistory3, -1, 0, "SYSTEM")
-    assertVisitOrderHistoryAttributes(visitOrderHistory3.attributes, listOf(Pair(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd")))
+    assertVisitOrderHistoryAttributes(visitOrderHistory3.attributes, listOf(Pair(VisitOrderHistoryAttributeType.VISIT_REFERENCE, "aa-bb-cc-dd"), Pair(VisitOrderHistoryAttributeType.VISIT_ORDER_TYPE_USED, "VO")))
     assertVisitOrderHistory(visitOrderHistory[3], visitOrderHistory2, -10, -3, "user2")
     assertVisitOrderHistoryAttributes(visitOrderHistory2.attributes, emptyList())
     assertVisitOrderHistory(visitOrderHistory[4], visitOrderHistory1, 0, 0, "user1")
