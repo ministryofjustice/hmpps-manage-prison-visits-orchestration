@@ -27,6 +27,8 @@ class DateUtilsTest {
     maxAdultVisitors = 3,
     maxChildVisitors = 3,
     adultAgeYears = 18,
+    DayOfWeek.MONDAY,
+    3,
   )
 
   @Test

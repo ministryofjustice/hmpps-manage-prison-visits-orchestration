@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.SingleVisitorRequestForReviewDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.LanguagePreference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestsStatus.APPROVED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestsStatus.REJECTED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestsStatus.REQUESTED
@@ -66,7 +67,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
 
     prisonVisitBookerRegistryMockServer.stubGetSingleVisitorRequest(
       requestReference,
-      visitorRequest = PrisonVisitorRequestDto(requestReference, booker.reference, booker.email, prisonerId, "firstName", "lastName", LocalDate.now().minusYears(21), LocalDate.now(), status = REQUESTED),
+      visitorRequest = PrisonVisitorRequestDto(requestReference, booker.reference, booker.email, prisonerId, "firstName", "lastName", LocalDate.now().minusYears(21), LocalDate.now(), status = REQUESTED, languagePreference = LanguagePreference.EN),
     )
 
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(booker.reference, booker = booker)
@@ -89,6 +90,9 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
     val response = getResults(responseSpec.expectBody())
 
     assertThat(response.reference).isEqualTo(requestReference)
+    assertThat(response.firstName).isEqualTo("firstName")
+    assertThat(response.lastName).isEqualTo("lastName")
+    assertThat(response.languagePreference).isEqualTo(LanguagePreference.EN)
 
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getSingleVisitorRequest(any())
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerByBookerReference(any())
@@ -135,7 +139,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
 
     prisonVisitBookerRegistryMockServer.stubGetSingleVisitorRequest(
       requestReference,
-      visitorRequest = PrisonVisitorRequestDto(requestReference, booker.reference, booker.email, prisonerId, "firstName", "lastName", LocalDate.now().minusYears(21), LocalDate.now(), status = APPROVED),
+      visitorRequest = PrisonVisitorRequestDto(requestReference, booker.reference, booker.email, prisonerId, "firstName", "lastName", LocalDate.now().minusYears(21), LocalDate.now(), status = APPROVED, languagePreference = LanguagePreference.EN),
     )
 
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(booker.reference, booker = booker)
@@ -184,7 +188,7 @@ class GetSingleVisitorRequestForReviewTest : IntegrationTestBase() {
 
     prisonVisitBookerRegistryMockServer.stubGetSingleVisitorRequest(
       requestReference,
-      visitorRequest = PrisonVisitorRequestDto(requestReference, booker.reference, booker.email, prisonerId, "firstName", "lastName", LocalDate.now().minusYears(21), LocalDate.now(), status = REJECTED),
+      visitorRequest = PrisonVisitorRequestDto(requestReference, booker.reference, booker.email, prisonerId, "firstName", "lastName", LocalDate.now().minusYears(21), LocalDate.now(), status = REJECTED, languagePreference = LanguagePreference.EN),
     )
 
     prisonVisitBookerRegistryMockServer.stubGetBookerByBookerReference(booker.reference, booker = booker)

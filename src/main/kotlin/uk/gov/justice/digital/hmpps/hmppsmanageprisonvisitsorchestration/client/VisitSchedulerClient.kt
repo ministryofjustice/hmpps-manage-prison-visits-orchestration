@@ -36,6 +36,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitRequestSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitRequestsCountDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerUpdatePrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
@@ -589,6 +590,22 @@ class VisitSchedulerClient(
         }
       }
       .blockOptional(apiTimeout).orElseThrow { NotFoundException("Prison with prison code - $prisonCode not found on visit-scheduler") }
+  }
+
+  fun updatePrison(prisonCode: String, updatePrisonDto: VisitSchedulerUpdatePrisonDto): VisitSchedulerPrisonDto {
+    val uri = "/admin/prisons/prison/$prisonCode"
+
+    return webClient.put()
+      .uri(uri)
+      .accept(MediaType.APPLICATION_JSON)
+      .body(BodyInserters.fromValue(updatePrisonDto))
+      .retrieve()
+      .bodyToMono<VisitSchedulerPrisonDto>()
+      .onErrorResume { e ->
+        LOG.error("updatePrison Failed for get request $uri")
+        Mono.error(e)
+      }
+      .blockOptional(apiTimeout).orElseThrow { IllegalStateException("call to update prison $prisonCode on visit-scheduler failed") }
   }
 
   fun getNotificationEventsForBookingReferenceAsMono(reference: String): Mono<List<VisitNotificationEventDto>> = webClient.get()

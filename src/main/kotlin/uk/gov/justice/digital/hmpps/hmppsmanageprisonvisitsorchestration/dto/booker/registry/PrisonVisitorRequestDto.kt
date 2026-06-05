@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.bo
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.LanguagePreference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestsStatus
 import java.time.LocalDate
 
@@ -38,4 +39,12 @@ data class PrisonVisitorRequestDto(
 
   @param:Schema(description = "The current status of the request", example = "REQUESTED", required = true)
   val status: VisitorRequestsStatus,
+
+  @param:Schema(
+    name = "languagePreference",
+    description = "The language in which your correspondence will be sent",
+    allowableValues = ["en", "cy"],
+    required = true,
+  )
+  val languagePreference: LanguagePreference,
 )

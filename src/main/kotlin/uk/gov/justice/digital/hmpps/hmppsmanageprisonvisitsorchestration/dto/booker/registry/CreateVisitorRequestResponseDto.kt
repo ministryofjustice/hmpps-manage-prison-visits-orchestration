@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry
 
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.LanguagePreference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestsStatus
 
 data class CreateVisitorRequestResponseDto(
@@ -15,4 +16,11 @@ data class CreateVisitorRequestResponseDto(
 
   @param:Schema(description = "The id of the booker's prisoner for the visitor request", example = "AA123456")
   val prisonerId: String,
+
+  @param:Schema(
+    name = "languagePreference",
+    description = "The language in which your correspondence will be sent",
+    allowableValues = ["en", "cy"],
+  )
+  val languagePreference: LanguagePreference,
 )

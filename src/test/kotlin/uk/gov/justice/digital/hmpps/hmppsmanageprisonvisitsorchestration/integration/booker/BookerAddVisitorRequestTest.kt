@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_VISITOR_REQUESTS_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AddVisitorToBookerPrisonerRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.CreateVisitorRequestResponseDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.LanguagePreference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestValidationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.VisitorRequestsStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
@@ -38,8 +39,8 @@ class BookerAddVisitorRequestTest : IntegrationTestBase() {
   @Test
   fun `when call to booker registry is successful a CREATED response code is returned`() {
     // Given
-    val addVisitorRequest = AddVisitorToBookerPrisonerRequestDto("Test", "User", LocalDate.of(2000, 1, 1))
-    val response = CreateVisitorRequestResponseDto(reference = "random-ref", status = VisitorRequestsStatus.REQUESTED, bookerReference = bookerReference, prisonerId = prisonerId)
+    val addVisitorRequest = AddVisitorToBookerPrisonerRequestDto("Test", "User", LocalDate.of(2000, 1, 1), LanguagePreference.EN)
+    val response = CreateVisitorRequestResponseDto(reference = "random-ref", status = VisitorRequestsStatus.REQUESTED, bookerReference = bookerReference, prisonerId = prisonerId, LanguagePreference.EN)
     prisonVisitBookerRegistryMockServer.stubAddVisitorRequest(bookerReference, prisonerId, addVisitorRequest, response, HttpStatus.CREATED)
 
     // When
@@ -53,7 +54,7 @@ class BookerAddVisitorRequestTest : IntegrationTestBase() {
   @Test
   fun `when call to booker registry throws a validation error then validation error is returned`() {
     // Given
-    val addVisitorRequest = AddVisitorToBookerPrisonerRequestDto("Test", "User", LocalDate.of(2000, 1, 1))
+    val addVisitorRequest = AddVisitorToBookerPrisonerRequestDto("Test", "User", LocalDate.of(2000, 1, 1), LanguagePreference.EN)
     val bookerVisitorRequestValidationErrorResponse = BookerVisitorRequestValidationErrorResponse(status = HttpStatus.UNPROCESSABLE_CONTENT.value(), validationError = VisitorRequestValidationErrorCodes.VISITOR_ALREADY_EXISTS)
     prisonVisitBookerRegistryMockServer.stubAddVisitorRequestValidationFailure(bookerReference, prisonerId, bookerVisitorRequestValidationErrorResponse)
 
@@ -70,8 +71,8 @@ class BookerAddVisitorRequestTest : IntegrationTestBase() {
   @Test
   fun `when call to booker registry fails with a NOT_FOUND error then NOT_FOUND error code is returned`() {
     // Given
-    val addVisitorRequest = AddVisitorToBookerPrisonerRequestDto("Test", "User", LocalDate.of(2000, 1, 1))
-    val response = CreateVisitorRequestResponseDto(reference = "random-ref", status = VisitorRequestsStatus.REQUESTED, bookerReference = bookerReference, prisonerId = prisonerId)
+    val addVisitorRequest = AddVisitorToBookerPrisonerRequestDto("Test", "User", LocalDate.of(2000, 1, 1), LanguagePreference.EN)
+    val response = CreateVisitorRequestResponseDto(reference = "random-ref", status = VisitorRequestsStatus.REQUESTED, bookerReference = bookerReference, prisonerId = prisonerId, LanguagePreference.EN)
     prisonVisitBookerRegistryMockServer.stubAddVisitorRequest(bookerReference, prisonerId, addVisitorRequest, response, HttpStatus.NOT_FOUND)
 
     // When
@@ -85,8 +86,8 @@ class BookerAddVisitorRequestTest : IntegrationTestBase() {
   @Test
   fun `when call to booker registry fails with an INTERNAL_SERVER_ERROR error then INTERNAL_SERVER_ERROR error code is returned`() {
     // Given
-    val addVisitorRequest = AddVisitorToBookerPrisonerRequestDto("Test", "User", LocalDate.of(2000, 1, 1))
-    val response = CreateVisitorRequestResponseDto(reference = "random-ref", status = VisitorRequestsStatus.REQUESTED, bookerReference = bookerReference, prisonerId = prisonerId)
+    val addVisitorRequest = AddVisitorToBookerPrisonerRequestDto("Test", "User", LocalDate.of(2000, 1, 1), LanguagePreference.EN)
+    val response = CreateVisitorRequestResponseDto(reference = "random-ref", status = VisitorRequestsStatus.REQUESTED, bookerReference = bookerReference, prisonerId = prisonerId, LanguagePreference.EN)
 
     prisonVisitBookerRegistryMockServer.stubAddVisitorRequest(bookerReference, prisonerId, addVisitorRequest, response, HttpStatus.INTERNAL_SERVER_ERROR)
 
@@ -101,8 +102,8 @@ class BookerAddVisitorRequestTest : IntegrationTestBase() {
   @Test
   fun `when booker authorisation is called without correct role then FORBIDDEN status is returned`() {
     // When
-    val addVisitorRequest = AddVisitorToBookerPrisonerRequestDto("Test", "User", LocalDate.of(2000, 1, 1))
-    val response = CreateVisitorRequestResponseDto(reference = "random-ref", status = VisitorRequestsStatus.REQUESTED, bookerReference = bookerReference, prisonerId = prisonerId)
+    val addVisitorRequest = AddVisitorToBookerPrisonerRequestDto("Test", "User", LocalDate.of(2000, 1, 1), LanguagePreference.EN)
+    val response = CreateVisitorRequestResponseDto(reference = "random-ref", status = VisitorRequestsStatus.REQUESTED, bookerReference = bookerReference, prisonerId = prisonerId, LanguagePreference.EN)
 
     prisonVisitBookerRegistryMockServer.stubAddVisitorRequest(bookerReference, prisonerId, addVisitorRequest, response, HttpStatus.CREATED)
 
