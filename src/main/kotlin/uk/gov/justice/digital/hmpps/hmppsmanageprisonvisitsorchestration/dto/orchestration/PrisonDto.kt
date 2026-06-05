@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
+import java.time.DayOfWeek
 
 @Schema(description = "Prison dto")
 data class PrisonDto(
@@ -43,6 +44,12 @@ data class PrisonDto(
   @param:Schema(description = "Age of adults in years")
   val adultAgeYears: Int,
 
+  @param:Schema(description = "The week day of which the prison week starts on. Enum value, any day of the week MONDAY - SUNDAY")
+  var weekStartDay: DayOfWeek,
+
+  @param:Schema(description = "The limit per prison week, the number of remand visits that can be booked per week")
+  var remandVisitLimitPerWeek: Int,
+
   @param:Schema(description = "Contact email address of prison", example = "example@example.com", required = false)
   val emailAddress: String?,
 
@@ -66,6 +73,8 @@ data class PrisonDto(
     maxAdultVisitors = visitSchedulerPrisonDto.maxAdultVisitors,
     maxChildVisitors = visitSchedulerPrisonDto.maxChildVisitors,
     adultAgeYears = visitSchedulerPrisonDto.adultAgeYears,
+    weekStartDay = visitSchedulerPrisonDto.weekStartDay,
+    remandVisitLimitPerWeek = visitSchedulerPrisonDto.remandVisitLimitPerWeek,
     clients = visitSchedulerPrisonDto.clients,
 
     emailAddress = prisonRegisterContactDetailsDto.emailAddress,

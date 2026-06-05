@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_VISITOR_REQUESTS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerPrisonerVisitorRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.LanguagePreference
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
@@ -23,10 +24,10 @@ class GetActiveVisitorRequestsForBookerTest : IntegrationTestBase() {
   fun `when booker has active visitor requests then all active visitor requests are returned`() {
     // Given
     val bookerReference = "booker-ref"
-    val request1 = BookerPrisonerVisitorRequestDto(reference = "1", prisonerId = "A11", firstName = "VisitorOne", lastName = "First", dateOfBirth = LocalDate.of(1980, 1, 1), requestedOn = LocalDate.of(2026, 1, 31))
-    val request2 = BookerPrisonerVisitorRequestDto(reference = "2", prisonerId = "A11", firstName = "VisitorTwo", lastName = "Second", dateOfBirth = LocalDate.of(1990, 2, 2), requestedOn = LocalDate.of(2026, 2, 28))
-    val request3 = BookerPrisonerVisitorRequestDto(reference = "3", prisonerId = "A12", firstName = "VisitorThree", lastName = "Third", dateOfBirth = LocalDate.of(2000, 3, 3), requestedOn = LocalDate.of(2026, 3, 31))
-    val request4 = BookerPrisonerVisitorRequestDto(reference = "4", prisonerId = "A12", firstName = "VisitorFour", lastName = "Fourth", dateOfBirth = LocalDate.of(2010, 4, 4), requestedOn = LocalDate.of(2026, 4, 30))
+    val request1 = BookerPrisonerVisitorRequestDto(reference = "1", prisonerId = "A11", firstName = "VisitorOne", lastName = "First", dateOfBirth = LocalDate.of(1980, 1, 1), requestedOn = LocalDate.of(2026, 1, 31), LanguagePreference.EN)
+    val request2 = BookerPrisonerVisitorRequestDto(reference = "2", prisonerId = "A11", firstName = "VisitorTwo", lastName = "Second", dateOfBirth = LocalDate.of(1990, 2, 2), requestedOn = LocalDate.of(2026, 2, 28), LanguagePreference.EN)
+    val request3 = BookerPrisonerVisitorRequestDto(reference = "3", prisonerId = "A12", firstName = "VisitorThree", lastName = "Third", dateOfBirth = LocalDate.of(2000, 3, 3), requestedOn = LocalDate.of(2026, 3, 31), LanguagePreference.CY)
+    val request4 = BookerPrisonerVisitorRequestDto(reference = "4", prisonerId = "A12", firstName = "VisitorFour", lastName = "Fourth", dateOfBirth = LocalDate.of(2010, 4, 4), requestedOn = LocalDate.of(2026, 4, 30), LanguagePreference.CY)
     prisonVisitBookerRegistryMockServer.stubGetActiveVisitorRequestsForBooker(bookerReference, listOf(request1, request2, request3, request4))
 
     // When
@@ -116,6 +117,7 @@ class GetActiveVisitorRequestsForBookerTest : IntegrationTestBase() {
     Assertions.assertThat(bookerPrisonerVisitorRequestDto.lastName).isEqualTo(requestedVisitorRequestDto.lastName)
     Assertions.assertThat(bookerPrisonerVisitorRequestDto.dateOfBirth).isEqualTo(requestedVisitorRequestDto.dateOfBirth)
     Assertions.assertThat(bookerPrisonerVisitorRequestDto.requestedOn).isEqualTo(requestedVisitorRequestDto.requestedOn)
+    Assertions.assertThat(bookerPrisonerVisitorRequestDto.languagePreference).isEqualTo(requestedVisitorRequestDto.languagePreference)
   }
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerPrisonerVisitorRequestDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<BookerPrisonerVisitorRequestDto>::class.java).toList()
