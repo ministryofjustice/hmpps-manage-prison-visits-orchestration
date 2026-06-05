@@ -29,11 +29,7 @@ class PrisonAndSessionsExcludeDatesService(
     currentOrFutureSessions?.let {
       currentOrFutureSessions.map { it.reference }.distinct().forEach { sessionTemplateReference ->
         val excludedSessionsForSession = sessionsService.getFutureExcludeDatesForSessionTemplate(sessionTemplateReference)
-
-        // only add to map if there are any excluded dates
-        if (excludedSessionsForSession.isNotEmpty()) {
-          sessionExclusionsMap[sessionTemplateReference] = excludedSessionsForSession
-        }
+        sessionExclusionsMap[sessionTemplateReference] = excludedSessionsForSession
       }
     }
 
