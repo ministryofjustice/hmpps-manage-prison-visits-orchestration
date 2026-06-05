@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionDateRangeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTimeSlotDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
@@ -54,6 +55,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
       areCategoryGroupsInclusive = false,
       areIncentiveGroupsInclusive = false,
       visitRoom = "Visit Room 2",
+      visitOrderRestriction = SessionTemplateVisitOrderRestrictionType.NONE,
     )
     visitSchedulerMockServer.stubGetSessionSchedule(
       prisonCode,
@@ -80,6 +82,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     assertThat(sessionScheduleResults[0].areCategoryGroupsInclusive).isTrue()
     assertThat(sessionScheduleResults[0].areIncentiveGroupsInclusive).isTrue()
     assertThat(sessionScheduleResults[0].visitRoom).isEqualTo("Visit Room 1")
+    assertThat(sessionScheduleResults[0].visitOrderRestriction).isEqualTo(SessionTemplateVisitOrderRestrictionType.VO_PVO)
 
     assertThat(sessionScheduleResults[1].sessionTemplateReference).isEqualTo(sessionScheduleDto2.sessionTemplateReference)
     assertThat(sessionScheduleResults[1].sessionTimeSlot.startTime).isEqualTo(LocalTime.parse("10:00"))
@@ -93,6 +96,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     assertThat(sessionScheduleResults[1].areCategoryGroupsInclusive).isFalse()
     assertThat(sessionScheduleResults[1].areIncentiveGroupsInclusive).isFalse()
     assertThat(sessionScheduleResults[1].visitRoom).isEqualTo("Visit Room 2")
+    assertThat(sessionScheduleResults[1].visitOrderRestriction).isEqualTo(SessionTemplateVisitOrderRestrictionType.NONE)
   }
 
   @Test
@@ -128,6 +132,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     prisonerLocationGroupNames: List<String> = mutableListOf(),
     prisonerCategoryGroupNames: List<String> = mutableListOf(),
     prisonerIncentiveLevelGroupNames: List<String> = mutableListOf(),
+    visitOrderRestriction: SessionTemplateVisitOrderRestrictionType = SessionTemplateVisitOrderRestrictionType.VO_PVO,
   ): SessionScheduleDto = SessionScheduleDto(
     sessionTemplateReference = reference,
     sessionDateRange = SessionDateRangeDto(validFromDate, validToDate),
@@ -142,6 +147,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     areIncentiveGroupsInclusive = areIncentiveGroupsInclusive,
     prisonerIncentiveLevelGroupNames = prisonerIncentiveLevelGroupNames,
     visitRoom = visitRoom,
+    visitOrderRestriction = visitOrderRestriction,
   )
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<SessionScheduleDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<SessionScheduleDto>::class.java)
