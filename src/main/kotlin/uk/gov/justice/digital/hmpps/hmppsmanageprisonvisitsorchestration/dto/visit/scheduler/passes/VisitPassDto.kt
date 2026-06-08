@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
+import java.time.LocalDate
 import java.time.LocalTime
 
 @Schema(description = "Visit Pass Details")
@@ -11,6 +12,8 @@ import java.time.LocalTime
 data class VisitPassDto(
   @param:Schema(description = "Visit Reference", example = "v9-d7-ed-7u", required = true)
   val reference: String,
+  @param:Schema(description = "Visit Date", example = "2026-09-21", required = true)
+  val visitDate: LocalDate,
   @field:JsonFormat(pattern = "HH:mm", shape = JsonFormat.Shape.STRING)
   @param:Schema(description = "Visit Start time", example = "11:00", required = true)
   val startTime: LocalTime,
