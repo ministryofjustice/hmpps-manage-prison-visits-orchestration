@@ -166,7 +166,10 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(
       sessionsAndScheduleDto.sessionsAndSchedule
         .filter { datesWithNoSessionsOrSchedule.contains(it.date) }
-        .all { it.scheduledEvents.isEmpty() },
+        .all {
+          it.visitSessions.isEmpty() &&
+            it.scheduledEvents.isEmpty()
+        },
     ).isTrue
 
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
