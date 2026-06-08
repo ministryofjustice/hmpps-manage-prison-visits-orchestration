@@ -425,6 +425,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     contactDtoList: List<ContactWithOptionalPrisonerRelationshipDto>,
     visitPassDto: VisitPassDto,
   ) {
+    assertThat(visitPassDto.visitDate).isEqualTo(visitDto.startTimestamp.toLocalDate())
     assertThat(visitPassDto.startTime).isEqualTo(visitDto.startTimestamp.toLocalTime())
     assertThat(visitPassDto.endTime).isEqualTo(visitDto.endTimestamp.toLocalTime())
     assertThat(visitPassDto.prisonerId).isEqualTo(visitDto.prisonerId)
