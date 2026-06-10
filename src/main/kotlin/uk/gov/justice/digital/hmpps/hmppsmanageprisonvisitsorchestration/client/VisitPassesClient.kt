@@ -76,6 +76,7 @@ class VisitPassesClient(
 
   private fun getVisitPass(visit: VisitDto, prisoner: AttributeSearchPrisonerDto, visitors: List<VisitPassVisitorDto>) = VisitPassDto(
     reference = visit.reference,
+    visitDate = visit.startTimestamp.toLocalDate(),
     startTime = visit.startTimestamp.toLocalTime(),
     endTime = visit.endTimestamp.toLocalTime(),
     prisonerId = visit.prisonerId,
@@ -87,6 +88,7 @@ class VisitPassesClient(
 
   private fun getVisitPass(visit: VisitDto, prisoner: PrisonerDto, visitors: List<VisitPassVisitorDto>) = VisitPassDto(
     reference = visit.reference,
+    visitDate = visit.startTimestamp.toLocalDate(),
     startTime = visit.startTimestamp.toLocalTime(),
     endTime = visit.endTimestamp.toLocalTime(),
     prisonerId = visit.prisonerId,
