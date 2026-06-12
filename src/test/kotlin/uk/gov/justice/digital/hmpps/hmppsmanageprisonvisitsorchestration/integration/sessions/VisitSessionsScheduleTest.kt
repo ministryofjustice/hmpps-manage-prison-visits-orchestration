@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.sessions
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
@@ -17,21 +18,15 @@ import java.time.LocalTime
 
 @DisplayName("Get visits by reference")
 class VisitSessionsScheduleTest : IntegrationTestBase() {
-  fun callVisitsSessionsSchedule(
-    webTestClient: WebTestClient,
-    prisonCode: String,
-    sessionDate: LocalDate,
-    authHttpHeaders: (HttpHeaders) -> Unit,
-  ): WebTestClient.ResponseSpec = webTestClient.get().uri("/visit-sessions/schedule?prisonId=$prisonCode&date=$sessionDate")
-    .headers(authHttpHeaders)
-    .exchange()
+  val prisonCode = "MDI"
+  val sessionDate: LocalDate = LocalDate.now().plusDays(1)
 
-  @Test
-  fun `when multiple session schedules exist for a prison all session schedules are returned`() {
-    // Given
-    val prisonCode = "MDI"
-    val sessionDate = LocalDate.now().plusDays(1)
-    val sessionScheduleDto1 = createSessionScheduleDto(
+  lateinit var sessionScheduleDto1: SessionScheduleDto
+  lateinit var sessionScheduleDto2: SessionScheduleDto
+
+  @BeforeEach
+  fun setupData() {
+    sessionScheduleDto1 = createSessionScheduleDto(
       reference = "reference-1",
       startTime = LocalTime.of(9, 0),
       endTime = LocalTime.of(10, 0),
@@ -44,8 +39,10 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
       areCategoryGroupsInclusive = true,
       areIncentiveGroupsInclusive = true,
       visitRoom = "Visit Room 1",
+      isSessionExcluded = false,
     )
-    val sessionScheduleDto2 = createSessionScheduleDto(
+
+    sessionScheduleDto2 = createSessionScheduleDto(
       reference = "reference-2",
       startTime = LocalTime.of(10, 0),
       endTime = LocalTime.of(11, 0),
@@ -54,7 +51,14 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
       areCategoryGroupsInclusive = false,
       areIncentiveGroupsInclusive = false,
       visitRoom = "Visit Room 2",
+      isSessionExcluded = true,
     )
+  }
+
+  @Test
+  fun `when multiple session schedules exist for a prison and includeExcludedSessions is not passed no excluded session schedules are returned`() {
+    // Given
+    val includeExcludedSessions = null
     visitSchedulerMockServer.stubGetSessionSchedule(
       prisonCode,
       sessionDate,
@@ -62,37 +66,57 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     )
 
     // When
-    val responseSpec = callVisitsSessionsSchedule(webTestClient, prisonCode, sessionDate, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callVisitsSessionsSchedule(webTestClient = webTestClient, prisonCode = prisonCode, sessionDate = sessionDate, includeExcludedSessions = includeExcludedSessions, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val sessionScheduleResults = getResults(returnResult)
+    assertThat(sessionScheduleResults.size).isEqualTo(1)
+    // only isSessionExcluded false is returned
+    assertSessionSchedule(sessionSchedule = sessionScheduleResults[0], expectedSessionScheduleDto = sessionScheduleDto1)
+  }
+
+  @Test
+  fun `when multiple session schedules exist for a prison and includeExcludedSessions is passed as true all session schedules are returned`() {
+    // Given
+    val includeExcludedSessions = true
+    visitSchedulerMockServer.stubGetSessionSchedule(
+      prisonCode,
+      sessionDate,
+      mutableListOf(sessionScheduleDto1, sessionScheduleDto2),
+    )
+
+    // When
+    val responseSpec = callVisitsSessionsSchedule(webTestClient = webTestClient, prisonCode = prisonCode, sessionDate = sessionDate, includeExcludedSessions = includeExcludedSessions, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val sessionScheduleResults = getResults(returnResult)
     assertThat(sessionScheduleResults.size).isEqualTo(2)
-    assertThat(sessionScheduleResults[0].sessionTemplateReference).isEqualTo(sessionScheduleDto1.sessionTemplateReference)
-    assertThat(sessionScheduleResults[0].sessionTimeSlot.startTime).isEqualTo(LocalTime.parse("09:00:00"))
-    assertThat(sessionScheduleResults[0].sessionTimeSlot.endTime).isEqualTo(LocalTime.parse("10:00:00"))
-    assertThat(sessionScheduleResults[0].sessionDateRange.validFromDate).isEqualTo(sessionDate.minusWeeks(1))
-    assertThat(sessionScheduleResults[0].sessionDateRange.validToDate).isEqualTo(sessionDate.plusWeeks(2))
-    assertThat(sessionScheduleResults[0].prisonerLocationGroupNames.size).isEqualTo(2)
-    assertThat(sessionScheduleResults[0].prisonerCategoryGroupNames.size).isEqualTo(3)
-    assertThat(sessionScheduleResults[0].prisonerIncentiveLevelGroupNames.size).isEqualTo(4)
-    assertThat(sessionScheduleResults[0].areLocationGroupsInclusive).isTrue()
-    assertThat(sessionScheduleResults[0].areCategoryGroupsInclusive).isTrue()
-    assertThat(sessionScheduleResults[0].areIncentiveGroupsInclusive).isTrue()
-    assertThat(sessionScheduleResults[0].visitRoom).isEqualTo("Visit Room 1")
+    assertSessionSchedule(sessionSchedule = sessionScheduleResults[0], expectedSessionScheduleDto = sessionScheduleDto1)
+    assertSessionSchedule(sessionSchedule = sessionScheduleResults[1], expectedSessionScheduleDto = sessionScheduleDto2)
+  }
 
-    assertThat(sessionScheduleResults[1].sessionTemplateReference).isEqualTo(sessionScheduleDto2.sessionTemplateReference)
-    assertThat(sessionScheduleResults[1].sessionTimeSlot.startTime).isEqualTo(LocalTime.parse("10:00"))
-    assertThat(sessionScheduleResults[1].sessionTimeSlot.endTime).isEqualTo(LocalTime.parse("11:00"))
-    assertThat(sessionScheduleResults[1].sessionDateRange.validFromDate).isEqualTo(sessionDate.minusWeeks(2))
-    assertThat(sessionScheduleResults[1].sessionDateRange.validToDate).isNull()
-    assertThat(sessionScheduleResults[1].prisonerLocationGroupNames.size).isEqualTo(0)
-    assertThat(sessionScheduleResults[1].prisonerCategoryGroupNames.size).isEqualTo(0)
-    assertThat(sessionScheduleResults[1].prisonerIncentiveLevelGroupNames.size).isEqualTo(0)
-    assertThat(sessionScheduleResults[1].areLocationGroupsInclusive).isFalse()
-    assertThat(sessionScheduleResults[1].areCategoryGroupsInclusive).isFalse()
-    assertThat(sessionScheduleResults[1].areIncentiveGroupsInclusive).isFalse()
-    assertThat(sessionScheduleResults[1].visitRoom).isEqualTo("Visit Room 2")
+  @Test
+  fun `when multiple session schedules exist for a prison and includeExcludedSessions is passed as false excluded session schedules for the date are not returned`() {
+    // Given
+    val includeExcludedSessions = false
+    visitSchedulerMockServer.stubGetSessionSchedule(
+      prisonCode,
+      sessionDate,
+      mutableListOf(sessionScheduleDto1, sessionScheduleDto2),
+    )
+
+    // When
+    val responseSpec = callVisitsSessionsSchedule(webTestClient = webTestClient, prisonCode = prisonCode, sessionDate = sessionDate, includeExcludedSessions = includeExcludedSessions, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val sessionScheduleResults = getResults(returnResult)
+
+    // only 1 session should be returned
+    assertThat(sessionScheduleResults.size).isEqualTo(1)
+    assertSessionSchedule(sessionSchedule = sessionScheduleResults[0], expectedSessionScheduleDto = sessionScheduleDto1)
   }
 
   @Test
@@ -104,12 +128,53 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetSessionSchedule(prisonCode, sessionDate, mutableListOf())
 
     // When
-    val responseSpec = callVisitsSessionsSchedule(webTestClient, prisonCode, sessionDate, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callVisitsSessionsSchedule(
+      webTestClient = webTestClient,
+      prisonCode = prisonCode,
+      sessionDate = sessionDate,
+      includeExcludedSessions = null,
+      authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
+    )
 
     // Then
     responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(0)
+  }
+
+  private fun callVisitsSessionsSchedule(
+    webTestClient: WebTestClient,
+    prisonCode: String,
+    sessionDate: LocalDate,
+    includeExcludedSessions: Boolean?,
+    authHttpHeaders: (HttpHeaders) -> Unit,
+  ): WebTestClient.ResponseSpec {
+    var uri = "/visit-sessions/schedule?prisonId=$prisonCode&date=$sessionDate"
+    includeExcludedSessions?.let {
+      uri += "&includeExcludedSessions=$includeExcludedSessions"
+    }
+    return webTestClient.get().uri(uri)
+      .headers(authHttpHeaders)
+      .exchange()
+  }
+
+  private fun assertSessionSchedule(
+    sessionSchedule: SessionScheduleDto,
+    expectedSessionScheduleDto: SessionScheduleDto,
+  ) {
+    assertThat(sessionSchedule.sessionTemplateReference).isEqualTo(expectedSessionScheduleDto.sessionTemplateReference)
+    assertThat(sessionSchedule.sessionTimeSlot.startTime).isEqualTo(expectedSessionScheduleDto.sessionTimeSlot.startTime)
+    assertThat(sessionSchedule.sessionTimeSlot.endTime).isEqualTo(expectedSessionScheduleDto.sessionTimeSlot.endTime)
+    assertThat(sessionSchedule.sessionDateRange.validFromDate).isEqualTo(expectedSessionScheduleDto.sessionDateRange.validFromDate)
+    assertThat(sessionSchedule.sessionDateRange.validToDate).isEqualTo(expectedSessionScheduleDto.sessionDateRange.validToDate)
+    assertThat(sessionSchedule.prisonerLocationGroupNames).isEqualTo(expectedSessionScheduleDto.prisonerLocationGroupNames)
+    assertThat(sessionSchedule.prisonerCategoryGroupNames).isEqualTo(expectedSessionScheduleDto.prisonerCategoryGroupNames)
+    assertThat(sessionSchedule.prisonerIncentiveLevelGroupNames).isEqualTo(expectedSessionScheduleDto.prisonerIncentiveLevelGroupNames)
+    assertThat(sessionSchedule.areLocationGroupsInclusive).isEqualTo(expectedSessionScheduleDto.areLocationGroupsInclusive)
+    assertThat(sessionSchedule.areCategoryGroupsInclusive).isEqualTo(expectedSessionScheduleDto.areCategoryGroupsInclusive)
+    assertThat(sessionSchedule.areIncentiveGroupsInclusive).isEqualTo(expectedSessionScheduleDto.areIncentiveGroupsInclusive)
+    assertThat(sessionSchedule.visitRoom).isEqualTo(expectedSessionScheduleDto.visitRoom)
+    assertThat(sessionSchedule.isSessionExcluded).isEqualTo(expectedSessionScheduleDto.isSessionExcluded)
   }
 
   private fun createSessionScheduleDto(
@@ -128,6 +193,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     prisonerLocationGroupNames: List<String> = mutableListOf(),
     prisonerCategoryGroupNames: List<String> = mutableListOf(),
     prisonerIncentiveLevelGroupNames: List<String> = mutableListOf(),
+    isSessionExcluded: Boolean = false,
   ): SessionScheduleDto = SessionScheduleDto(
     sessionTemplateReference = reference,
     sessionDateRange = SessionDateRangeDto(validFromDate, validToDate),
@@ -142,6 +208,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     areIncentiveGroupsInclusive = areIncentiveGroupsInclusive,
     prisonerIncentiveLevelGroupNames = prisonerIncentiveLevelGroupNames,
     visitRoom = visitRoom,
+    isSessionExcluded = isSessionExcluded,
   )
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<SessionScheduleDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<SessionScheduleDto>::class.java)

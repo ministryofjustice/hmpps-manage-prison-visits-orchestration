@@ -228,7 +228,15 @@ class VisitSchedulerSessionsService(
     sessionTemplateReference: String,
   ): VisitSessionDto? = visitSchedulerClient.getSession(prisonCode, sessionDate, sessionTemplateReference)
 
-  fun getSessionSchedule(prisonCode: String, sessionDate: LocalDate): List<SessionScheduleDto>? = visitSchedulerClient.getSessionSchedule(prisonCode, sessionDate)
+  fun getSessionSchedule(prisonCode: String, sessionDate: LocalDate, includeExcludedSessions: Boolean): List<SessionScheduleDto>? {
+    val sessionSchedules = visitSchedulerClient.getSessionSchedule(prisonCode, sessionDate)
+    return if (!includeExcludedSessions) {
+      // if includeExcludedSessions is false, filter out excluded sessions
+      sessionSchedules?.filter { !it.isSessionExcluded }
+    } else {
+      sessionSchedules
+    }
+  }
 
   private fun updateRequestedRestriction(
     requestedSessionRestriction: SessionRestriction?,
