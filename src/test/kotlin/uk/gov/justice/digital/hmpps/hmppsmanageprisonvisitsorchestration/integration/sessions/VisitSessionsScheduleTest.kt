@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionDateRangeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTimeSlotDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
@@ -51,6 +52,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
       areCategoryGroupsInclusive = false,
       areIncentiveGroupsInclusive = false,
       visitRoom = "Visit Room 2",
+      visitOrderRestriction = SessionTemplateVisitOrderRestrictionType.NONE,
       isSessionExcluded = true,
     )
   }
@@ -193,6 +195,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     prisonerLocationGroupNames: List<String> = mutableListOf(),
     prisonerCategoryGroupNames: List<String> = mutableListOf(),
     prisonerIncentiveLevelGroupNames: List<String> = mutableListOf(),
+    visitOrderRestriction: SessionTemplateVisitOrderRestrictionType = SessionTemplateVisitOrderRestrictionType.VO_PVO,
     isSessionExcluded: Boolean = false,
   ): SessionScheduleDto = SessionScheduleDto(
     sessionTemplateReference = reference,
@@ -208,6 +211,7 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     areIncentiveGroupsInclusive = areIncentiveGroupsInclusive,
     prisonerIncentiveLevelGroupNames = prisonerIncentiveLevelGroupNames,
     visitRoom = visitRoom,
+    visitOrderRestriction = visitOrderRestriction,
     isSessionExcluded = isSessionExcluded,
   )
 
