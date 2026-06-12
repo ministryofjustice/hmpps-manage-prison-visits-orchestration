@@ -85,7 +85,7 @@ class VisitSchedulerSessionsService(
     username: String?,
   ): VisitSessionsAndScheduleDto {
     var scheduledEventsAvailable = true
-    val dateRangeForPrison = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode)
+    val dateRangeForPrison = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, userType = UserType.STAFF)
     val sessionAndScheduleDateRange = DateRange(LocalDate.now(), dateRangeForPrison.toDate)
 
     // get sessions for prisoner and date range with usertype as STAFF
@@ -125,7 +125,7 @@ class VisitSchedulerSessionsService(
     val sessionRestriction = updateRequestedRestriction(requestedSessionRestriction, prisonerId, visitors)
 
     // advance from date by n days
-    var dateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, fromDateOverride = fromDateOverride, toDateOverride = toDateOverride)
+    var dateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, fromDateOverride = fromDateOverride, toDateOverride = toDateOverride, userType = userType)
     dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
 
     var availableVisitSessions = getAvailableVisitSessionsForDateRange(
@@ -157,7 +157,7 @@ class VisitSchedulerSessionsService(
   ): List<AvailableVisitSessionDto> {
     val sessionRestriction = updateRequestedRestriction(null, prisonerId, visitors)
 
-    val dateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, fromDateOverride = publicServiceFromDateOverride.toInt(), toDateOverride = publicServiceToDateOverride.toInt())
+    val dateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, fromDateOverride = publicServiceFromDateOverride.toInt(), toDateOverride = publicServiceToDateOverride.toInt(), userType = userType)
 
     var availableVisitSessions = getAvailableVisitSessionsForDateRange(
       prisonCode = prisonCode,

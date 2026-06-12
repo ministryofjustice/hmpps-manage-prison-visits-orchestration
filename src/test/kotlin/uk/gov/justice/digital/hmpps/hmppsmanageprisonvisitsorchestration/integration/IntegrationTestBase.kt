@@ -43,9 +43,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.IncentiveLevel
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitExternalSystemDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSubStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
@@ -81,6 +83,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.WhereaboutsApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AppointmentsService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonerProfileService
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -930,6 +933,24 @@ abstract class IntegrationTestBase {
   ) = VisitNotificationEventDto(type, notificationEventReference, createdDateTime, additionalData)
 
   protected fun generateRandomUUID(length: Int = 8): String = UUID.randomUUID().toString().substring(0, length)
+
+  protected fun createVisitSchedulerPrisonDto(prisonCode: String, active: Boolean, maxTotalVisitors: Int, maxAdultVisitors: Int, maxChildVisitors: Int, adultAgeYears: Int, policyNoticeDaysMin: Int, policyNoticeDaysMax: Int, weekStartDay: DayOfWeek, remandVisitLimitPerWeek: Int): VisitSchedulerPrisonDto {
+    val clients = listOf(
+      PrisonUserClientDto(STAFF, policyNoticeDaysMin = policyNoticeDaysMin, policyNoticeDaysMax = policyNoticeDaysMax, active = true),
+      PrisonUserClientDto(PUBLIC, policyNoticeDaysMin = policyNoticeDaysMin, policyNoticeDaysMax = policyNoticeDaysMax, active = true),
+    )
+    return VisitSchedulerPrisonDto(
+      code = prisonCode,
+      active = active,
+      maxTotalVisitors = maxTotalVisitors,
+      maxAdultVisitors = maxAdultVisitors,
+      maxChildVisitors = maxChildVisitors,
+      adultAgeYears = adultAgeYears,
+      clients = clients,
+      weekStartDay = weekStartDay,
+      remandVisitLimitPerWeek = remandVisitLimitPerWeek,
+    )
+  }
 
   protected fun createCurrentIncentive(): CurrentIncentive {
     val incentiveLevel = IncentiveLevel("S", "Standard")
