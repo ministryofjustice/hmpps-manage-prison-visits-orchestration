@@ -12,6 +12,9 @@ class SessionsAndScheduleDto(
   @param:Schema(description = "Visit sessions", required = true)
   val visitSessions: List<VisitSessionV2Dto>,
 
-  @param:Schema(description = "Visit sessions", required = true)
+  @param:Schema(description = "Prisoner's scheduled events (appointments etc.)", required = true)
   val scheduledEvents: List<PrisonerScheduledEventDto>,
+
+  @param:Schema(description = "Conflicts for session date", required = true)
+  val sessionDateConflicts: List<SessionDateConflictDto> = emptyList(),
 )
