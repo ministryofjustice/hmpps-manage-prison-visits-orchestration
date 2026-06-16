@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.SessionConflictDto
 import java.time.LocalDateTime
@@ -23,6 +24,9 @@ data class VisitSessionDto(
   @param:Schema(description = "The type of visits taking place within this session", example = "SOCIAL", required = true)
   @field:NotNull
   val visitType: VisitType,
+
+  @param:Schema(description = "Session vo restriction", required = true)
+  val visitOrderRestriction: SessionTemplateVisitOrderRestrictionType,
 
   @param:JsonProperty("prisonId")
   @param:JsonAlias("prisonCode")

@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.passes.VisitPassDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.passes.VisitPassRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidVisitPassException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.filter.VisitSearchRequestFilter
 import java.time.LocalDate
@@ -69,12 +70,12 @@ class VisitPassesService(
   private fun validateVisit(prisonCode: String, visit: VisitDto) {
     // ensure the visit is in the prison
     if (visit.prisonCode != prisonCode) {
-      throw IllegalStateException("Visit with reference - ${visit.reference} is not in prison - $prisonCode")
+      throw InvalidVisitPassException("Visit with reference - ${visit.reference} is not in prison - $prisonCode")
     }
 
     // ensure the visit is in BOOKED status
     if (visit.visitStatus != VisitStatus.BOOKED) {
-      throw IllegalStateException("Visit with reference - ${visit.reference} is not in BOOKED status")
+      throw InvalidVisitPassException("Visit with reference - ${visit.reference} is not in BOOKED status")
     }
   }
 

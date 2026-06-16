@@ -7,4 +7,5 @@ enum class VisitOrderHistoryAttributeType {
   OLD_PRISONER_ID,
   NEW_PRISONER_ID,
   ADJUSTMENT_REASON_TYPE,
+  VISIT_ORDER_TYPE_USED,
 }
