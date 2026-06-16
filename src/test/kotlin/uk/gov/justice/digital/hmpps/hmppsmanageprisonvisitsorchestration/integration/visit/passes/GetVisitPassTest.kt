@@ -79,7 +79,7 @@ class GetVisitPassTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when a visit reference is found but is not in the same prison then an INTERNAL_SERVER_ERROR is thrown`() {
+  fun `when a visit reference is found but is not in the same prison then BAD_REQUEST error is thrown`() {
     // Given
     val visitors = createVisitors(listOf(contact1.contactId, contact2.contactId))
     val visitContacts = listOf(contact1, contact2)
@@ -104,7 +104,7 @@ class GetVisitPassTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when a visit reference is found but is not BOOKED then an INTERNAL_SERVER_ERROR is thrown`() {
+  fun `when a visit reference is found but is not BOOKED then BAD_REQUEST error is thrown`() {
     // Given
     val visitors = createVisitors(listOf(contact1.contactId, contact2.contactId))
     val visitContacts = listOf(contact1, contact2)

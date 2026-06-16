@@ -202,11 +202,11 @@ class OrchestrationExceptionHandler {
   }
 
   @ExceptionHandler(InvalidVisitPassException::class)
-  fun handleInvalidVisitPassException(e: Exception): ResponseEntity<ErrorResponse> {
+  fun handleInvalidVisitPassException(e: InvalidVisitPassException): ResponseEntity<ErrorResponse> {
     log.debug("Invalid visit pass exception: {}", e.message)
     val error = ErrorResponse(
       status = HttpStatus.BAD_REQUEST,
-      userMessage = "Visit pass request failed : ${e.cause?.message}",
+      userMessage = e.message?.let { "Visit pass request failed: $it" } ?: "Visit pass request failed",
       developerMessage = e.message,
     )
 
