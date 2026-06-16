@@ -95,7 +95,7 @@ class GetVisitPassTest : IntegrationTestBase() {
     val responseSpec = callGetVisitPass(webTestClient, prisonCode, visit.reference, "STAFF_USER", roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    responseSpec.expectStatus().is5xxServerError
+    responseSpec.expectStatus().isBadRequest
 
     verify(visitSchedulerClientSpy, times(1)).getVisitByReference(any())
     verify(prisonerSearchClientSpy, times(0)).getPrisonerByIdAsMono(any())
@@ -120,7 +120,7 @@ class GetVisitPassTest : IntegrationTestBase() {
     val responseSpec = callGetVisitPass(webTestClient, prisonCode, visit.reference, "STAFF_USER1", roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    responseSpec.expectStatus().is5xxServerError
+    responseSpec.expectStatus().isBadRequest
 
     verify(visitSchedulerClientSpy, times(1)).getVisitByReference(any())
     verify(prisonerSearchClientSpy, times(0)).getPrisonerByIdAsMono(any())
