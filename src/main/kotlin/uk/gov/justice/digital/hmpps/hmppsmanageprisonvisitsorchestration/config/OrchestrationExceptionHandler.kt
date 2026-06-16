@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.excepti
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerPrisonerValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerVisitorRequestValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidPrisonerProfileException
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.InvalidVisitPassException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.PrisonerBalanceAdjustmentValidationException
 
@@ -198,6 +199,18 @@ class OrchestrationExceptionHandler {
     )
 
     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(error)
+  }
+
+  @ExceptionHandler(InvalidVisitPassException::class)
+  fun handleInvalidVisitPassException(e: InvalidVisitPassException): ResponseEntity<ErrorResponse> {
+    log.debug("Invalid visit pass exception: {}", e.message)
+    val error = ErrorResponse(
+      status = HttpStatus.BAD_REQUEST,
+      userMessage = e.message?.let { "Visit pass request failed: $it" } ?: "Visit pass request failed",
+      developerMessage = e.message,
+    )
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error)
   }
 }
 
