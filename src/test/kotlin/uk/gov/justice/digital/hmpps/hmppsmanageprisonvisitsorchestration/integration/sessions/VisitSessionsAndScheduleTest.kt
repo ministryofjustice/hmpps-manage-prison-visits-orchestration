@@ -10,6 +10,8 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.VisitSessionsAndScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
@@ -61,13 +63,45 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
   @Test
   fun `when visit sessions and a schedule exists then allowed sessions are returned for all dates starting today`() {
     // Given
-    val visitSessionDto1 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(today.plusDays(3), sessionStartTime), endTimestamp = LocalDateTime.of(today.plusDays(3), sessionEndTime))
-    val visitSessionDto2 = createVisitSessionDto(prisonCode, "2", startTimestamp = LocalDateTime.of(today.plusDays(4), sessionStartTime), endTimestamp = LocalDateTime.of(today.plusDays(4), sessionEndTime))
-    val visitSessionDto3 = createVisitSessionDto(prisonCode, "3", startTimestamp = LocalDateTime.of(today.plusDays(5), sessionStartTime), endTimestamp = LocalDateTime.of(today.plusDays(5), sessionEndTime))
-    val visitSessionDto4 = createVisitSessionDto(prisonCode, "4", startTimestamp = LocalDateTime.of(today.plusDays(6), sessionStartTime), endTimestamp = LocalDateTime.of(today.plusDays(6), sessionEndTime))
-    val visitSessionDto5 = createVisitSessionDto(prisonCode, "5", startTimestamp = LocalDateTime.of(today.plusDays(7), sessionStartTime), endTimestamp = LocalDateTime.of(today.plusDays(7), sessionEndTime))
+    val visitSessionDtos = listOf(
+      createVisitSessionDto(
+        prisonCode,
+        "1",
+        startTimestamp = LocalDateTime.of(today.plusDays(3), sessionStartTime),
+        endTimestamp = LocalDateTime.of(today.plusDays(3), sessionEndTime),
+        visitOrderRestriction = SessionTemplateVisitOrderRestrictionType.VO,
+      ),
+      createVisitSessionDto(
+        prisonCode,
+        "2",
+        startTimestamp = LocalDateTime.of(today.plusDays(4), sessionStartTime),
+        endTimestamp = LocalDateTime.of(today.plusDays(4), sessionEndTime),
+        visitOrderRestriction = SessionTemplateVisitOrderRestrictionType.PVO,
+      ),
+      createVisitSessionDto(
+        prisonCode,
+        "3",
+        startTimestamp = LocalDateTime.of(today.plusDays(5), sessionStartTime),
+        endTimestamp = LocalDateTime.of(today.plusDays(5), sessionEndTime),
+        visitOrderRestriction = SessionTemplateVisitOrderRestrictionType.VO_PVO,
+      ),
+      createVisitSessionDto(
+        prisonCode,
+        "4",
+        startTimestamp = LocalDateTime.of(today.plusDays(6), sessionStartTime),
+        endTimestamp = LocalDateTime.of(today.plusDays(6), sessionEndTime),
+        visitOrderRestriction = SessionTemplateVisitOrderRestrictionType.NONE,
+      ),
+      createVisitSessionDto(
+        prisonCode,
+        "5",
+        startTimestamp = LocalDateTime.of(today.plusDays(7), sessionStartTime),
+        endTimestamp = LocalDateTime.of(today.plusDays(7), sessionEndTime),
+        visitOrderRestriction = SessionTemplateVisitOrderRestrictionType.VO,
+      ),
+    )
 
-    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2, visitSessionDto3, visitSessionDto4, visitSessionDto5), userType = STAFF)
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, visitSessionDtos, userType = STAFF)
 
     val appointment1 = createScheduledEvent(1L, today.plusDays(4), eventStartTime = LocalDateTime.of(today.plusDays(4), LocalTime.of(9, 0)), eventEndTime = LocalDateTime.of(today.plusDays(4), LocalTime.of(10, 0)))
     val appointment2 = createScheduledEvent(2L, today.plusDays(5), eventStartTime = LocalDateTime.of(today.plusDays(5), LocalTime.of(9, 0)), eventEndTime = LocalDateTime.of(today.plusDays(5), LocalTime.of(10, 0)))
@@ -95,6 +129,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
 
     val datesWithNoSessionsOrSchedule = sessionsAndScheduleDto.sessionsAndSchedule.map { it.date }.filter { !datesWithSessionsAndSchedule.contains(it) && !datesWithSessionsNoSchedule.contains(it) }
     assertSessionsAndScheduleCount(sessionsAndScheduleDto, datesWithNoSessionsOrSchedule, 0, 0)
+    assertVisitOrderRestrictions(sessionsAndScheduleDto, visitSessionDtos)
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
     verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
   }
@@ -161,6 +196,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
 
     val datesWithNoSessionsOrSchedule = sessionsAndScheduleDto.sessionsAndSchedule.map { it.date }.filter { !datesWithSessionsAndSchedule.contains(it) && !datesWithSessionsNoSchedule.contains(it) }
     assertSessionsAndScheduleCount(sessionsAndScheduleDto, datesWithNoSessionsOrSchedule, 0, 0)
+    assertVisitOrderRestrictions(sessionsAndScheduleDto, listOf(visitSessionDto1, visitSessionDto2, visitSessionDto3, visitSessionDto4, visitSessionDto5))
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
     verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
   }
@@ -229,6 +265,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
 
     // no scheduled events are returned for any dates
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule.map { it.scheduledEvents }.sumOf { it.count() }).isEqualTo(0)
+    assertVisitOrderRestrictions(sessionsAndScheduleDto, listOf(visitSessionDto1, visitSessionDto2, visitSessionDto3, visitSessionDto4, visitSessionDto5))
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
     verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
   }
@@ -259,6 +296,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
 
     // no scheduled events are returned for any dates
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule.map { it.scheduledEvents }.sumOf { it.count() }).isEqualTo(0)
+    assertVisitOrderRestrictions(sessionsAndScheduleDto, listOf(visitSessionDto1, visitSessionDto2, visitSessionDto3, visitSessionDto4, visitSessionDto5))
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
     verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
   }
@@ -267,6 +305,19 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     for (date in dates) {
       assertThat(sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == date }.visitSessions.size).isEqualTo(sessions)
       assertThat(sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == date }.scheduledEvents.size).isEqualTo(schedules)
+    }
+  }
+
+  private fun assertVisitOrderRestrictions(
+    sessionsAndScheduleDto: VisitSessionsAndScheduleDto,
+    expectedVisitSessions: List<VisitSessionDto>,
+  ) {
+    val actualRestrictionsBySessionTemplateReference = sessionsAndScheduleDto.sessionsAndSchedule
+      .flatMap { it.visitSessions }
+      .associate { it.sessionTemplateReference to it.visitOrderRestriction }
+
+    expectedVisitSessions.forEach {
+      assertThat(actualRestrictionsBySessionTemplateReference[it.sessionTemplateReference]).isEqualTo(it.visitOrderRestriction)
     }
   }
 

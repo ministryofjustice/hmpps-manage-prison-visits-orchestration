@@ -40,6 +40,7 @@ class VisitSessionTest : IntegrationTestBase() {
     val visitSessionDtoResponse = TestObjectMapper.mapper.readValue(responseSpec.expectBody().returnResult().responseBody, VisitSessionDto::class.java)
 
     Assertions.assertThat(visitSessionDtoResponse.sessionTemplateReference).isEqualTo(sessionTemplateReference)
+    Assertions.assertThat(visitSessionDtoResponse.visitOrderRestriction).isEqualTo(visitSessionDto.visitOrderRestriction)
   }
 
   @Test

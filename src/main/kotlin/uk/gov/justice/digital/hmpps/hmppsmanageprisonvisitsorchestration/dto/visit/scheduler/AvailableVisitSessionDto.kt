@@ -5,6 +5,7 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.FutureOrPresent
 import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType
 import java.time.LocalDate
 
 @Schema(description = "Visit Session")
@@ -28,4 +29,7 @@ data class AvailableVisitSessionDto(
 
   @param:Schema(description = "Does session need review, defaults to false", example = "true", required = true)
   var sessionForReview: Boolean = false,
+
+  @param:Schema(description = "Session vo restriction", required = true)
+  val visitOrderRestriction: SessionTemplateVisitOrderRestrictionType,
 )

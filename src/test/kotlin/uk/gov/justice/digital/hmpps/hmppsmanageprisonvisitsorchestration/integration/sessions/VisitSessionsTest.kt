@@ -1,14 +1,18 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.sessions
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 
 @DisplayName("Get visit sessions")
 class VisitSessionsTest : IntegrationTestBase() {
@@ -40,21 +44,28 @@ class VisitSessionsTest : IntegrationTestBase() {
     // Given
     val prisonCode = "MDI"
     val prisonerId = "ABC"
-    val visitSessionDto1 = createVisitSessionDto(prisonCode, "1")
-    val visitSessionDto2 = createVisitSessionDto(prisonCode, "2")
-    val visitSessionDto3 = createVisitSessionDto(prisonCode, "3")
-    val visitSessionDto4 = createVisitSessionDto(prisonCode, "4")
-    val visitSessionDto5 = createVisitSessionDto(prisonCode, "5")
+    val expectedVisitSessionDtos = listOf(
+      createVisitSessionDto(prisonCode, "1", visitOrderRestriction = SessionTemplateVisitOrderRestrictionType.VO),
+      createVisitSessionDto(prisonCode, "2", visitOrderRestriction = SessionTemplateVisitOrderRestrictionType.PVO),
+      createVisitSessionDto(prisonCode, "3", visitOrderRestriction = SessionTemplateVisitOrderRestrictionType.VO_PVO),
+      createVisitSessionDto(prisonCode, "4", visitOrderRestriction = SessionTemplateVisitOrderRestrictionType.NONE),
+      createVisitSessionDto(prisonCode, "5", visitOrderRestriction = SessionTemplateVisitOrderRestrictionType.VO),
+    )
 
-    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2, visitSessionDto3, visitSessionDto4, visitSessionDto5), userType = STAFF)
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, expectedVisitSessionDtos, userType = STAFF)
 
     // When
     val responseSpec = callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = null, userType = STAFF, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    responseSpec.expectStatus().isOk
+    val returnResult = responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(5)
+
+    val actualVisitSessionDtos = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<VisitSessionDto>::class.java)
+    assertThat(actualVisitSessionDtos.map { it.visitOrderRestriction }).containsExactlyElementsOf(
+      expectedVisitSessionDtos.map { it.visitOrderRestriction },
+    )
   }
 
   @Test
