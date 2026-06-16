@@ -57,6 +57,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.OutcomeStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
@@ -439,11 +440,13 @@ abstract class IntegrationTestBase {
     sessionTemplateReference: String,
     startTimestamp: LocalDateTime = LocalDateTime.now(),
     endTimestamp: LocalDateTime = LocalDateTime.now().plusHours(1),
+    visitOrderRestriction: SessionTemplateVisitOrderRestrictionType = SessionTemplateVisitOrderRestrictionType.NONE,
   ): VisitSessionDto = VisitSessionDto(
     sessionTemplateReference = sessionTemplateReference,
     prisonCode = prisonCode,
     visitRoom = "Visit Main Hall",
     visitType = VisitType.SOCIAL,
+    visitOrderRestriction = visitOrderRestriction,
     closedVisitCapacity = 5,
     openVisitCapacity = 30,
     startTimestamp = startTimestamp,

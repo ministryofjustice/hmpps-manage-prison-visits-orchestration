@@ -9,6 +9,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.HttpStatus.NOT_FOUND
+import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionsDto
@@ -17,6 +18,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTimeSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.CLOSED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.OPEN
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType.NONE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType.PVO
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType.VO
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType.VO_PVO
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
@@ -31,9 +36,9 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     // Given
     val prisonCode = "MDI"
     val prisonerId = "AA123456B"
-    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
-    val visitSession2 = AvailableVisitSessionDto(LocalDate.now().plusDays(1), "session2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
-    val visitSession3 = AvailableVisitSessionDto(LocalDate.now().plusDays(2), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = VO)
+    val visitSession2 = AvailableVisitSessionDto(LocalDate.now().plusDays(1), "session2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = PVO)
+    val visitSession3 = AvailableVisitSessionDto(LocalDate.now().plusDays(2), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
 
     val visitSchedulerPrisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
     val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
@@ -48,9 +53,13 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, false, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    responseSpec.expectStatus().isOk
+    val returnResult = responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(3)
+    val availableSessions = getResults(returnResult)
+    assertThat(availableSessions[0].visitOrderRestriction).isEqualTo(visitSession1.visitOrderRestriction)
+    assertThat(availableSessions[1].visitOrderRestriction).isEqualTo(visitSession2.visitOrderRestriction)
+    assertThat(availableSessions[2].visitOrderRestriction).isEqualTo(visitSession3.visitOrderRestriction)
     verify(appointmentsServiceSpy, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
@@ -59,7 +68,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     // Given
     val prisonCode = "MDI"
     val prisonerId = "AA123456B"
-    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = VO_PVO)
 
     val visitSchedulerPrisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
     val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1), excludedApplicationReference = "aledTheGreat", userType = PUBLIC)
@@ -74,9 +83,11 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, false, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders, excludedApplicationReference = "aledTheGreat")
 
     // Then
-    responseSpec.expectStatus().isOk
+    val returnResult = responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(1)
+    val availableSessions = getResults(returnResult)
+    assertThat(availableSessions[0].visitOrderRestriction).isEqualTo(visitSession1.visitOrderRestriction)
   }
 
   @Test
@@ -84,7 +95,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     // Given
     val prisonCode = "MDI"
     val prisonerId = "AA123456B"
-    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), "s1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), "s1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = PVO)
     val prisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
     visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonDto, prisonerId, OPEN, mutableListOf(visitSession1), userType = PUBLIC)
     visitSchedulerMockServer.stubGetPrison(prisonCode, prisonDto)
@@ -94,9 +105,11 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, withAppointmentsCheck = false, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    responseSpec.expectStatus().isOk
+    val returnResult = responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(1)
+    val availableSessions = getResults(returnResult)
+    assertThat(availableSessions[0].visitOrderRestriction).isEqualTo(visitSession1.visitOrderRestriction)
     verify(appointmentsServiceSpy, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
@@ -105,9 +118,9 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     // Given
     val prisonCode = "MDI"
     val prisonerId = "AA123456B"
-    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), "s1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
-    val visitSession2 = AvailableVisitSessionDto(LocalDate.now().plusDays(1), "s2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
-    val visitSession3 = AvailableVisitSessionDto(LocalDate.now().plusDays(2), "s3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), "s1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = VO)
+    val visitSession2 = AvailableVisitSessionDto(LocalDate.now().plusDays(1), "s2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
+    val visitSession3 = AvailableVisitSessionDto(LocalDate.now().plusDays(2), "s3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     val prisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
     val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
     visitSchedulerMockServer.stubGetPrison(prisonCode, prisonDto)
@@ -153,7 +166,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     val prisonerId = "AA123456B"
     val visitorIds = listOf(1L)
 
-    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), "s1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), "s1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     val prisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
 
     val toDay = LocalDate.now()
@@ -175,9 +188,11 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, withAppointmentsCheck = false, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    responseSpec.expectStatus().isOk
+    val returnResult = responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(1)
+    val availableSessions = getResults(returnResult)
+    assertThat(availableSessions[0].visitOrderRestriction).isEqualTo(visitSession1.visitOrderRestriction)
     verify(appointmentsServiceSpy, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
@@ -186,7 +201,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     // Given
     val prisonCode = "MDI"
     val prisonerId = "AA123456B"
-    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), CLOSED)
+    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), CLOSED, visitOrderRestriction = VO_PVO)
 
     val offenderRestrictionsDto = OffenderRestrictionsDto(
       bookingId = 1,
@@ -217,9 +232,11 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     )
 
     // Then
-    responseSpec.expectStatus().isOk
+    val returnResult = responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(1)
+    val availableSessions = getResults(returnResult)
+    assertThat(availableSessions[0].visitOrderRestriction).isEqualTo(visitSession1.visitOrderRestriction)
     verify(appointmentsServiceSpy, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
@@ -228,7 +245,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     // Given
     val prisonCode = "MDI"
     val prisonerId = "AA123456B"
-    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), "s1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), CLOSED)
+    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), "s1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), CLOSED, visitOrderRestriction = PVO)
 
     val offenderRestrictionsDto = OffenderRestrictionsDto(
       bookingId = 1,
@@ -260,9 +277,11 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     )
 
     // Then
-    responseSpec.expectStatus().isOk
+    val returnResult = responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(1)
+    val availableSessions = getResults(returnResult)
+    assertThat(availableSessions[0].visitOrderRestriction).isEqualTo(visitSession1.visitOrderRestriction)
     verify(appointmentsServiceSpy, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
@@ -271,7 +290,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     // Given
     val prisonCode = "MDI"
     val prisonerId = "AA123456B"
-    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), "s1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), CLOSED)
+    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), "s1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), CLOSED, visitOrderRestriction = VO)
 
     val prisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
     val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonDto, prisonerId, CLOSED, mutableListOf(visitSession1), userType = PUBLIC)
@@ -295,9 +314,11 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     )
 
     // Then
-    responseSpec.expectStatus().isOk
+    val returnResult = responseSpec.expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(1)
+    val availableSessions = getResults(returnResult)
+    assertThat(availableSessions[0].visitOrderRestriction).isEqualTo(visitSession1.visitOrderRestriction)
     verify(appointmentsServiceSpy, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
@@ -473,4 +494,6 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     // Then
     responseSpec.expectStatus().isUnauthorized
   }
+
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<AvailableVisitSessionDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<AvailableVisitSessionDto>::class.java)
 }

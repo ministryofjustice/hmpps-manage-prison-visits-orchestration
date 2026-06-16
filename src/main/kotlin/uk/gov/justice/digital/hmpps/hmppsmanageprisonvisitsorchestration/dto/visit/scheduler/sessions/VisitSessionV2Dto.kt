@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionConflict
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType
 import java.time.LocalTime
 
 data class VisitSessionV2Dto(
@@ -42,6 +43,9 @@ data class VisitSessionV2Dto(
 
   @param:Schema(description = "Session conflicts", required = false)
   val sessionConflicts: MutableSet<@Valid SessionConflict>? = mutableSetOf(),
+
+  @param:Schema(description = "Session vo restriction", required = true)
+  val visitOrderRestriction: SessionTemplateVisitOrderRestrictionType,
 ) {
   constructor(visitSessionDto: VisitSessionDto) : this (
     sessionTemplateReference = visitSessionDto.sessionTemplateReference,
@@ -53,5 +57,6 @@ data class VisitSessionV2Dto(
     startTime = visitSessionDto.startTimestamp.toLocalTime(),
     endTime = visitSessionDto.endTimestamp.toLocalTime(),
     sessionConflicts = visitSessionDto.sessionConflicts,
+    visitOrderRestriction = visitSessionDto.visitOrderRestriction,
   )
 }

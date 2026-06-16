@@ -16,6 +16,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTimeSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.OPEN
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType.NONE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType.PVO
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType.VO
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
@@ -27,9 +30,9 @@ import java.time.LocalTime
 class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
   private val prisonCode = "MDI"
   private val prisonerId = "AA123456B"
-  private val visitSession1 = AvailableVisitSessionDto(LocalDate.now().plusDays(7), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
-  private val visitSession2 = AvailableVisitSessionDto(LocalDate.now().plusDays(14), "session2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
-  private val visitSession3 = AvailableVisitSessionDto(LocalDate.now().plusDays(21), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+  private val visitSession1 = AvailableVisitSessionDto(LocalDate.now().plusDays(7), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = VO)
+  private val visitSession2 = AvailableVisitSessionDto(LocalDate.now().plusDays(14), "session2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = PVO)
+  private val visitSession3 = AvailableVisitSessionDto(LocalDate.now().plusDays(21), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
 
   private val visitSchedulerPrisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
   private val visitorIds = listOf(1L, 2L, 3L)
@@ -61,10 +64,13 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     val availableSessions = getResults(returnResult)
     assertThat(availableSessions.size).isEqualTo(3)
     assertThat(availableSessions[0].sessionTemplateReference).isEqualTo(visitSession1.sessionTemplateReference)
+    assertThat(availableSessions[0].visitOrderRestriction).isEqualTo(visitSession1.visitOrderRestriction)
     assertThat(availableSessions[0].sessionForReview).isFalse
     assertThat(availableSessions[1].sessionTemplateReference).isEqualTo(visitSession2.sessionTemplateReference)
+    assertThat(availableSessions[1].visitOrderRestriction).isEqualTo(visitSession2.visitOrderRestriction)
     assertThat(availableSessions[1].sessionForReview).isFalse
     assertThat(availableSessions[2].sessionTemplateReference).isEqualTo(visitSession3.sessionTemplateReference)
+    assertThat(availableSessions[2].visitOrderRestriction).isEqualTo(visitSession3.visitOrderRestriction)
     assertThat(availableSessions[2].sessionForReview).isFalse
     verify(prisonerContactRegistryClientSpy, times(1)).doVisitorsHaveClosedRestrictions(prisonerId, visitorIds)
     verify(prisonerContactRegistryClientSpy, times(1)).getBannedRestrictionDateRange(prisonerId, visitorIds, dateRange)

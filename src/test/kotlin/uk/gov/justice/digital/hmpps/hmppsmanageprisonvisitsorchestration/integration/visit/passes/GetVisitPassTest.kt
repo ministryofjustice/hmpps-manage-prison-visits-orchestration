@@ -79,7 +79,7 @@ class GetVisitPassTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when a visit reference is found but is not in the same prison then an INTERNAL_SERVER_ERROR is thrown`() {
+  fun `when a visit reference is found but is not in the same prison then BAD_REQUEST error is thrown`() {
     // Given
     val visitors = createVisitors(listOf(contact1.contactId, contact2.contactId))
     val visitContacts = listOf(contact1, contact2)
@@ -95,7 +95,7 @@ class GetVisitPassTest : IntegrationTestBase() {
     val responseSpec = callGetVisitPass(webTestClient, prisonCode, visit.reference, "STAFF_USER", roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    responseSpec.expectStatus().is5xxServerError
+    responseSpec.expectStatus().isBadRequest
 
     verify(visitSchedulerClientSpy, times(1)).getVisitByReference(any())
     verify(prisonerSearchClientSpy, times(0)).getPrisonerByIdAsMono(any())
@@ -104,7 +104,7 @@ class GetVisitPassTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when a visit reference is found but is not BOOKED then an INTERNAL_SERVER_ERROR is thrown`() {
+  fun `when a visit reference is found but is not BOOKED then BAD_REQUEST error is thrown`() {
     // Given
     val visitors = createVisitors(listOf(contact1.contactId, contact2.contactId))
     val visitContacts = listOf(contact1, contact2)
@@ -120,7 +120,7 @@ class GetVisitPassTest : IntegrationTestBase() {
     val responseSpec = callGetVisitPass(webTestClient, prisonCode, visit.reference, "STAFF_USER1", roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    responseSpec.expectStatus().is5xxServerError
+    responseSpec.expectStatus().isBadRequest
 
     verify(visitSchedulerClientSpy, times(1)).getVisitByReference(any())
     verify(prisonerSearchClientSpy, times(0)).getPrisonerByIdAsMono(any())

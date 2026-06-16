@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTimeSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.OPEN
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType.NONE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
@@ -62,13 +63,13 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
     val dateRange = DateRange(today.plusDays(2).plusDays(1), today.plusDays(28))
     Mockito.`when`(currentDateUtils.getCurrentDate()).thenReturn(today)
 
-    val saturdaySession = AvailableVisitSessionDto(today.plusDays(2), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val saturdaySession = AvailableVisitSessionDto(today.plusDays(2), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // as this is a weekend but there are no reviews this session will be available
-    val sundaySession = AvailableVisitSessionDto(today.plusDays(3), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val sundaySession = AvailableVisitSessionDto(today.plusDays(3), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // this should be available
-    val mondaySession = AvailableVisitSessionDto(today.plusDays(4), "session5", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val mondaySession = AvailableVisitSessionDto(today.plusDays(4), "session5", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // this should be available
-    val nextTuesdaySession = AvailableVisitSessionDto(today.plusDays(5), "session6", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val nextTuesdaySession = AvailableVisitSessionDto(today.plusDays(5), "session6", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
 
     visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(saturdaySession, sundaySession, mondaySession, nextTuesdaySession), userType = PUBLIC, dateRange = dateRange)
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
@@ -102,21 +103,21 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
     Mockito.`when`(currentDateUtils.getCurrentDate()).thenReturn(today)
 
     // same day session not available
-    val tuesdaySession = AvailableVisitSessionDto(today, "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val tuesdaySession = AvailableVisitSessionDto(today, "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // next day session not available
-    val wednesdaySession = AvailableVisitSessionDto(today.plusDays(1), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val wednesdaySession = AvailableVisitSessionDto(today.plusDays(1), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // as there are reviews this session will not be available
-    val thursdaySession = AvailableVisitSessionDto(today.plusDays(2), "session2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val thursdaySession = AvailableVisitSessionDto(today.plusDays(2), "session2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // as there are reviews this session will not be available
-    val fridaySession = AvailableVisitSessionDto(today.plusDays(3), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val fridaySession = AvailableVisitSessionDto(today.plusDays(3), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // as this is a weekend this session will not be available
-    val saturdaySession = AvailableVisitSessionDto(today.plusDays(4), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val saturdaySession = AvailableVisitSessionDto(today.plusDays(4), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // as this is a weekend this session will not be available
-    val sundaySession = AvailableVisitSessionDto(today.plusDays(5), "session5", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val sundaySession = AvailableVisitSessionDto(today.plusDays(5), "session5", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // this should be the first session available
-    val mondaySession = AvailableVisitSessionDto(today.plusDays(6), "session6", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val mondaySession = AvailableVisitSessionDto(today.plusDays(6), "session6", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // this should be the next session available
-    val nextTuesdaySession = AvailableVisitSessionDto(today.plusDays(7), "session7", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val nextTuesdaySession = AvailableVisitSessionDto(today.plusDays(7), "session7", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
 
     val alert1 = createAlertResponseDto(code = PrisonerSupportedAlertCodeType.CC1.name, activeFrom = LocalDate.now(), activeTo = null)
 
@@ -151,19 +152,19 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
     Mockito.`when`(currentDateUtils.getCurrentDate()).thenReturn(today)
 
     // same day session not available
-    val wednesdaySession = AvailableVisitSessionDto(today, "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val wednesdaySession = AvailableVisitSessionDto(today, "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // next day session not available
-    val thursdaySession = AvailableVisitSessionDto(today.plusDays(1), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val thursdaySession = AvailableVisitSessionDto(today.plusDays(1), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // as there are reviews this session will not be available
-    val fridaySession = AvailableVisitSessionDto(today.plusDays(2), "session2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val fridaySession = AvailableVisitSessionDto(today.plusDays(2), "session2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // as there are reviews this session will not be available
-    val saturdaySession = AvailableVisitSessionDto(today.plusDays(3), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val saturdaySession = AvailableVisitSessionDto(today.plusDays(3), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // as this is a weekend this session will not be available
-    val sundaySession = AvailableVisitSessionDto(today.plusDays(4), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val sundaySession = AvailableVisitSessionDto(today.plusDays(4), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // this should be the first session available
-    val mondaySession = AvailableVisitSessionDto(today.plusDays(5), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val mondaySession = AvailableVisitSessionDto(today.plusDays(5), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // this should be the next session available
-    val tuesdaySession = AvailableVisitSessionDto(today.plusDays(6), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val tuesdaySession = AvailableVisitSessionDto(today.plusDays(6), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
 
     val alert1 = createAlertResponseDto(code = PrisonerSupportedAlertCodeType.CC1.name, activeFrom = LocalDate.now(), activeTo = null)
 
@@ -199,19 +200,19 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
     Mockito.`when`(currentDateUtils.getCurrentDate()).thenReturn(today)
 
     // same day session not available
-    val thursdaySession = AvailableVisitSessionDto(today, "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val thursdaySession = AvailableVisitSessionDto(today, "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // next day session not available
-    val fridaySession = AvailableVisitSessionDto(today.plusDays(1), "session2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val fridaySession = AvailableVisitSessionDto(today.plusDays(1), "session2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // as there are reviews this session will not be available
-    val saturdaySession = AvailableVisitSessionDto(today.plusDays(2), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val saturdaySession = AvailableVisitSessionDto(today.plusDays(2), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // as there are reviews this session will not be available
-    val sundaySession = AvailableVisitSessionDto(today.plusDays(3), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val sundaySession = AvailableVisitSessionDto(today.plusDays(3), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // as this is a weekend this session will not be available
-    val mondaySession = AvailableVisitSessionDto(today.plusDays(4), "session5", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val mondaySession = AvailableVisitSessionDto(today.plusDays(4), "session5", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // this should be the first session available
-    val tuesdaySession = AvailableVisitSessionDto(today.plusDays(5), "session6", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val tuesdaySession = AvailableVisitSessionDto(today.plusDays(5), "session6", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // this should be the next session available
-    val wednesdaySession = AvailableVisitSessionDto(today.plusDays(6), "session7", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val wednesdaySession = AvailableVisitSessionDto(today.plusDays(6), "session7", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
 
     val alert1 = createAlertResponseDto(code = PrisonerSupportedAlertCodeType.CC1.name, activeFrom = LocalDate.now(), activeTo = null)
 
@@ -245,15 +246,15 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
     Mockito.`when`(currentDateUtils.getCurrentDate()).thenReturn(today)
 
     // same day session not available
-    val fridaySession = AvailableVisitSessionDto(today.plusDays(1), "session2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val fridaySession = AvailableVisitSessionDto(today.plusDays(1), "session2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // next day session not available
-    val saturdaySession = AvailableVisitSessionDto(today.plusDays(1), "session2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val saturdaySession = AvailableVisitSessionDto(today.plusDays(1), "session2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // as there are reviews this session will not be available
-    val sundaySession = AvailableVisitSessionDto(today.plusDays(2), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val sundaySession = AvailableVisitSessionDto(today.plusDays(2), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // as there are reviews this session will not be available
-    val mondaySession = AvailableVisitSessionDto(today.plusDays(3), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val mondaySession = AvailableVisitSessionDto(today.plusDays(3), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // this should be the first session available
-    val tuesdaySession = AvailableVisitSessionDto(today.plusDays(5), "session6", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val tuesdaySession = AvailableVisitSessionDto(today.plusDays(5), "session6", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
 
     val alert1 = createAlertResponseDto(code = PrisonerSupportedAlertCodeType.CC1.name, activeFrom = LocalDate.now(), activeTo = null)
 
@@ -286,15 +287,15 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
     Mockito.`when`(currentDateUtils.getCurrentDate()).thenReturn(today)
 
     // same day session not available
-    val saturdaySession = AvailableVisitSessionDto(today.plusDays(1), "session2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val saturdaySession = AvailableVisitSessionDto(today.plusDays(1), "session2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // next day session not available
-    val sundaySession = AvailableVisitSessionDto(today.plusDays(1), "session2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val sundaySession = AvailableVisitSessionDto(today.plusDays(1), "session2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // as there are reviews this session will not be available
-    val mondaySession = AvailableVisitSessionDto(today.plusDays(2), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val mondaySession = AvailableVisitSessionDto(today.plusDays(2), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // as there are reviews this session will not be available
-    val tuesdaySession = AvailableVisitSessionDto(today.plusDays(3), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val tuesdaySession = AvailableVisitSessionDto(today.plusDays(3), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // this should be the first session available
-    val wednesdaySession = AvailableVisitSessionDto(today.plusDays(5), "session6", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val wednesdaySession = AvailableVisitSessionDto(today.plusDays(5), "session6", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
 
     val alert1 = createAlertResponseDto(code = PrisonerSupportedAlertCodeType.CC1.name, activeFrom = LocalDate.now(), activeTo = null)
 
@@ -323,21 +324,21 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
     // Given
     val today = if (LocalDate.now().dayOfWeek == DayOfWeek.TUESDAY) LocalDate.now() else LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.TUESDAY))
     // same day session not available
-    val tuesdaySession = AvailableVisitSessionDto(today, "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val tuesdaySession = AvailableVisitSessionDto(today, "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // next day session not available
-    val wednesdaySession = AvailableVisitSessionDto(today.plusDays(1), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val wednesdaySession = AvailableVisitSessionDto(today.plusDays(1), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // as there are reviews this session will not be available
-    val thursdaySession = AvailableVisitSessionDto(today.plusDays(2), "session2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val thursdaySession = AvailableVisitSessionDto(today.plusDays(2), "session2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // as there are reviews this session will not be available
-    val fridaySession = AvailableVisitSessionDto(today.plusDays(3), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val fridaySession = AvailableVisitSessionDto(today.plusDays(3), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // as this is a weekend this session will not be available
-    val saturdaySession = AvailableVisitSessionDto(today.plusDays(4), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val saturdaySession = AvailableVisitSessionDto(today.plusDays(4), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // as this is a weekend this session will not be available
-    val sundaySession = AvailableVisitSessionDto(today.plusDays(5), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val sundaySession = AvailableVisitSessionDto(today.plusDays(5), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // this should be the first session but this should not be available as MONDAY is a holiday
-    val mondaySession = AvailableVisitSessionDto(today.plusDays(6), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val mondaySession = AvailableVisitSessionDto(today.plusDays(6), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // this should be the first session available
-    val nextTuesdaySession = AvailableVisitSessionDto(today.plusDays(7), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val nextTuesdaySession = AvailableVisitSessionDto(today.plusDays(7), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
 
     val dateRange = DateRange(today.plusDays(2).plusDays(1), today.plusDays(28))
     Mockito.`when`(currentDateUtils.getCurrentDate()).thenReturn(today)
@@ -374,23 +375,23 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
     // Given
     val today = if (LocalDate.now().dayOfWeek == DayOfWeek.TUESDAY) LocalDate.now() else LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.TUESDAY))
     // same day session not available
-    val tuesdaySession = AvailableVisitSessionDto(today, "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val tuesdaySession = AvailableVisitSessionDto(today, "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // next day session not available
-    val wednesdaySession = AvailableVisitSessionDto(today.plusDays(1), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val wednesdaySession = AvailableVisitSessionDto(today.plusDays(1), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // 2 days after session not available
-    val thursdaySession = AvailableVisitSessionDto(today.plusDays(2), "session2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val thursdaySession = AvailableVisitSessionDto(today.plusDays(2), "session2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // as there are reviews this session will not be available
-    val fridaySession = AvailableVisitSessionDto(today.plusDays(3), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val fridaySession = AvailableVisitSessionDto(today.plusDays(3), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // as there are reviews this session will not be available
-    val saturdaySession = AvailableVisitSessionDto(today.plusDays(4), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val saturdaySession = AvailableVisitSessionDto(today.plusDays(4), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // as this is a weekend this session will not be available
-    val sundaySession = AvailableVisitSessionDto(today.plusDays(5), "session5", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val sundaySession = AvailableVisitSessionDto(today.plusDays(5), "session5", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // this should be the first session but this should not be available as MONDAY is a holiday
-    val mondaySession = AvailableVisitSessionDto(today.plusDays(6), "session6", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val mondaySession = AvailableVisitSessionDto(today.plusDays(6), "session6", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // this should be the next session but this should not be available as TUESDAY is a holiday
-    val nextTuesdaySession = AvailableVisitSessionDto(today.plusDays(7), "session7", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val nextTuesdaySession = AvailableVisitSessionDto(today.plusDays(7), "session7", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     // this should be the first session available
-    val nextWednesdaySession = AvailableVisitSessionDto(today.plusDays(8), "session8", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN)
+    val nextWednesdaySession = AvailableVisitSessionDto(today.plusDays(8), "session8", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
 
     val dateRange = DateRange(today.plusDays(2).plusDays(1), today.plusDays(28))
     Mockito.`when`(currentDateUtils.getCurrentDate()).thenReturn(today)
