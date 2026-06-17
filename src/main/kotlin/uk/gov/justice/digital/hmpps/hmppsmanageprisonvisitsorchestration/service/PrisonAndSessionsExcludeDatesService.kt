@@ -17,10 +17,15 @@ class PrisonAndSessionsExcludeDatesService(
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun getFuturePrisonAndSessionExcludeDates(prisonCode: String): PrisonAndSessionsExcludeDatesDto {
+  fun getFuturePrisonAndSessionExcludeDates(prisonCode: String, includeSessions: Boolean): PrisonAndSessionsExcludeDatesDto {
     logger.info("Getting future exclude dates for prison $prisonCode and sessions")
     val prisonExcludeDates = prisonService.getFutureExcludeDatesForPrison(prisonCode)
+    val sessionExclusionsMap = if (includeSessions) getCurrentAndFutureSessionExclusions(prisonCode) else emptyMap()
 
+    return PrisonAndSessionsExcludeDatesDto(fullDateExclusions = prisonExcludeDates, sessionExclusions = sessionExclusionsMap)
+  }
+
+  private fun getCurrentAndFutureSessionExclusions(prisonCode: String): Map<String, List<ExcludeDateDto>> {
     // get all current or future sessions
     val currentOrFutureSessions = visitSchedulerClient.getCurrentOrFutureSessionTemplates(prisonCode)
 
@@ -33,6 +38,6 @@ class PrisonAndSessionsExcludeDatesService(
       }
     }
 
-    return PrisonAndSessionsExcludeDatesDto(fullDateExclusions = prisonExcludeDates, sessionExclusions = sessionExclusionsMap)
+    return sessionExclusionsMap
   }
 }

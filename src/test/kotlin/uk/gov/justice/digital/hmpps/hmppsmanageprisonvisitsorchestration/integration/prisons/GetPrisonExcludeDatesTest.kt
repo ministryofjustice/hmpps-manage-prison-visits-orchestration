@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.manage.users.UserExtendedDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.PrisonAndSessionsExcludeDatesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
@@ -71,12 +72,12 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val dates = getResults(returnResult)
-    Assertions.assertThat(dates).hasSize(4)
-    Assertions.assertThat(dates[0]).isEqualTo(ExcludeDateDto(excludeDateCurrent, "User Four"))
-    Assertions.assertThat(dates[1]).isEqualTo(ExcludeDateDto(excludeDateFuture1, "user-5"))
-    Assertions.assertThat(dates[2]).isEqualTo(ExcludeDateDto(excludeDateFuture2, "User Six"))
-    Assertions.assertThat(dates[3]).isEqualTo(ExcludeDateDto(excludeDateFuture3, "User Six"))
+    val excludedDates = getResults(returnResult).fullDateExclusions
+    Assertions.assertThat(excludedDates).hasSize(4)
+    Assertions.assertThat(excludedDates[0]).isEqualTo(ExcludeDateDto(excludeDateCurrent, "User Four"))
+    Assertions.assertThat(excludedDates[1]).isEqualTo(ExcludeDateDto(excludeDateFuture1, "user-5"))
+    Assertions.assertThat(excludedDates[2]).isEqualTo(ExcludeDateDto(excludeDateFuture2, "User Six"))
+    Assertions.assertThat(excludedDates[3]).isEqualTo(ExcludeDateDto(excludeDateFuture3, "User Six"))
     verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
     verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(any())
   }
@@ -103,9 +104,9 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val dates = getResults(returnResult)
-    Assertions.assertThat(dates).hasSize(1)
-    Assertions.assertThat(dates[0]).isEqualTo(ExcludeDateDto(excludeDateCurrent, "User One"))
+    val fullDateExclusions = getResults(returnResult).fullDateExclusions
+    Assertions.assertThat(fullDateExclusions).hasSize(1)
+    Assertions.assertThat(fullDateExclusions[0]).isEqualTo(ExcludeDateDto(excludeDateCurrent, "User One"))
     verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
   }
 
@@ -129,8 +130,8 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val dates = getResults(returnResult)
-    Assertions.assertThat(dates).isEmpty()
+    val fullDateExclusions = getResults(returnResult).fullDateExclusions
+    Assertions.assertThat(fullDateExclusions).isEmpty()
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
   }
 
@@ -144,8 +145,8 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val dates = getResults(returnResult)
-    Assertions.assertThat(dates).isEmpty()
+    val fullDateExclusions = getResults(returnResult).fullDateExclusions
+    Assertions.assertThat(fullDateExclusions).isEmpty()
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
   }
 
@@ -185,11 +186,11 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val dates = getResults(returnResult)
-    Assertions.assertThat(dates).hasSize(3)
-    Assertions.assertThat(dates[2]).isEqualTo(ExcludeDateDto(excludeDatePast3, "User Thirteen"))
-    Assertions.assertThat(dates[1]).isEqualTo(ExcludeDateDto(excludeDatePast2, "user-12"))
-    Assertions.assertThat(dates[0]).isEqualTo(ExcludeDateDto(excludeDatePast1, "User Eleven"))
+    val fullDateExclusions = getResults(returnResult).fullDateExclusions
+    Assertions.assertThat(fullDateExclusions).hasSize(3)
+    Assertions.assertThat(fullDateExclusions[2]).isEqualTo(ExcludeDateDto(excludeDatePast3, "User Thirteen"))
+    Assertions.assertThat(fullDateExclusions[1]).isEqualTo(ExcludeDateDto(excludeDatePast2, "user-12"))
+    Assertions.assertThat(fullDateExclusions[0]).isEqualTo(ExcludeDateDto(excludeDatePast1, "User Eleven"))
     verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(any())
     verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(userIds.toSet())
   }
@@ -216,8 +217,8 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val dates = getResults(returnResult)
-    Assertions.assertThat(dates).isEmpty()
+    val fullDateExclusions = getResults(returnResult).fullDateExclusions
+    Assertions.assertThat(fullDateExclusions).isEmpty()
     verify(manageUsersApiClientSpy, times(0)).getUsersByUsernames(any())
   }
 
@@ -231,8 +232,8 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val dates = getResults(returnResult)
-    Assertions.assertThat(dates).isEmpty()
+    val fullDateExclusions = getResults(returnResult).fullDateExclusions
+    Assertions.assertThat(fullDateExclusions).isEmpty()
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
   }
 
@@ -262,5 +263,5 @@ class GetPrisonExcludeDatesTest : IntegrationTestBase() {
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<ExcludeDateDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<ExcludeDateDto>::class.java)
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): PrisonAndSessionsExcludeDatesDto = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, PrisonAndSessionsExcludeDatesDto::class.java)
 }

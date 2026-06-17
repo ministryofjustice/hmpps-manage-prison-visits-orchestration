@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller
 
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -13,10 +12,13 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.IsExcludeDateDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.PrisonAndSessionsExcludeDatesDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonAndSessionsExcludeDatesService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonService
 import java.time.LocalDate
 
@@ -30,12 +32,13 @@ const val ORCHESTRATION_PRISONS_IS_DATE_EXCLUDED_CONTROLLER_PATH: String = "$ORC
 @RestController
 class OrchestrationPrisonsExcludeDateController(
   private val prisonService: PrisonService,
+  private val prisonAndSessionsExcludeDatesService: PrisonAndSessionsExcludeDatesService,
 ) {
   @PreAuthorize("hasAnyRole('VSIP_ORCHESTRATION_SERVICE', 'VISIT_SCHEDULER')")
   @GetMapping(ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_FUTURE_CONTROLLER_PATH)
   @Operation(
-    summary = "Get all current or future exclude dates for a given prison",
-    description = "Get current or future exclude dates for a given prison",
+    summary = "Get all current or future exclude dates for a given prison and current or future excluded dates by session (if includeSessions is true)",
+    description = "Get current or future exclude dates for a given prison and current or future excluded dates by session (if includeSessions is true).",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -43,7 +46,7 @@ class OrchestrationPrisonsExcludeDateController(
         content = [
           Content(
             mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = ExcludeDateDto::class)),
+            schema = Schema(implementation = PrisonAndSessionsExcludeDatesDto::class),
           ),
         ],
       ),
@@ -68,7 +71,9 @@ class OrchestrationPrisonsExcludeDateController(
     @Schema(description = "prison code", example = "HEI", required = true)
     @PathVariable
     prisonCode: String,
-  ): List<ExcludeDateDto>? = prisonService.getFutureExcludeDatesForPrison(prisonCode)
+    @RequestParam(required = false, defaultValue = "false")
+    includeSessions: Boolean? = false,
+  ): PrisonAndSessionsExcludeDatesDto = prisonAndSessionsExcludeDatesService.getFuturePrisonAndSessionExcludeDates(prisonCode, includeSessions ?: false)
 
   @PreAuthorize("hasAnyRole('VSIP_ORCHESTRATION_SERVICE', 'VISIT_SCHEDULER')")
   @GetMapping(ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_PAST_CONTROLLER_PATH)
@@ -82,7 +87,7 @@ class OrchestrationPrisonsExcludeDateController(
         content = [
           Content(
             mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = ExcludeDateDto::class)),
+            schema = Schema(implementation = PrisonAndSessionsExcludeDatesDto::class),
           ),
         ],
       ),
@@ -107,7 +112,7 @@ class OrchestrationPrisonsExcludeDateController(
     @Schema(description = "prison code", example = "HEI", required = true)
     @PathVariable
     prisonCode: String,
-  ): List<ExcludeDateDto>? = prisonService.getPastExcludeDatesForPrison(prisonCode)
+  ): PrisonAndSessionsExcludeDatesDto = prisonService.getPastExcludeDatesAndSessionsForPrison(prisonCode)
 
   @PreAuthorize("hasAnyRole('VSIP_ORCHESTRATION_SERVICE', 'VISIT_SCHEDULER')")
   @PutMapping(ORCHESTRATION_PRISONS_EXCLUDE_DATE_ADD_CONTROLLER_PATH)
