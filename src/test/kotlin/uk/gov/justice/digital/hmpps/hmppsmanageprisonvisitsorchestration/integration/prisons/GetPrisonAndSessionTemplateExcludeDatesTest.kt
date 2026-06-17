@@ -102,7 +102,7 @@ class GetPrisonAndSessionTemplateExcludeDatesTest : IntegrationTestBase() {
     val sessionTemplate3Exclusions = prisonAndSessionExcludeDate.sessionExclusions[sessionTemplate3.reference]!!
     Assertions.assertThat(sessionTemplate3Exclusions[0]).isEqualTo(ExcludeDateDto(sessionTemplate3ExcludeDateFuture.excludeDate, "User Sixteen"))
 
-    verify(manageUsersApiClientSpy, times(3)).getUsersByUsernames(any())
+    verify(manageUsersApiClientSpy, times(2)).getUsersByUsernames(any())
   }
 
   @Test
@@ -141,7 +141,7 @@ class GetPrisonAndSessionTemplateExcludeDatesTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when a prison does not has exclude dates and its sessions do not have exclude dates then prison exclude dates are returned and session exclude dates are empty`() {
+  fun `when a prison does not have exclude dates and its sessions do not have exclude dates then prison exclude dates are returned and session exclude dates are empty`() {
     // Given
     val today = LocalDate.now()
     // 3 past exclude dates, 1 current and 1 future exclude dates

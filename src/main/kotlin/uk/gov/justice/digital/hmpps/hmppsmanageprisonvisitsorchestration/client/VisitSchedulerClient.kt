@@ -685,9 +685,15 @@ class VisitSchedulerClient(
     .block(apiTimeout)
 
   fun getCurrentOrFutureSessionTemplates(prisonCode: String): List<SessionTemplateDto>? = webClient.get()
-    .uri("/admin/session-templates?prisonCode=$prisonCode&rangeType=CURRENT_OR_FUTURE")
+    .uri("/admin/session-templates") {
+      it.queryParam("prisonCode", prisonCode)
+        .queryParam("rangeType", "CURRENT_OR_FUTURE")
+        .build()
+    }
+    .accept(MediaType.APPLICATION_JSON)
     .retrieve()
-    .bodyToMono<List<SessionTemplateDto>>().block(apiTimeout)
+    .bodyToMono<List<SessionTemplateDto>>()
+    .block(apiTimeout)
 
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParamIfPresent("prisonId", Optional.ofNullable(visitSearchRequestFilter.prisonCode))

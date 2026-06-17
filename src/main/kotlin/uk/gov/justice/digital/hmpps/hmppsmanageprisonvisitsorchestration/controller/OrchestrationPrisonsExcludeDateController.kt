@@ -72,8 +72,8 @@ class OrchestrationPrisonsExcludeDateController(
     @PathVariable
     prisonCode: String,
     @RequestParam(required = false, defaultValue = "false")
-    includeSessions: Boolean? = false,
-  ): PrisonAndSessionsExcludeDatesDto = prisonAndSessionsExcludeDatesService.getFuturePrisonAndSessionExcludeDates(prisonCode, includeSessions ?: false)
+    includeSessions: Boolean = false,
+  ): PrisonAndSessionsExcludeDatesDto = prisonAndSessionsExcludeDatesService.getFuturePrisonAndSessionExcludeDates(prisonCode, includeSessions)
 
   @PreAuthorize("hasAnyRole('VSIP_ORCHESTRATION_SERVICE', 'VISIT_SCHEDULER')")
   @GetMapping(ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_PAST_CONTROLLER_PATH)
