@@ -59,8 +59,10 @@ class PrisonService(
     return excludeDatesService.getFutureExcludeDates(excludeDates)
   }
 
-  fun getPastExcludeDatesAndSessionsForPrison(prisonCode: String): PrisonAndSessionsExcludeDatesDto {
+  fun getPastExcludeDatesAndEmptySessionsMapForPrison(prisonCode: String): PrisonAndSessionsExcludeDatesDto {
     val excludeDates = getPastExcludeDatesForPrison(prisonCode)
+
+    // since these are past-dated - session exclusions are always empty
     return PrisonAndSessionsExcludeDatesDto(
       fullDateExclusions = excludeDates,
       sessionExclusions = emptyMap(),

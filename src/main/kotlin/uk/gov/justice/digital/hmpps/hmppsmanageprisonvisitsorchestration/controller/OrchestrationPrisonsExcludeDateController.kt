@@ -112,7 +112,7 @@ class OrchestrationPrisonsExcludeDateController(
     @Schema(description = "prison code", example = "HEI", required = true)
     @PathVariable
     prisonCode: String,
-  ): PrisonAndSessionsExcludeDatesDto = prisonService.getPastExcludeDatesAndSessionsForPrison(prisonCode)
+  ): PrisonAndSessionsExcludeDatesDto = prisonService.getPastExcludeDatesAndEmptySessionsMapForPrison(prisonCode)
 
   @PreAuthorize("hasAnyRole('VSIP_ORCHESTRATION_SERVICE', 'VISIT_SCHEDULER')")
   @PutMapping(ORCHESTRATION_PRISONS_EXCLUDE_DATE_ADD_CONTROLLER_PATH)
