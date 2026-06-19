@@ -10,7 +10,7 @@ const val PRISONER_MERGED_TYPE = "prison-offender-events.prisoner.merged"
 class PrisonerMergedNotifier : EventNotifier() {
   override fun processEvent(domainEvent: DomainEvent) {
     val additionalInfo = getAdditionalInfo(domainEvent, PrisonerMergedInfo::class.java)
-    LOG.debug("Enter PrisonerReleasedInfo Info: {}", additionalInfo)
+    LOG.debug("Enter PrisonerMergedInfo Info: {}", additionalInfo)
     getVisitSchedulerService().processPrisonerMerged(additionalInfo)
   }
 

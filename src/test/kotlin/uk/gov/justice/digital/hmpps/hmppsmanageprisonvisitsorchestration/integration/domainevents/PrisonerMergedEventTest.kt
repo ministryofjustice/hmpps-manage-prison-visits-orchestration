@@ -51,11 +51,11 @@ class PrisonerMergedEventTest : PrisonVisitsEventsIntegrationTestBase() {
     awsSnsClient.publish(publishRequest).get()
   }
 
-  fun assertStandardCalls(eventNotifierSpy: EventNotifier, notificationEndPoint: String? = null, any: Any? = null) {
+  fun assertStandardCalls(eventNotifierSpy: EventNotifier, notificationEndPoint: String? = null, expectedRequestBody: Any? = null) {
     await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
     await untilAsserted { verify(eventNotifierSpy, times(1)).processEvent(any()) }
     notificationEndPoint?.let {
-      await untilAsserted { visitSchedulerMockServer.verifyPost(notificationEndPoint, any) }
+      await untilAsserted { visitSchedulerMockServer.verifyPost(notificationEndPoint, expectedRequestBody) }
     }
   }
 }
