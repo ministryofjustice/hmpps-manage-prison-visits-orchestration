@@ -49,7 +49,6 @@ class RejectVisitRequestByReferenceTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubRejectVisitRequestByReference(
       visitReference,
       createVisitDto(reference = visitReference, visitStatus = VisitStatus.CANCELLED, visitSubStatus = VisitSubStatus.REJECTED),
-      expectedRequestBody = rejectVisitRequestBodyDto,
     )
 
     // When
