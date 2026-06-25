@@ -43,7 +43,7 @@ class RejectVisitRequestByReferenceTest : IntegrationTestBase() {
     val rejectVisitRequestBodyDto = RejectVisitRequestBodyDto(
       visitReference = visitReference,
       actionedBy = "user_1",
-      visitRequestRejectionReason = VisitRequestRejectionReason.NO_VISIT_ALLOWANCE,
+      visitRequestRejectionReason = null,
     )
 
     visitSchedulerMockServer.stubRejectVisitRequestByReference(
