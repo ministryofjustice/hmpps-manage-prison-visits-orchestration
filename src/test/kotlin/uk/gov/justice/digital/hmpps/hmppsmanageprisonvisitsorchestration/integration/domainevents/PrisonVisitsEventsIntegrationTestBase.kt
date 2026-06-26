@@ -34,6 +34,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.DomainEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.EventFeatureSwitch
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.PersonReference
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerMergedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.events.additionalinfo.PrisonerReceivedInfo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.ContactRestrictionCreatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.ContactRestrictionUpdatedNotifier
@@ -51,6 +52,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerIncentivesDeletedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerIncentivesInsertedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerIncentivesUpdatedNotifier
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerMergedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerNonAssociationNotifierCreatedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerReceivedNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PrisonerReleasedNotifier
@@ -129,6 +131,9 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
 
   @MockitoSpyBean
   lateinit var prisonerReleasedNotifierSpy: PrisonerReleasedNotifier
+
+  @MockitoSpyBean
+  lateinit var prisonerMergedNotifierSpy: PrisonerMergedNotifier
 
   @MockitoSpyBean
   lateinit var prisonerContactRestrictionCreatedNotifierSpy: PrisonerContactRestrictionCreatedNotifier
@@ -241,6 +246,21 @@ abstract class PrisonVisitsEventsIntegrationTestBase {
     jsonValues["nomsNumber"] = prisonerReceivedInfo.prisonerNumber
     jsonValues["prisonId"] = prisonerReceivedInfo.prisonCode
     jsonValues["reason"] = prisonerReceivedInfo.reason.name
+
+    return createAdditionalInformationJson(jsonValues)
+  }
+
+  fun createPrisonerMergedAdditionalInformationJson(
+    prisonerMergedInfo: PrisonerMergedInfo,
+    bookingId: String = "booking-1",
+    reason: String = "merge event",
+  ): String {
+    val jsonValues = HashMap<String, String>()
+
+    jsonValues["bookingId"] = bookingId
+    jsonValues["nomsNumber"] = prisonerMergedInfo.newPrisonerNumber
+    jsonValues["removedNomsNumber"] = prisonerMergedInfo.oldPrisonerNumber
+    jsonValues["reason"] = reason
 
     return createAdditionalInformationJson(jsonValues)
   }
