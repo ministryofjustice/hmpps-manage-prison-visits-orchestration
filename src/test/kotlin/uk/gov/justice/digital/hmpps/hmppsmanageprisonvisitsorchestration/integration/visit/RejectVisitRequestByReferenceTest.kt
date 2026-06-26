@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.control
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.OrchestrationApproveRejectVisitRequestResponseDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.RejectVisitRequestBodyDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSubStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRequestRejectionReason
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
@@ -39,9 +40,16 @@ class RejectVisitRequestByReferenceTest : IntegrationTestBase() {
       dateOfBirth = LocalDate.of(1980, 1, 1),
       convictedStatus = "Convicted",
     )
-    val rejectVisitRequestBodyDto = RejectVisitRequestBodyDto(visitReference, "user_1")
+    val rejectVisitRequestBodyDto = RejectVisitRequestBodyDto(
+      visitReference = visitReference,
+      actionedBy = "user_1",
+      visitRequestRejectionReason = null,
+    )
 
-    visitSchedulerMockServer.stubRejectVisitRequestByReference(visitReference, createVisitDto(reference = visitReference, visitStatus = VisitStatus.CANCELLED, visitSubStatus = VisitSubStatus.REJECTED))
+    visitSchedulerMockServer.stubRejectVisitRequestByReference(
+      visitReference,
+      createVisitDto(reference = visitReference, visitStatus = VisitStatus.CANCELLED, visitSubStatus = VisitSubStatus.REJECTED),
+    )
 
     // When
     prisonOffenderSearchMockServer.stubGetPrisonerById("AB12345DS", prisonerDto)
@@ -59,9 +67,17 @@ class RejectVisitRequestByReferenceTest : IntegrationTestBase() {
   fun `when reject visit request is called but prisoner response fails, then success response is returned with placeholder`() {
     // Given
     val visitReference = "ab-cd-ef-gh"
-    val rejectVisitRequestBodyDto = RejectVisitRequestBodyDto(visitReference, "user_1")
+    val rejectVisitRequestBodyDto = RejectVisitRequestBodyDto(
+      visitReference = visitReference,
+      actionedBy = "user_1",
+      visitRequestRejectionReason = VisitRequestRejectionReason.NO_VISIT_ALLOWANCE,
+    )
 
-    visitSchedulerMockServer.stubRejectVisitRequestByReference(visitReference, createVisitDto(reference = visitReference, visitStatus = VisitStatus.CANCELLED, visitSubStatus = VisitSubStatus.REJECTED))
+    visitSchedulerMockServer.stubRejectVisitRequestByReference(
+      visitReference,
+      createVisitDto(reference = visitReference, visitStatus = VisitStatus.CANCELLED, visitSubStatus = VisitSubStatus.REJECTED),
+      expectedRequestBody = rejectVisitRequestBodyDto,
+    )
 
     // When
     prisonOffenderSearchMockServer.stubGetPrisonerById("AB12345DS", null, HttpStatus.INTERNAL_SERVER_ERROR)
@@ -79,9 +95,18 @@ class RejectVisitRequestByReferenceTest : IntegrationTestBase() {
   fun `when reject visit request is called but fails, then error response is returned up to caller`() {
     // Given
     val visitReference = "ab-cd-ef-gh"
-    val rejectVisitRequestBodyDto = RejectVisitRequestBodyDto(visitReference, "user_1")
+    val rejectVisitRequestBodyDto = RejectVisitRequestBodyDto(
+      visitReference = visitReference,
+      actionedBy = "user_1",
+      visitRequestRejectionReason = VisitRequestRejectionReason.NO_VISIT_ALLOWANCE,
+    )
 
-    visitSchedulerMockServer.stubRejectVisitRequestByReference(visitReference, null, HttpStatus.BAD_REQUEST)
+    visitSchedulerMockServer.stubRejectVisitRequestByReference(
+      visitReference,
+      null,
+      HttpStatus.BAD_REQUEST,
+      expectedRequestBody = rejectVisitRequestBodyDto,
+    )
 
     // When
     prisonOffenderSearchMockServer.stubGetPrisonerById("AB12345DS", null, HttpStatus.INTERNAL_SERVER_ERROR)
@@ -95,7 +120,11 @@ class RejectVisitRequestByReferenceTest : IntegrationTestBase() {
   fun `when no role specified then access forbidden status is returned`() {
     // Given
     val authHttpHeaders = setAuthorisation(roles = listOf())
-    val rejectVisitRequestBodyDto = RejectVisitRequestBodyDto("ab-cd-ef-gh", "user_1")
+    val rejectVisitRequestBodyDto = RejectVisitRequestBodyDto(
+      visitReference = "ab-cd-ef-gh",
+      actionedBy = "user_1",
+      visitRequestRejectionReason = VisitRequestRejectionReason.NO_VISIT_ALLOWANCE,
+    )
 
     // When
     val responseSpec = callRejectVisitRequestByReference(webTestClient, rejectVisitRequestBodyDto, authHttpHeaders)
