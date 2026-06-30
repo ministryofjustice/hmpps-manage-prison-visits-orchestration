@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonService
 
 const val ORCHESTRATION_PRISONS_CONFIG_CONTROLLER_PATH: String = "/config/prisons"
+const val ORCHESTRATION_PRISONS_CONFIG_CONTROLLER_V2_PATH: String = "/v2/config/prisons"
 
 @RestController
 class OrchestrationPrisonsConfigController(

@@ -92,7 +92,7 @@ class PrisonService(
 
   fun updatePrison(prisonCode: String, updatePrisonDto: VisitSchedulerUpdatePrisonDto): VisitSchedulerPrisonDto = visitSchedulerClient.updatePrison(prisonCode, updatePrisonDto)
 
-  private fun getPastExcludeDatesForPrison(prisonCode: String): List<ExcludeDateDto> {
+  fun getPastExcludeDatesForPrison(prisonCode: String): List<ExcludeDateDto> {
     val excludeDates = getExcludeDatesForPrison(prisonCode)
     return excludeDatesService.getPastExcludeDates(excludeDates)
   }

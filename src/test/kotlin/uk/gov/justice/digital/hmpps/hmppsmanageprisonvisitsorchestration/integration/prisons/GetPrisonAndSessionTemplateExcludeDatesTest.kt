@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.annotation.DirtiesContext.ClassMode.BEFORE_CLASS
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_FUTURE_CONTROLLER_PATH
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_FUTURE_CONTROLLER_V2_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.manage.users.UserExtendedDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTemplateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
@@ -20,7 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 
-@DisplayName("GET $ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_FUTURE_CONTROLLER_PATH with includeSessions as true tests")
+@DisplayName("GET $ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_FUTURE_CONTROLLER_V2_PATH with includeSessions as true tests")
 @DirtiesContext(classMode = BEFORE_CLASS)
 class GetPrisonAndSessionTemplateExcludeDatesTest : IntegrationTestBase() {
   final val prisonCode = "HEI"
@@ -37,7 +37,7 @@ class GetPrisonAndSessionTemplateExcludeDatesTest : IntegrationTestBase() {
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec = webTestClient.get().uri(
     buildString {
-      append(ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_FUTURE_CONTROLLER_PATH.replace("{prisonCode}", prisonCode))
+      append(ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_FUTURE_CONTROLLER_V2_PATH.replace("{prisonCode}", prisonCode))
       append("?includeSessions=true")
     },
   )
