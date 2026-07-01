@@ -23,14 +23,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonService
 import java.time.LocalDate
 
-const val ORCHESTRATION_PRISONS_EXCLUDE_DATE_CONTROLLER_PATH: String = "$ORCHESTRATION_PRISONS_CONFIG_CONTROLLER_PATH/prison/{prisonCode}/exclude-date"
-const val ORCHESTRATION_PRISONS_EXCLUDE_DATE_CONTROLLER_V2_PATH: String = "$ORCHESTRATION_PRISONS_CONFIG_CONTROLLER_V2_PATH/prison/{prisonCode}/exclude-date"
+private const val ORCHESTRATION_PRISONS_EXCLUDE_DATE_CONTROLLER_PATH: String = "$ORCHESTRATION_PRISONS_CONFIG_CONTROLLER_PATH/prison/{prisonCode}/exclude-date"
+private const val ORCHESTRATION_PRISONS_EXCLUDE_DATES_CONTROLLER_V2_PATH: String = "$ORCHESTRATION_PRISONS_CONFIG_CONTROLLER_V2_PATH/{prisonCode}/config/exclude-dates"
 const val ORCHESTRATION_PRISONS_EXCLUDE_DATE_ADD_CONTROLLER_PATH: String = "$ORCHESTRATION_PRISONS_EXCLUDE_DATE_CONTROLLER_PATH/add"
 const val ORCHESTRATION_PRISONS_EXCLUDE_DATE_REMOVE_CONTROLLER_PATH: String = "$ORCHESTRATION_PRISONS_EXCLUDE_DATE_CONTROLLER_PATH/remove"
 const val ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_FUTURE_CONTROLLER_PATH: String = "$ORCHESTRATION_PRISONS_EXCLUDE_DATE_CONTROLLER_PATH/future"
-const val ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_FUTURE_CONTROLLER_V2_PATH: String = "$ORCHESTRATION_PRISONS_EXCLUDE_DATE_CONTROLLER_V2_PATH/future"
+const val ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_FUTURE_CONTROLLER_V2_PATH: String = "$ORCHESTRATION_PRISONS_EXCLUDE_DATES_CONTROLLER_V2_PATH/future"
 const val ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_PAST_CONTROLLER_PATH: String = "$ORCHESTRATION_PRISONS_EXCLUDE_DATE_CONTROLLER_PATH/past"
-const val ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_PAST_CONTROLLER_V2_PATH: String = "$ORCHESTRATION_PRISONS_EXCLUDE_DATE_CONTROLLER_V2_PATH/past"
 const val ORCHESTRATION_PRISONS_IS_DATE_EXCLUDED_CONTROLLER_PATH: String = "$ORCHESTRATION_PRISONS_EXCLUDE_DATE_CONTROLLER_PATH/{excludeDate}/isExcluded"
 
 @RestController
@@ -119,7 +118,6 @@ class OrchestrationPrisonsExcludeDateController(
     includeSessions: Boolean = false,
   ): PrisonAndSessionsExcludeDatesDto = prisonAndSessionsExcludeDatesService.getFuturePrisonAndSessionExcludeDates(prisonCode, includeSessions)
 
-  @Deprecated("Deprecated, use the v2 version ($ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_PAST_CONTROLLER_V2_PATH) of this endpoint instead.")
   @PreAuthorize("hasAnyRole('VSIP_ORCHESTRATION_SERVICE', 'VISIT_SCHEDULER')")
   @GetMapping(ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_PAST_CONTROLLER_PATH)
   @Operation(
@@ -158,45 +156,6 @@ class OrchestrationPrisonsExcludeDateController(
     @PathVariable
     prisonCode: String,
   ): List<ExcludeDateDto>? = prisonService.getPastExcludeDatesForPrison(prisonCode)
-
-  @PreAuthorize("hasAnyRole('VSIP_ORCHESTRATION_SERVICE', 'VISIT_SCHEDULER')")
-  @GetMapping(ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_PAST_CONTROLLER_V2_PATH)
-  @Operation(
-    summary = "Get all past exclude dates for a given prison and an empty map of excluded session dates",
-    description = "Get all past exclude dates for a given prison  and an empty map of excluded session dates",
-    responses = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Exclude dates successfully returned",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = PrisonAndSessionsExcludeDatesDto::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorized to access this endpoint",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Incorrect permissions to view exclude dates",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "404",
-        description = "Prison not found on visit-scheduler",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-    ],
-  )
-  fun getPastExcludeDatesAndEmptySessionMapForPrison(
-    @Schema(description = "prison code", example = "HEI", required = true)
-    @PathVariable
-    prisonCode: String,
-  ): PrisonAndSessionsExcludeDatesDto = prisonService.getPastExcludeDatesAndEmptySessionsMapForPrison(prisonCode)
 
   @PreAuthorize("hasAnyRole('VSIP_ORCHESTRATION_SERVICE', 'VISIT_SCHEDULER')")
   @PutMapping(ORCHESTRATION_PRISONS_EXCLUDE_DATE_ADD_CONTROLLER_PATH)

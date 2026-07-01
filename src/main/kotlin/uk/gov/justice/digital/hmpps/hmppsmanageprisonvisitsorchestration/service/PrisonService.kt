@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.IsExcludeDateDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.PrisonAndSessionsExcludeDatesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
 import java.time.LocalDate
 
@@ -57,16 +56,6 @@ class PrisonService(
   fun getFutureExcludeDatesForPrison(prisonCode: String): List<ExcludeDateDto> {
     val excludeDates = getExcludeDatesForPrison(prisonCode)
     return excludeDatesService.getFutureExcludeDates(excludeDates)
-  }
-
-  fun getPastExcludeDatesAndEmptySessionsMapForPrison(prisonCode: String): PrisonAndSessionsExcludeDatesDto {
-    val excludeDates = getPastExcludeDatesForPrison(prisonCode)
-
-    // since these are past-dated - session exclusions are always empty
-    return PrisonAndSessionsExcludeDatesDto(
-      fullDateExclusions = excludeDates,
-      sessionExclusions = emptyMap(),
-    )
   }
 
   fun isDateExcludedForPrisonVisits(prisonCode: String, date: LocalDate): IsExcludeDateDto {
