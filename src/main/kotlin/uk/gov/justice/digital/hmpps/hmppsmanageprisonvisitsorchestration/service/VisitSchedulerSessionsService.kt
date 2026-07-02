@@ -258,9 +258,9 @@ class VisitSchedulerSessionsService(
     return AvailableVisitSessionRestrictionDto(sessionRestriction)
   }
 
-  fun getFutureExcludeDatesForSessionTemplate(sessionTemplateReference: String): List<ExcludeDateDto> {
+  fun getFutureExcludeDatesForSessionTemplate(sessionTemplateReference: String, withUsernames: Boolean = true): List<ExcludeDateDto> {
     val excludeDates = getExcludeDatesForSessionTemplate(sessionTemplateReference)
-    return excludeDatesService.getFutureExcludeDates(excludeDates)
+    return excludeDatesService.getFutureExcludeDates(excludeDates, withUsernames)
   }
 
   fun getPastExcludeDatesForSessionTemplate(sessionTemplateReference: String): List<ExcludeDateDto> {

@@ -13,14 +13,14 @@ class ExcludeDatesService(
   private val currentDateUtils: CurrentDateUtils,
 ) {
 
-  fun getFutureExcludeDates(excludeDates: List<ExcludeDateDto>): List<ExcludeDateDto> {
+  fun getFutureExcludeDates(excludeDates: List<ExcludeDateDto>, withUsernames: Boolean = true): List<ExcludeDateDto> {
     val futureDatesPredicate: Predicate<ExcludeDateDto> = Predicate { it.excludeDate >= currentDateUtils.getCurrentDate() }
-    return getExcludeDates(excludeDates, futureDatesPredicate).sortedBy { it.excludeDate }
+    return getExcludeDates(excludeDates, futureDatesPredicate, withUsernames).sortedBy { it.excludeDate }
   }
 
   fun getPastExcludeDates(excludeDates: List<ExcludeDateDto>): List<ExcludeDateDto> {
     val pastDatesPredicate: Predicate<ExcludeDateDto> = Predicate { it.excludeDate < currentDateUtils.getCurrentDate() }
-    return getExcludeDates(excludeDates, pastDatesPredicate).sortedByDescending { it.excludeDate }
+    return getExcludeDates(excludeDates, pastDatesPredicate, true).sortedByDescending { it.excludeDate }
   }
 
   fun isDateExcluded(excludeDates: List<ExcludeDateDto>, date: LocalDate): IsExcludeDateDto {
@@ -28,8 +28,10 @@ class ExcludeDatesService(
     return IsExcludeDateDto(isExcluded)
   }
 
-  private fun getExcludeDates(excludeDates: List<ExcludeDateDto>, excludeDatesFilter: Predicate<ExcludeDateDto>): List<ExcludeDateDto> = excludeDates.filter { excludeDatesFilter.test(it) }.also {
-    setActionedByFullName(it)
+  private fun getExcludeDates(excludeDates: List<ExcludeDateDto>, excludeDatesFilter: Predicate<ExcludeDateDto>, withUsernames: Boolean): List<ExcludeDateDto> = excludeDates.filter { excludeDatesFilter.test(it) }.also {
+    if (withUsernames) {
+      setActionedByFullName(it)
+    }
   }
 
   private fun setActionedByFullName(excludeDates: List<ExcludeDateDto>): List<ExcludeDateDto> {
