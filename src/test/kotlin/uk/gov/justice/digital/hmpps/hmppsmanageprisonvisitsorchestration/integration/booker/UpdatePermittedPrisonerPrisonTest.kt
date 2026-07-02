@@ -93,7 +93,7 @@ class UpdatePermittedPrisonerPrisonTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when update permitted prisoner prison is called with no auth request is rejected`() {
+  fun `when update permitted prisoner prison is called with an invalid role request is rejected`() {
     // Given
     val invalidRoleHttpHeaders = setAuthorisation(roles = listOf("ROLE_INVALID"))
 
