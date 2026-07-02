@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 
 @Schema(description = "Update a booker prisoner's prison code.")
-data class UpdateRegisteredPrisonersPrisonDto(
+data class UpdateRegisteredPrisonerPrisonDto(
   @param:JsonProperty("prisonId")
   @field:NotBlank
   @param:Schema(description = "Prison Id", example = "MDI", required = true)

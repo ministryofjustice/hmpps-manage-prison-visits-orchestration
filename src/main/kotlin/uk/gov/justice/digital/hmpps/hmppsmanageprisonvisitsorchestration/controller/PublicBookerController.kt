@@ -38,7 +38,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterVisitorForBookerPrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RejectVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.SingleVisitorRequestForReviewDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.UpdateRegisteredPrisonersPrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.UpdateRegisteredPrisonerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerDetailedInfoDto
@@ -355,8 +355,8 @@ class PublicBookerController(
     prisonerId: String,
     @RequestBody
     @Valid
-    updateRegisteredPrisonersPrisonDto: UpdateRegisteredPrisonersPrisonDto,
-  ): PermittedPrisonerForBookerDto = publicBookerService.updatePermittedPrisonerPrison(bookerReference, prisonerId, updateRegisteredPrisonersPrisonDto)
+    updateRegisteredPrisonerPrisonDto: UpdateRegisteredPrisonerPrisonDto,
+  ): PermittedPrisonerForBookerDto = publicBookerService.updatePermittedPrisonerPrison(bookerReference, prisonerId, updateRegisteredPrisonerPrisonDto)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(PUBLIC_BOOKER_GET_BOOKER_AUDIT_PATH)

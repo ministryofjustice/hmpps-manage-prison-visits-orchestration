@@ -32,7 +32,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterVisitorForBookerPrisonerDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.UpdateRegisteredPrisonersPrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.UpdateRegisteredPrisonerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
@@ -163,7 +163,7 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
   fun stubUpdatePermittedPrisonerPrison(
     bookerReference: String,
     prisonerId: String,
-    updateRegisteredPrisonersPrisonDto: UpdateRegisteredPrisonersPrisonDto,
+    updateRegisteredPrisonerPrisonDto: UpdateRegisteredPrisonerPrisonDto,
     response: PermittedPrisonerForBookerDto? = null,
     httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
   ) {
@@ -174,7 +174,7 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
 
     stubFor(
       WireMock.put(uri)
-        .withRequestBody(equalToJson(getJsonString(updateRegisteredPrisonersPrisonDto)))
+        .withRequestBody(equalToJson(getJsonString(updateRegisteredPrisonerPrisonDto)))
         .willReturn(
           if (response != null) {
             responseBuilder.withStatus(HttpStatus.OK.value())

@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterVisitorForBookerPrisonerDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.UpdateRegisteredPrisonersPrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.UpdateRegisteredPrisonerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerDetailedInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerPrisonerDetailedInfoDto
@@ -161,9 +161,9 @@ class PublicBookerService(
     prisonVisitBookerRegistryClient.registerPrisoner(bookerReference, registerPrisonerForBookerDto)
   }
 
-  fun updatePermittedPrisonerPrison(bookerReference: String, prisonerId: String, updateRegisteredPrisonersPrisonDto: UpdateRegisteredPrisonersPrisonDto): PermittedPrisonerForBookerDto {
+  fun updatePermittedPrisonerPrison(bookerReference: String, prisonerId: String, updateRegisteredPrisonerPrisonDto: UpdateRegisteredPrisonerPrisonDto): PermittedPrisonerForBookerDto {
     logger.info("update permitted prisoner prison called for $prisonerId with booker reference $bookerReference")
-    return prisonVisitBookerRegistryClient.updatePermittedPrisonerPrison(bookerReference, prisonerId, updateRegisteredPrisonersPrisonDto)
+    return prisonVisitBookerRegistryClient.updatePermittedPrisonerPrison(bookerReference, prisonerId, updateRegisteredPrisonerPrisonDto)
   }
 
   fun registerVisitorForBookerPrisoner(bookerReference: String, prisonerId: String, registerVisitorForBookerPrisonerDto: RegisterVisitorForBookerPrisonerDto): PermittedVisitorsForPermittedPrisonerBookerDto {

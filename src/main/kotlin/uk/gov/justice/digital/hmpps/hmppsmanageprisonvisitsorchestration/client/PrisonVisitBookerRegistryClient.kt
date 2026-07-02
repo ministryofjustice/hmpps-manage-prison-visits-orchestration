@@ -29,7 +29,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterVisitorForBookerPrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RejectVisitorRequestDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.UpdateRegisteredPrisonersPrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.UpdateRegisteredPrisonerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
@@ -157,14 +157,14 @@ class PrisonVisitBookerRegistryClient(
       .block(apiTimeout)
   }
 
-  fun updatePermittedPrisonerPrison(bookerReference: String, prisonerId: String, updateRegisteredPrisonersPrisonDto: UpdateRegisteredPrisonersPrisonDto): PermittedPrisonerForBookerDto {
+  fun updatePermittedPrisonerPrison(bookerReference: String, prisonerId: String, updateRegisteredPrisonerPrisonDto: UpdateRegisteredPrisonerPrisonDto): PermittedPrisonerForBookerDto {
     val uri = UPDATE_PERMITTED_PRISONER_PRISON
       .replace("{bookerReference}", bookerReference)
       .replace("{prisonerId}", prisonerId)
 
     return webClient.put()
       .uri(uri)
-      .body(BodyInserters.fromValue(updateRegisteredPrisonersPrisonDto))
+      .body(BodyInserters.fromValue(updateRegisteredPrisonerPrisonDto))
       .retrieve()
       .bodyToMono<PermittedPrisonerForBookerDto>()
       .blockOptional(apiTimeout)

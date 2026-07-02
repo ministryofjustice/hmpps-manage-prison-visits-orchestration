@@ -12,41 +12,40 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_UPDATE_PERMITTED_PRISONER_PRISON_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedPrisonerForBookerDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.UpdateRegisteredPrisonersPrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.UpdateRegisteredPrisonerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 
 @DisplayName("$PUBLIC_BOOKER_UPDATE_PERMITTED_PRISONER_PRISON_CONTROLLER_PATH - Update a permitted prisoner's registered prison")
 class UpdatePermittedPrisonerPrisonTest : IntegrationTestBase() {
   @Test
-  fun `when update permitted prisoner prison is successful HTTP status OK and updated prisoner are returned`() {
+  fun `when update permitted prisoner prison is successful HTTP status OK and updated prisoner is returned`() {
     // Given
     val bookerReference = "booker-reference"
     val prisonerId = "AA12345"
-    val updateRegisteredPrisonersPrisonDto = UpdateRegisteredPrisonersPrisonDto("MDI")
+    val updateRegisteredPrisonerPrisonDto = UpdateRegisteredPrisonerPrisonDto("MDI")
     val response = PermittedPrisonerForBookerDto(
       prisonerId = prisonerId,
-      prisonCode = updateRegisteredPrisonersPrisonDto.prisonCode,
+      prisonCode = updateRegisteredPrisonerPrisonDto.prisonCode,
       permittedVisitors = emptyList(),
     )
 
     prisonVisitBookerRegistryMockServer.stubUpdatePermittedPrisonerPrison(
       bookerReference = bookerReference,
       prisonerId = prisonerId,
-      updateRegisteredPrisonersPrisonDto = updateRegisteredPrisonersPrisonDto,
+      updateRegisteredPrisonerPrisonDto = updateRegisteredPrisonerPrisonDto,
       response = response,
-      httpStatus = HttpStatus.OK,
     )
 
     // When
-    val responseSpec = callUpdatePermittedPrisonerPrison(bookerReference, prisonerId, updateRegisteredPrisonersPrisonDto, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callUpdatePermittedPrisonerPrison(bookerReference, prisonerId, updateRegisteredPrisonerPrisonDto, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
     val updatedPrisoner = getResponse(responseSpec)
     assertThat(updatedPrisoner.prisonerId).isEqualTo(prisonerId)
-    assertThat(updatedPrisoner.prisonCode).isEqualTo(updateRegisteredPrisonersPrisonDto.prisonCode)
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).updatePermittedPrisonerPrison(bookerReference, prisonerId, updateRegisteredPrisonersPrisonDto)
+    assertThat(updatedPrisoner.prisonCode).isEqualTo(updateRegisteredPrisonerPrisonDto.prisonCode)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).updatePermittedPrisonerPrison(bookerReference, prisonerId, updateRegisteredPrisonerPrisonDto)
   }
 
   @Test
@@ -54,21 +53,21 @@ class UpdatePermittedPrisonerPrisonTest : IntegrationTestBase() {
     // Given
     val bookerReference = "booker-reference"
     val prisonerId = "AA12345"
-    val updateRegisteredPrisonersPrisonDto = UpdateRegisteredPrisonersPrisonDto("MDI")
+    val updateRegisteredPrisonerPrisonDto = UpdateRegisteredPrisonerPrisonDto("MDI")
 
     prisonVisitBookerRegistryMockServer.stubUpdatePermittedPrisonerPrison(
       bookerReference = bookerReference,
       prisonerId = prisonerId,
-      updateRegisteredPrisonersPrisonDto = updateRegisteredPrisonersPrisonDto,
+      updateRegisteredPrisonerPrisonDto = updateRegisteredPrisonerPrisonDto,
       httpStatus = HttpStatus.BAD_REQUEST,
     )
 
     // When
-    val responseSpec = callUpdatePermittedPrisonerPrison(bookerReference, prisonerId, updateRegisteredPrisonersPrisonDto, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callUpdatePermittedPrisonerPrison(bookerReference, prisonerId, updateRegisteredPrisonerPrisonDto, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isBadRequest
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).updatePermittedPrisonerPrison(bookerReference, prisonerId, updateRegisteredPrisonersPrisonDto)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).updatePermittedPrisonerPrison(bookerReference, prisonerId, updateRegisteredPrisonerPrisonDto)
   }
 
   @Test
@@ -76,21 +75,21 @@ class UpdatePermittedPrisonerPrisonTest : IntegrationTestBase() {
     // Given
     val bookerReference = "booker-reference"
     val prisonerId = "AA12345"
-    val updateRegisteredPrisonersPrisonDto = UpdateRegisteredPrisonersPrisonDto("MDI")
+    val updateRegisteredPrisonerPrisonDto = UpdateRegisteredPrisonerPrisonDto("MDI")
 
     prisonVisitBookerRegistryMockServer.stubUpdatePermittedPrisonerPrison(
       bookerReference = bookerReference,
       prisonerId = prisonerId,
-      updateRegisteredPrisonersPrisonDto = updateRegisteredPrisonersPrisonDto,
+      updateRegisteredPrisonerPrisonDto = updateRegisteredPrisonerPrisonDto,
       httpStatus = HttpStatus.NOT_FOUND,
     )
 
     // When
-    val responseSpec = callUpdatePermittedPrisonerPrison(bookerReference, prisonerId, updateRegisteredPrisonersPrisonDto, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callUpdatePermittedPrisonerPrison(bookerReference, prisonerId, updateRegisteredPrisonerPrisonDto, webTestClient, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
-    verify(prisonVisitBookerRegistryClientSpy, times(1)).updatePermittedPrisonerPrison(bookerReference, prisonerId, updateRegisteredPrisonersPrisonDto)
+    verify(prisonVisitBookerRegistryClientSpy, times(1)).updatePermittedPrisonerPrison(bookerReference, prisonerId, updateRegisteredPrisonerPrisonDto)
   }
 
   @Test
@@ -102,7 +101,7 @@ class UpdatePermittedPrisonerPrisonTest : IntegrationTestBase() {
     val responseSpec = callUpdatePermittedPrisonerPrison(
       "booker-reference",
       "AA12345",
-      UpdateRegisteredPrisonersPrisonDto("MDI"),
+      UpdateRegisteredPrisonerPrisonDto("MDI"),
       webTestClient,
       invalidRoleHttpHeaders,
     )
@@ -117,7 +116,7 @@ class UpdatePermittedPrisonerPrisonTest : IntegrationTestBase() {
   private fun callUpdatePermittedPrisonerPrison(
     bookerReference: String,
     prisonerId: String,
-    updateRegisteredPrisonersPrisonDto: UpdateRegisteredPrisonersPrisonDto,
+    updateRegisteredPrisonerPrisonDto: UpdateRegisteredPrisonerPrisonDto,
     webTestClient: WebTestClient,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
@@ -127,7 +126,7 @@ class UpdatePermittedPrisonerPrisonTest : IntegrationTestBase() {
 
     return webTestClient.put().uri(uri)
       .headers(authHttpHeaders)
-      .body(BodyInserters.fromValue(updateRegisteredPrisonersPrisonDto))
+      .body(BodyInserters.fromValue(updateRegisteredPrisonerPrisonDto))
       .exchange()
   }
 }
