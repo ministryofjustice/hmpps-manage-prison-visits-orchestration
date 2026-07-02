@@ -937,7 +937,18 @@ abstract class IntegrationTestBase {
 
   protected fun generateRandomUUID(length: Int = 8): String = UUID.randomUUID().toString().substring(0, length)
 
-  protected fun createVisitSchedulerPrisonDto(prisonCode: String, active: Boolean, maxTotalVisitors: Int, maxAdultVisitors: Int, maxChildVisitors: Int, adultAgeYears: Int, policyNoticeDaysMin: Int, policyNoticeDaysMax: Int, weekStartDay: DayOfWeek, remandVisitLimitPerWeek: Int): VisitSchedulerPrisonDto {
+  protected fun createVisitSchedulerPrisonDto(
+    prisonCode: String,
+    active: Boolean,
+    maxTotalVisitors: Int,
+    maxAdultVisitors: Int,
+    maxChildVisitors: Int,
+    adultAgeYears: Int,
+    policyNoticeDaysMin: Int,
+    policyNoticeDaysMax: Int,
+    weekStartDay: DayOfWeek,
+    remandVisitLimitPerWeek: Int,
+  ): VisitSchedulerPrisonDto {
     val clients = listOf(
       PrisonUserClientDto(STAFF, policyNoticeDaysMin = policyNoticeDaysMin, policyNoticeDaysMax = policyNoticeDaysMax, active = true),
       PrisonUserClientDto(PUBLIC, policyNoticeDaysMin = policyNoticeDaysMin, policyNoticeDaysMax = policyNoticeDaysMax, active = true),
@@ -952,6 +963,8 @@ abstract class IntegrationTestBase {
       clients = clients,
       weekStartDay = weekStartDay,
       remandVisitLimitPerWeek = remandVisitLimitPerWeek,
+      policyNoticeDaysMin = policyNoticeDaysMin,
+      policyNoticeDaysMax = policyNoticeDaysMax,
     )
   }
 
