@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionConflict
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionDateConflict
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.CLOSED
@@ -85,6 +86,7 @@ class VisitSchedulerSessionsService(
     prisonerId: String,
     min: Int?,
     username: String?,
+    excludeSessionConflicts: List<SessionConflict>?,
   ): VisitSessionsAndScheduleDto {
     var scheduledEventsAvailable = true
     val prisonDateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode)
@@ -92,6 +94,9 @@ class VisitSchedulerSessionsService(
 
     // get sessions for prisoner and date range with usertype as STAFF
     val visitSessions = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max = null, username, UserType.STAFF)
+
+    // TODO remove this once the frontend fully integrates with this version
+    filterOutExcludedSessionConflicts(visitSessions, excludeSessionConflicts)
 
     // get schedules for prisoner and date range
     val prisonerSchedules =
@@ -536,4 +541,14 @@ class VisitSchedulerSessionsService(
     .map { (sessionDateConflict, additionalAttributes) ->
       SessionDateConflictDto(sessionDateConflict, additionalAttributes)
     }
+
+  private fun filterOutExcludedSessionConflicts(visitSessions: List<VisitSessionDto>?, excludeSessionConflicts: List<SessionConflict>?) {
+    if (!excludeSessionConflicts.isNullOrEmpty() && !visitSessions.isNullOrEmpty()) {
+      visitSessions.forEach { visitSession ->
+        visitSession.sessionConflicts = visitSession.sessionConflicts.filter { sessionConflictDto ->
+          !excludeSessionConflicts.contains(sessionConflictDto.sessionConflict)
+        }
+      }
+    }
+  }
 }
