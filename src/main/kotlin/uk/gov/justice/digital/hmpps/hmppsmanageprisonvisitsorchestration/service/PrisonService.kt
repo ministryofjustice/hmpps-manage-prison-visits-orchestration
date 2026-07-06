@@ -58,11 +58,6 @@ class PrisonService(
     return excludeDatesService.getFutureExcludeDates(excludeDates)
   }
 
-  fun getPastExcludeDatesForPrison(prisonCode: String): List<ExcludeDateDto> {
-    val excludeDates = getExcludeDatesForPrison(prisonCode)
-    return excludeDatesService.getPastExcludeDates(excludeDates)
-  }
-
   fun isDateExcludedForPrisonVisits(prisonCode: String, date: LocalDate): IsExcludeDateDto {
     logger.trace("isDateExcluded - prison - {}, date - {}", prisonCode, date)
     val excludeDates = getExcludeDatesForPrison(prisonCode)
@@ -85,6 +80,11 @@ class PrisonService(
   }
 
   fun updatePrison(prisonCode: String, updatePrisonDto: VisitSchedulerUpdatePrisonDto): VisitSchedulerPrisonDto = visitSchedulerClient.updatePrison(prisonCode, updatePrisonDto)
+
+  fun getPastExcludeDatesForPrison(prisonCode: String): List<ExcludeDateDto> {
+    val excludeDates = getExcludeDatesForPrison(prisonCode)
+    return excludeDatesService.getPastExcludeDates(excludeDates)
+  }
 
   private fun getExcludeDatesForPrison(prisonCode: String): List<ExcludeDateDto> = visitSchedulerClient.getPrisonExcludeDates(prisonCode) ?: emptyList()
 }

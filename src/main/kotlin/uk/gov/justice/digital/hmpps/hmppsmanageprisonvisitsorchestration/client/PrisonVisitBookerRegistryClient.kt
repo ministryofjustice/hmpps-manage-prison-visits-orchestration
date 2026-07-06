@@ -29,6 +29,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterVisitorForBookerPrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RejectVisitorRequestDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.UpdateRegisteredPrisonerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
@@ -48,6 +49,7 @@ const val BOOKER_REGISTRY_AUDIT_HISTORY: String = "$PUBLIC_BOOKER_CONTROLLER_PAT
 const val PERMITTED_PRISONERS: String = "$PUBLIC_BOOKER_CONTROLLER_PATH/{bookerReference}/permitted/prisoners"
 const val REGISTER_PRISONER: String = "$PERMITTED_PRISONERS/register"
 const val VALIDATE_PRISONER: String = "$PERMITTED_PRISONERS/{prisonerId}/validate"
+const val UPDATE_PERMITTED_PRISONER_PRISON: String = "$PERMITTED_PRISONERS/{prisonerId}/prison"
 
 const val PERMITTED_VISITORS: String = "$PERMITTED_PRISONERS/{prisonerId}/permitted/visitors"
 
@@ -153,6 +155,20 @@ class PrisonVisitBookerRegistryClient(
         }
       }
       .block(apiTimeout)
+  }
+
+  fun updatePermittedPrisonerPrison(bookerReference: String, prisonerId: String, updateRegisteredPrisonerPrisonDto: UpdateRegisteredPrisonerPrisonDto): PermittedPrisonerForBookerDto {
+    val uri = UPDATE_PERMITTED_PRISONER_PRISON
+      .replace("{bookerReference}", bookerReference)
+      .replace("{prisonerId}", prisonerId)
+
+    return webClient.put()
+      .uri(uri)
+      .body(BodyInserters.fromValue(updateRegisteredPrisonerPrisonDto))
+      .retrieve()
+      .bodyToMono<PermittedPrisonerForBookerDto>()
+      .blockOptional(apiTimeout)
+      .orElseThrow { IllegalStateException("Empty response from updatePermittedPrisonerPrison call with URL $uri") }
   }
 
   fun registerVisitorForBookerPrisoner(bookerReference: String, prisonerId: String, registerVisitorForBookerPrisonerDto: RegisterVisitorForBookerPrisonerDto): PermittedVisitorsForPermittedPrisonerBookerDto {
