@@ -529,9 +529,8 @@ class VisitSchedulerSessionsService(
 
   private fun isOutsideBookingWindow(date: LocalDate, prisonDateRange: DateRange): Boolean = (date.isBefore(prisonDateRange.fromDate) || date.isAfter(prisonDateRange.toDate))
 
-  private fun getSessionDateConflicts(visitSessionsForDate: List<VisitSessionV2Dto>): List<SessionDateConflictDto> = visitSessionsForDate.map { it.sessionConflicts }
-    .toList()
-    .flatten()
+  private fun getSessionDateConflicts(visitSessionsForDate: List<VisitSessionV2Dto>): List<SessionDateConflictDto> = visitSessionsForDate
+    .flatMap { it.sessionConflicts }
     .mapNotNull { sessionConflictDto ->
       SessionDateConflict.get(sessionConflictDto.sessionConflict)?.let {
         it to sessionConflictDto.additionalAttributes
