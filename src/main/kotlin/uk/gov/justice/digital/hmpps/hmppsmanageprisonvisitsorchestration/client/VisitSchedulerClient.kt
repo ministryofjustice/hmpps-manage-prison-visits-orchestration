@@ -29,6 +29,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.RejectVisitRequestBodyDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleWithDateExclusionsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTemplateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.UpdateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
@@ -648,6 +649,11 @@ class VisitSchedulerClient(
     .uri("/admin/session-templates/template/$sessionTemplateReference/exclude-date")
     .retrieve()
     .bodyToMono<List<ExcludeDateDto>>().block(apiTimeout)
+
+  fun getFutureSessionTemplateExclusions(prisonCode: String): List<SessionScheduleWithDateExclusionsDto>? = webClient.get()
+    .uri("/admin/session-templates/$prisonCode/exclude-dates/future")
+    .retrieve()
+    .bodyToMono<List<SessionScheduleWithDateExclusionsDto>>().block(apiTimeout)
 
   fun addSessionTemplateExcludeDate(sessionTemplateReference: String, sessionExcludeDate: ExcludeDateDto): List<LocalDate>? = webClient.put()
     .uri("/admin/session-templates/template/$sessionTemplateReference/exclude-date/add")

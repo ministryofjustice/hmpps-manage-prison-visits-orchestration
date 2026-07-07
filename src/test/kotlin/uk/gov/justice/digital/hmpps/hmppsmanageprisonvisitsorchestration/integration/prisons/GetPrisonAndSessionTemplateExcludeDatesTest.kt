@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.prisons
 
 import org.assertj.core.api.Assertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -13,12 +14,15 @@ import org.springframework.test.annotation.DirtiesContext.ClassMode.BEFORE_CLASS
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_FUTURE_CONTROLLER_V2_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.manage.users.UserExtendedDetailsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTemplateDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleWithDateExclusionsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.PrisonAndSessionsExcludeDatesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
+import java.time.LocalTime
 
 @DisplayName("GET $ORCHESTRATION_PRISONS_EXCLUDE_DATE_GET_FUTURE_CONTROLLER_V2_PATH with includeSessions as true tests")
 @DirtiesContext(classMode = BEFORE_CLASS)
@@ -30,6 +34,43 @@ class GetPrisonAndSessionTemplateExcludeDatesTest : IntegrationTestBase() {
     "user-14" to UserExtendedDetailsDto("user-14", "User", "Fourteen"),
     "user-16" to UserExtendedDetailsDto("user-16", "User", "Sixteen"),
   )
+
+  private val today = LocalDate.now()
+
+  lateinit var sessionScheduleDto1: SessionScheduleDto
+  lateinit var sessionScheduleDto2: SessionScheduleDto
+
+  @BeforeEach
+  fun setupData() {
+    sessionScheduleDto1 = createSessionScheduleDto(
+      reference = "reference-1",
+      startTime = LocalTime.of(9, 0),
+      endTime = LocalTime.of(10, 0),
+      prisonerLocationGroupNames = listOf("Location Group 1", "Location Group 2"),
+      prisonerCategoryGroupNames = listOf("Category Group 1", "Category Group 2", "Category Group 3"),
+      prisonerIncentiveLevelGroupNames = listOf("Incentive Group 1", "Incentive Group 2", "Incentive Group 3", "Incentive Group 4"),
+      validFromDate = today.minusWeeks(1),
+      validToDate = today.plusWeeks(2),
+      areLocationGroupsInclusive = true,
+      areCategoryGroupsInclusive = true,
+      areIncentiveGroupsInclusive = true,
+      visitRoom = "Visit Room 1",
+      isSessionExcluded = false,
+    )
+
+    sessionScheduleDto2 = createSessionScheduleDto(
+      reference = "reference-2",
+      startTime = LocalTime.of(10, 0),
+      endTime = LocalTime.of(11, 0),
+      validFromDate = today.minusWeeks(2),
+      areLocationGroupsInclusive = false,
+      areCategoryGroupsInclusive = false,
+      areIncentiveGroupsInclusive = false,
+      visitRoom = "Visit Room 2",
+      visitOrderRestriction = SessionTemplateVisitOrderRestrictionType.NONE,
+      isSessionExcluded = true,
+    )
+  }
 
   fun callGetPrisonAndSessionTemplateFutureExcludeDates(
     webTestClient: WebTestClient,
@@ -61,20 +102,18 @@ class GetPrisonAndSessionTemplateExcludeDatesTest : IntegrationTestBase() {
     val excludeDates = listOf(prisonExcludeDatePast1, prisonExcludeDatePast2, prisonExcludeDatePast3, prisonExcludeDateCurrent, prisonExcludeDateFuture1, prisonExcludeDateFuture2, prisonExcludeDateFuture3)
     visitSchedulerMockServer.stubGetExcludeDates(prisonCode, excludeDates.sortedByDescending { it.excludeDate })
 
-    // 3 future session templates
-    val sessionTemplate1 = SessionTemplateDto("ref-1")
-    val sessionTemplate2 = SessionTemplateDto("ref-2")
-    val sessionTemplate3 = SessionTemplateDto("ref-3")
-    visitSchedulerMockServer.stubGetCurrentOrFutureSessionTemplates(prisonCode, listOf(sessionTemplate1, sessionTemplate2, sessionTemplate3))
-
-    val sessionTemplate1ExcludeDatePast1 = ExcludeDateDto(today.minusDays(1), "user-15")
-    val sessionTemplate1ExcludeDatePast2 = ExcludeDateDto(today.minusDays(1), "user-15")
     val sessionTemplate1ExcludeDateCurrent = ExcludeDateDto(today, "user-14")
-    val sessionTemplate1ExcludeDateFuture = ExcludeDateDto(today.plusDays(3), "user-13")
-    val sessionTemplate3ExcludeDateFuture = ExcludeDateDto(today.plusDays(21), "user-16")
-    visitSchedulerMockServer.stubGetSessionTemplateExcludeDates(sessionTemplate1.reference, listOf(sessionTemplate1ExcludeDatePast1, sessionTemplate1ExcludeDatePast2, sessionTemplate1ExcludeDateCurrent, sessionTemplate1ExcludeDateFuture))
-    visitSchedulerMockServer.stubGetSessionTemplateExcludeDates(sessionTemplate2.reference, emptyList())
-    visitSchedulerMockServer.stubGetSessionTemplateExcludeDates(sessionTemplate3.reference, listOf(sessionTemplate3ExcludeDateFuture))
+    val sessionTemplate1ExcludeDateFuture1 = ExcludeDateDto(today.plusDays(23), "user-13")
+    val sessionTemplate1ExcludeDateFuture2 = ExcludeDateDto(today.plusDays(21), "user-16")
+
+    val sessionTemplate2ExcludeDateCurrent = ExcludeDateDto(today, "user-15")
+    val sessionTemplate2ExcludeDateFuture1 = ExcludeDateDto(today.plusDays(3), "user-13")
+    val sessionTemplate2ExcludeDateFuture2 = ExcludeDateDto(today.plusDays(2), "user-16")
+
+    val sessionScheduleWithDateExclusions1 = SessionScheduleWithDateExclusionsDto(sessionScheduleDto1, listOf(sessionTemplate1ExcludeDateCurrent, sessionTemplate1ExcludeDateFuture1, sessionTemplate1ExcludeDateFuture2))
+    val sessionScheduleWithDateExclusions2 = SessionScheduleWithDateExclusionsDto(sessionScheduleDto2, listOf(sessionTemplate2ExcludeDateCurrent, sessionTemplate2ExcludeDateFuture1, sessionTemplate2ExcludeDateFuture2))
+
+    visitSchedulerMockServer.stubGetSessionSchedulesWithDateExclusions(prisonCode, listOf(sessionScheduleWithDateExclusions1, sessionScheduleWithDateExclusions2))
 
     // user-14 and user-16 exist on hmpps-auth but not user-15
     manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
@@ -90,19 +129,30 @@ class GetPrisonAndSessionTemplateExcludeDatesTest : IntegrationTestBase() {
     Assertions.assertThat(prisonAndSessionExcludeDate.fullDateExclusions[1]).isEqualTo(ExcludeDateDto(prisonExcludeDateFuture1.excludeDate, "User Thirteen"))
     Assertions.assertThat(prisonAndSessionExcludeDate.fullDateExclusions[2]).isEqualTo(ExcludeDateDto(prisonExcludeDateFuture2.excludeDate, "User Sixteen"))
     Assertions.assertThat(prisonAndSessionExcludeDate.fullDateExclusions[3]).isEqualTo(ExcludeDateDto(prisonExcludeDateFuture3.excludeDate, "user-15"))
-    Assertions.assertThat(prisonAndSessionExcludeDate.sessionExclusions).hasSize(3)
+    Assertions.assertThat(prisonAndSessionExcludeDate.sessionExclusions).hasSize(6)
 
-    val sessionTemplate1Exclusions = prisonAndSessionExcludeDate.sessionExclusions[sessionTemplate1.reference]!!
-    Assertions.assertThat(sessionTemplate1Exclusions[0]).isEqualTo(ExcludeDateDto(sessionTemplate1ExcludeDateCurrent.excludeDate, "User Fourteen"))
-    Assertions.assertThat(sessionTemplate1Exclusions[1]).isEqualTo(ExcludeDateDto(sessionTemplate1ExcludeDateFuture.excludeDate, "User Thirteen"))
+    val sessionTemplateExclusions = prisonAndSessionExcludeDate.sessionExclusions
+    Assertions.assertThat(sessionTemplateExclusions[0].sessionSchedule.sessionTemplateReference).isEqualTo(sessionScheduleDto1.sessionTemplateReference)
+    Assertions.assertThat(sessionTemplateExclusions[0].excludeDate).isEqualTo(ExcludeDateDto(sessionTemplate1ExcludeDateCurrent.excludeDate, "User Fourteen"))
 
-    val sessionTemplate2Exclusions = prisonAndSessionExcludeDate.sessionExclusions[sessionTemplate2.reference]!!
-    Assertions.assertThat(sessionTemplate2Exclusions).isEmpty()
+    Assertions.assertThat(sessionTemplateExclusions[1].sessionSchedule.sessionTemplateReference).isEqualTo(sessionScheduleDto2.sessionTemplateReference)
+    Assertions.assertThat(sessionTemplateExclusions[1].excludeDate).isEqualTo(ExcludeDateDto(sessionTemplate2ExcludeDateCurrent.excludeDate, "user-15"))
 
-    val sessionTemplate3Exclusions = prisonAndSessionExcludeDate.sessionExclusions[sessionTemplate3.reference]!!
-    Assertions.assertThat(sessionTemplate3Exclusions[0]).isEqualTo(ExcludeDateDto(sessionTemplate3ExcludeDateFuture.excludeDate, "User Sixteen"))
+    Assertions.assertThat(sessionTemplateExclusions[2].sessionSchedule.sessionTemplateReference).isEqualTo(sessionScheduleDto2.sessionTemplateReference)
+    Assertions.assertThat(sessionTemplateExclusions[2].excludeDate).isEqualTo(ExcludeDateDto(sessionTemplate2ExcludeDateFuture2.excludeDate, "User Sixteen"))
+
+    Assertions.assertThat(sessionTemplateExclusions[3].sessionSchedule.sessionTemplateReference).isEqualTo(sessionScheduleDto2.sessionTemplateReference)
+    Assertions.assertThat(sessionTemplateExclusions[3].excludeDate).isEqualTo(ExcludeDateDto(sessionTemplate2ExcludeDateFuture1.excludeDate, "User Thirteen"))
+
+    Assertions.assertThat(sessionTemplateExclusions[4].sessionSchedule.sessionTemplateReference).isEqualTo(sessionScheduleDto1.sessionTemplateReference)
+    Assertions.assertThat(sessionTemplateExclusions[4].excludeDate).isEqualTo(ExcludeDateDto(sessionTemplate1ExcludeDateFuture2.excludeDate, "User Sixteen"))
+
+    Assertions.assertThat(sessionTemplateExclusions[5].sessionSchedule.sessionTemplateReference).isEqualTo(sessionScheduleDto1.sessionTemplateReference)
+    Assertions.assertThat(sessionTemplateExclusions[5].excludeDate).isEqualTo(ExcludeDateDto(sessionTemplate1ExcludeDateFuture1.excludeDate, "User Thirteen"))
 
     verify(manageUsersApiClientSpy, times(2)).getUsersByUsernames(any())
+    verify(visitSchedulerClientSpy, times(1)).getPrisonExcludeDates(any())
+    verify(visitSchedulerClientSpy, times(1)).getFutureSessionTemplateExclusions(any())
   }
 
   @Test
@@ -111,15 +161,12 @@ class GetPrisonAndSessionTemplateExcludeDatesTest : IntegrationTestBase() {
     val today = LocalDate.now()
     visitSchedulerMockServer.stubGetExcludeDates(prisonCode, emptyList())
 
-    // 1 future session template
-    val sessionTemplate1 = SessionTemplateDto("ref-1")
-    visitSchedulerMockServer.stubGetCurrentOrFutureSessionTemplates(prisonCode, listOf(sessionTemplate1))
-
-    val sessionTemplate1ExcludeDatePast1 = ExcludeDateDto(today.minusDays(1), "user-15")
-    val sessionTemplate1ExcludeDatePast2 = ExcludeDateDto(today.minusDays(1), "user-15")
     val sessionTemplate1ExcludeDateCurrent = ExcludeDateDto(today, "user-14")
-    val sessionTemplate1ExcludeDateFuture = ExcludeDateDto(today.plusDays(3), "user-13")
-    visitSchedulerMockServer.stubGetSessionTemplateExcludeDates(sessionTemplate1.reference, listOf(sessionTemplate1ExcludeDatePast1, sessionTemplate1ExcludeDatePast2, sessionTemplate1ExcludeDateCurrent, sessionTemplate1ExcludeDateFuture))
+    val sessionTemplate2ExcludeDateCurrent = ExcludeDateDto(today, "user-15")
+    val sessionScheduleWithDateExclusions1 = SessionScheduleWithDateExclusionsDto(sessionScheduleDto1, listOf(sessionTemplate1ExcludeDateCurrent))
+    val sessionScheduleWithDateExclusions2 = SessionScheduleWithDateExclusionsDto(sessionScheduleDto2, listOf(sessionTemplate2ExcludeDateCurrent))
+
+    visitSchedulerMockServer.stubGetSessionSchedulesWithDateExclusions(prisonCode, listOf(sessionScheduleWithDateExclusions2, sessionScheduleWithDateExclusions1))
 
     // user-14 and user-16 exist on hmpps-auth but not user-15
     manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
@@ -132,12 +179,14 @@ class GetPrisonAndSessionTemplateExcludeDatesTest : IntegrationTestBase() {
     val prisonAndSessionExcludeDate = getResults(returnResult)
     Assertions.assertThat(prisonAndSessionExcludeDate.fullDateExclusions).hasSize(0)
 
-    Assertions.assertThat(prisonAndSessionExcludeDate.sessionExclusions).hasSize(1)
-    val sessionTemplate1Exclusions = prisonAndSessionExcludeDate.sessionExclusions[sessionTemplate1.reference]!!
-    Assertions.assertThat(sessionTemplate1Exclusions[0]).isEqualTo(ExcludeDateDto(sessionTemplate1ExcludeDateCurrent.excludeDate, "User Fourteen"))
-    Assertions.assertThat(sessionTemplate1Exclusions[1]).isEqualTo(ExcludeDateDto(sessionTemplate1ExcludeDateFuture.excludeDate, "User Thirteen"))
+    Assertions.assertThat(prisonAndSessionExcludeDate.sessionExclusions).hasSize(2)
+    val sessionTemplateExclusions = prisonAndSessionExcludeDate.sessionExclusions
+    Assertions.assertThat(sessionTemplateExclusions[0].excludeDate).isEqualTo(ExcludeDateDto(sessionTemplate1ExcludeDateCurrent.excludeDate, "User Fourteen"))
+    Assertions.assertThat(sessionTemplateExclusions[1].excludeDate).isEqualTo(ExcludeDateDto(sessionTemplate2ExcludeDateCurrent.excludeDate, "user-15"))
 
     verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(any())
+    verify(visitSchedulerClientSpy, times(1)).getPrisonExcludeDates(any())
+    verify(visitSchedulerClientSpy, times(1)).getFutureSessionTemplateExclusions(any())
   }
 
   @Test
@@ -154,14 +203,7 @@ class GetPrisonAndSessionTemplateExcludeDatesTest : IntegrationTestBase() {
 
     val excludeDates = listOf(prisonExcludeDatePast1, prisonExcludeDatePast2, prisonExcludeDatePast3, prisonExcludeDateCurrent, prisonExcludeDateFuture1)
     visitSchedulerMockServer.stubGetExcludeDates(prisonCode, excludeDates.sortedByDescending { it.excludeDate })
-
-    // 3 future session templates
-    val sessionTemplate1 = SessionTemplateDto("ref-1")
-    val sessionTemplate2 = SessionTemplateDto("ref-2")
-    visitSchedulerMockServer.stubGetCurrentOrFutureSessionTemplates(prisonCode, listOf(sessionTemplate1, sessionTemplate2))
-
-    visitSchedulerMockServer.stubGetSessionTemplateExcludeDates(sessionTemplate1.reference, emptyList())
-    visitSchedulerMockServer.stubGetSessionTemplateExcludeDates(sessionTemplate2.reference, emptyList())
+    visitSchedulerMockServer.stubGetSessionSchedulesWithDateExclusions(prisonCode, emptyList())
 
     // user-14 and user-16 exist on hmpps-auth but not user-15
     manageUsersApiMockServer.stubGetMultipleUserDetails(userIds, userDetails = userNamesMap)
@@ -176,24 +218,18 @@ class GetPrisonAndSessionTemplateExcludeDatesTest : IntegrationTestBase() {
     Assertions.assertThat(prisonAndSessionExcludeDate.fullDateExclusions[0]).isEqualTo(ExcludeDateDto(prisonExcludeDateCurrent.excludeDate, "User Fourteen"))
     Assertions.assertThat(prisonAndSessionExcludeDate.fullDateExclusions[1]).isEqualTo(ExcludeDateDto(prisonExcludeDateFuture1.excludeDate, "User Thirteen"))
 
-    Assertions.assertThat(prisonAndSessionExcludeDate.sessionExclusions).hasSize(2)
-    val sessionTemplate1Exclusions = prisonAndSessionExcludeDate.sessionExclusions[sessionTemplate1.reference]!!
-    Assertions.assertThat(sessionTemplate1Exclusions).isEmpty()
-    val sessionTemplate2Exclusions = prisonAndSessionExcludeDate.sessionExclusions[sessionTemplate2.reference]!!
-    Assertions.assertThat(sessionTemplate2Exclusions).isEmpty()
+    Assertions.assertThat(prisonAndSessionExcludeDate.sessionExclusions).isEmpty()
 
     verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(any())
+    verify(visitSchedulerClientSpy, times(1)).getPrisonExcludeDates(any())
+    verify(visitSchedulerClientSpy, times(1)).getFutureSessionTemplateExclusions(any())
   }
 
   @Test
   fun `when NOT_FOUND is returned from visit scheduler get prison exclude dates then NOT_FOUND status is sent back`() {
     // Given
     visitSchedulerMockServer.stubGetExcludeDates(prisonCode, null, HttpStatus.NOT_FOUND)
-
-    // 1 future session template
-    val sessionTemplate1 = SessionTemplateDto("ref-1")
-    visitSchedulerMockServer.stubGetCurrentOrFutureSessionTemplates(prisonCode, listOf(sessionTemplate1))
-    visitSchedulerMockServer.stubGetSessionTemplateExcludeDates(sessionTemplate1.reference, emptyList())
+    visitSchedulerMockServer.stubGetSessionSchedulesWithDateExclusions(prisonCode, emptyList())
 
     // When
     val responseSpec = callGetPrisonAndSessionTemplateFutureExcludeDates(webTestClient, prisonCode, roleVSIPOrchestrationServiceHttpHeaders)
@@ -201,8 +237,7 @@ class GetPrisonAndSessionTemplateExcludeDatesTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isNotFound
     verify(visitSchedulerClientSpy, times(1)).getPrisonExcludeDates(any())
-    verify(visitSchedulerClientSpy, times(0)).getCurrentOrFutureSessionTemplates(any())
-    verify(visitSchedulerClientSpy, times(0)).getSessionTemplateExcludeDates(any())
+    verify(visitSchedulerClientSpy, times(0)).getFutureSessionTemplateExclusions(any())
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
   }
 
@@ -210,11 +245,7 @@ class GetPrisonAndSessionTemplateExcludeDatesTest : IntegrationTestBase() {
   fun `when BAD_REQUEST is returned from visit scheduler get prison exclude dates then BAD_REQUEST status is sent back`() {
     // Given
     visitSchedulerMockServer.stubGetExcludeDates(prisonCode, null, HttpStatus.BAD_REQUEST)
-
-    // 1 future session template
-    val sessionTemplate1 = SessionTemplateDto("ref-1")
-    visitSchedulerMockServer.stubGetCurrentOrFutureSessionTemplates(prisonCode, listOf(sessionTemplate1))
-    visitSchedulerMockServer.stubGetSessionTemplateExcludeDates(sessionTemplate1.reference, emptyList())
+    visitSchedulerMockServer.stubGetSessionSchedulesWithDateExclusions(prisonCode, emptyList())
 
     // When
     val responseSpec = callGetPrisonAndSessionTemplateFutureExcludeDates(webTestClient, prisonCode, roleVSIPOrchestrationServiceHttpHeaders)
@@ -222,17 +253,15 @@ class GetPrisonAndSessionTemplateExcludeDatesTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isBadRequest
     verify(visitSchedulerClientSpy, times(1)).getPrisonExcludeDates(any())
-    verify(visitSchedulerClientSpy, times(0)).getCurrentOrFutureSessionTemplates(any())
-    verify(visitSchedulerClientSpy, times(0)).getSessionTemplateExcludeDates(any())
+    verify(visitSchedulerClientSpy, times(0)).getFutureSessionTemplateExclusions(any())
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
   }
 
   @Test
-  fun `when NOT_FOUND is returned from visit scheduler get session templates then NOT_FOUND status is sent back`() {
+  fun `when NOT_FOUND is returned from visit scheduler get session date exclusions then NOT_FOUND status is sent back`() {
     // Given
     visitSchedulerMockServer.stubGetExcludeDates(prisonCode, emptyList())
-
-    visitSchedulerMockServer.stubGetCurrentOrFutureSessionTemplates(prisonCode, null, HttpStatus.NOT_FOUND)
+    visitSchedulerMockServer.stubGetSessionSchedulesWithDateExclusions(prisonCode, null, HttpStatus.NOT_FOUND)
 
     // When
     val responseSpec = callGetPrisonAndSessionTemplateFutureExcludeDates(webTestClient, prisonCode, roleVSIPOrchestrationServiceHttpHeaders)
@@ -240,16 +269,15 @@ class GetPrisonAndSessionTemplateExcludeDatesTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isNotFound
     verify(visitSchedulerClientSpy, times(1)).getPrisonExcludeDates(any())
-    verify(visitSchedulerClientSpy, times(1)).getCurrentOrFutureSessionTemplates(any())
-    verify(visitSchedulerClientSpy, times(0)).getSessionTemplateExcludeDates(any())
+    verify(visitSchedulerClientSpy, times(1)).getFutureSessionTemplateExclusions(any())
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
   }
 
   @Test
-  fun `when BAD_REQUEST is returned from visit scheduler get session templates then BAD_REQUEST status is sent back`() {
+  fun `when BAD_REQUEST is returned from visit scheduler get session date exclusions then BAD_REQUEST status is sent back`() {
     // Given
     visitSchedulerMockServer.stubGetExcludeDates(prisonCode, emptyList())
-    visitSchedulerMockServer.stubGetCurrentOrFutureSessionTemplates(prisonCode, null, HttpStatus.BAD_REQUEST)
+    visitSchedulerMockServer.stubGetSessionSchedulesWithDateExclusions(prisonCode, null, HttpStatus.BAD_REQUEST)
 
     // When
     val responseSpec = callGetPrisonAndSessionTemplateFutureExcludeDates(webTestClient, prisonCode, roleVSIPOrchestrationServiceHttpHeaders)
@@ -257,50 +285,7 @@ class GetPrisonAndSessionTemplateExcludeDatesTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isBadRequest
     verify(visitSchedulerClientSpy, times(1)).getPrisonExcludeDates(any())
-    verify(visitSchedulerClientSpy, times(1)).getCurrentOrFutureSessionTemplates(any())
-    verify(visitSchedulerClientSpy, times(0)).getSessionTemplateExcludeDates(any())
-    verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
-  }
-
-  @Test
-  fun `when NOT_FOUND is returned from visit scheduler get session exclude dates then NOT_FOUND status is sent back`() {
-    // Given
-    visitSchedulerMockServer.stubGetExcludeDates(prisonCode, emptyList())
-
-    // 1 future session template
-    val sessionTemplate1 = SessionTemplateDto("ref-1")
-    visitSchedulerMockServer.stubGetCurrentOrFutureSessionTemplates(prisonCode, listOf(sessionTemplate1))
-    visitSchedulerMockServer.stubGetSessionTemplateExcludeDates(sessionTemplate1.reference, null, HttpStatus.NOT_FOUND)
-
-    // When
-    val responseSpec = callGetPrisonAndSessionTemplateFutureExcludeDates(webTestClient, prisonCode, roleVSIPOrchestrationServiceHttpHeaders)
-
-    // Then
-    responseSpec.expectStatus().isNotFound
-    verify(visitSchedulerClientSpy, times(1)).getPrisonExcludeDates(any())
-    verify(visitSchedulerClientSpy, times(1)).getCurrentOrFutureSessionTemplates(any())
-    verify(visitSchedulerClientSpy, times(1)).getSessionTemplateExcludeDates(any())
-    verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
-  }
-
-  @Test
-  fun `when BAD_REQUEST is returned from visit scheduler get session exclude dates then BAD_REQUEST status is sent back`() {
-    // Given
-    visitSchedulerMockServer.stubGetExcludeDates(prisonCode, emptyList())
-
-    // 1 future session template
-    val sessionTemplate1 = SessionTemplateDto("ref-1")
-    visitSchedulerMockServer.stubGetCurrentOrFutureSessionTemplates(prisonCode, listOf(sessionTemplate1))
-    visitSchedulerMockServer.stubGetSessionTemplateExcludeDates(sessionTemplate1.reference, null, HttpStatus.BAD_REQUEST)
-
-    // When
-    val responseSpec = callGetPrisonAndSessionTemplateFutureExcludeDates(webTestClient, prisonCode, roleVSIPOrchestrationServiceHttpHeaders)
-
-    // Then
-    responseSpec.expectStatus().isBadRequest
-    verify(visitSchedulerClientSpy, times(1)).getPrisonExcludeDates(any())
-    verify(visitSchedulerClientSpy, times(1)).getCurrentOrFutureSessionTemplates(any())
-    verify(visitSchedulerClientSpy, times(1)).getSessionTemplateExcludeDates(any())
+    verify(visitSchedulerClientSpy, times(1)).getFutureSessionTemplateExclusions(any())
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
   }
 
