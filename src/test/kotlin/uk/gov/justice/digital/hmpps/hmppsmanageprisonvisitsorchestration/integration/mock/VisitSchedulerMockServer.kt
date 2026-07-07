@@ -990,7 +990,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
   ) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
-      get("/admin/session-templates/$prisonCode/exclude-dates/future")
+      get("/session-templates/$prisonCode/exclude-dates/future")
         .willReturn(
           if (sessionSchedulesWithDateExclusions == null) {
             responseBuilder

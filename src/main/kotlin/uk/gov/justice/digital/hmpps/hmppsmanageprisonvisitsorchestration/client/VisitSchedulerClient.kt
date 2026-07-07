@@ -650,7 +650,7 @@ class VisitSchedulerClient(
     .bodyToMono<List<ExcludeDateDto>>().block(apiTimeout)
 
   fun getFutureSessionTemplateExclusions(prisonCode: String): List<SessionScheduleWithDateExclusionsDto>? = webClient.get()
-    .uri("/admin/session-templates/$prisonCode/exclude-dates/future")
+    .uri("/session-templates/$prisonCode/exclude-dates/future")
     .retrieve()
     .bodyToMono<List<SessionScheduleWithDateExclusionsDto>>().block(apiTimeout)
 

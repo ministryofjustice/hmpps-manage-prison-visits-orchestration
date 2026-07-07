@@ -158,7 +158,6 @@ class GetPrisonAndSessionTemplateExcludeDatesTest : IntegrationTestBase() {
   @Test
   fun `when a prison does not have exclude dates and its sessions have exclude dates then prison exclude dates are empty and session exclude dates are returned`() {
     // Given
-    val today = LocalDate.now()
     visitSchedulerMockServer.stubGetExcludeDates(prisonCode, emptyList())
 
     val sessionTemplate1ExcludeDateCurrent = ExcludeDateDto(today, "user-14")
