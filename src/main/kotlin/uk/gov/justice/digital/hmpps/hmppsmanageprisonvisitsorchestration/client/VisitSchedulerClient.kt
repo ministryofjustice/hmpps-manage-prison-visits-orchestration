@@ -30,7 +30,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleWithDateExclusionsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTemplateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.UpdateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
@@ -700,17 +699,6 @@ class VisitSchedulerClient(
         Mono.empty()
       }
     }
-    .block(apiTimeout)
-
-  fun getCurrentOrFutureSessionTemplates(prisonCode: String): List<SessionTemplateDto>? = webClient.get()
-    .uri("/admin/session-templates") {
-      it.queryParam("prisonCode", prisonCode)
-        .queryParam("rangeType", "CURRENT_OR_FUTURE")
-        .build()
-    }
-    .accept(MediaType.APPLICATION_JSON)
-    .retrieve()
-    .bodyToMono<List<SessionTemplateDto>>()
     .block(apiTimeout)
 
   private fun visitSearchUriBuilder(visitSearchRequestFilter: VisitSearchRequestFilter, uriBuilder: UriBuilder): UriBuilder {

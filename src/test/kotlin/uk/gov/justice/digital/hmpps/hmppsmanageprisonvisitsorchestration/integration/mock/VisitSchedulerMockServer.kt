@@ -29,7 +29,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleWithDateExclusionsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTemplateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.UpdateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
@@ -979,27 +978,6 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
             responseBuilder
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(lastApprovedDatesList))
-          },
-        ),
-    )
-  }
-
-  fun stubGetCurrentOrFutureSessionTemplates(
-    prisonCode: String,
-    sessionTemplates: List<SessionTemplateDto>?,
-    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
-  ) {
-    val responseBuilder = createJsonResponseBuilder()
-    stubFor(
-      get("/admin/session-templates?prisonCode=$prisonCode&rangeType=CURRENT_OR_FUTURE")
-        .willReturn(
-          if (sessionTemplates == null) {
-            responseBuilder
-              .withStatus(httpStatus.value())
-          } else {
-            responseBuilder
-              .withStatus(HttpStatus.OK.value())
-              .withBody(getJsonString(sessionTemplates))
           },
         ),
     )
