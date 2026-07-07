@@ -18,8 +18,8 @@ class PrisonAndSessionsExcludeDatesService(
 
     private val sessionExclusionSortOrder: Comparator<SessionExcludeDateDto> = compareBy(
       { it.excludeDate.excludeDate },
-      { it.sessionSchedule.sessionTimeSlot.startTime },
-      { it.sessionSchedule.sessionTimeSlot.endTime },
+      { it.sessionTimeSlot.startTime },
+      { it.sessionTimeSlot.endTime },
     )
   }
 

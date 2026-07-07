@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.PrisonAndSessionsExcludeDatesDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.SessionExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
@@ -132,22 +133,22 @@ class GetPrisonAndSessionTemplateExcludeDatesTest : IntegrationTestBase() {
     Assertions.assertThat(prisonAndSessionExcludeDate.sessionExclusions).hasSize(6)
 
     val sessionTemplateExclusions = prisonAndSessionExcludeDate.sessionExclusions
-    Assertions.assertThat(sessionTemplateExclusions[0].sessionSchedule.sessionTemplateReference).isEqualTo(sessionScheduleDto1.sessionTemplateReference)
+    assertSessionExcludeDate(sessionTemplateExclusions[0], sessionScheduleDto1)
     Assertions.assertThat(sessionTemplateExclusions[0].excludeDate).isEqualTo(ExcludeDateDto(sessionTemplate1ExcludeDateCurrent.excludeDate, "User Fourteen"))
 
-    Assertions.assertThat(sessionTemplateExclusions[1].sessionSchedule.sessionTemplateReference).isEqualTo(sessionScheduleDto2.sessionTemplateReference)
+    assertSessionExcludeDate(sessionTemplateExclusions[1], sessionScheduleDto2)
     Assertions.assertThat(sessionTemplateExclusions[1].excludeDate).isEqualTo(ExcludeDateDto(sessionTemplate2ExcludeDateCurrent.excludeDate, "user-15"))
 
-    Assertions.assertThat(sessionTemplateExclusions[2].sessionSchedule.sessionTemplateReference).isEqualTo(sessionScheduleDto2.sessionTemplateReference)
+    assertSessionExcludeDate(sessionTemplateExclusions[2], sessionScheduleDto2)
     Assertions.assertThat(sessionTemplateExclusions[2].excludeDate).isEqualTo(ExcludeDateDto(sessionTemplate2ExcludeDateFuture2.excludeDate, "User Sixteen"))
 
-    Assertions.assertThat(sessionTemplateExclusions[3].sessionSchedule.sessionTemplateReference).isEqualTo(sessionScheduleDto2.sessionTemplateReference)
+    assertSessionExcludeDate(sessionTemplateExclusions[3], sessionScheduleDto2)
     Assertions.assertThat(sessionTemplateExclusions[3].excludeDate).isEqualTo(ExcludeDateDto(sessionTemplate2ExcludeDateFuture1.excludeDate, "User Thirteen"))
 
-    Assertions.assertThat(sessionTemplateExclusions[4].sessionSchedule.sessionTemplateReference).isEqualTo(sessionScheduleDto1.sessionTemplateReference)
+    assertSessionExcludeDate(sessionTemplateExclusions[4], sessionScheduleDto1)
     Assertions.assertThat(sessionTemplateExclusions[4].excludeDate).isEqualTo(ExcludeDateDto(sessionTemplate1ExcludeDateFuture2.excludeDate, "User Sixteen"))
 
-    Assertions.assertThat(sessionTemplateExclusions[5].sessionSchedule.sessionTemplateReference).isEqualTo(sessionScheduleDto1.sessionTemplateReference)
+    assertSessionExcludeDate(sessionTemplateExclusions[5], sessionScheduleDto1)
     Assertions.assertThat(sessionTemplateExclusions[5].excludeDate).isEqualTo(ExcludeDateDto(sessionTemplate1ExcludeDateFuture1.excludeDate, "User Thirteen"))
 
     verify(manageUsersApiClientSpy, times(2)).getUsersByUsernames(any())
@@ -180,7 +181,9 @@ class GetPrisonAndSessionTemplateExcludeDatesTest : IntegrationTestBase() {
 
     Assertions.assertThat(prisonAndSessionExcludeDate.sessionExclusions).hasSize(2)
     val sessionTemplateExclusions = prisonAndSessionExcludeDate.sessionExclusions
+    assertSessionExcludeDate(sessionTemplateExclusions[0], sessionScheduleDto1)
     Assertions.assertThat(sessionTemplateExclusions[0].excludeDate).isEqualTo(ExcludeDateDto(sessionTemplate1ExcludeDateCurrent.excludeDate, "User Fourteen"))
+    assertSessionExcludeDate(sessionTemplateExclusions[1], sessionScheduleDto2)
     Assertions.assertThat(sessionTemplateExclusions[1].excludeDate).isEqualTo(ExcludeDateDto(sessionTemplate2ExcludeDateCurrent.excludeDate, "user-15"))
 
     verify(manageUsersApiClientSpy, times(1)).getUsersByUsernames(any())
@@ -286,6 +289,21 @@ class GetPrisonAndSessionTemplateExcludeDatesTest : IntegrationTestBase() {
     verify(visitSchedulerClientSpy, times(1)).getPrisonExcludeDates(any())
     verify(visitSchedulerClientSpy, times(1)).getFutureSessionTemplateExclusions(any())
     verify(manageUsersApiClientSpy, times(0)).getUserDetails(any())
+  }
+
+  private fun assertSessionExcludeDate(sessionExcludeDateDto: SessionExcludeDateDto, sessionScheduleDto: SessionScheduleDto) {
+    Assertions.assertThat(sessionExcludeDateDto.sessionTemplateReference).isEqualTo(sessionScheduleDto.sessionTemplateReference)
+    Assertions.assertThat(sessionExcludeDateDto.sessionTimeSlot).isEqualTo(sessionScheduleDto.sessionTimeSlot)
+    Assertions.assertThat(sessionExcludeDateDto.visitRoom).isEqualTo(sessionScheduleDto.visitRoom)
+    Assertions.assertThat(sessionExcludeDateDto.visitOrderRestriction).isEqualTo(sessionScheduleDto.visitOrderRestriction)
+    Assertions.assertThat(sessionExcludeDateDto.areLocationGroupsInclusive).isEqualTo(sessionScheduleDto.areLocationGroupsInclusive)
+    Assertions.assertThat(sessionExcludeDateDto.areIncentiveGroupsInclusive).isEqualTo(sessionScheduleDto.areIncentiveGroupsInclusive)
+    Assertions.assertThat(sessionExcludeDateDto.areCategoryGroupsInclusive).isEqualTo(sessionScheduleDto.areCategoryGroupsInclusive)
+    Assertions.assertThat(sessionExcludeDateDto.prisonerIncentiveLevelGroupNames).isEqualTo(sessionScheduleDto.prisonerIncentiveLevelGroupNames)
+    Assertions.assertThat(sessionExcludeDateDto.prisonerLocationGroupNames).isEqualTo(sessionScheduleDto.prisonerLocationGroupNames)
+    Assertions.assertThat(sessionExcludeDateDto.prisonerCategoryGroupNames).isEqualTo(sessionScheduleDto.prisonerCategoryGroupNames)
+    Assertions.assertThat(sessionExcludeDateDto.visitType).isEqualTo(sessionScheduleDto.visitType)
+    Assertions.assertThat(sessionExcludeDateDto.weeklyFrequency).isEqualTo(sessionScheduleDto.weeklyFrequency)
   }
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): PrisonAndSessionsExcludeDatesDto = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, PrisonAndSessionsExcludeDatesDto::class.java)
