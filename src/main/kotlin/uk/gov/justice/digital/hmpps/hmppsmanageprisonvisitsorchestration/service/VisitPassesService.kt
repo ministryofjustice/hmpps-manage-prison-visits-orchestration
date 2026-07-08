@@ -92,6 +92,20 @@ class VisitPassesService(
     if (visit.visitStatus != VisitStatus.BOOKED) {
       throw InvalidVisitPassException("Visit with reference - ${visit.reference} is not in BOOKED status")
     }
+
+    val blockedDatesAndSessions = prisonAndSessionsExcludeDatesService.getFuturePrisonAndSessionExcludeDates(prisonCode, includeSessions = true)
+
+    // We filter out visits which fall on blocked dates or whose session is blocked - as these shouldn't be printed.
+    if(visit.startTimestamp.toLocalDate() in blockedDatesAndSessions.fullDateExclusions.map { it.excludeDate }) {
+        throw InvalidVisitPassException("Visit with reference - ${visit.reference} is on a blocked date - ${visit.startTimestamp.toLocalDate()}")
+    }
+
+    if(blockedDatesAndSessions.sessionExclusions.any { exclusion ->
+        exclusion.sessionTemplateReference == visit.sessionTemplateReference &&
+          exclusion.excludeDate.excludeDate == visit.startTimestamp.toLocalDate()
+      }) {
+      throw InvalidVisitPassException("Visit with reference - ${visit.reference} is on a blocked session, session template - ${visit.sessionTemplateReference} and date - ${visit.startTimestamp.toLocalDate()}")
+    }
   }
 
   private fun getVisitRequestSearchFilter(prisonCode: String, visitDate: LocalDate) = VisitSearchRequestFilter(

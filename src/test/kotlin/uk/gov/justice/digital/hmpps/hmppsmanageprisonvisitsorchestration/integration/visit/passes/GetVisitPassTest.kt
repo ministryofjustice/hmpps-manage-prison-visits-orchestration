@@ -17,16 +17,20 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.VISIT_PASS_BY_VISIT_REFERENCE_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactWithOptionalPrisonerRelationshipDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.manage.users.UserExtendedDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleWithDateExclusionsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.StaffUsernameDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.passes.VisitPassDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.passes.VisitPassVisitorDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
+import java.time.LocalTime
 
 @DisplayName("Get Visit pass for an individual visit")
 class GetVisitPassTest : IntegrationTestBase() {
@@ -44,6 +48,9 @@ class GetVisitPassTest : IntegrationTestBase() {
     // visit with 2 contacts (ids 1 and 2)
     val visitors = createVisitors(listOf(contact1.contactId, contact2.contactId))
     visit = createVisitDto(reference = "visit-1", prisonerId = prisoner.prisonerNumber, visitors = visitors, prisonCode = prisonCode, startTimestamp = LocalDate.now().atTime(10, 0), endTimestamp = LocalDate.now().atTime(11, 0))
+
+    visitSchedulerMockServer.stubGetExcludeDates(prisonCode, emptyList())
+    visitSchedulerMockServer.stubGetSessionSchedulesWithDateExclusions(prisonCode, emptyList())
   }
 
   @Test
@@ -121,6 +128,115 @@ class GetVisitPassTest : IntegrationTestBase() {
 
     // Then
     responseSpec.expectStatus().isBadRequest
+
+    verify(visitSchedulerClientSpy, times(1)).getVisitByReference(any())
+    verify(prisonerSearchClientSpy, times(0)).getPrisonerByIdAsMono(any())
+    verify(prisonerContactRegistryClientSpy, times(0)).searchContactsAsMono(any(), anyOrNull(), any())
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), anyOrNull(), anyOrNull())
+  }
+
+  @Test
+  fun `when a visit reference is found but is on a blocked date then BAD_REQUEST error is thrown`() {
+    // Given
+    val blockedDate = ExcludeDateDto(visit.startTimestamp.toLocalDate(), "user-1")
+
+    visitSchedulerMockServer.stubGetVisit(visit.reference, visit)
+    visitSchedulerMockServer.stubGetExcludeDates(prisonCode, listOf(blockedDate))
+    manageUsersApiMockServer.stubGetMultipleUserDetails(
+      listOf("user-1"),
+      userDetails = mapOf("user-1" to UserExtendedDetailsDto("user-1", "User", "One")),
+    )
+
+    // When
+    val responseSpec = callGetVisitPass(webTestClient, prisonCode, visit.reference, "STAFF_USER1", roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isBadRequest
+
+    verify(visitSchedulerClientSpy, times(1)).getVisitByReference(any())
+    verify(prisonerSearchClientSpy, times(0)).getPrisonerByIdAsMono(any())
+    verify(prisonerContactRegistryClientSpy, times(0)).searchContactsAsMono(any(), anyOrNull(), any())
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), anyOrNull(), anyOrNull())
+  }
+
+  @Test
+  fun `when a visit reference is found but is on a blocked session then BAD_REQUEST error is thrown`() {
+    // Given
+    val blockedSessionTemplateReference = "blocked-session"
+    val visitors = createVisitors(listOf(contact1.contactId, contact2.contactId))
+    val visit = createVisitDto(
+      reference = "visit-1",
+      prisonerId = prisoner.prisonerNumber,
+      visitors = visitors,
+      prisonCode = prisonCode,
+      startTimestamp = LocalDate.now().atTime(10, 0),
+      endTimestamp = LocalDate.now().atTime(11, 0),
+      sessionTemplateReference = blockedSessionTemplateReference,
+    )
+    val blockedSessionExcludeDate = ExcludeDateDto(visit.startTimestamp.toLocalDate(), "user-1")
+    val blockedSessionSchedule = createSessionScheduleDto(
+      reference = blockedSessionTemplateReference,
+      startTime = LocalTime.of(10, 0),
+      endTime = LocalTime.of(11, 0),
+      validFromDate = visit.startTimestamp.toLocalDate().minusWeeks(1),
+      areLocationGroupsInclusive = true,
+      areCategoryGroupsInclusive = true,
+      areIncentiveGroupsInclusive = true,
+      visitRoom = "Visit Room",
+    )
+    val sessionScheduleWithDateExclusions = SessionScheduleWithDateExclusionsDto(
+      sessionSchedule = blockedSessionSchedule,
+      excludeDates = listOf(blockedSessionExcludeDate),
+    )
+
+    visitSchedulerMockServer.stubGetVisit(visit.reference, visit)
+    visitSchedulerMockServer.stubGetSessionSchedulesWithDateExclusions(prisonCode, listOf(sessionScheduleWithDateExclusions))
+    manageUsersApiMockServer.stubGetMultipleUserDetails(
+      listOf("user-1"),
+      userDetails = mapOf("user-1" to UserExtendedDetailsDto("user-1", "User", "One")),
+    )
+
+    // When
+    val responseSpec = callGetVisitPass(webTestClient, prisonCode, visit.reference, "STAFF_USER1", roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isBadRequest
+
+    verify(visitSchedulerClientSpy, times(1)).getVisitByReference(any())
+    verify(prisonerSearchClientSpy, times(0)).getPrisonerByIdAsMono(any())
+    verify(prisonerContactRegistryClientSpy, times(0)).searchContactsAsMono(any(), anyOrNull(), any())
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), anyOrNull(), anyOrNull())
+  }
+
+  @Test
+  fun `when prison exclude date lookup returns an INTERNAL_SERVER_ERROR then an INTERNAL_SERVER_ERROR error is returned`() {
+    // Given
+    visitSchedulerMockServer.stubGetVisit(visit.reference, visit)
+    visitSchedulerMockServer.stubGetExcludeDates(prisonCode, null, HttpStatus.INTERNAL_SERVER_ERROR)
+
+    // When
+    val responseSpec = callGetVisitPass(webTestClient, prisonCode, visit.reference, "STAFF_USER1", roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().is5xxServerError
+
+    verify(visitSchedulerClientSpy, times(1)).getVisitByReference(any())
+    verify(prisonerSearchClientSpy, times(0)).getPrisonerByIdAsMono(any())
+    verify(prisonerContactRegistryClientSpy, times(0)).searchContactsAsMono(any(), anyOrNull(), any())
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), anyOrNull(), anyOrNull())
+  }
+
+  @Test
+  fun `when session exclude date lookup returns an INTERNAL_SERVER_ERROR then an INTERNAL_SERVER_ERROR error is returned`() {
+    // Given
+    visitSchedulerMockServer.stubGetVisit(visit.reference, visit)
+    visitSchedulerMockServer.stubGetSessionSchedulesWithDateExclusions(prisonCode, null, HttpStatus.INTERNAL_SERVER_ERROR)
+
+    // When
+    val responseSpec = callGetVisitPass(webTestClient, prisonCode, visit.reference, "STAFF_USER1", roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().is5xxServerError
 
     verify(visitSchedulerClientSpy, times(1)).getVisitByReference(any())
     verify(prisonerSearchClientSpy, times(0)).getPrisonerByIdAsMono(any())
