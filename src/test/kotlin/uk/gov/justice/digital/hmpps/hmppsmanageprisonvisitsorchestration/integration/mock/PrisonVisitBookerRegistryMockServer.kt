@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.REJECT_VISITOR_REQUEST
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.SEARCH_FOR_BOOKER
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.UNLINK_VISITOR
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.UPDATE_PERMITTED_PRISONER_PRISON
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VALIDATE_PRISONER
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerRegistrationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerValidationErrorResponse
@@ -31,6 +32,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PermittedVisitorsForPermittedPrisonerBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterVisitorForBookerPrisonerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.UpdateRegisteredPrisonerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorRequestsCountByPrisonCodeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerInfoDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
@@ -155,6 +157,32 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
     stubFor(
       WireMock.put(REGISTER_PRISONER.replace("{bookerReference}", bookerReference))
         .willReturn(responseBuilder),
+    )
+  }
+
+  fun stubUpdatePermittedPrisonerPrison(
+    bookerReference: String,
+    prisonerId: String,
+    updateRegisteredPrisonerPrisonDto: UpdateRegisteredPrisonerPrisonDto,
+    response: PermittedPrisonerForBookerDto? = null,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val responseBuilder = createJsonResponseBuilder()
+    val uri = UPDATE_PERMITTED_PRISONER_PRISON
+      .replace("{bookerReference}", bookerReference)
+      .replace("{prisonerId}", prisonerId)
+
+    stubFor(
+      WireMock.put(uri)
+        .withRequestBody(equalToJson(getJsonString(updateRegisteredPrisonerPrisonDto)))
+        .willReturn(
+          if (response != null) {
+            responseBuilder.withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(response))
+          } else {
+            responseBuilder.withStatus(httpStatus.value())
+          },
+        ),
     )
   }
 

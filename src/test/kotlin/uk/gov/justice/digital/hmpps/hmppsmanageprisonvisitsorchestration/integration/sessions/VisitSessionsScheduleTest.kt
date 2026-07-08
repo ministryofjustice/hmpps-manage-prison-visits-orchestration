@@ -6,12 +6,8 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionDateRangeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTimeSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
@@ -178,42 +174,6 @@ class VisitSessionsScheduleTest : IntegrationTestBase() {
     assertThat(sessionSchedule.visitRoom).isEqualTo(expectedSessionScheduleDto.visitRoom)
     assertThat(sessionSchedule.isSessionExcluded).isEqualTo(expectedSessionScheduleDto.isSessionExcluded)
   }
-
-  private fun createSessionScheduleDto(
-    reference: String,
-    startTime: LocalTime,
-    endTime: LocalTime,
-    sessionCapacityDto: SessionCapacityDto = SessionCapacityDto(2, 30),
-    visitType: VisitType = VisitType.SOCIAL,
-    areLocationGroupsInclusive: Boolean,
-    areCategoryGroupsInclusive: Boolean,
-    areIncentiveGroupsInclusive: Boolean,
-    weeklyFrequency: Int = 1,
-    validFromDate: LocalDate,
-    validToDate: LocalDate? = null,
-    visitRoom: String,
-    prisonerLocationGroupNames: List<String> = mutableListOf(),
-    prisonerCategoryGroupNames: List<String> = mutableListOf(),
-    prisonerIncentiveLevelGroupNames: List<String> = mutableListOf(),
-    visitOrderRestriction: SessionTemplateVisitOrderRestrictionType = SessionTemplateVisitOrderRestrictionType.VO_PVO,
-    isSessionExcluded: Boolean = false,
-  ): SessionScheduleDto = SessionScheduleDto(
-    sessionTemplateReference = reference,
-    sessionDateRange = SessionDateRangeDto(validFromDate, validToDate),
-    sessionTimeSlot = SessionTimeSlotDto(startTime = startTime, endTime = endTime),
-    capacity = sessionCapacityDto,
-    visitType = visitType,
-    areLocationGroupsInclusive = areLocationGroupsInclusive,
-    weeklyFrequency = weeklyFrequency,
-    prisonerLocationGroupNames = prisonerLocationGroupNames,
-    areCategoryGroupsInclusive = areCategoryGroupsInclusive,
-    prisonerCategoryGroupNames = prisonerCategoryGroupNames,
-    areIncentiveGroupsInclusive = areIncentiveGroupsInclusive,
-    prisonerIncentiveLevelGroupNames = prisonerIncentiveLevelGroupNames,
-    visitRoom = visitRoom,
-    visitOrderRestriction = visitOrderRestriction,
-    isSessionExcluded = isSessionExcluded,
-  )
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<SessionScheduleDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<SessionScheduleDto>::class.java)
 }
