@@ -20,6 +20,7 @@ class VisitPassesService(
   private val visitPassesClient: VisitPassesClient,
   private val visitSchedulerClient: VisitSchedulerClient,
   private val telemetryClientService: TelemetryClientService,
+  private val prisonAndSessionsExcludeDatesService: PrisonAndSessionsExcludeDatesService,
 ) {
   companion object {
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
@@ -46,7 +47,21 @@ class VisitPassesService(
       }
     }
 
-    val visitPasses = visitPassesClient.getVisitPasses(visits)
+    val blockedDatesAndSessions = prisonAndSessionsExcludeDatesService.getFuturePrisonAndSessionExcludeDates(prisonCode, includeSessions = true)
+
+    // We filter out visits which fall on blocked dates or whose session is blocked - as these shouldn't be printed.
+    val filteredVisits = visits
+      .filterNot { visit ->
+        visit.startTimestamp.toLocalDate() in blockedDatesAndSessions.fullDateExclusions.map { it.excludeDate }
+      }
+      .filterNot { visit ->
+        blockedDatesAndSessions.sessionExclusions.any { exclusion ->
+          exclusion.sessionTemplateReference == visit.sessionTemplateReference &&
+            exclusion.excludeDate.excludeDate == visit.startTimestamp.toLocalDate()
+        }
+      }
+
+    val visitPasses = visitPassesClient.getVisitPasses(filteredVisits)
     // write to app insights
     telemetryClientService.trackVisitPassesEvent(prisonCode = prisonCode, visitDate = visitDate, actionedBy = visitPassRequest.actionedBy, totalVisits = visits.size)
     return visitPasses
