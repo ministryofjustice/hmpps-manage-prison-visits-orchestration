@@ -645,24 +645,24 @@ class VisitSchedulerClient(
     .bodyToMono<List<LocalDate>>().block(apiTimeout)
 
   fun getSessionTemplateExcludeDates(sessionTemplateReference: String): List<ExcludeDateDto>? = webClient.get()
-    .uri("/admin/session-templates/template/$sessionTemplateReference/exclude-date")
+    .uri("/session-templates/template/$sessionTemplateReference/exclude-date")
     .retrieve()
     .bodyToMono<List<ExcludeDateDto>>().block(apiTimeout)
 
   fun getFutureSessionTemplateExclusions(prisonCode: String): List<SessionScheduleWithDateExclusionsDto>? = webClient.get()
-    .uri("/session-templates/$prisonCode/exclude-dates/future")
+    .uri("/prisons/$prisonCode/config/session-templates/exclude-dates/future")
     .retrieve()
     .bodyToMono<List<SessionScheduleWithDateExclusionsDto>>().block(apiTimeout)
 
   fun addSessionTemplateExcludeDate(sessionTemplateReference: String, sessionExcludeDate: ExcludeDateDto): List<LocalDate>? = webClient.put()
-    .uri("/admin/session-templates/template/$sessionTemplateReference/exclude-date/add")
+    .uri("/session-templates/template/$sessionTemplateReference/exclude-date/add")
     .body(BodyInserters.fromValue(sessionExcludeDate))
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono<List<LocalDate>>().block(apiTimeout)
 
   fun removeSessionTemplateExcludeDate(sessionTemplateReference: String, sessionExcludeDate: ExcludeDateDto): List<LocalDate>? = webClient.put()
-    .uri("/admin/session-templates/template/$sessionTemplateReference/exclude-date/remove")
+    .uri("/session-templates/template/$sessionTemplateReference/exclude-date/remove")
     .body(BodyInserters.fromValue(sessionExcludeDate))
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
