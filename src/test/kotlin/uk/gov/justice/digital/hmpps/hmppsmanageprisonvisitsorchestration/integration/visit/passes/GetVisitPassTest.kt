@@ -46,7 +46,8 @@ class GetVisitPassTest : IntegrationTestBase() {
   fun setupData() {
     // visit with 2 contacts (ids 1 and 2)
     val visitors = createVisitors(listOf(contact1.contactId, contact2.contactId))
-    visit = createVisitDto(reference = "visit-1", prisonerId = prisoner.prisonerNumber, visitors = visitors, prisonCode = prisonCode, startTimestamp = LocalDate.now().atTime(10, 0), endTimestamp = LocalDate.now().atTime(11, 0))
+    val visitDate = LocalDate.now()
+    visit = createVisitDto(reference = "visit-1", prisonerId = prisoner.prisonerNumber, visitors = visitors, prisonCode = prisonCode, startTimestamp = visitDate.atTime(10, 0), endTimestamp = visitDate.atTime(11, 0))
 
     visitSchedulerMockServer.stubGetExcludeDates(prisonCode, emptyList())
     visitSchedulerMockServer.stubGetSessionSchedulesWithDateExclusions(prisonCode, emptyList())
@@ -91,7 +92,8 @@ class GetVisitPassTest : IntegrationTestBase() {
     val visitContacts = listOf(contact1, contact2)
 
     // visit is in a different prison to the prison code in the request
-    val visit = createVisitDto(reference = "visit-1", prisonerId = prisoner.prisonerNumber, visitors = visitors, prisonCode = "XYZ", startTimestamp = LocalDate.now().atTime(10, 0), endTimestamp = LocalDate.now().atTime(11, 0))
+    val visitDate = LocalDate.now()
+    val visit = createVisitDto(reference = "visit-1", prisonerId = prisoner.prisonerNumber, visitors = visitors, prisonCode = "XYZ", startTimestamp = visitDate.atTime(10, 0), endTimestamp = visitDate.atTime(11, 0))
 
     visitSchedulerMockServer.stubGetVisit(visit.reference, visit)
     prisonerContactRegistryMockServer.stubSearchContacts(contactIds = visitContacts.map { it.contactId }.distinct(), contactsList = visitContacts)
@@ -116,7 +118,8 @@ class GetVisitPassTest : IntegrationTestBase() {
     val visitContacts = listOf(contact1, contact2)
 
     // visit is not BOOKED
-    val visit = createVisitDto(reference = "visit-1", prisonerId = prisoner.prisonerNumber, visitors = visitors, prisonCode = prisonCode, startTimestamp = LocalDate.now().atTime(10, 0), endTimestamp = LocalDate.now().atTime(11, 0), visitStatus = VisitStatus.CANCELLED)
+    val visitDate = LocalDate.now()
+    val visit = createVisitDto(reference = "visit-1", prisonerId = prisoner.prisonerNumber, visitors = visitors, prisonCode = prisonCode, startTimestamp = visitDate.atTime(10, 0), endTimestamp = visitDate.atTime(11, 0), visitStatus = VisitStatus.CANCELLED)
 
     visitSchedulerMockServer.stubGetVisit(visit.reference, visit)
     prisonerContactRegistryMockServer.stubSearchContacts(contactIds = visitContacts.map { it.contactId }.distinct(), contactsList = visitContacts)

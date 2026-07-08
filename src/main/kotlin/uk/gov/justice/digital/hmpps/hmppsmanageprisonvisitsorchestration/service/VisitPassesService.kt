@@ -57,7 +57,8 @@ class VisitPassesService(
       // We filter out visits which fall on blocked dates or whose session is blocked - as these shouldn't be printed.
       val filteredVisits = visits.filterNot { visit ->
         val visitDate = visit.startTimestamp.toLocalDate()
-        visitDate in blockedDates || (visit.sessionTemplateReference to visitDate) in blockedSessions
+        val sessionBlocked = visit.sessionTemplateReference?.let { (it to visitDate) in blockedSessions } ?: false
+        visitDate in blockedDates || sessionBlocked
       }
 
       visitPassesClient.getVisitPasses(filteredVisits)
@@ -104,7 +105,7 @@ class VisitPassesService(
       throw InvalidVisitPassException("Visit with reference - ${visit.reference} is on a blocked date - $visitDate")
     }
 
-    if ((visit.sessionTemplateReference to visitDate) in blockedSessions) {
+    if (visit.sessionTemplateReference?.let { (it to visitDate) in blockedSessions } == true) {
       throw InvalidVisitPassException("Visit with reference - ${visit.reference} is on a blocked session, session template - ${visit.sessionTemplateReference} and date - $visitDate")
     }
   }
