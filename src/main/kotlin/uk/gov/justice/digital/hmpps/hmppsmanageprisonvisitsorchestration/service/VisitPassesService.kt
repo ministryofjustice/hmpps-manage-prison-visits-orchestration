@@ -47,7 +47,7 @@ class VisitPassesService(
       }
     }
 
-    val blockedDatesAndSessions = prisonAndSessionsExcludeDatesService.getFuturePrisonAndSessionExcludeDates(prisonCode, includeSessions = true)
+    val blockedDatesAndSessions = prisonAndSessionsExcludeDatesService.getFuturePrisonAndSessionExcludeDates(prisonCode, includeSessions = true, withUsernames = false)
 
     // We filter out visits which fall on blocked dates or whose session is blocked - as these shouldn't be printed.
     val filteredVisits = visits
@@ -93,17 +93,19 @@ class VisitPassesService(
       throw InvalidVisitPassException("Visit with reference - ${visit.reference} is not in BOOKED status")
     }
 
-    val blockedDatesAndSessions = prisonAndSessionsExcludeDatesService.getFuturePrisonAndSessionExcludeDates(prisonCode, includeSessions = true)
+    val blockedDatesAndSessions = prisonAndSessionsExcludeDatesService.getFuturePrisonAndSessionExcludeDates(prisonCode, includeSessions = true, withUsernames = false)
 
     // We filter out visits which fall on blocked dates or whose session is blocked - as these shouldn't be printed.
-    if(visit.startTimestamp.toLocalDate() in blockedDatesAndSessions.fullDateExclusions.map { it.excludeDate }) {
-        throw InvalidVisitPassException("Visit with reference - ${visit.reference} is on a blocked date - ${visit.startTimestamp.toLocalDate()}")
+    if (visit.startTimestamp.toLocalDate() in blockedDatesAndSessions.fullDateExclusions.map { it.excludeDate }) {
+      throw InvalidVisitPassException("Visit with reference - ${visit.reference} is on a blocked date - ${visit.startTimestamp.toLocalDate()}")
     }
 
-    if(blockedDatesAndSessions.sessionExclusions.any { exclusion ->
+    if (
+      blockedDatesAndSessions.sessionExclusions.any { exclusion ->
         exclusion.sessionTemplateReference == visit.sessionTemplateReference &&
           exclusion.excludeDate.excludeDate == visit.startTimestamp.toLocalDate()
-      }) {
+      }
+    ) {
       throw InvalidVisitPassException("Visit with reference - ${visit.reference} is on a blocked session, session template - ${visit.sessionTemplateReference} and date - ${visit.startTimestamp.toLocalDate()}")
     }
   }

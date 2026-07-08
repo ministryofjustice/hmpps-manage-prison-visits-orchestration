@@ -53,9 +53,9 @@ class PrisonService(
     return supportedPrisons.sortedBy { it.prisonName.uppercase() }
   }
 
-  fun getFutureExcludeDatesForPrison(prisonCode: String): List<ExcludeDateDto> {
+  fun getFutureExcludeDatesForPrison(prisonCode: String, withUsernames: Boolean = true): List<ExcludeDateDto> {
     val excludeDates = getExcludeDatesForPrison(prisonCode)
-    return excludeDatesService.getFutureExcludeDates(excludeDates)
+    return excludeDatesService.getFutureExcludeDates(excludeDates, withUsernames)
   }
 
   fun isDateExcludedForPrisonVisits(prisonCode: String, date: LocalDate): IsExcludeDateDto {

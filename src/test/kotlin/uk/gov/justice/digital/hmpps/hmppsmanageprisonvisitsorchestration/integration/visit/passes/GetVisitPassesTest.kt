@@ -18,7 +18,6 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.VISIT_PASSES_CONTROLLER_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.AddressDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactWithOptionalPrisonerRelationshipDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.manage.users.UserExtendedDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleWithDateExclusionsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
@@ -192,10 +191,6 @@ class GetVisitPassesTest : IntegrationTestBase() {
 
     visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 250, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
     visitSchedulerMockServer.stubGetExcludeDates(prisonCode, listOf(blockedDate))
-    manageUsersApiMockServer.stubGetMultipleUserDetails(
-      listOf("user-1"),
-      userDetails = mapOf("user-1" to UserExtendedDetailsDto("user-1", "User", "One")),
-    )
 
     // When
     val responseSpec = callGetVisitPasses(webTestClient, prisonCode, visitDate, "STAFF_USER1", roleVSIPOrchestrationServiceHttpHeaders)
@@ -206,6 +201,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     assertThat(visitPasses).isEmpty()
 
     verify(visitSchedulerClientSpy, times(1)).getVisits(any())
+    verify(manageUsersApiClientSpy, times(0)).getUsersByUsernames(any())
     verify(prisonerSearchClientSpy, times(0)).getPrisonersByPrisonerIdsAttributeSearchAsMono(any())
     verify(prisonerContactRegistryClientSpy, times(0)).searchContactsAsMono(any(), anyOrNull(), any())
     verify(telemetryClientSpy).trackEvent(
@@ -264,10 +260,6 @@ class GetVisitPassesTest : IntegrationTestBase() {
 
     visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 250, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
     visitSchedulerMockServer.stubGetSessionSchedulesWithDateExclusions(prisonCode, listOf(sessionScheduleWithDateExclusions))
-    manageUsersApiMockServer.stubGetMultipleUserDetails(
-      listOf("user-1"),
-      userDetails = mapOf("user-1" to UserExtendedDetailsDto("user-1", "User", "One")),
-    )
     prisonerContactRegistryMockServer.stubSearchContacts(contactIds = returnedContacts.map { it.contactId }.distinct(), contactsList = returnedContacts)
     prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(prisonerIds = returnedPrisoners.map { it.prisonerNumber }.distinct(), prisoners = returnedPrisoners)
 
@@ -282,6 +274,7 @@ class GetVisitPassesTest : IntegrationTestBase() {
     assertThat(visitPasses.map { it.reference }).doesNotContain(blockedSessionVisit.reference)
 
     verify(visitSchedulerClientSpy, times(1)).getVisits(any())
+    verify(manageUsersApiClientSpy, times(0)).getUsersByUsernames(any())
     verify(prisonerSearchClientSpy, times(1)).getPrisonersByPrisonerIdsAttributeSearchAsMono(any())
     verify(prisonerContactRegistryClientSpy, times(1)).searchContactsAsMono(any(), anyOrNull(), any())
     verify(telemetryClientSpy).trackEvent(
