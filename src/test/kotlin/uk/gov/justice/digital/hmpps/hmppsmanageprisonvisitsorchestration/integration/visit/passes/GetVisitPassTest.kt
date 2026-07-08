@@ -160,13 +160,14 @@ class GetVisitPassTest : IntegrationTestBase() {
     // Given
     val blockedSessionTemplateReference = "blocked-session"
     val visitors = createVisitors(listOf(contact1.contactId, contact2.contactId))
+    val visitDate = LocalDate.now()
     val visit = createVisitDto(
       reference = "visit-1",
       prisonerId = prisoner.prisonerNumber,
       visitors = visitors,
       prisonCode = prisonCode,
-      startTimestamp = LocalDate.now().atTime(10, 0),
-      endTimestamp = LocalDate.now().atTime(11, 0),
+      startTimestamp = visitDate.atTime(10, 0),
+      endTimestamp = visitDate.atTime(11, 0),
       sessionTemplateReference = blockedSessionTemplateReference,
     )
     val blockedSessionExcludeDate = ExcludeDateDto(visit.startTimestamp.toLocalDate(), "user-1")

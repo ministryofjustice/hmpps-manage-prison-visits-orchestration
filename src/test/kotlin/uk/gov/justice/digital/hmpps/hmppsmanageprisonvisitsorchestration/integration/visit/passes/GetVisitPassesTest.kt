@@ -169,6 +169,8 @@ class GetVisitPassesTest : IntegrationTestBase() {
     assertThat(visitPasses.size).isEqualTo(0)
 
     verify(visitSchedulerClientSpy, times(1)).getVisits(any())
+    verify(visitSchedulerClientSpy, times(0)).getPrisonExcludeDates(any())
+    verify(visitSchedulerClientSpy, times(0)).getFutureSessionTemplateExclusions(any())
     verify(prisonerSearchClientSpy, times(0)).getPrisonersByPrisonerIdsAttributeSearchAsMono(any())
     verify(prisonerContactRegistryClientSpy, times(0)).searchContactsAsMono(any(), anyOrNull(), any())
     verify(telemetryClientSpy).trackEvent(

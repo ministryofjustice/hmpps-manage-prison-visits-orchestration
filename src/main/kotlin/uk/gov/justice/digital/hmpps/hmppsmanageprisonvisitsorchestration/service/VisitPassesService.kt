@@ -47,21 +47,22 @@ class VisitPassesService(
       }
     }
 
-    val blockedDatesAndSessions = prisonAndSessionsExcludeDatesService.getFuturePrisonAndSessionExcludeDates(prisonCode, includeSessions = true, withUsernames = false)
+    val visitPasses = if (visits.isEmpty()) {
+      emptyList()
+    } else {
+      val blockedDatesAndSessions = prisonAndSessionsExcludeDatesService.getFuturePrisonAndSessionExcludeDates(prisonCode, includeSessions = true, withUsernames = false)
+      val blockedDates = blockedDatesAndSessions.fullDateExclusions.map { it.excludeDate }.toSet()
+      val blockedSessions = blockedDatesAndSessions.sessionExclusions.map { it.sessionTemplateReference to it.excludeDate.excludeDate }.toSet()
 
-    // We filter out visits which fall on blocked dates or whose session is blocked - as these shouldn't be printed.
-    val filteredVisits = visits
-      .filterNot { visit ->
-        visit.startTimestamp.toLocalDate() in blockedDatesAndSessions.fullDateExclusions.map { it.excludeDate }
-      }
-      .filterNot { visit ->
-        blockedDatesAndSessions.sessionExclusions.any { exclusion ->
-          exclusion.sessionTemplateReference == visit.sessionTemplateReference &&
-            exclusion.excludeDate.excludeDate == visit.startTimestamp.toLocalDate()
-        }
+      // We filter out visits which fall on blocked dates or whose session is blocked - as these shouldn't be printed.
+      val filteredVisits = visits.filterNot { visit ->
+        val visitDate = visit.startTimestamp.toLocalDate()
+        visitDate in blockedDates || (visit.sessionTemplateReference to visitDate) in blockedSessions
       }
 
-    val visitPasses = visitPassesClient.getVisitPasses(filteredVisits)
+      visitPassesClient.getVisitPasses(filteredVisits)
+    }
+
     // write to app insights
     telemetryClientService.trackVisitPassesEvent(prisonCode = prisonCode, visitDate = visitDate, actionedBy = visitPassRequest.actionedBy, totalVisits = visits.size)
     return visitPasses
@@ -94,19 +95,17 @@ class VisitPassesService(
     }
 
     val blockedDatesAndSessions = prisonAndSessionsExcludeDatesService.getFuturePrisonAndSessionExcludeDates(prisonCode, includeSessions = true, withUsernames = false)
+    val visitDate = visit.startTimestamp.toLocalDate()
+    val blockedDates = blockedDatesAndSessions.fullDateExclusions.map { it.excludeDate }.toSet()
+    val blockedSessions = blockedDatesAndSessions.sessionExclusions.map { it.sessionTemplateReference to it.excludeDate.excludeDate }.toSet()
 
     // We filter out visits which fall on blocked dates or whose session is blocked - as these shouldn't be printed.
-    if (visit.startTimestamp.toLocalDate() in blockedDatesAndSessions.fullDateExclusions.map { it.excludeDate }) {
-      throw InvalidVisitPassException("Visit with reference - ${visit.reference} is on a blocked date - ${visit.startTimestamp.toLocalDate()}")
+    if (visitDate in blockedDates) {
+      throw InvalidVisitPassException("Visit with reference - ${visit.reference} is on a blocked date - $visitDate")
     }
 
-    if (
-      blockedDatesAndSessions.sessionExclusions.any { exclusion ->
-        exclusion.sessionTemplateReference == visit.sessionTemplateReference &&
-          exclusion.excludeDate.excludeDate == visit.startTimestamp.toLocalDate()
-      }
-    ) {
-      throw InvalidVisitPassException("Visit with reference - ${visit.reference} is on a blocked session, session template - ${visit.sessionTemplateReference} and date - ${visit.startTimestamp.toLocalDate()}")
+    if ((visit.sessionTemplateReference to visitDate) in blockedSessions) {
+      throw InvalidVisitPassException("Visit with reference - ${visit.reference} is on a blocked session, session template - ${visit.sessionTemplateReference} and date - $visitDate")
     }
   }
 
