@@ -41,6 +41,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.D
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
 import java.time.LocalDate
 import java.time.LocalTime
+import kotlin.collections.filterNot
 
 @Service
 class VisitSchedulerSessionsService(
@@ -499,7 +500,8 @@ class VisitSchedulerSessionsService(
     prisonerSchedules: List<ScheduledEventDto>,
   ): SessionsAndScheduleDto {
     LOG.debug("getSessionsAndScheduleDataForDate: {}", sessionDate)
-    val visitSessionsForDate = visitSessions?.filter { it.startTimestamp.toLocalDate() == sessionDate }?.map { VisitSessionV2Dto(it) } ?: emptyList()
+
+    var visitSessionsForDate = visitSessions?.filter { it.startTimestamp.toLocalDate() == sessionDate }?.map { VisitSessionV2Dto(it) } ?: emptyList()
     val sessionDateConflicts: MutableList<SessionDateConflictDto> = mutableListOf()
 
     // check if the date range is outside the booking window
@@ -512,19 +514,26 @@ class VisitSchedulerSessionsService(
       }
     }
 
-    return if (sessionDateConflicts.isNotEmpty()) {
-      // if there are session date conflicts - do not get schedules
-      // if there are session date conflicts - also do not return sessions for the date
-      SessionsAndScheduleDto(sessionDate, emptyList(), emptyList(), sessionDateConflicts.toList())
+    // finally filter out any visit sessions that have includeSession set to false
+    visitSessionsForDate = visitSessionsForDate.filterNot {
+      // filter out any sessions where the includeSession is false for example - SESSION_DATE_BLOCKED
+      it.sessionConflicts.any { sessionConflictDto -> !sessionConflictDto.sessionConflict.includeSession }
+    }
+
+    var prisonerScheduleForDate: List<PrisonerScheduledEventDto>
+    if (sessionDateConflicts.isNotEmpty() && sessionDateConflicts.any { !it.sessionDateConflict.includeSessions }) {
+      // if there are session date conflicts with includeSessions false, then return an empty list of schedules and sessions
+      visitSessionsForDate = emptyList()
+      prisonerScheduleForDate = emptyList()
     } else {
-      val prisonerScheduleForDate = if (visitSessionsForDate.isNotEmpty()) {
+      prisonerScheduleForDate = if (visitSessionsForDate.isNotEmpty()) {
         prisonerSchedules.filter { it.eventDate == sessionDate }.map { PrisonerScheduledEventDto(it) }
       } else {
         emptyList()
       }
-
-      SessionsAndScheduleDto(sessionDate, visitSessionsForDate, prisonerScheduleForDate)
     }
+
+    return SessionsAndScheduleDto(date = sessionDate, visitSessions = visitSessionsForDate, scheduledEvents = prisonerScheduleForDate, sessionDateConflicts = sessionDateConflicts)
   }
 
   private fun isOutsideBookingWindow(date: LocalDate, prisonDateRange: DateRange): Boolean = (date.isBefore(prisonDateRange.fromDate) || date.isAfter(prisonDateRange.toDate))
