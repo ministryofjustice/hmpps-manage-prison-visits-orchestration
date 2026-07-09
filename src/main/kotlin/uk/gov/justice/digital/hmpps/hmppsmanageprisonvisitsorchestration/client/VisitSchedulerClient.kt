@@ -655,14 +655,14 @@ class VisitSchedulerClient(
     .bodyToMono<List<SessionScheduleWithDateExclusionsDto>>().block(apiTimeout)
 
   fun addSessionTemplateExcludeDate(sessionTemplateReference: String, sessionExcludeDate: ExcludeDateDto): List<LocalDate>? = webClient.put()
-    .uri("/session-templates/template/$sessionTemplateReference/exclude-date/add")
+    .uri("/session-templates/$sessionTemplateReference/exclude-date/add")
     .body(BodyInserters.fromValue(sessionExcludeDate))
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono<List<LocalDate>>().block(apiTimeout)
 
   fun removeSessionTemplateExcludeDate(sessionTemplateReference: String, sessionExcludeDate: ExcludeDateDto): List<LocalDate>? = webClient.put()
-    .uri("/session-templates/template/$sessionTemplateReference/exclude-date/remove")
+    .uri("/session-templates/$sessionTemplateReference/exclude-date/remove")
     .body(BodyInserters.fromValue(sessionExcludeDate))
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
