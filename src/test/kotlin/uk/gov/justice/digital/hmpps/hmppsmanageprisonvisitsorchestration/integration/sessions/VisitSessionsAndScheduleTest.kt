@@ -360,6 +360,89 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `when a session conflict with include session as false is on a session then the session is removed from the response`() {
+    // Given
+    // there are 2 visit sessions, but the session with the session date conflict is not included in response
+    // session has SESSION_DATE_BLOCKED conflict which has includeSession as false
+    val sessionConflictDate = today.plusDays(3)
+    val visitSessionDto1 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime), sessionConflicts = setOf(SessionConflict.SESSION_DATE_BLOCKED))
+    val visitSessionDto2 = createVisitSessionDto(prisonCode, "2", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime))
+
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2), userType = STAFF)
+
+    whereaboutsApiMockServer.stubGetEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
+
+    // When
+    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, null, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val sessionsAndScheduleDto = getResults(returnResult)
+    val visitSessions = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == sessionConflictDate }.visitSessions
+    assertThat(visitSessions.size).isEqualTo(1)
+    assertThat(visitSessions.map { it.sessionTemplateReference }).doesNotContain(visitSessionDto1.sessionTemplateReference)
+    assertThat(visitSessions.map { it.sessionTemplateReference }).containsOnly(visitSessionDto2.sessionTemplateReference)
+
+    verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
+    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
+  }
+
+  @Test
+  fun `when a session date conflict with include sessions as false is on a session then all sessions for the date are removed from the response`() {
+    // Given
+    // there are 2 visit sessions and 1 session has PRISON_DATE_BLOCKED - so no sessions are returned on the response
+    // session has PRISON_DATE_BLOCKED conflict which means no sessions should be returned for the day
+    val sessionConflictDate = today.plusDays(3)
+    val visitSessionDto1 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime), sessionConflicts = setOf(SessionConflict.PRISON_DATE_BLOCKED))
+    val visitSessionDto2 = createVisitSessionDto(prisonCode, "2", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime))
+
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2), userType = STAFF)
+
+    whereaboutsApiMockServer.stubGetEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
+
+    // When
+    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, null, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val sessionsAndScheduleDto = getResults(returnResult)
+    val visitSessions = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == sessionConflictDate }.visitSessions
+    assertThat(visitSessions.size).isEqualTo(0)
+    verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
+    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
+  }
+
+  @Test
+  fun `when a session conflict with include session as true is on a session then the session is not removed from the response`() {
+    // Given
+    // session has REMAND_VISITS_LIMIT_REACHED conflict which has includeSession as true which means both sessions for the day should be returned
+    val sessionConflictDate = today.plusDays(3)
+    val visitSessionDto1 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime), sessionConflicts = setOf(SessionConflict.REMAND_VISITS_LIMIT_REACHED))
+    val visitSessionDto2 = createVisitSessionDto(prisonCode, "2", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime.plusHours(1)), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime.plusHours(1)))
+
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2), userType = STAFF)
+
+    whereaboutsApiMockServer.stubGetEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
+
+    // When
+    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, null, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val sessionsAndScheduleDto = getResults(returnResult)
+    val visitSessions = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == sessionConflictDate }.visitSessions
+    assertThat(visitSessions.size).isEqualTo(2)
+    assertThat(visitSessions[0].sessionConflicts.map { it.sessionConflict }).containsOnly(SessionConflict.REMAND_VISITS_LIMIT_REACHED)
+    assertThat(visitSessions[0].sessionTemplateReference).isEqualTo(visitSessionDto1.sessionTemplateReference)
+
+    assertThat(visitSessions[1].sessionConflicts).isEmpty()
+    assertThat(visitSessions[1].sessionTemplateReference).isEqualTo(visitSessionDto2.sessionTemplateReference)
+
+    verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
+    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
+  }
+
+  @Test
   fun `when visit sessions returns NOT_FOUND a NOT_FOUND error is returned`() {
     // Given
     visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, null, userType = STAFF, httpStatus = HttpStatus.NOT_FOUND)

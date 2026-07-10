@@ -514,23 +514,26 @@ class VisitSchedulerSessionsService(
       }
     }
 
-    // finally filter out any visit sessions that have includeSession set to false
-    visitSessionsForDate = visitSessionsForDate.filterNot {
-      // filter out any sessions where the includeSession is false for example - SESSION_DATE_BLOCKED
-      it.sessionConflicts.any { sessionConflictDto -> !sessionConflictDto.sessionConflict.includeSession }
+    // finally, filter out any visit sessions that have includeSessions or includeSession set to false
+    visitSessionsForDate = if (visitSessionsForDate.isNotEmpty()) {
+      // if includeSessions is false, then do not return any sessions
+      if (sessionDateConflicts.isNotEmpty() && sessionDateConflicts.any { !it.sessionDateConflict.includeSessions }) {
+        emptyList()
+      } else {
+        visitSessionsForDate.filterNot {
+          // filter out any sessions where the includeSession is false, for example - SESSION_DATE_BLOCKED
+          it.sessionConflicts.any { sessionConflictDto -> !sessionConflictDto.sessionConflict.includeSession }
+        }
+      }
+    } else {
+      emptyList()
     }
 
-    var prisonerScheduleForDate: List<PrisonerScheduledEventDto>
-    if (sessionDateConflicts.isNotEmpty() && sessionDateConflicts.any { !it.sessionDateConflict.includeSessions }) {
-      // if there are session date conflicts with includeSessions false, then return an empty list of schedules and sessions
-      visitSessionsForDate = emptyList()
-      prisonerScheduleForDate = emptyList()
+    val prisonerScheduleForDate = if (visitSessionsForDate.isEmpty()) {
+      // if there are session date conflicts with includeSessions false, then return an empty list of schedules
+      emptyList()
     } else {
-      prisonerScheduleForDate = if (visitSessionsForDate.isNotEmpty()) {
-        prisonerSchedules.filter { it.eventDate == sessionDate }.map { PrisonerScheduledEventDto(it) }
-      } else {
-        emptyList()
-      }
+      prisonerSchedules.filter { it.eventDate == sessionDate }.map { PrisonerScheduledEventDto(it) }
     }
 
     return SessionsAndScheduleDto(date = sessionDate, visitSessions = visitSessionsForDate, scheduledEvents = prisonerScheduleForDate, sessionDateConflicts = sessionDateConflicts)
