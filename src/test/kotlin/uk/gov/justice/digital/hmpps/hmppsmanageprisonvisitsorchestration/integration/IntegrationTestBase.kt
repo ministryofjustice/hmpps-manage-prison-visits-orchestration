@@ -650,6 +650,7 @@ abstract class IntegrationTestBase {
     lastName = lastName,
     approvedVisitor = approvedVisitor,
     dateOfBirth = dateOfBirth,
+    relationshipId = 123L,
     relationshipCode = "OTH",
     contactType = "S",
     emergencyContact = true,
