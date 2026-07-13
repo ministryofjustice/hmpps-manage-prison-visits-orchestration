@@ -559,9 +559,7 @@ class VisitSchedulerSessionsService(
       sessionsAndSchedules.forEach { sessionsAndSchedule ->
         if (sessionsAndSchedule.visitSessions.isNotEmpty()) {
           sessionsAndSchedule.visitSessions.forEach { visitSession ->
-            visitSession.sessionConflicts = visitSession.sessionConflicts.filter { sessionConflictDto ->
-              !excludeSessionConflicts.contains(sessionConflictDto.sessionConflict)
-            }
+            visitSession.sessionConflicts = visitSession.sessionConflicts.filterNot { it.sessionConflict in excludeSessionConflicts }
           }
         }
       }
