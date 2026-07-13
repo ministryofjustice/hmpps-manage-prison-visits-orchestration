@@ -7,4 +7,7 @@ enum class SessionConflict(val includeSession: Boolean) {
   SESSION_DATE_BLOCKED(false),
   PRISON_DATE_BLOCKED(false),
   REMAND_VISITS_LIMIT_REACHED(true),
+  NO_VOS(true),
+  NO_PVOS(true),
+  NO_VO_OR_PVOS(true),
 }

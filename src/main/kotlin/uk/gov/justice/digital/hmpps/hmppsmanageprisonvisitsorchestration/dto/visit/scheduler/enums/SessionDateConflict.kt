@@ -13,8 +13,7 @@ enum class SessionDateConflict(val includeSessions: Boolean) {
       SessionConflict.NON_ASSOCIATION -> NON_ASSOCIATION
       SessionConflict.PRISON_DATE_BLOCKED -> PRISON_DATE_BLOCKED
       SessionConflict.REMAND_VISITS_LIMIT_REACHED -> REMAND_VISITS_LIMIT_REACHED
-      SessionConflict.SESSION_DATE_BLOCKED -> null
-      SessionConflict.DOUBLE_BOOKING_OR_RESERVATION -> null
+      else -> null
     }
   }
 }
