@@ -19,15 +19,18 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.control
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.AddressDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.contact.registry.ContactWithOptionalPrisonerRelationshipDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleWithDateExclusionsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.passes.VisitPassDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.passes.VisitPassRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.passes.VisitPassVisitorDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.random.Random
 
@@ -104,6 +107,9 @@ class GetVisitPassesTest : IntegrationTestBase() {
     // visit8 with 2 contacts (ids 14 and 15, 14 is on a separate visit)
     val visit8visitors = createVisitors(listOf(contact14.contactId, contact15.contactId))
     visit8 = createVisitDto(reference = "visit-8", prisonerId = prisoner1.prisonerNumber, visitors = visit8visitors, prisonCode = prisonCode, startTimestamp = visitDate.atTime(11, 0), endTimestamp = visitDate.atTime(12, 0))
+
+    visitSchedulerMockServer.stubGetExcludeDates(prisonCode, emptyList())
+    visitSchedulerMockServer.stubGetSessionSchedulesWithDateExclusions(prisonCode, emptyList())
   }
 
   @Test
@@ -163,6 +169,8 @@ class GetVisitPassesTest : IntegrationTestBase() {
     assertThat(visitPasses.size).isEqualTo(0)
 
     verify(visitSchedulerClientSpy, times(1)).getVisits(any())
+    verify(visitSchedulerClientSpy, times(0)).getPrisonExcludeDates(any())
+    verify(visitSchedulerClientSpy, times(0)).getFutureSessionTemplateExclusions(any())
     verify(prisonerSearchClientSpy, times(0)).getPrisonersByPrisonerIdsAttributeSearchAsMono(any())
     verify(prisonerContactRegistryClientSpy, times(0)).searchContactsAsMono(any(), anyOrNull(), any())
     verify(telemetryClientSpy).trackEvent(
@@ -175,6 +183,150 @@ class GetVisitPassesTest : IntegrationTestBase() {
       },
       isNull(),
     )
+  }
+
+  @Test
+  fun `when a prison has booked visits on a blocked date then no visit passes are returned`() {
+    // Given
+    val allVisits = listOf(visit1, visit2)
+    val blockedDate = ExcludeDateDto(visitDate, "user-1")
+
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 250, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
+    visitSchedulerMockServer.stubGetExcludeDates(prisonCode, listOf(blockedDate))
+
+    // When
+    val responseSpec = callGetVisitPasses(webTestClient, prisonCode, visitDate, "STAFF_USER1", roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isOk
+    val visitPasses = getResults(responseSpec.expectBody())
+    assertThat(visitPasses).isEmpty()
+
+    verify(visitSchedulerClientSpy, times(1)).getVisits(any())
+    verify(manageUsersApiClientSpy, times(0)).getUsersByUsernames(any())
+    verify(prisonerSearchClientSpy, times(0)).getPrisonersByPrisonerIdsAttributeSearchAsMono(any())
+    verify(prisonerContactRegistryClientSpy, times(0)).searchContactsAsMono(any(), anyOrNull(), any())
+    verify(telemetryClientSpy).trackEvent(
+      eq("print-visit-passes"),
+      check {
+        assertThat(it["prisonCode"]).isEqualTo(prisonCode)
+        assertThat(it["visitDate"]).isEqualTo(visitDate.format(DateTimeFormatter.ISO_DATE))
+        assertThat(it["actionedBy"]).isEqualTo("STAFF_USER1")
+        assertThat(it["totalVisits"]).isEqualTo("2")
+      },
+      isNull(),
+    )
+  }
+
+  @Test
+  fun `when a prison has booked visits on a blocked session then those visits are not returned`() {
+    // Given
+    val blockedSessionTemplateReference = "blocked-session"
+    val openSessionTemplateReference = "open-session"
+    val openVisit = createVisitDto(
+      reference = "visit-1",
+      prisonerId = prisoner1.prisonerNumber,
+      visitors = createVisitors(listOf(contact1.contactId, contact2.contactId)),
+      prisonCode = prisonCode,
+      startTimestamp = visitDate.atTime(10, 0),
+      endTimestamp = visitDate.atTime(11, 0),
+      sessionTemplateReference = openSessionTemplateReference,
+    )
+    val blockedSessionVisit = createVisitDto(
+      reference = "visit-2",
+      prisonerId = prisoner2.prisonerNumber,
+      visitors = createVisitors(listOf(contact3.contactId, contact4.contactId)),
+      prisonCode = prisonCode,
+      startTimestamp = visitDate.atTime(10, 0),
+      endTimestamp = visitDate.atTime(11, 0),
+      sessionTemplateReference = blockedSessionTemplateReference,
+    )
+    val allVisits = listOf(openVisit, blockedSessionVisit)
+    val returnedContacts = listOf(contact1, contact2)
+    val returnedPrisoners = listOf(prisoner1)
+    val blockedSessionExcludeDate = ExcludeDateDto(visitDate, "user-1")
+    val blockedSessionSchedule = createSessionScheduleDto(
+      reference = blockedSessionTemplateReference,
+      startTime = LocalTime.of(10, 0),
+      endTime = LocalTime.of(11, 0),
+      validFromDate = visitDate.minusWeeks(1),
+      areLocationGroupsInclusive = true,
+      areCategoryGroupsInclusive = true,
+      areIncentiveGroupsInclusive = true,
+      visitRoom = "Visit Room",
+    )
+    val sessionScheduleWithDateExclusions = SessionScheduleWithDateExclusionsDto(
+      sessionSchedule = blockedSessionSchedule,
+      excludeDates = listOf(blockedSessionExcludeDate),
+    )
+
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 250, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
+    visitSchedulerMockServer.stubGetSessionSchedulesWithDateExclusions(prisonCode, listOf(sessionScheduleWithDateExclusions))
+    prisonerContactRegistryMockServer.stubSearchContacts(contactIds = returnedContacts.map { it.contactId }.distinct(), contactsList = returnedContacts)
+    prisonOffenderSearchMockServer.stubGetPrisonersByPrisonerIds(prisonerIds = returnedPrisoners.map { it.prisonerNumber }.distinct(), prisoners = returnedPrisoners)
+
+    // When
+    val responseSpec = callGetVisitPasses(webTestClient, prisonCode, visitDate, "STAFF_USER1", roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().isOk
+    val visitPasses = getResults(responseSpec.expectBody())
+    assertThat(visitPasses).hasSize(1)
+    assertVisitPassDetails(openVisit, prisoner1, listOf(contact1, contact2), visitPasses.first())
+    assertThat(visitPasses.map { it.reference }).doesNotContain(blockedSessionVisit.reference)
+
+    verify(visitSchedulerClientSpy, times(1)).getVisits(any())
+    verify(manageUsersApiClientSpy, times(0)).getUsersByUsernames(any())
+    verify(prisonerSearchClientSpy, times(1)).getPrisonersByPrisonerIdsAttributeSearchAsMono(any())
+    verify(prisonerContactRegistryClientSpy, times(1)).searchContactsAsMono(any(), anyOrNull(), any())
+    verify(telemetryClientSpy).trackEvent(
+      eq("print-visit-passes"),
+      check {
+        assertThat(it["prisonCode"]).isEqualTo(prisonCode)
+        assertThat(it["visitDate"]).isEqualTo(visitDate.format(DateTimeFormatter.ISO_DATE))
+        assertThat(it["actionedBy"]).isEqualTo("STAFF_USER1")
+        assertThat(it["totalVisits"]).isEqualTo("2")
+      },
+      isNull(),
+    )
+  }
+
+  @Test
+  fun `when prison exclude date lookup returns an INTERNAL_SERVER_ERROR then an INTERNAL_SERVER_ERROR error is returned`() {
+    // Given
+    val allVisits = listOf(visit1, visit2)
+
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 250, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
+    visitSchedulerMockServer.stubGetExcludeDates(prisonCode, null, HttpStatus.INTERNAL_SERVER_ERROR)
+
+    // When
+    val responseSpec = callGetVisitPasses(webTestClient, prisonCode, visitDate, "STAFF_USER1", roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().is5xxServerError
+    verify(visitSchedulerClientSpy, times(1)).getVisits(any())
+    verify(prisonerSearchClientSpy, times(0)).getPrisonersByPrisonerIdsAttributeSearchAsMono(any())
+    verify(prisonerContactRegistryClientSpy, times(0)).searchContactsAsMono(any(), anyOrNull(), any())
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), anyOrNull(), anyOrNull())
+  }
+
+  @Test
+  fun `when session exclude date lookup returns an INTERNAL_SERVER_ERROR then an INTERNAL_SERVER_ERROR error is returned`() {
+    // Given
+    val allVisits = listOf(visit1, visit2)
+
+    visitSchedulerMockServer.stubGetVisits(prisonCode = prisonCode, startDate = visitDate, endDate = visitDate, page = 0, size = 250, visitStatus = listOf(VisitStatus.BOOKED.name), visits = allVisits)
+    visitSchedulerMockServer.stubGetSessionSchedulesWithDateExclusions(prisonCode, null, HttpStatus.INTERNAL_SERVER_ERROR)
+
+    // When
+    val responseSpec = callGetVisitPasses(webTestClient, prisonCode, visitDate, "STAFF_USER1", roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    responseSpec.expectStatus().is5xxServerError
+    verify(visitSchedulerClientSpy, times(1)).getVisits(any())
+    verify(prisonerSearchClientSpy, times(0)).getPrisonersByPrisonerIdsAttributeSearchAsMono(any())
+    verify(prisonerContactRegistryClientSpy, times(0)).searchContactsAsMono(any(), anyOrNull(), any())
+    verify(telemetryClientSpy, times(0)).trackEvent(any(), anyOrNull(), anyOrNull())
   }
 
   @Test

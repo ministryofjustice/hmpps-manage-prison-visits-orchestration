@@ -23,15 +23,19 @@ class PrisonAndSessionsExcludeDatesService(
     )
   }
 
-  fun getFuturePrisonAndSessionExcludeDates(prisonCode: String, includeSessions: Boolean): PrisonAndSessionsExcludeDatesDto {
+  fun getFuturePrisonAndSessionExcludeDates(
+    prisonCode: String,
+    includeSessions: Boolean,
+    withUsernames: Boolean = true,
+  ): PrisonAndSessionsExcludeDatesDto {
     logger.info("Getting future exclude dates for prison $prisonCode and sessions")
-    val prisonExcludeDates = prisonService.getFutureExcludeDatesForPrison(prisonCode)
-    val sessionExclusions = if (includeSessions) getCurrentAndFutureSessionExclusions(prisonCode) else emptyList()
+    val prisonExcludeDates = prisonService.getFutureExcludeDatesForPrison(prisonCode, withUsernames)
+    val sessionExclusions = if (includeSessions) getCurrentAndFutureSessionExclusions(prisonCode, withUsernames) else emptyList()
 
     return PrisonAndSessionsExcludeDatesDto(fullDateExclusions = prisonExcludeDates, sessionExclusions = sessionExclusions)
   }
 
-  private fun getCurrentAndFutureSessionExclusions(prisonCode: String): List<SessionExcludeDateDto> {
+  private fun getCurrentAndFutureSessionExclusions(prisonCode: String, withUsernames: Boolean): List<SessionExcludeDateDto> {
     // get all current or future sessions that have date exclusions
     val currentOrFutureSessions = visitSchedulerClient.getFutureSessionTemplateExclusions(prisonCode)
     val sessionExclusions = mutableListOf<SessionExcludeDateDto>()
@@ -42,8 +46,9 @@ class PrisonAndSessionsExcludeDatesService(
       }
     }
 
-    // set actual names for actionedBy
-    setActionedByFullName(sessionExclusions)
+    if (withUsernames) {
+      setActionedByFullName(sessionExclusions)
+    }
 
     return sessionExclusions.sortedWith(sessionExclusionSortOrder)
   }
