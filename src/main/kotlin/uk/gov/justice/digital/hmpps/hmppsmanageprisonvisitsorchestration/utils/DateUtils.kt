@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.IndefiniteDateRange
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
 import java.time.DayOfWeek.SATURDAY
 import java.time.DayOfWeek.SUNDAY
 import java.time.LocalDate
@@ -11,20 +11,20 @@ import java.time.LocalDate
 @Component
 class DateUtils(private val currentDateUtils: CurrentDateUtils) {
   fun getToDaysDateRange(
-    prison: VisitSchedulerPrisonDto,
+    client: PrisonUserClientDto,
     minOverride: Int? = null,
     maxOverride: Int? = null,
   ): DateRange {
     val today = currentDateUtils.getCurrentDate()
 
-    val min = if (minOverride == null || minOverride < prison.policyNoticeDaysMin) {
-      prison.policyNoticeDaysMin
+    val min = if (minOverride == null || minOverride < client.policyNoticeDaysMin) {
+      client.policyNoticeDaysMin
     } else {
       minOverride
     }
 
-    val max = if (maxOverride == null || maxOverride > prison.policyNoticeDaysMax) {
-      prison.policyNoticeDaysMax
+    val max = if (maxOverride == null || maxOverride > client.policyNoticeDaysMax) {
+      client.policyNoticeDaysMax
     } else {
       maxOverride
     }

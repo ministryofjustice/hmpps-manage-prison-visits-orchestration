@@ -88,8 +88,8 @@ class VisitSchedulerSessionsService(
     excludeSessionConflicts: List<SessionConflict>?,
   ): VisitSessionsAndScheduleDto {
     var scheduledEventsAvailable = true
-    val prisonDateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode)
-    val sessionAndScheduleDateRange = DateRange(LocalDate.now(), prisonDateRange.toDate)
+    val dateRangeForPrison = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, userType = UserType.STAFF)
+    val sessionAndScheduleDateRange = DateRange(LocalDate.now(), dateRangeForPrison.toDate)
 
     // get sessions for prisoner and date range with usertype as STAFF
     val visitSessions = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max = null, username, UserType.STAFF)
@@ -97,7 +97,7 @@ class VisitSchedulerSessionsService(
     // get schedules for prisoner and date range
     val prisonerSchedules =
       try {
-        whereAboutsApiClient.getEvents(prisonerId, prisonDateRange.fromDate, prisonDateRange.toDate)
+        whereAboutsApiClient.getEvents(prisonerId, dateRangeForPrison.fromDate, dateRangeForPrison.toDate)
       } catch (_: NotFoundException) {
         LOG.info("No schedule data found for prisonerId - $prisonerId, returning an empty list")
         emptyList()
@@ -107,7 +107,7 @@ class VisitSchedulerSessionsService(
         emptyList()
       }
 
-    val sessionsAndSchedules = getSessionsAndScheduleDataForDates(sessionAndScheduleDateRange, prisonDateRange, visitSessions, prisonerSchedules)
+    val sessionsAndSchedules = getSessionsAndScheduleDataForDates(sessionAndScheduleDateRange, dateRangeForPrison, visitSessions, prisonerSchedules)
 
     // TODO reconsider this once the frontend fully integrates with this version and the excludeSessionConflicts parameter is not needed
     // finaly filter out any excluded session conflicts from the list of conflicts returned
@@ -134,7 +134,7 @@ class VisitSchedulerSessionsService(
     val sessionRestriction = updateRequestedRestriction(requestedSessionRestriction, prisonerId, visitors)
 
     // advance from date by n days
-    var dateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, fromDateOverride = fromDateOverride, toDateOverride = toDateOverride)
+    var dateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, fromDateOverride = fromDateOverride, toDateOverride = toDateOverride, userType = userType)
     dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
 
     var availableVisitSessions = getAvailableVisitSessionsForDateRange(
@@ -166,7 +166,7 @@ class VisitSchedulerSessionsService(
   ): List<AvailableVisitSessionDto> {
     val sessionRestriction = updateRequestedRestriction(null, prisonerId, visitors)
 
-    val dateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, fromDateOverride = publicServiceFromDateOverride.toInt(), toDateOverride = publicServiceToDateOverride.toInt())
+    val dateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, fromDateOverride = publicServiceFromDateOverride.toInt(), toDateOverride = publicServiceToDateOverride.toInt(), userType = userType)
 
     var availableVisitSessions = getAvailableVisitSessionsForDateRange(
       prisonCode = prisonCode,
