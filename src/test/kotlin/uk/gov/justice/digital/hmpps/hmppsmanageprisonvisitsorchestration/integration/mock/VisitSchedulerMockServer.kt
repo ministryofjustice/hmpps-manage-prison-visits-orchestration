@@ -25,8 +25,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CreateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.RejectVisitRequestBodyDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleWithDateExclusionsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.UpdateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
@@ -492,12 +494,22 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     )
   }
 
-  fun stubRejectVisitRequestByReference(visitReference: String, rejectVisitRequestResponse: VisitDto?, status: HttpStatus? = null) {
+  fun stubRejectVisitRequestByReference(
+    visitReference: String,
+    rejectVisitRequestResponse: VisitDto?,
+    status: HttpStatus? = null,
+    expectedRequestBody: RejectVisitRequestBodyDto? = null,
+  ) {
     val responseBuilder = createJsonResponseBuilder()
     val url = VISIT_REQUESTS_REJECT_VISIT_BY_REFERENCE_PATH.replace("{reference}", visitReference)
+    val requestBuilder = put(url)
+
+    expectedRequestBody?.let {
+      requestBuilder.withRequestBody(equalToJson(getJsonString(it)))
+    }
 
     stubFor(
-      put(url)
+      requestBuilder
         .willReturn(
           if (rejectVisitRequestResponse == null) {
             responseBuilder.withStatus(status?.value() ?: HttpStatus.NOT_FOUND.value())
@@ -558,8 +570,9 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     val dateRangeToUse = dateRange ?: run {
       val today = LocalDate.now()
       // add 1 to the policyNoticeDaysMin to ensure we are adding whole days
-      val fromDate = today.plusDays(visitSchedulerPrisonDto.policyNoticeDaysMin.toLong().plus(1))
-      val toDate = today.plusDays(visitSchedulerPrisonDto.policyNoticeDaysMax.toLong())
+      val client = visitSchedulerPrisonDto.clients.first { it.userType == userType }
+      val fromDate = today.plusDays(client.policyNoticeDaysMin.toLong().plus(1))
+      val toDate = today.plusDays(client.policyNoticeDaysMax.toLong())
       DateRange(fromDate, toDate)
     }
     stubFor(
@@ -823,7 +836,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
   ) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
-      get("/admin/session-templates/template/$sessionTemplateReference/exclude-date")
+      get("/session-templates/template/$sessionTemplateReference/exclude-date")
         .willReturn(
           if (excludeDates != null) {
             responseBuilder.withStatus(HttpStatus.OK.value())
@@ -842,7 +855,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
   ) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
-      put("/admin/session-templates/template/$sessionTemplateReference/exclude-date/add")
+      put("/session-templates/$sessionTemplateReference/exclude-date/add")
         .willReturn(
           if (excludeDates != null) {
             responseBuilder.withStatus(HttpStatus.CREATED.value())
@@ -861,7 +874,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
   ) {
     val responseBuilder = createJsonResponseBuilder()
     stubFor(
-      put("/admin/session-templates/template/$sessionTemplateReference/exclude-date/remove")
+      put("/session-templates/$sessionTemplateReference/exclude-date/remove")
         .willReturn(
           if (excludeDates != null) {
             responseBuilder.withStatus(HttpStatus.CREATED.value())
@@ -966,6 +979,27 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
             responseBuilder
               .withStatus(HttpStatus.OK.value())
               .withBody(getJsonString(lastApprovedDatesList))
+          },
+        ),
+    )
+  }
+
+  fun stubGetSessionSchedulesWithDateExclusions(
+    prisonCode: String,
+    sessionSchedulesWithDateExclusions: List<SessionScheduleWithDateExclusionsDto>?,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val responseBuilder = createJsonResponseBuilder()
+    stubFor(
+      get("/prisons/$prisonCode/config/session-templates/exclude-dates/future")
+        .willReturn(
+          if (sessionSchedulesWithDateExclusions == null) {
+            responseBuilder
+              .withStatus(httpStatus.value())
+          } else {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(sessionSchedulesWithDateExclusions))
           },
         ),
     )

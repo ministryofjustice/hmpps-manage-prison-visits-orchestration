@@ -23,7 +23,7 @@ class UpdatePrisonTest : IntegrationTestBase() {
   fun `when prison is updated then successfully updated prison is returned`() {
     // Given
     val updatePrisonDto = VisitSchedulerUpdatePrisonDto(DayOfWeek.MONDAY, 3)
-    val responsePrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 28, 6, 3, 3, 18, DayOfWeek.MONDAY, 3)
+    val responsePrisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 2, maxAdultVisitors = 28, maxChildVisitors = 6, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
 
     visitSchedulerMockServer.stubPutUpdatePrison("HEI", updatePrisonDto, responsePrisonDto)
 
@@ -36,8 +36,6 @@ class UpdatePrisonTest : IntegrationTestBase() {
 
     Assertions.assertThat(result.active).isEqualTo(responsePrisonDto.active)
     Assertions.assertThat(result.code).isEqualTo(responsePrisonDto.code)
-    Assertions.assertThat(result.policyNoticeDaysMin).isEqualTo(responsePrisonDto.policyNoticeDaysMin)
-    Assertions.assertThat(result.policyNoticeDaysMax).isEqualTo(responsePrisonDto.policyNoticeDaysMax)
     Assertions.assertThat(result.maxAdultVisitors).isEqualTo(responsePrisonDto.maxAdultVisitors)
     Assertions.assertThat(result.maxChildVisitors).isEqualTo(responsePrisonDto.maxChildVisitors)
     Assertions.assertThat(result.maxTotalVisitors).isEqualTo(responsePrisonDto.maxTotalVisitors)

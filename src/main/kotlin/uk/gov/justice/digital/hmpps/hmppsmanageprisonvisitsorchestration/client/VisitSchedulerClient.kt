@@ -29,6 +29,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.RejectVisitRequestBodyDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleWithDateExclusionsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.UpdateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
@@ -49,6 +50,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerAlertsAddedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerContactRestrictionUpsertedNotificationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerMergedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReceivedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerRestrictionChangeNotificationDto
@@ -78,6 +80,7 @@ const val VISIT_NOTIFICATION_NON_ASSOCIATION_CHANGE_PATH: String = "$VISIT_NOTIF
 
 const val VISIT_NOTIFICATION_PRISONER_RECEIVED_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/received"
 const val VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/released"
+const val VISIT_NOTIFICATION_PRISONER_MERGED_PATH: String = "$VISIT_CONTROLLER_PATH/prisoner/merge"
 const val VISIT_NOTIFICATION_PRISONER_RESTRICTION_CHANGE_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/restriction/changed"
 const val VISIT_NOTIFICATION_PRISONER_CONTACT_RESTRICTION_UPSERTED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/prisoner/contact/restriction/upserted"
 const val VISIT_NOTIFICATION_CONTACT_RESTRICTION_UPSERTED_PATH: String = "$VISIT_NOTIFICATION_CONTROLLER_PATH/contact/restriction/upserted"
@@ -408,6 +411,16 @@ class VisitSchedulerClient(
       .block(apiTimeout)
   }
 
+  fun processPrisonerMerged(sendDto: PrisonerMergedNotificationDto) {
+    webClient.post()
+      .uri(VISIT_NOTIFICATION_PRISONER_MERGED_PATH)
+      .body(BodyInserters.fromValue(sendDto))
+      .retrieve()
+      .toBodilessEntity()
+      .doOnError { e -> LOG.error("Could not process prisoner merged event :", e) }
+      .block(apiTimeout)
+  }
+
   fun processPrisonerRestrictionChange(sendDto: PrisonerRestrictionChangeNotificationDto) {
     webClient.post()
       .uri(VISIT_NOTIFICATION_PRISONER_RESTRICTION_CHANGE_PATH)
@@ -632,19 +645,24 @@ class VisitSchedulerClient(
     .bodyToMono<List<LocalDate>>().block(apiTimeout)
 
   fun getSessionTemplateExcludeDates(sessionTemplateReference: String): List<ExcludeDateDto>? = webClient.get()
-    .uri("/admin/session-templates/template/$sessionTemplateReference/exclude-date")
+    .uri("/session-templates/template/$sessionTemplateReference/exclude-date")
     .retrieve()
     .bodyToMono<List<ExcludeDateDto>>().block(apiTimeout)
 
+  fun getFutureSessionTemplateExclusions(prisonCode: String): List<SessionScheduleWithDateExclusionsDto>? = webClient.get()
+    .uri("/prisons/$prisonCode/config/session-templates/exclude-dates/future")
+    .retrieve()
+    .bodyToMono<List<SessionScheduleWithDateExclusionsDto>>().block(apiTimeout)
+
   fun addSessionTemplateExcludeDate(sessionTemplateReference: String, sessionExcludeDate: ExcludeDateDto): List<LocalDate>? = webClient.put()
-    .uri("/admin/session-templates/template/$sessionTemplateReference/exclude-date/add")
+    .uri("/session-templates/$sessionTemplateReference/exclude-date/add")
     .body(BodyInserters.fromValue(sessionExcludeDate))
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono<List<LocalDate>>().block(apiTimeout)
 
   fun removeSessionTemplateExcludeDate(sessionTemplateReference: String, sessionExcludeDate: ExcludeDateDto): List<LocalDate>? = webClient.put()
-    .uri("/admin/session-templates/template/$sessionTemplateReference/exclude-date/remove")
+    .uri("/session-templates/$sessionTemplateReference/exclude-date/remove")
     .body(BodyInserters.fromValue(sessionExcludeDate))
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()

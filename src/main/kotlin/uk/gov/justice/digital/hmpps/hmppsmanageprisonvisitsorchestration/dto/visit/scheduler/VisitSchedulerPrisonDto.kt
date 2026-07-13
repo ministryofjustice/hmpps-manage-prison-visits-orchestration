@@ -13,6 +13,7 @@ data class VisitSchedulerPrisonDto(
   @param:Schema(description = "is prison active", example = "true", required = true)
   val active: Boolean = false,
 
+  // TODO - remove this once we move to client booking windows
   @param:Schema(description = "minimum number of days notice from the current date to booked a visit", example = "2", required = true)
   val policyNoticeDaysMin: Int,
 

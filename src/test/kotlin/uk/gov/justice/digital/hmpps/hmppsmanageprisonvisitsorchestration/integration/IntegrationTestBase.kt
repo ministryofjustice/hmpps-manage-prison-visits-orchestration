@@ -43,9 +43,15 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.IncentiveLevel
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionDateRangeDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTimeSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitExternalSystemDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSubStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
@@ -82,8 +88,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.WhereaboutsApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AppointmentsService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonerProfileService
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.util.*
 import java.util.concurrent.ThreadLocalRandom
 import java.util.stream.Collectors
@@ -935,6 +943,37 @@ abstract class IntegrationTestBase {
 
   protected fun generateRandomUUID(length: Int = 8): String = UUID.randomUUID().toString().substring(0, length)
 
+  protected fun createVisitSchedulerPrisonDto(
+    prisonCode: String,
+    active: Boolean,
+    maxTotalVisitors: Int,
+    maxAdultVisitors: Int,
+    maxChildVisitors: Int,
+    adultAgeYears: Int,
+    policyNoticeDaysMin: Int,
+    policyNoticeDaysMax: Int,
+    weekStartDay: DayOfWeek,
+    remandVisitLimitPerWeek: Int,
+  ): VisitSchedulerPrisonDto {
+    val clients = listOf(
+      PrisonUserClientDto(STAFF, policyNoticeDaysMin = policyNoticeDaysMin, policyNoticeDaysMax = policyNoticeDaysMax, active = true),
+      PrisonUserClientDto(PUBLIC, policyNoticeDaysMin = policyNoticeDaysMin, policyNoticeDaysMax = policyNoticeDaysMax, active = true),
+    )
+    return VisitSchedulerPrisonDto(
+      code = prisonCode,
+      active = active,
+      maxTotalVisitors = maxTotalVisitors,
+      maxAdultVisitors = maxAdultVisitors,
+      maxChildVisitors = maxChildVisitors,
+      adultAgeYears = adultAgeYears,
+      clients = clients,
+      weekStartDay = weekStartDay,
+      remandVisitLimitPerWeek = remandVisitLimitPerWeek,
+      policyNoticeDaysMin = policyNoticeDaysMin,
+      policyNoticeDaysMax = policyNoticeDaysMax,
+    )
+  }
+
   protected fun createCurrentIncentive(): CurrentIncentive {
     val incentiveLevel = IncentiveLevel("S", "Standard")
     return CurrentIncentive(incentiveLevel, LocalDateTime.now())
@@ -944,4 +983,40 @@ abstract class IntegrationTestBase {
     prisonerId: String,
     category: String? = null,
   ): InmateDetailDto = InmateDetailDto(offenderNo = prisonerId, category = category)
+
+  protected fun createSessionScheduleDto(
+    reference: String,
+    startTime: LocalTime,
+    endTime: LocalTime,
+    sessionCapacityDto: SessionCapacityDto = SessionCapacityDto(2, 30),
+    visitType: VisitType = VisitType.SOCIAL,
+    areLocationGroupsInclusive: Boolean,
+    areCategoryGroupsInclusive: Boolean,
+    areIncentiveGroupsInclusive: Boolean,
+    weeklyFrequency: Int = 1,
+    validFromDate: LocalDate,
+    validToDate: LocalDate? = null,
+    visitRoom: String,
+    prisonerLocationGroupNames: List<String> = mutableListOf(),
+    prisonerCategoryGroupNames: List<String> = mutableListOf(),
+    prisonerIncentiveLevelGroupNames: List<String> = mutableListOf(),
+    visitOrderRestriction: SessionTemplateVisitOrderRestrictionType = SessionTemplateVisitOrderRestrictionType.VO_PVO,
+    isSessionExcluded: Boolean = false,
+  ): SessionScheduleDto = SessionScheduleDto(
+    sessionTemplateReference = reference,
+    sessionDateRange = SessionDateRangeDto(validFromDate, validToDate),
+    sessionTimeSlot = SessionTimeSlotDto(startTime = startTime, endTime = endTime),
+    capacity = sessionCapacityDto,
+    visitType = visitType,
+    areLocationGroupsInclusive = areLocationGroupsInclusive,
+    weeklyFrequency = weeklyFrequency,
+    prisonerLocationGroupNames = prisonerLocationGroupNames,
+    areCategoryGroupsInclusive = areCategoryGroupsInclusive,
+    prisonerCategoryGroupNames = prisonerCategoryGroupNames,
+    areIncentiveGroupsInclusive = areIncentiveGroupsInclusive,
+    prisonerIncentiveLevelGroupNames = prisonerIncentiveLevelGroupNames,
+    visitRoom = visitRoom,
+    visitOrderRestriction = visitOrderRestriction,
+    isSessionExcluded = isSessionExcluded,
+  )
 }

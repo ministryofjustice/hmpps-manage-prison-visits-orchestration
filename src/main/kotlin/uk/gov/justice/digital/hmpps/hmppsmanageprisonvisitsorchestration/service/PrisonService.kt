@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.IsExcludeDateDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
 import java.time.LocalDate
 
@@ -53,14 +54,9 @@ class PrisonService(
     return supportedPrisons.sortedBy { it.prisonName.uppercase() }
   }
 
-  fun getFutureExcludeDatesForPrison(prisonCode: String): List<ExcludeDateDto> {
+  fun getFutureExcludeDatesForPrison(prisonCode: String, withUsernames: Boolean = true): List<ExcludeDateDto> {
     val excludeDates = getExcludeDatesForPrison(prisonCode)
-    return excludeDatesService.getFutureExcludeDates(excludeDates)
-  }
-
-  fun getPastExcludeDatesForPrison(prisonCode: String): List<ExcludeDateDto> {
-    val excludeDates = getExcludeDatesForPrison(prisonCode)
-    return excludeDatesService.getPastExcludeDates(excludeDates)
+    return excludeDatesService.getFutureExcludeDates(excludeDates, withUsernames)
   }
 
   fun isDateExcludedForPrisonVisits(prisonCode: String, date: LocalDate): IsExcludeDateDto {
@@ -79,12 +75,23 @@ class PrisonService(
     prisonCode: String,
     fromDateOverride: Int? = null,
     toDateOverride: Int? = null,
+    userType: UserType,
   ): DateRange {
     val prison = visitSchedulerClient.getPrison(prisonCode)
-    return dateUtils.getToDaysDateRange(prison = prison, minOverride = fromDateOverride, maxOverride = toDateOverride)
+    val client =
+      prison.clients.firstOrNull { it.userType == userType } ?: run {
+        val message = "No client found for prison $prisonCode and user type $userType"
+        throw NotFoundException(message, IllegalStateException(message))
+      }
+    return dateUtils.getToDaysDateRange(client = client, minOverride = fromDateOverride, maxOverride = toDateOverride)
   }
 
   fun updatePrison(prisonCode: String, updatePrisonDto: VisitSchedulerUpdatePrisonDto): VisitSchedulerPrisonDto = visitSchedulerClient.updatePrison(prisonCode, updatePrisonDto)
+
+  fun getPastExcludeDatesForPrison(prisonCode: String): List<ExcludeDateDto> {
+    val excludeDates = getExcludeDatesForPrison(prisonCode)
+    return excludeDatesService.getPastExcludeDates(excludeDates)
+  }
 
   private fun getExcludeDatesForPrison(prisonCode: String): List<ExcludeDateDto> = visitSchedulerClient.getPrisonExcludeDates(prisonCode) ?: emptyList()
 }
