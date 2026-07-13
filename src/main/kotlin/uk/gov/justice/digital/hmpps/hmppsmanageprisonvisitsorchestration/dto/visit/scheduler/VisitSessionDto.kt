@@ -72,7 +72,6 @@ data class VisitSessionDto(
   @field:NotNull
   val endTimestamp: LocalDateTime,
 
-  // TODO - change back to val once we fully integrate the Calendar
   @param:Schema(description = "Session conflicts", required = false)
-  var sessionConflicts: List<SessionConflictDto> = listOf(),
+  val sessionConflicts: List<SessionConflictDto> = listOf(),
 )

@@ -334,10 +334,10 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
   @Test
   fun `when exclude session conflicts are included on request then the session conflicts are removed from the response`() {
     // Given
-    // session has SESSION_DATE_BLOCKED conflict
-    val excludeSessionConflicts = listOf(SessionConflict.SESSION_DATE_BLOCKED)
+    // session has REMAND_VISITS_LIMIT_REACHED conflict and we want it excluded
+    val excludeSessionConflicts = listOf(SessionConflict.REMAND_VISITS_LIMIT_REACHED)
     val sessionConflictDate = today.plusDays(3)
-    val visitSessionDto1 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime), sessionConflicts = setOf(SessionConflict.SESSION_DATE_BLOCKED))
+    val visitSessionDto1 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime), sessionConflicts = setOf(SessionConflict.REMAND_VISITS_LIMIT_REACHED))
 
     visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1), userType = STAFF)
 
