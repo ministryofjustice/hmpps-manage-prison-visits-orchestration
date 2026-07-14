@@ -40,7 +40,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     prisonerId: String,
     min: Int?,
     username: String?,
-    excludeSessionConflicts: List<SessionConflict>? = null,
+    includedSessionConflicts: List<SessionConflict>? = null,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     val uri = "/visit-sessions-and-schedule"
@@ -51,8 +51,8 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
       username?.let {
         queryParams.add("username=$username")
       }
-      excludeSessionConflicts?.let {
-        queryParams.add("excludeSessionConflicts=${excludeSessionConflicts.joinToString(",")}")
+      includedSessionConflicts?.let {
+        queryParams.add("includedSessionConflicts=${includedSessionConflicts.joinToString(",")}")
       }
     }.joinToString("&")
 
@@ -334,19 +334,19 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when exclude session conflicts are included on request then the session conflicts are removed from the response`() {
+  fun `when include session conflicts are included on request then the session conflicts are removed from the response`() {
     // Given
-    // session has REMAND_VISITS_LIMIT_REACHED conflict and we want it excluded
-    val excludeSessionConflicts = listOf(SessionConflict.REMAND_VISITS_LIMIT_REACHED)
+    // session has REMAND_VISITS_LIMIT_REACHED and DOUBLE_BOOKING_OR_RESERVATION conflict but we only want DOUBLE_BOOKING_OR_RESERVATION to be included
+    val includeSessionConflicts = listOf(SessionConflict.DOUBLE_BOOKING_OR_RESERVATION)
     val sessionConflictDate = today.plusDays(3)
-    val visitSessionDto1 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime), sessionConflicts = setOf(SessionConflict.REMAND_VISITS_LIMIT_REACHED))
+    val visitSessionDto1 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime), sessionConflicts = setOf(SessionConflict.REMAND_VISITS_LIMIT_REACHED, SessionConflict.DOUBLE_BOOKING_OR_RESERVATION))
 
     visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1), userType = STAFF)
 
     whereaboutsApiMockServer.stubGetEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
 
     // When
-    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, excludeSessionConflicts, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, includeSessionConflicts, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -355,7 +355,8 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule.size).isEqualTo(13)
     val visitSessions = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == sessionConflictDate }.visitSessions
     assertThat(visitSessions.size).isEqualTo(1)
-    assertThat(visitSessions[0].sessionConflicts).isEmpty()
+    assertThat(visitSessions[0].sessionConflicts).hasSize(1)
+    assertThat(visitSessions[0].sessionConflicts.map { it.sessionConflict }).containsOnly(SessionConflict.DOUBLE_BOOKING_OR_RESERVATION)
 
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
     verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))

@@ -85,7 +85,7 @@ class VisitSchedulerSessionsService(
     prisonerId: String,
     min: Int?,
     username: String?,
-    excludeSessionConflicts: List<SessionConflict>?,
+    includedSessionConflicts: List<SessionConflict>?,
   ): VisitSessionsAndScheduleDto {
     var scheduledEventsAvailable = true
     val dateRangeForPrison = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, userType = UserType.STAFF)
@@ -109,10 +109,9 @@ class VisitSchedulerSessionsService(
 
     val sessionsAndSchedules = getSessionsAndScheduleDataForDates(sessionAndScheduleDateRange, dateRangeForPrison, visitSessions, prisonerSchedules)
 
-    // TODO reconsider this once the frontend fully integrates with this version and the excludeSessionConflicts parameter is not needed
-    // finaly filter out any excluded session conflicts from the list of conflicts returned
-    if (!excludeSessionConflicts.isNullOrEmpty()) {
-      filterOutExcludedSessionConflicts(sessionsAndSchedules, excludeSessionConflicts.toSet())
+    // finally filter out to include only included session conflicts from the list of conflicts returned
+    if (!includedSessionConflicts.isNullOrEmpty()) {
+      filterOutNonIncludedSessionConflicts(sessionsAndSchedules, includedSessionConflicts.toSet())
     }
 
     return VisitSessionsAndScheduleDto(scheduledEventsAvailable, sessionsAndSchedules)
@@ -554,12 +553,12 @@ class VisitSchedulerSessionsService(
       SessionDateConflictDto(sessionDateConflict, additionalAttributes)
     }
 
-  private fun filterOutExcludedSessionConflicts(sessionsAndSchedules: List<SessionsAndScheduleDto>, excludeSessionConflicts: Set<SessionConflict>) {
-    if (excludeSessionConflicts.isNotEmpty()) {
+  private fun filterOutNonIncludedSessionConflicts(sessionsAndSchedules: List<SessionsAndScheduleDto>, includedSessionConflicts: Set<SessionConflict>) {
+    if (includedSessionConflicts.isNotEmpty()) {
       sessionsAndSchedules.forEach { sessionsAndSchedule ->
         if (sessionsAndSchedule.visitSessions.isNotEmpty()) {
           sessionsAndSchedule.visitSessions.forEach { visitSession ->
-            visitSession.sessionConflicts = visitSession.sessionConflicts.filterNot { it.sessionConflict in excludeSessionConflicts }
+            visitSession.sessionConflicts = visitSession.sessionConflicts.filter { it.sessionConflict in includedSessionConflicts }
           }
         }
       }

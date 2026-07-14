@@ -150,13 +150,12 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       example = "user-1",
     )
     username: String? = null,
-    // TODO - reconsider this parameter once we fully integrate the Calendar and all session conflicts are supported
-    @RequestParam(value = "excludeSessionConflicts", required = false)
+    @RequestParam(value = "includedSessionConflicts", required = false)
     @Parameter(
-      description = "Parameter to exclude one or more session conflict(s) from a session's session conflict list.",
+      description = "Parameter to include only supported session conflict from a session's session conflict list, returns all session conflicts if null.",
     )
-    excludeSessionConflicts: List<SessionConflict>? = null,
-  ): VisitSessionsAndScheduleDto = visitSchedulerSessionsService.getVisitSessionsAndSchedule(prisonCode, prisonerId, min, username, excludeSessionConflicts)
+    includedSessionConflicts: List<SessionConflict>? = null,
+  ): VisitSessionsAndScheduleDto = visitSchedulerSessionsService.getVisitSessionsAndSchedule(prisonCode, prisonerId, min, username, includedSessionConflicts)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(GET_VISIT_SESSIONS_AVAILABLE)
