@@ -18,6 +18,9 @@ data class BookerPrisonerVisitorDetailedInfoDto(
   @param:Schema(description = "Date of birth", example = "2000-01-31", required = false)
   val dateOfBirth: LocalDate?,
 
+  @param:Schema(description = "Relationship ID", example = "2000-01-31", required = false)
+  val relationshipId: Long?,
+
   @param:Schema(description = "Description of relationship to Prisoner", example = "Mother", required = false)
   val relationshipDescription: String?,
 ) {
@@ -26,6 +29,7 @@ data class BookerPrisonerVisitorDetailedInfoDto(
     firstName = contact.firstName,
     lastName = contact.lastName,
     dateOfBirth = contact.dateOfBirth,
+    relationshipId = contact.relationshipId,
     relationshipDescription = contact.relationshipDescription,
   )
 }
