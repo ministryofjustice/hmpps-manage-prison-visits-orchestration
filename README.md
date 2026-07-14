@@ -25,10 +25,9 @@ Run:
 You have 2 options to run the visit-orchestration service. Either connect to the dev environment for all services (except local stack) 
 or connect to dev environment and run a local version of the visit-scheduler.
 
-First, create a .env file at the project root and add 2 secrets to it
-```
-SYSTEM_CLIENT_ID='get from kubernetes secrets for dev namespace'
-SYSTEM_CLIENT_SECRET='get from kubernetes secrets for dev namespace'
+First, copy the [example.env file](./example.env) at the project root and [add 2 secrets to it](.env).
+```bash
+cp example.env .env
 ```
 
 Then create a Spring Boot run configuration with active profile of 'dev' and set an environments file to the
