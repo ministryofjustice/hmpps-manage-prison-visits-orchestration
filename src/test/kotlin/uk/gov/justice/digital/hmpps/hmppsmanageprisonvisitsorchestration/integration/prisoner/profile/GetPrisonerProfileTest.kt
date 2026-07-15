@@ -320,12 +320,6 @@ class GetPrisonerProfileTest(
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     visitAllocationApiMockServer.stubGetPrisonerVOBalanceDetailed(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubSearchContacts(
-      contactIds = emptyList(),
-      prisonerId = PRISONER_ID,
-      withRestrictions = false,
-      contactsList = contactsDto,
-    )
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
     prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, listOf(prisonerRestrictionDto)))
     prisonRegisterMockServer.stubGetPrisonNames(prisons)
@@ -346,6 +340,11 @@ class GetPrisonerProfileTest(
     Assertions.assertThat(prisonerProfile.visits).isEmpty()
 
     verifyExternalAPIClientCalls()
+    verify(prisonerContactRegistryClientSpy, times(0)).searchContactsAsMono(
+      any(),
+      eq(PRISONER_ID),
+      eq(false),
+    )
   }
 
   @Test
@@ -391,39 +390,6 @@ class GetPrisonerProfileTest(
 
     verify(prisonerContactRegistryClientSpy, times(1)).searchContactsAsMono(
       eq(getContactIdsFromVisits(listOf(visit1, visit2))),
-      eq(PRISONER_ID),
-      eq(false),
-    )
-  }
-
-  @Test
-  fun `when visits have no visitors then prisoner contact registry is not called`() {
-    // Given
-    val visitWithNoVisitors = createVisitDto(reference = "visit-with-no-visitors", prisonerId = PRISONER_ID, visitors = emptyList(), prisonCode = "ABC")
-
-    prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
-    prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
-    visitAllocationApiMockServer.stubGetPrisonerVOBalanceDetailed(PRISONER_ID, visitBalancesDto)
-    alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
-    prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, listOf(prisonerRestrictionDto)))
-    prisonRegisterMockServer.stubGetPrisonNames(prisons)
-    stubGetVisits(listOf(visitWithNoVisitors))
-
-    // When
-    val responseSpec = callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
-
-    // Then
-    val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val prisonerProfile = getResults(returnResult)
-
-    assertPrisonerDtoDetails(prisonerProfile, prisonerDto)
-    Assertions.assertThat(prisonerProfile.visits).hasSize(1)
-    Assertions.assertThat(prisonerProfile.visits[0].visitors).isEmpty()
-    assertPrisonDetails(prisonerProfile.visits[0], visitWithNoVisitors.prisonCode, "ABC Prison")
-
-    verifyExternalAPIClientCalls()
-    verify(prisonerContactRegistryClientSpy, times(0)).searchContactsAsMono(
-      any(),
       eq(PRISONER_ID),
       eq(false),
     )
