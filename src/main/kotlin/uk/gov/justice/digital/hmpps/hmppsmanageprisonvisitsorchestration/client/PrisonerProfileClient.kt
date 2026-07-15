@@ -95,6 +95,11 @@ class PrisonerProfileClient(
         .map { it.nomisPersonId }
         .distinct()
 
+      if (contactIds.isEmpty()) {
+        LOG.info("No visitors found on visits list for prisoner {} on prisoner-profile, skipping visitor details retrieval", prisonerProfile.prisonerId)
+        return null
+      }
+
       val contacts = prisonerContactRegistryClient.searchContacts(
         contactIds = contactIds,
         prisonerId = prisonerProfile.prisonerId,
