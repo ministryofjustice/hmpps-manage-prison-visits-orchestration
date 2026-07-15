@@ -320,12 +320,6 @@ class GetPrisonerProfileTest(
     prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
     prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
     visitAllocationApiMockServer.stubGetPrisonerVOBalanceDetailed(PRISONER_ID, visitBalancesDto)
-    prisonerContactRegistryMockServer.stubSearchContacts(
-      contactIds = emptyList(),
-      prisonerId = PRISONER_ID,
-      withRestrictions = false,
-      contactsList = contactsDto,
-    )
     alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, listOf(alertResponseDto))
     prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, listOf(prisonerRestrictionDto)))
     prisonRegisterMockServer.stubGetPrisonNames(prisons)
@@ -346,6 +340,11 @@ class GetPrisonerProfileTest(
     Assertions.assertThat(prisonerProfile.visits).isEmpty()
 
     verifyExternalAPIClientCalls()
+    verify(prisonerContactRegistryClientSpy, times(0)).searchContactsAsMono(
+      any(),
+      eq(PRISONER_ID),
+      eq(false),
+    )
   }
 
   @Test
