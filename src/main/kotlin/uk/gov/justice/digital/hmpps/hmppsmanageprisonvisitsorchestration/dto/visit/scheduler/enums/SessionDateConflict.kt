@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums
 
 @Suppress("unused")
-enum class SessionDateConflict(val includeSessions: Boolean) {
-  NON_ASSOCIATION(includeSessions = false),
-  PRISON_DATE_BLOCKED(includeSessions = false),
-  OUTSIDE_BOOKING_WINDOW(includeSessions = false),
-  REMAND_VISITS_LIMIT_REACHED(includeSessions = true),
+enum class SessionDateConflict {
+  NON_ASSOCIATION,
+  PRISON_DATE_BLOCKED,
+  OUTSIDE_BOOKING_WINDOW,
+  REMAND_VISITS_LIMIT_REACHED,
   ;
 
   companion object {

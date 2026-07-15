@@ -487,7 +487,9 @@ class VisitSchedulerSessionsService(
     val dateRangeIterator = DateRangeIterator(sessionAndScheduleDateRange)
     while (dateRangeIterator.hasNext()) {
       val sessionDate = dateRangeIterator.next()
-      sessionsAndSchedule.add(getSessionsAndScheduleDataForDate(sessionDate, prisonDateRange, visitSessions, prisonerSchedules))
+      sessionsAndSchedule.add(
+        getSessionsAndScheduleDataForDate(sessionDate, prisonDateRange, visitSessions, prisonerSchedules),
+      )
     }
 
     return sessionsAndSchedule.toList()
@@ -501,7 +503,7 @@ class VisitSchedulerSessionsService(
   ): SessionsAndScheduleDto {
     LOG.debug("getSessionsAndScheduleDataForDate: {}", sessionDate)
 
-    var visitSessionsForDate = visitSessions?.filter { it.startTimestamp.toLocalDate() == sessionDate }?.map { VisitSessionV2Dto(it) } ?: emptyList()
+    val visitSessionsForDate = visitSessions?.filter { it.startTimestamp.toLocalDate() == sessionDate }?.map { VisitSessionV2Dto(it) } ?: emptyList()
     val sessionDateConflicts: MutableList<SessionDateConflictDto> = mutableListOf()
 
     // check if the date range is outside the booking window
@@ -512,21 +514,6 @@ class VisitSchedulerSessionsService(
       if (visitSessionsForDate.isNotEmpty()) {
         sessionDateConflicts.addAll(getSessionDateConflicts(visitSessionsForDate))
       }
-    }
-
-    // finally, filter out any visit sessions that have includeSessions or includeSession set to false
-    visitSessionsForDate = if (visitSessionsForDate.isNotEmpty()) {
-      // if includeSessions is false, then do not return any sessions
-      if (sessionDateConflicts.isNotEmpty() && sessionDateConflicts.any { !it.sessionDateConflict.includeSessions }) {
-        emptyList()
-      } else {
-        visitSessionsForDate.filterNot {
-          // filter out any sessions where the includeSession is false, for example - SESSION_DATE_BLOCKED
-          it.sessionConflicts.any { sessionConflictDto -> !sessionConflictDto.sessionConflict.includeSession }
-        }
-      }
-    } else {
-      emptyList()
     }
 
     val prisonerScheduleForDate = if (visitSessionsForDate.isEmpty()) {
@@ -557,9 +544,14 @@ class VisitSchedulerSessionsService(
     if (includedSessionConflicts.isNotEmpty()) {
       sessionsAndSchedules.forEach { sessionsAndSchedule ->
         if (sessionsAndSchedule.visitSessions.isNotEmpty()) {
-          sessionsAndSchedule.visitSessions.forEach { visitSession ->
-            visitSession.sessionConflicts = visitSession.sessionConflicts.filter { it.sessionConflict in includedSessionConflicts }
-          }
+          // include only sessions that have no conflicts or only included conflicts
+          val includeSessions = sessionsAndSchedule.visitSessions.filter { it.sessionConflicts.isEmpty() } + sessionsAndSchedule.visitSessions.filterNot { it.sessionConflicts.isEmpty() || it.sessionConflicts.any { it.sessionConflict !in includedSessionConflicts } }
+          sessionsAndSchedule.visitSessions = includeSessions
+        }
+
+        // return an empty schedule if sessions are empty
+        if (sessionsAndSchedule.visitSessions.isEmpty()) {
+          sessionsAndSchedule.scheduledEvents = emptyList()
         }
       }
     }

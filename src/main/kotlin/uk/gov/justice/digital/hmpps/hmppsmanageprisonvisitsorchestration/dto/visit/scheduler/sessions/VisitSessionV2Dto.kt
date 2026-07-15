@@ -39,9 +39,8 @@ data class VisitSessionV2Dto(
   @param:Schema(description = "The end time of the visit session", example = "11:30", required = true)
   val endTime: LocalTime,
 
-  // TODO - change back to val once we fully integrate the Calendar
   @param:Schema(description = "Session conflicts", required = false)
-  var sessionConflicts: List<SessionConflictDto> = listOf(),
+  val sessionConflicts: List<SessionConflictDto> = listOf(),
 
   @param:Schema(description = "Session vo restriction", required = true)
   val visitOrderRestriction: SessionTemplateVisitOrderRestrictionType,
