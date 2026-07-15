@@ -339,10 +339,12 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
   @Test
   fun `when include session conflicts are included on request then the session conflicts are included on the response`() {
     // Given
-    // session has REMAND_VISITS_LIMIT_REACHED and DOUBLE_BOOKING_OR_RESERVATION conflict but we only want DOUBLE_BOOKING_OR_RESERVATION to be included
     val includeSessionConflicts = listOf(SessionConflict.DOUBLE_BOOKING_OR_RESERVATION, SessionConflict.REMAND_VISITS_LIMIT_REACHED)
     val sessionConflictDate = today.plusDays(3)
+
+    // session has REMAND_VISITS_LIMIT_REACHED and DOUBLE_BOOKING_OR_RESERVATION conflicts and both are requested
     val visitSessionDto1 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime), sessionConflicts = setOf(SessionConflict.REMAND_VISITS_LIMIT_REACHED, SessionConflict.DOUBLE_BOOKING_OR_RESERVATION))
+    // this session should not be returned as it has a SESSION_DATE_BLOCKED conflict
     createVisitSessionDto(prisonCode, "2", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime), sessionConflicts = setOf(SessionConflict.SESSION_DATE_BLOCKED, SessionConflict.DOUBLE_BOOKING_OR_RESERVATION))
 
     visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1), userType = STAFF)
