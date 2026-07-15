@@ -85,7 +85,7 @@ class VisitSchedulerSessionsService(
     prisonerId: String,
     min: Int?,
     username: String?,
-    excludeSessionConflicts: List<SessionConflict>?,
+    includedSessionConflicts: List<SessionConflict>?,
   ): VisitSessionsAndScheduleDto {
     var scheduledEventsAvailable = true
     val dateRangeForPrison = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, userType = UserType.STAFF)
@@ -109,10 +109,9 @@ class VisitSchedulerSessionsService(
 
     val sessionsAndSchedules = getSessionsAndScheduleDataForDates(sessionAndScheduleDateRange, dateRangeForPrison, visitSessions, prisonerSchedules)
 
-    // TODO reconsider this once the frontend fully integrates with this version and the excludeSessionConflicts parameter is not needed
-    // finaly filter out any excluded session conflicts from the list of conflicts returned
-    if (!excludeSessionConflicts.isNullOrEmpty()) {
-      filterOutExcludedSessionConflicts(sessionsAndSchedules, excludeSessionConflicts.toSet())
+    // finally filter out to include only included session conflicts from the list of conflicts returned
+    if (!includedSessionConflicts.isNullOrEmpty()) {
+      filterOutNonIncludedSessionConflicts(sessionsAndSchedules, includedSessionConflicts.toSet())
     }
 
     return VisitSessionsAndScheduleDto(scheduledEventsAvailable, sessionsAndSchedules)
@@ -488,7 +487,9 @@ class VisitSchedulerSessionsService(
     val dateRangeIterator = DateRangeIterator(sessionAndScheduleDateRange)
     while (dateRangeIterator.hasNext()) {
       val sessionDate = dateRangeIterator.next()
-      sessionsAndSchedule.add(getSessionsAndScheduleDataForDate(sessionDate, prisonDateRange, visitSessions, prisonerSchedules))
+      sessionsAndSchedule.add(
+        getSessionsAndScheduleDataForDate(sessionDate, prisonDateRange, visitSessions, prisonerSchedules),
+      )
     }
 
     return sessionsAndSchedule.toList()
@@ -502,7 +503,7 @@ class VisitSchedulerSessionsService(
   ): SessionsAndScheduleDto {
     LOG.debug("getSessionsAndScheduleDataForDate: {}", sessionDate)
 
-    var visitSessionsForDate = visitSessions?.filter { it.startTimestamp.toLocalDate() == sessionDate }?.map { VisitSessionV2Dto(it) } ?: emptyList()
+    val visitSessionsForDate = visitSessions?.filter { it.startTimestamp.toLocalDate() == sessionDate }?.map { VisitSessionV2Dto(it) } ?: emptyList()
     val sessionDateConflicts: MutableList<SessionDateConflictDto> = mutableListOf()
 
     // check if the date range is outside the booking window
@@ -515,23 +516,8 @@ class VisitSchedulerSessionsService(
       }
     }
 
-    // finally, filter out any visit sessions that have includeSessions or includeSession set to false
-    visitSessionsForDate = if (visitSessionsForDate.isNotEmpty()) {
-      // if includeSessions is false, then do not return any sessions
-      if (sessionDateConflicts.isNotEmpty() && sessionDateConflicts.any { !it.sessionDateConflict.includeSessions }) {
-        emptyList()
-      } else {
-        visitSessionsForDate.filterNot {
-          // filter out any sessions where the includeSession is false, for example - SESSION_DATE_BLOCKED
-          it.sessionConflicts.any { sessionConflictDto -> !sessionConflictDto.sessionConflict.includeSession }
-        }
-      }
-    } else {
-      emptyList()
-    }
-
     val prisonerScheduleForDate = if (visitSessionsForDate.isEmpty()) {
-      // if there are session date conflicts with includeSessions false, then return an empty list of schedules
+      // No sessions for the date, so return an empty list of schedules
       emptyList()
     } else {
       prisonerSchedules.filter { it.eventDate == sessionDate }.map { PrisonerScheduledEventDto(it) }
@@ -554,13 +540,18 @@ class VisitSchedulerSessionsService(
       SessionDateConflictDto(sessionDateConflict, additionalAttributes)
     }
 
-  private fun filterOutExcludedSessionConflicts(sessionsAndSchedules: List<SessionsAndScheduleDto>, excludeSessionConflicts: Set<SessionConflict>) {
-    if (excludeSessionConflicts.isNotEmpty()) {
+  private fun filterOutNonIncludedSessionConflicts(sessionsAndSchedules: List<SessionsAndScheduleDto>, includedSessionConflicts: Set<SessionConflict>) {
+    if (includedSessionConflicts.isNotEmpty()) {
       sessionsAndSchedules.forEach { sessionsAndSchedule ->
         if (sessionsAndSchedule.visitSessions.isNotEmpty()) {
-          sessionsAndSchedule.visitSessions.forEach { visitSession ->
-            visitSession.sessionConflicts = visitSession.sessionConflicts.filterNot { it.sessionConflict in excludeSessionConflicts }
-          }
+          // include only sessions that have no conflicts or only included conflicts
+          val includeSessions = sessionsAndSchedule.visitSessions.filter { it.sessionConflicts.isEmpty() } + sessionsAndSchedule.visitSessions.filterNot { it.sessionConflicts.isEmpty() || it.sessionConflicts.any { it.sessionConflict !in includedSessionConflicts } }
+          sessionsAndSchedule.visitSessions = includeSessions
+        }
+
+        // return an empty schedule if sessions are empty
+        if (sessionsAndSchedule.visitSessions.isEmpty()) {
+          sessionsAndSchedule.scheduledEvents = emptyList()
         }
       }
     }

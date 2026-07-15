@@ -1,13 +1,13 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums
 
 @Suppress("unused")
-enum class SessionConflict(val includeSession: Boolean) {
-  NON_ASSOCIATION(false),
-  DOUBLE_BOOKING_OR_RESERVATION(true),
-  SESSION_DATE_BLOCKED(false),
-  PRISON_DATE_BLOCKED(false),
-  REMAND_VISITS_LIMIT_REACHED(true),
-  NO_VOS(true),
-  NO_PVOS(true),
-  NO_VO_OR_PVOS(true),
+enum class SessionConflict {
+  NON_ASSOCIATION,
+  DOUBLE_BOOKING_OR_RESERVATION,
+  SESSION_DATE_BLOCKED,
+  PRISON_DATE_BLOCKED,
+  REMAND_VISITS_LIMIT_REACHED,
+  NO_VOS,
+  NO_PVOS,
+  NO_VO_OR_PVOS,
 }

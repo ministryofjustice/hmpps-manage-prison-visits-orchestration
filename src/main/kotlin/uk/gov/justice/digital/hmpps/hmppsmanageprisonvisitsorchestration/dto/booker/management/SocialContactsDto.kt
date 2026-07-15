@@ -9,6 +9,9 @@ data class SocialContactsDto(
   @param:Schema(description = "Identifier for this contact (Person in NOMIS)", example = "5871791", required = true)
   val visitorId: Long,
 
+  @param:Schema(description = "Key of specific relationship", example = "1234567", required = true)
+  val relationshipId: Long,
+
   @param:Schema(description = "First name", example = "John", required = true)
   val firstName: String,
 
@@ -23,6 +26,7 @@ data class SocialContactsDto(
 ) {
   constructor(contact: PrisonerContactDto) : this(
     visitorId = contact.personId!!,
+    relationshipId = contact.relationshipId,
     firstName = contact.firstName,
     lastName = contact.lastName,
     dateOfBirth = contact.dateOfBirth,
