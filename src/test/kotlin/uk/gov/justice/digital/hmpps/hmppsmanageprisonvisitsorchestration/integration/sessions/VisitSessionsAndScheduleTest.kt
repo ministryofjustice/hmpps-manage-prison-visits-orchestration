@@ -371,6 +371,31 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `when included session conflicts filter out all sessions then date conflicts remain on the response`() {
+    // Given
+    val includeSessionConflicts = listOf(SessionConflict.DOUBLE_BOOKING_OR_RESERVATION)
+    val sessionConflictDate = today.plusDays(3)
+    val visitSessionDto = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime), sessionConflicts = setOf(SessionConflict.PRISON_DATE_BLOCKED))
+
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto), userType = STAFF)
+
+    whereaboutsApiMockServer.stubGetEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
+
+    // When
+    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, includeSessionConflicts, roleVSIPOrchestrationServiceHttpHeaders)
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val sessionsAndScheduleDto = getResults(returnResult)
+    val sessionsAndSchedule = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == sessionConflictDate }
+    assertThat(sessionsAndSchedule.visitSessions).isEmpty()
+    assertThat(sessionsAndSchedule.sessionDateConflicts.map { it.sessionDateConflict }).containsOnly(SessionDateConflict.PRISON_DATE_BLOCKED)
+
+    verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
+    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
+  }
+
+  @Test
   fun `when visit sessions returns NOT_FOUND a NOT_FOUND error is returned`() {
     // Given
     visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, null, userType = STAFF, httpStatus = HttpStatus.NOT_FOUND)
