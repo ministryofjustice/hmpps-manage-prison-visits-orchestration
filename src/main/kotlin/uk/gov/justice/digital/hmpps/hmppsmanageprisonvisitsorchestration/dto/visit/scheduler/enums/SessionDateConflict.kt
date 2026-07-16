@@ -17,12 +17,12 @@ enum class SessionDateConflict {
       SessionConflict.SESSION_DATE_BLOCKED -> null
       // as a DOUBLE_BOOKING_OR_RESERVATION conflict is specific to the session and does not affect the whole date, we set it to null
       SessionConflict.DOUBLE_BOOKING_OR_RESERVATION -> null
-      // as a NO_VOS conflict is specific to the session and does not affect the whole date, we set it to null
-      SessionConflict.NO_VOS -> null
-      // as a NO_PVOS conflict is specific to the session and does not affect the whole date, we set it to null
-      SessionConflict.NO_PVOS -> null
-      // as a NO_VO_OR_PVOS conflict is specific to the session and does not affect the whole date, we set it to null
-      SessionConflict.NO_VO_OR_PVOS -> null
+      // as a NO_VO_BALANCE conflict is specific to the session and does not affect the whole date, we set it to null
+      SessionConflict.NO_VO_BALANCE -> null
+      // as a NO_PVO_BALANCE conflict is specific to the session and does not affect the whole date, we set it to null
+      SessionConflict.NO_PVO_BALANCE -> null
+      // as a NO_VO_OR_PVO_BALANCE conflict is specific to the session and does not affect the whole date, we set it to null
+      SessionConflict.NO_VO_OR_PVO_BALANCE -> null
     }
   }
 }
