@@ -54,8 +54,20 @@ class PrisonServiceTest {
   }
 
   @Test
-  fun `getToDaysBookableDateRange throws IllegalStateException when requested and staff clients are not present`() {
+  fun `getToDaysBookableDateRange throws IllegalStateException when requested and staff clients are not present - PRISONER`() {
     val prisonerClient = prisonClient(UserType.PRISONER, policyNoticeDaysMin = 3, policyNoticeDaysMax = 21)
+    whenever(visitSchedulerClient.getPrison("MDI")).thenReturn(prison(clients = listOf(prisonerClient)))
+
+    val exception = assertThrows<IllegalStateException> {
+      prisonService.getToDaysBookableDateRange(prisonCode = "MDI", userType = UserType.PUBLIC)
+    }
+
+    assertThat(exception.message).isEqualTo("No client found for prison MDI and user type PUBLIC")
+  }
+
+  @Test
+  fun `getToDaysBookableDateRange throws IllegalStateException when requested and staff clients are not present - SYSTEM`() {
+    val prisonerClient = prisonClient(UserType.SYSTEM, policyNoticeDaysMin = 3, policyNoticeDaysMax = 21)
     whenever(visitSchedulerClient.getPrison("MDI")).thenReturn(prison(clients = listOf(prisonerClient)))
 
     val exception = assertThrows<IllegalStateException> {
