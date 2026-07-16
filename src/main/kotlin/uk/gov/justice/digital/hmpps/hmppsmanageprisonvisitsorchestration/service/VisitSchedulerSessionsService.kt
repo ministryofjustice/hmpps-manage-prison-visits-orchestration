@@ -545,7 +545,10 @@ class VisitSchedulerSessionsService(
       sessionsAndSchedules.forEach { sessionsAndSchedule ->
         if (sessionsAndSchedule.visitSessions.isNotEmpty()) {
           // include only sessions that have no conflicts or only included conflicts
-          val includeSessions = sessionsAndSchedule.visitSessions.filter { it.sessionConflicts.isEmpty() } + sessionsAndSchedule.visitSessions.filterNot { it.sessionConflicts.isEmpty() || it.sessionConflicts.any { it.sessionConflict !in includedSessionConflicts } }
+          val includeSessions = sessionsAndSchedule.visitSessions.filter { visitSession ->
+            visitSession.sessionConflicts.isEmpty() ||
+              visitSession.sessionConflicts.all { it.sessionConflict in includedSessionConflicts }
+          }
           sessionsAndSchedule.visitSessions = includeSessions
         }
 
