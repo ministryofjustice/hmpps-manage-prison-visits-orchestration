@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.IsExcludeDateDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
 import java.time.LocalDate
 
@@ -79,10 +78,14 @@ class PrisonService(
   ): DateRange {
     val prison = visitSchedulerClient.getPrison(prisonCode)
     val client =
-      prison.clients.firstOrNull { it.userType == userType } ?: run {
-        val message = "No client found for prison $prisonCode and user type $userType"
-        throw NotFoundException(message, IllegalStateException(message))
-      }
+      prison.clients.firstOrNull { it.userType == userType }
+        // PVB doesn't have a user client, default to STAFF if called and PUBLIC doesn't exist.
+        ?: prison.clients.firstOrNull { it.userType == UserType.STAFF }
+        ?: run {
+          // Throw a 500 if we reach here. As PUBLIC or STAFF must exist. (If PRISONER / SYSTEM is passed it's also invalid, so 500 is correct).
+          val message = "No client found for prison $prisonCode and user type $userType"
+          throw IllegalStateException(message)
+        }
     return dateUtils.getToDaysDateRange(client = client, minOverride = fromDateOverride, maxOverride = toDateOverride)
   }
 
