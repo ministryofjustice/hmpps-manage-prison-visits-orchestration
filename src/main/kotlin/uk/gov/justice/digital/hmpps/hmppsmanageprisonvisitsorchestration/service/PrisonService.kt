@@ -79,10 +79,12 @@ class PrisonService(
   ): DateRange {
     val prison = visitSchedulerClient.getPrison(prisonCode)
     val client =
-      prison.clients.firstOrNull { it.userType == userType } ?: run {
-        val message = "No client found for prison $prisonCode and user type $userType"
-        throw NotFoundException(message, IllegalStateException(message))
-      }
+      prison.clients.firstOrNull { it.userType == userType }
+        ?: prison.clients.firstOrNull { it.userType == UserType.STAFF }
+        ?: run {
+          val message = "No client found for prison $prisonCode and user type $userType"
+          throw NotFoundException(message, IllegalStateException(message))
+        }
     return dateUtils.getToDaysDateRange(client = client, minOverride = fromDateOverride, maxOverride = toDateOverride)
   }
 
