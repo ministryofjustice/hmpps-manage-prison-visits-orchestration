@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.IsExcludeDateDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
 import java.time.LocalDate
 
@@ -83,7 +82,7 @@ class PrisonService(
         ?: prison.clients.firstOrNull { it.userType == UserType.STAFF }
         ?: run {
           val message = "No client found for prison $prisonCode and user type $userType"
-          throw NotFoundException(message, IllegalStateException(message))
+          throw IllegalStateException(message)
         }
     return dateUtils.getToDaysDateRange(client = client, minOverride = fromDateOverride, maxOverride = toDateOverride)
   }

@@ -12,7 +12,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.CurrentDateUtils
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
 import java.time.DayOfWeek
@@ -55,11 +54,11 @@ class PrisonServiceTest {
   }
 
   @Test
-  fun `getToDaysBookableDateRange throws NotFoundException when requested and staff clients are not present`() {
+  fun `getToDaysBookableDateRange throws IllegalStateException when requested and staff clients are not present`() {
     val prisonerClient = prisonClient(UserType.PRISONER, policyNoticeDaysMin = 3, policyNoticeDaysMax = 21)
     whenever(visitSchedulerClient.getPrison("MDI")).thenReturn(prison(clients = listOf(prisonerClient)))
 
-    val exception = assertThrows<NotFoundException> {
+    val exception = assertThrows<IllegalStateException> {
       prisonService.getToDaysBookableDateRange(prisonCode = "MDI", userType = UserType.PUBLIC)
     }
 
