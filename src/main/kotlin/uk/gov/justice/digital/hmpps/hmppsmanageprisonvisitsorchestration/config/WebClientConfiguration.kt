@@ -121,7 +121,7 @@ class WebClientConfiguration(
   fun incentivesApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient = getWebClient(incentivesApiUrl, authorizedClientManager, builder)
 
   @Bean
-  fun govUKWebClient(): WebClient = WebClient.builder().unauthenticatedWebClient(govUKApiUrl, apiTimeout)
+  fun govUKWebClient(builder: WebClient.Builder): WebClient = builder.unauthenticatedWebClient(govUKApiUrl, apiTimeout)
 
   @Bean
   fun visitSchedulerHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(visitSchedulerBaseUrl, healthTimeout)
