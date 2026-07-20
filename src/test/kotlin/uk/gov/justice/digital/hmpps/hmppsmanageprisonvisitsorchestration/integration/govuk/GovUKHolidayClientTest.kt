@@ -9,6 +9,7 @@ import org.springframework.cache.CacheManager
 import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GovUKHolidayClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GovUKHolidayClient.Companion.HOLIDAYS_JSON
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.CacheNames
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidayEventByDivisionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidaysDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
@@ -22,7 +23,7 @@ class GovUKHolidayClientTest : IntegrationTestBase() {
 
   @BeforeEach
   fun clearBankHolidaysCache() {
-    cacheManager.getCache("bank-holidays")?.clear()
+    cacheManager.getCache(CacheNames.BANK_HOLIDAYS)?.clear()
   }
 
   @Test

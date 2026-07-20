@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.CacheNames
 
 /**
  * Scheduled task to evict cache to ensure cache is refreshed at regular intervals.
@@ -16,7 +17,7 @@ class ScheduledCacheEvictTask {
   }
 
   @Scheduled(cron = "\${cache.evict.bank-holidays.cron:0 0 0 */7 * ?}")
-  @CacheEvict(value = ["bank-holidays"], allEntries = true)
+  @CacheEvict(value = [CacheNames.BANK_HOLIDAYS], allEntries = true)
   fun evictBankHolidaysCache() {
     LOG.debug("Evicting bank holidays cache.")
   }

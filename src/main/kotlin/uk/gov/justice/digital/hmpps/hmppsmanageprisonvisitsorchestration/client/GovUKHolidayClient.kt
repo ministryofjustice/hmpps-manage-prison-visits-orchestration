@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.CacheNames
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidaysDto
 import java.time.Duration
 
@@ -22,7 +23,7 @@ class GovUKHolidayClient(
     const val HOLIDAYS_JSON = "/bank-holidays.json"
   }
 
-  @Cacheable("bank-holidays", unless = "#result == null")
+  @Cacheable(CacheNames.BANK_HOLIDAYS, unless = "#result == null")
   fun getHolidays(): HolidaysDto? = govUKWebClient.get().uri(HOLIDAYS_JSON)
     .retrieve().bodyToMono<HolidaysDto>().onErrorResume { e ->
       LOG.error("getHolidays: Error retrieving holidays from gov uk api - ${e.message}")
