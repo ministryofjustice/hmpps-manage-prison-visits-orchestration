@@ -14,6 +14,7 @@ import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.hmpps.kotlin.auth.authorisedWebClient
 import uk.gov.justice.hmpps.kotlin.auth.healthWebClient
 import uk.gov.justice.hmpps.kotlin.auth.service.GlobalPrincipalOAuth2AuthorizedClientService
+import uk.gov.justice.hmpps.kotlin.auth.unauthenticatedWebClient
 import java.time.Duration
 
 @Configuration
@@ -120,7 +121,7 @@ class WebClientConfiguration(
   fun incentivesApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient = getWebClient(incentivesApiUrl, authorizedClientManager, builder)
 
   @Bean
-  fun govUKWebClient(): WebClient = WebClient.builder().baseUrl(govUKApiUrl).build()
+  fun govUKWebClient(builder: WebClient.Builder): WebClient = builder.unauthenticatedWebClient(govUKApiUrl, apiTimeout)
 
   @Bean
   fun visitSchedulerHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(visitSchedulerBaseUrl, healthTimeout)
