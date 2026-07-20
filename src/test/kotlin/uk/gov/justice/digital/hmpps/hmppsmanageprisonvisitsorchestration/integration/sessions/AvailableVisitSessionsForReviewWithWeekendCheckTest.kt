@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.CacheManager
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.CacheNames
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.enums.PrisonerSupportedAlertCodeType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidayEventByDivisionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidayEventDto
@@ -49,7 +50,7 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
 
   @BeforeEach
   fun setupMocks() {
-    cacheManager.getCache("bank-holidays")?.clear()
+    cacheManager.getCache(CacheNames.BANK_HOLIDAYS)?.clear()
     Mockito.reset(currentDateUtils)
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
     prisonerContactRegistryMockServer.stubDoVisitorsHaveClosedRestrictions(prisonerId, visitorIds = visitorIds, result = false)
