@@ -60,6 +60,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.CreateApplicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.OutcomeStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionConflict
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
@@ -68,6 +69,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.AdditionalConflictInfoDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.SessionConflictDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventAttributeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventDto
@@ -440,11 +443,16 @@ abstract class IntegrationTestBase {
     )
   }
 
+  private fun createSessionConflictDto(sessionConflict: SessionConflict, additionalAttributes: List<List<AdditionalConflictInfoDto>> = emptyList()) = SessionConflictDto(
+    sessionConflict = sessionConflict,
+    additionalAttributes = additionalAttributes,
+  )
   fun createVisitSessionDto(
     prisonCode: String,
     sessionTemplateReference: String,
     startTimestamp: LocalDateTime = LocalDateTime.now(),
     endTimestamp: LocalDateTime = LocalDateTime.now().plusHours(1),
+    sessionConflicts: Set<SessionConflict> = emptySet(),
     visitOrderRestriction: SessionTemplateVisitOrderRestrictionType = SessionTemplateVisitOrderRestrictionType.NONE,
   ): VisitSessionDto = VisitSessionDto(
     sessionTemplateReference = sessionTemplateReference,
@@ -456,6 +464,7 @@ abstract class IntegrationTestBase {
     openVisitCapacity = 30,
     startTimestamp = startTimestamp,
     endTimestamp = endTimestamp,
+    sessionConflicts = sessionConflicts.sortedBy { it.name }.map { createSessionConflictDto(it) },
   )
 
   final fun createPrisonNameDto(prisonCode: String, name: String): PrisonNameDto = PrisonNameDto(

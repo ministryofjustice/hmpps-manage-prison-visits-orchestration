@@ -20,6 +20,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionConflict
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionDateConflict
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.CLOSED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.OPEN
@@ -27,13 +29,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.IsExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.PrisonerScheduledEventDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.SessionDateConflictDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.SessionsAndScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.VisitSessionV2Dto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.VisitSessionsAndScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.ScheduledEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.DateRangeNotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonService.Companion.logger
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateRangeIterator
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
 import java.time.LocalDate
@@ -83,6 +85,7 @@ class VisitSchedulerSessionsService(
     prisonerId: String,
     min: Int?,
     username: String?,
+    includedSessionConflicts: List<SessionConflict>?,
   ): VisitSessionsAndScheduleDto {
     var scheduledEventsAvailable = true
     val dateRangeForPrison = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, userType = UserType.STAFF)
@@ -104,9 +107,14 @@ class VisitSchedulerSessionsService(
         emptyList()
       }
 
-    val sessionsAndSchedule = getSessionsAndScheduleDataForDates(sessionAndScheduleDateRange, visitSessions, prisonerSchedules)
+    val sessionsAndSchedules = getSessionsAndScheduleDataForDates(sessionAndScheduleDateRange, dateRangeForPrison, visitSessions, prisonerSchedules)
 
-    return VisitSessionsAndScheduleDto(scheduledEventsAvailable, sessionsAndSchedule)
+    // finally filter out to include only included session conflicts from the list of conflicts returned
+    if (!includedSessionConflicts.isNullOrEmpty()) {
+      filterOutNonIncludedSessionConflicts(sessionsAndSchedules, includedSessionConflicts.toSet())
+    }
+
+    return VisitSessionsAndScheduleDto(scheduledEventsAvailable, sessionsAndSchedules)
   }
 
   fun getAvailableVisitSessions(
@@ -269,10 +277,10 @@ class VisitSchedulerSessionsService(
   }
 
   fun isDateExcludedForSessionTemplateVisits(sessionTemplateReference: String, date: LocalDate): IsExcludeDateDto {
-    logger.trace("isDateExcluded - session template - {}, date - {}", sessionTemplateReference, date)
+    LOG.trace("isDateExcluded - session template - {}, date - {}", sessionTemplateReference, date)
     val excludeDates = getExcludeDatesForSessionTemplate(sessionTemplateReference)
     val isExcluded = excludeDatesService.isDateExcluded(excludeDates, date)
-    logger.trace("isDateExcluded - session template - {}, date - {}, isExcluded - {}", sessionTemplateReference, date, isExcluded)
+    LOG.trace("isDateExcluded - session template - {}, date - {}, isExcluded - {}", sessionTemplateReference, date, isExcluded)
     return isExcluded
   }
 
@@ -468,29 +476,87 @@ class VisitSchedulerSessionsService(
     return dateUtils.advanceDaysIfWeekendOrBankHoliday(newFromDate, dateRange.toDate, bankHolidays)
   }
 
-  private fun getSessionsAndScheduleDataForDates(sessionAndScheduleDateRange: DateRange, visitSessions: List<VisitSessionDto>?, prisonerSchedules: List<ScheduledEventDto>): List<SessionsAndScheduleDto> {
+  private fun getSessionsAndScheduleDataForDates(
+    sessionAndScheduleDateRange: DateRange,
+    prisonDateRange: DateRange,
+    visitSessions: List<VisitSessionDto>?,
+    prisonerSchedules: List<ScheduledEventDto>,
+  ): List<SessionsAndScheduleDto> {
     LOG.debug("getSessionsAndScheduleDataForDates: {}", sessionAndScheduleDateRange)
     val sessionsAndSchedule = mutableListOf<SessionsAndScheduleDto>()
     val dateRangeIterator = DateRangeIterator(sessionAndScheduleDateRange)
     while (dateRangeIterator.hasNext()) {
       val sessionDate = dateRangeIterator.next()
-      sessionsAndSchedule.add(getSessionsAndScheduleDataForDate(sessionDate, visitSessions, prisonerSchedules))
+      sessionsAndSchedule.add(
+        getSessionsAndScheduleDataForDate(sessionDate, prisonDateRange, visitSessions, prisonerSchedules),
+      )
     }
 
     return sessionsAndSchedule.toList()
   }
 
-  private fun getSessionsAndScheduleDataForDate(sessionDate: LocalDate, visitSessions: List<VisitSessionDto>?, prisonerSchedules: List<ScheduledEventDto>): SessionsAndScheduleDto {
+  private fun getSessionsAndScheduleDataForDate(
+    sessionDate: LocalDate,
+    prisonDateRange: DateRange,
+    visitSessions: List<VisitSessionDto>?,
+    prisonerSchedules: List<ScheduledEventDto>,
+  ): SessionsAndScheduleDto {
     LOG.debug("getSessionsAndScheduleDataForDate: {}", sessionDate)
-    val visitSessionsForDate = visitSessions?.filter { it.startTimestamp.toLocalDate() == sessionDate }?.map { VisitSessionV2Dto(it) } ?: emptyList()
 
-    // only populate schedules if sessions are available
-    val prisonerScheduleForDate = if (visitSessionsForDate.isNotEmpty()) {
-      prisonerSchedules.filter { it.eventDate == sessionDate }.map { PrisonerScheduledEventDto(it) }
+    val visitSessionsForDate = visitSessions?.filter { it.startTimestamp.toLocalDate() == sessionDate }?.map { VisitSessionV2Dto(it) } ?: emptyList()
+    val sessionDateConflicts: MutableList<SessionDateConflictDto> = mutableListOf()
+
+    // check if the date range is outside the booking window
+    if (isOutsideBookingWindow(sessionDate, prisonDateRange)) {
+      sessionDateConflicts.add(SessionDateConflictDto(SessionDateConflict.OUTSIDE_BOOKING_WINDOW))
     } else {
-      emptyList()
+      // only populate schedules if sessions are available
+      if (visitSessionsForDate.isNotEmpty()) {
+        sessionDateConflicts.addAll(getSessionDateConflicts(visitSessionsForDate))
+      }
     }
 
-    return SessionsAndScheduleDto(sessionDate, visitSessionsForDate, prisonerScheduleForDate)
+    val prisonerScheduleForDate = if (visitSessionsForDate.isEmpty()) {
+      // No sessions for the date, so return an empty list of schedules
+      emptyList()
+    } else {
+      prisonerSchedules.filter { it.eventDate == sessionDate }.map { PrisonerScheduledEventDto(it) }
+    }
+
+    return SessionsAndScheduleDto(date = sessionDate, visitSessions = visitSessionsForDate, scheduledEvents = prisonerScheduleForDate, sessionDateConflicts = sessionDateConflicts)
+  }
+
+  private fun isOutsideBookingWindow(date: LocalDate, prisonDateRange: DateRange): Boolean = (date.isBefore(prisonDateRange.fromDate) || date.isAfter(prisonDateRange.toDate))
+
+  private fun getSessionDateConflicts(visitSessionsForDate: List<VisitSessionV2Dto>): List<SessionDateConflictDto> = visitSessionsForDate
+    .flatMap { it.sessionConflicts }
+    .mapNotNull { sessionConflictDto ->
+      SessionDateConflict.get(sessionConflictDto.sessionConflict)?.let {
+        it to sessionConflictDto.additionalAttributes
+      }
+    }
+    .distinctBy { (sessionDateConflict, additionalAttributes) -> sessionDateConflict to additionalAttributes }
+    .map { (sessionDateConflict, additionalAttributes) ->
+      SessionDateConflictDto(sessionDateConflict, additionalAttributes)
+    }
+
+  private fun filterOutNonIncludedSessionConflicts(sessionsAndSchedules: List<SessionsAndScheduleDto>, includedSessionConflicts: Set<SessionConflict>) {
+    if (includedSessionConflicts.isNotEmpty()) {
+      sessionsAndSchedules.forEach { sessionsAndSchedule ->
+        if (sessionsAndSchedule.visitSessions.isNotEmpty()) {
+          // include only sessions that have no conflicts or only included conflicts
+          val includeSessions = sessionsAndSchedule.visitSessions.filter { visitSession ->
+            visitSession.sessionConflicts.isEmpty() ||
+              visitSession.sessionConflicts.all { it.sessionConflict in includedSessionConflicts }
+          }
+          sessionsAndSchedule.visitSessions = includeSessions
+        }
+
+        // return an empty schedule if sessions are empty
+        if (sessionsAndSchedule.visitSessions.isEmpty()) {
+          sessionsAndSchedule.scheduledEvents = emptyList()
+        }
+      }
+    }
   }
 }
