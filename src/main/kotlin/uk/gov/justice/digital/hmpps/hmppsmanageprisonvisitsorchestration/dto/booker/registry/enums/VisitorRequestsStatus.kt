@@ -6,4 +6,5 @@ enum class VisitorRequestsStatus {
   APPROVED,
   AUTO_APPROVED,
   REJECTED,
+  WITHDRAWN,
 }
