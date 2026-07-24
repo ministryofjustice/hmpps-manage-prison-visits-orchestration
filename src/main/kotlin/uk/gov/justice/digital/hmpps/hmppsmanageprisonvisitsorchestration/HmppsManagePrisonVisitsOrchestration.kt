@@ -2,8 +2,10 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import org.springframework.cache.annotation.EnableCaching
 
 @SpringBootApplication
+@EnableCaching
 class HmppsManagePrisonVisitsOrchestration
 
 fun main(args: Array<String>) {
