@@ -3,14 +3,14 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.servic
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.WhereAboutsApiClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.ScheduledEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.enums.HigherPriorityMedicalOrLegalEvents
 import java.time.LocalDate
 
 @Service
 class AppointmentsService(
-  private val whereAboutsApiClient: WhereAboutsApiClient,
+  private val prisonApiClient: PrisonApiClient,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -29,7 +29,7 @@ class AppointmentsService(
     prisonerId: String,
     fromDate: LocalDate,
     toDate: LocalDate,
-  ): List<ScheduledEventDto> = whereAboutsApiClient.getEvents(prisonerId, fromDate, toDate).filter { event ->
+  ): List<ScheduledEventDto> = prisonApiClient.getEvents(prisonerId, fromDate, toDate).filter { event ->
     event.eventType.equals(APPOINTMENT_EVENT_TYPE)
   }
 }

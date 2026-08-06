@@ -11,8 +11,10 @@ import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isNotFoundError
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.InmateDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.ScheduledEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.NotFoundException
 import java.time.Duration
+import java.time.LocalDate
 
 @Component
 class PrisonApiClient(
@@ -56,5 +58,28 @@ class PrisonApiClient(
       }
       .retrieve()
       .bodyToMono<OffenderRestrictionsDto>()
+  }
+
+  fun getEvents(prisonerId: String, fromDate: LocalDate, toDate: LocalDate): List<ScheduledEventDto> {
+    val uri = "/api/offenders/$prisonerId/scheduled-events"
+    return webClient.get()
+      .uri(uri) {
+        it.queryParam("fromDate", fromDate)
+          .queryParam("toDate", toDate)
+          .queryParam("offenderNo", prisonerId)
+          .build()
+      }
+      .retrieve()
+      .bodyToMono<List<ScheduledEventDto>>()
+      .onErrorResume { e ->
+        if (!isNotFoundError(e)) {
+          LOG.error("getEvents Failed for get request $uri")
+          Mono.error(e)
+        } else {
+          LOG.error("getEvents NOT_FOUND for get request $uri")
+          Mono.error { NotFoundException("No Events found for Prisoner - $prisonerId on prison-api") }
+        }
+      }
+      .blockOptional(apiTimeout).orElse(emptyList())
   }
 }

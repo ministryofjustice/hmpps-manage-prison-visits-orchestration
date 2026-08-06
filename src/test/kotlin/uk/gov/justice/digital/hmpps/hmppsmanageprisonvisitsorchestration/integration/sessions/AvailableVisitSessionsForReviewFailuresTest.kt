@@ -59,7 +59,7 @@ class AvailableVisitSessionsForReviewFailuresTest : IntegrationTestBase() {
 
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf())
     Mockito.`when`(prisonerProfileService.hasPrisonerGotClosedRestrictions(prisonerId)).thenReturn(false)
     // When
@@ -82,7 +82,7 @@ class AvailableVisitSessionsForReviewFailuresTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -95,7 +95,7 @@ class AvailableVisitSessionsForReviewFailuresTest : IntegrationTestBase() {
 
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
     Mockito.`when`(prisonerProfileService.hasPrisonerGotClosedRestrictions(prisonerId)).thenReturn(false)
 
     // When
@@ -115,7 +115,7 @@ class AvailableVisitSessionsForReviewFailuresTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<AvailableVisitSessionDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<AvailableVisitSessionDto>::class.java)
