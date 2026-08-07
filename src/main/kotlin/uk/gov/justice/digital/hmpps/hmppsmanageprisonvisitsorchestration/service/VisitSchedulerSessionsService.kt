@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerContactRegistryClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.WhereAboutsApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.enums.PrisonerSupportedAlertCodeType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.request.review.PrisonerRestrictionsForReview
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.request.review.VisitorRestrictionsForReview
@@ -55,7 +54,6 @@ class VisitSchedulerSessionsService(
   private val publicServiceFromDateOverride: Long,
   @param:Value("\${public.service.to-date-override: 28}")
   private val publicServiceToDateOverride: Long,
-  private val whereAboutsApiClient: WhereAboutsApiClient,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -94,7 +92,7 @@ class VisitSchedulerSessionsService(
     // get schedules for prisoner and date range
     val prisonerSchedules =
       try {
-        whereAboutsApiClient.getEvents(prisonerId, dateRangeForPrison.fromDate, dateRangeForPrison.toDate)
+        prisonApiClient.getEvents(prisonerId, dateRangeForPrison.fromDate, dateRangeForPrison.toDate)
       } catch (_: NotFoundException) {
         LOG.info("No schedule data found for prisonerId - $prisonerId, returning an empty list")
         emptyList()

@@ -24,7 +24,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonerSearchClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitAllocationApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.WhereAboutsApiClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.GET_VISIT_SESSIONS_AVAILABLE_PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.ORCHESTRATION_GET_CANCELLED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.ORCHESTRATION_GET_FUTURE_BOOKED_PUBLIC_VISITS_BY_BOOKER_REFERENCE
@@ -84,7 +83,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.PrisonerContactRegistryMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.VisitAllocationApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.VisitSchedulerMockServer
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.WhereaboutsApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.AppointmentsService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonerProfileService
 import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
@@ -110,7 +108,6 @@ abstract class IntegrationTestBase {
     val prisonRegisterMockServer = PrisonRegisterMockServer()
     val manageUsersApiMockServer = ManageUsersApiMockServer()
     val prisonVisitBookerRegistryMockServer = PrisonVisitBookerRegistryMockServer()
-    val whereaboutsApiMockServer = WhereaboutsApiMockServer()
     val govUkMockServer = GovUkMockServer()
     val visitAllocationApiMockServer = VisitAllocationApiMockServer()
     val incentivesApiMockServer = IncentivesApiMockServer()
@@ -125,7 +122,6 @@ abstract class IntegrationTestBase {
       prisonRegisterMockServer.resetAll()
       manageUsersApiMockServer.resetAll()
       prisonVisitBookerRegistryMockServer.resetAll()
-      whereaboutsApiMockServer.resetAll()
       govUkMockServer.resetAll()
       visitAllocationApiMockServer.resetAll()
       incentivesApiMockServer.resetAll()
@@ -142,7 +138,6 @@ abstract class IntegrationTestBase {
       prisonRegisterMockServer.start()
       manageUsersApiMockServer.start()
       prisonVisitBookerRegistryMockServer.start()
-      whereaboutsApiMockServer.start()
       govUkMockServer.start()
       visitAllocationApiMockServer.start()
       incentivesApiMockServer.start()
@@ -159,7 +154,6 @@ abstract class IntegrationTestBase {
       prisonRegisterMockServer.stop()
       manageUsersApiMockServer.stop()
       prisonVisitBookerRegistryMockServer.stop()
-      whereaboutsApiMockServer.stop()
       govUkMockServer.stop()
       visitAllocationApiMockServer.stop()
       incentivesApiMockServer.stop()
@@ -236,9 +230,6 @@ abstract class IntegrationTestBase {
 
   @MockitoSpyBean
   protected lateinit var prisonerProfileServiceSpy: PrisonerProfileService
-
-  @MockitoSpyBean
-  protected lateinit var whereAboutsApiClientSpy: WhereAboutsApiClient
 
   @MockitoSpyBean
   protected lateinit var prisonVisitBookerRegistryClientSpy: PrisonVisitBookerRegistryClient
