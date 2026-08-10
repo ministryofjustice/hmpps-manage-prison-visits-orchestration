@@ -114,7 +114,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     val appointment2 = createScheduledEvent(2L, today.plusDays(5), eventStartTime = LocalDateTime.of(today.plusDays(5), LocalTime.of(9, 0)), eventEndTime = LocalDateTime.of(today.plusDays(5), LocalTime.of(10, 0)))
     val appointment3 = createScheduledEvent(3L, today.plusDays(6), eventStartTime = LocalDateTime.of(today.plusDays(6), LocalTime.of(9, 0)), eventEndTime = LocalDateTime.of(today.plusDays(6), LocalTime.of(10, 0)))
 
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = listOf(appointment1, appointment2, appointment3))
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = listOf(appointment1, appointment2, appointment3))
 
     // When
     val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, null, roleVSIPOrchestrationServiceHttpHeaders)
@@ -138,14 +138,14 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertSessionsAndScheduleCount(sessionsAndScheduleDto, datesWithNoSessionsOrSchedule, 0, 0)
     assertVisitOrderRestrictions(sessionsAndScheduleDto, visitSessionDtos)
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
   }
 
   @Test
   fun `when no visit sessions and no schedule exists then all dates are returned with empty sessions and schedules`() {
     // Given
     visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, emptyList(), userType = STAFF)
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
 
     // When
     val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, null, roleVSIPOrchestrationServiceHttpHeaders)
@@ -162,7 +162,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     val datesWithNoSessionsOrSchedule = sessionsAndScheduleDto.sessionsAndSchedule.map { it.date }
     assertSessionsAndScheduleCount(sessionsAndScheduleDto, datesWithNoSessionsOrSchedule, 0, 0)
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
   }
 
   @Test
@@ -180,7 +180,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     val appointment2 = createScheduledEvent(2L, today.plusDays(9), eventStartTime = LocalDateTime.of(today.plusDays(9), LocalTime.of(9, 0)), eventEndTime = LocalDateTime.of(today.plusDays(9), LocalTime.of(10, 0)))
     val appointment3 = createScheduledEvent(3L, today.plusDays(10), eventStartTime = LocalDateTime.of(today.plusDays(10), LocalTime.of(9, 0)), eventEndTime = LocalDateTime.of(today.plusDays(10), LocalTime.of(10, 0)))
 
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = listOf(appointment1, appointment2, appointment3))
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = listOf(appointment1, appointment2, appointment3))
 
     // When
     val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, null, roleVSIPOrchestrationServiceHttpHeaders)
@@ -392,7 +392,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(sessionsAndSchedule.sessionDateConflicts.map { it.sessionDateConflict }).containsOnly(SessionDateConflict.PRISON_DATE_BLOCKED)
 
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
   }
 
   @Test
@@ -404,7 +404,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     val appointment2 = createScheduledEvent(2L, today.plusDays(9), eventStartTime = LocalDateTime.of(today.plusDays(9), LocalTime.of(9, 0)), eventEndTime = LocalDateTime.of(today.plusDays(9), LocalTime.of(10, 0)))
     val appointment3 = createScheduledEvent(3L, today.plusDays(10), eventStartTime = LocalDateTime.of(today.plusDays(10), LocalTime.of(9, 0)), eventEndTime = LocalDateTime.of(today.plusDays(10), LocalTime.of(10, 0)))
 
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = listOf(appointment1, appointment2, appointment3))
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = listOf(appointment1, appointment2, appointment3))
 
     // When
     val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, null, roleVSIPOrchestrationServiceHttpHeaders)
@@ -412,7 +412,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().isNotFound
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
-    verify(whereAboutsApiClientSpy, times(0)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
+    verify(prisonApiClientSpy, times(0)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
   }
 
   @Test
@@ -424,7 +424,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     val appointment2 = createScheduledEvent(2L, today.plusDays(9), eventStartTime = LocalDateTime.of(today.plusDays(9), LocalTime.of(9, 0)), eventEndTime = LocalDateTime.of(today.plusDays(9), LocalTime.of(10, 0)))
     val appointment3 = createScheduledEvent(3L, today.plusDays(10), eventStartTime = LocalDateTime.of(today.plusDays(10), LocalTime.of(9, 0)), eventEndTime = LocalDateTime.of(today.plusDays(10), LocalTime.of(10, 0)))
 
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = listOf(appointment1, appointment2, appointment3))
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = listOf(appointment1, appointment2, appointment3))
 
     // When
     val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, null, roleVSIPOrchestrationServiceHttpHeaders)
@@ -432,7 +432,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     // Then
     responseSpec.expectStatus().is5xxServerError
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
-    verify(whereAboutsApiClientSpy, times(0)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
+    verify(prisonApiClientSpy, times(0)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
   }
 
   @Test
@@ -447,7 +447,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2, visitSessionDto3, visitSessionDto4, visitSessionDto5), userType = STAFF)
 
     // whereabouts returns a 404
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = null, httpStatus = HttpStatus.NOT_FOUND)
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = null, httpStatus = HttpStatus.NOT_FOUND)
 
     // When
     val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, null, roleVSIPOrchestrationServiceHttpHeaders)
@@ -461,7 +461,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule.map { it.scheduledEvents }.sumOf { it.count() }).isEqualTo(0)
     assertVisitOrderRestrictions(sessionsAndScheduleDto, listOf(visitSessionDto1, visitSessionDto2, visitSessionDto3, visitSessionDto4, visitSessionDto5))
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
   }
 
   @Test
@@ -476,7 +476,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2, visitSessionDto3, visitSessionDto4, visitSessionDto5), userType = STAFF)
 
     // whereabouts returns a 404
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = null, httpStatus = HttpStatus.INTERNAL_SERVER_ERROR)
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = null, httpStatus = HttpStatus.INTERNAL_SERVER_ERROR)
 
     // When
     val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, null, roleVSIPOrchestrationServiceHttpHeaders)
@@ -492,7 +492,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule.map { it.scheduledEvents }.sumOf { it.count() }).isEqualTo(0)
     assertVisitOrderRestrictions(sessionsAndScheduleDto, listOf(visitSessionDto1, visitSessionDto2, visitSessionDto3, visitSessionDto4, visitSessionDto5))
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
   }
 
   private fun assertSessionsAndScheduleCount(sessionsAndScheduleDto: VisitSessionsAndScheduleDto, dates: List<LocalDate>, sessions: Int, schedules: Int) {

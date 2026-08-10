@@ -40,9 +40,6 @@ class WebClientConfiguration(
   @param:Value("\${manage-users.api.url}")
   private val manageUsersApiBaseUrl: String,
 
-  @param:Value("\${whereabouts.api.url}")
-  private val whereAboutsApiUrl: String,
-
   @param:Value("\${prison-visit-booker-registry.api.url}")
   private val prisonVisitBookerRegistryApiUrl: String,
 
@@ -109,9 +106,6 @@ class WebClientConfiguration(
   fun manageUsersApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient = getWebClient(manageUsersApiBaseUrl, authorizedClientManager, builder)
 
   @Bean
-  fun whereAboutsApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient = getWebClient(whereAboutsApiUrl, authorizedClientManager, builder)
-
-  @Bean
   fun prisonVisitBookerRegistryWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient = getWebClient(prisonVisitBookerRegistryApiUrl, authorizedClientManager, builder)
 
   @Bean
@@ -143,9 +137,6 @@ class WebClientConfiguration(
 
   @Bean
   fun manageUsersApiHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(manageUsersApiBaseUrl, healthTimeout)
-
-  @Bean
-  fun whereAboutsHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(whereAboutsApiUrl, healthTimeout)
 
   @Bean
   fun prisonVisitBookerRegistryHealthWebClient(builder: WebClient.Builder): WebClient = builder.healthWebClient(prisonVisitBookerRegistryApiUrl, healthTimeout)

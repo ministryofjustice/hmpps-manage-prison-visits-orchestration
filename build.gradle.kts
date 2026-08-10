@@ -2,7 +2,7 @@ plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.2"
   kotlin("plugin.spring") version "2.4.10"
   id("org.jetbrains.kotlin.plugin.noarg") version "2.4.10"
-  id("org.owasp.dependencycheck") version "12.2.2"
+  id("org.owasp.dependencycheck") version "13.0.0"
 }
 
 configurations {
@@ -29,7 +29,7 @@ dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:3.0.0")
-  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.45")
+  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.46")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
   testImplementation("org.testcontainers:testcontainers-localstack:2.0.5")

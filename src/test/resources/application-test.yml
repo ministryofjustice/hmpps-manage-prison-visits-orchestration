@@ -29,10 +29,6 @@ prison-register:
   api:
     url: http://localhost:8096
 
-whereabouts:
-  api:
-    url: http://localhost:8099
-
 prisoner:
   search:
     url: http://localhost:8094

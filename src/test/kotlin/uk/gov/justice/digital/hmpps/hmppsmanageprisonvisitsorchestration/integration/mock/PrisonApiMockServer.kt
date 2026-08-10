@@ -5,8 +5,10 @@ import com.github.tomakehurst.wiremock.client.WireMock.get
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.InmateDetailDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.ScheduledEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.createJsonResponseBuilder
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.getJsonString
+import java.time.LocalDate
 
 class PrisonApiMockServer : WireMockServer(8093) {
   fun stubGetInmateDetails(prisonerId: String, inmateDetail: InmateDetailDto?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
@@ -40,6 +42,29 @@ class PrisonApiMockServer : WireMockServer(8093) {
           } ?: run {
             responseBuilder
               .withStatus(httpStatus.value())
+          },
+        ),
+    )
+  }
+
+  fun stubGetScheduledEvents(
+    prisonerId: String,
+    fromDate: LocalDate,
+    toDate: LocalDate,
+    events: List<ScheduledEventDto>?,
+    httpStatus: HttpStatus = HttpStatus.NOT_FOUND,
+  ) {
+    val responseBuilder = createJsonResponseBuilder()
+
+    stubFor(
+      get("/api/offenders/$prisonerId/scheduled-events?fromDate=$fromDate&toDate=$toDate&offenderNo=$prisonerId")
+        .willReturn(
+          if (events == null) {
+            responseBuilder.withStatus(httpStatus.value())
+          } else {
+            responseBuilder
+              .withStatus(HttpStatus.OK.value())
+              .withBody(getJsonString(events))
           },
         ),
     )

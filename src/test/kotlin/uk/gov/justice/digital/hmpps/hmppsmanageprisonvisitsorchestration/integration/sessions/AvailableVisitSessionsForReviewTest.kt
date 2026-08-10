@@ -53,7 +53,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf())
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
     val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
@@ -79,7 +79,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -92,7 +92,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf(alert1))
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
     val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
@@ -115,7 +115,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -129,7 +129,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf(alert1))
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
     val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
@@ -152,7 +152,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -166,7 +166,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf(alert1))
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
     val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
@@ -189,7 +189,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -204,7 +204,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf(alert1))
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
     val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
@@ -227,7 +227,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -241,7 +241,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf(alert1))
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
     val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
@@ -264,7 +264,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -278,7 +278,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf(alert1))
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
     val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
@@ -301,7 +301,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -318,7 +318,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf(alert1, alert2))
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
     val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
@@ -341,7 +341,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -354,7 +354,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = listOf(prisonerRestriction)))
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf())
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
     val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
@@ -377,7 +377,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -391,7 +391,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = listOf(prisonerRestriction)))
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf())
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
     val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
@@ -414,7 +414,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -428,7 +428,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = listOf(prisonerRestriction)))
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf())
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
     val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
@@ -451,7 +451,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -466,7 +466,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = listOf(prisonerRestriction)))
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf())
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
     val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
@@ -489,7 +489,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -503,7 +503,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = listOf(prisonerRestriction)))
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf())
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
     val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
@@ -526,7 +526,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -540,7 +540,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = listOf(prisonerRestriction)))
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf())
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
     val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
@@ -563,7 +563,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -579,7 +579,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = listOf(prisonerRestriction1, prisonerRestriction2)))
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf())
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
     val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
@@ -602,7 +602,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   // DVS
@@ -616,7 +616,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = listOf()))
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf())
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, visitorRestrictionDateRanges)
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
     val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
@@ -639,7 +639,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -652,7 +652,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf())
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, visitorRestrictionDateRanges)
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
     val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
@@ -675,7 +675,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -694,7 +694,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = listOf()))
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf())
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, visitorRestrictionDateRanges)
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
     val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
@@ -717,7 +717,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -728,7 +728,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf())
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
     val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
@@ -745,7 +745,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(0)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(0)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(0)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -758,7 +758,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = listOf()))
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
     val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
@@ -781,7 +781,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -794,7 +794,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = listOf()))
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
     val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
@@ -817,7 +817,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -831,7 +831,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
 
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = listOf()))
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf())
 
     // When
@@ -855,7 +855,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   @Test
@@ -868,7 +868,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
 
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = listOf()))
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
     val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
@@ -889,7 +889,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
     verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
   private fun getResults(returnResult: WebTestClient.BodyContentSpec): Array<AvailableVisitSessionDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<AvailableVisitSessionDto>::class.java)
