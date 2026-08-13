@@ -215,7 +215,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     ).isTrue
 
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
   }
 
   @Test
@@ -228,7 +228,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
 
     visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2), userType = STAFF)
 
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
 
     // When
     val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, null, roleVSIPOrchestrationServiceHttpHeaders)
@@ -251,7 +251,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(visitSessionWithNoDateConflict.scheduledEvents).isEmpty()
 
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
   }
 
   @Test
@@ -264,7 +264,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
 
     visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2), userType = STAFF)
 
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
 
     // When
     val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, null, roleVSIPOrchestrationServiceHttpHeaders)
@@ -287,7 +287,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(visitSessionWithNoDateConflict.scheduledEvents).isEmpty()
 
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
   }
 
   @Test
@@ -298,7 +298,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 4, 6, 3, 3, 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3, clients = clients)
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
     visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, emptyList(), userType = STAFF)
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(4), events = emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(4), events = emptyList())
 
     // When
     val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, null, roleVSIPOrchestrationServiceHttpHeaders)
@@ -333,7 +333,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[4].sessionDateConflicts).isEmpty()
 
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(4))
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(4))
   }
 
   @Test
@@ -351,7 +351,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
 
     visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2, visitSessionDto3), userType = STAFF)
 
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
 
     // When
     val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, includeSessionConflicts, roleVSIPOrchestrationServiceHttpHeaders)
@@ -367,7 +367,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(visitSessions[1].sessionConflicts).isEmpty()
 
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
-    verify(whereAboutsApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
+    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
   }
 
   @Test
@@ -379,7 +379,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
 
     visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto), userType = STAFF)
 
-    whereaboutsApiMockServer.stubGetEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
+    prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
 
     // When
     val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, includeSessionConflicts, roleVSIPOrchestrationServiceHttpHeaders)
@@ -436,7 +436,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when visit whereabouts api returns NOT_FOUND sessions are returned but schedules are empty`() {
+  fun `when prison API get scheduled events returns NOT_FOUND sessions are returned but schedules are empty`() {
     // Given
     val visitSessionDto1 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(today.plusDays(3), sessionStartTime), endTimestamp = LocalDateTime.of(today.plusDays(3), sessionEndTime))
     val visitSessionDto2 = createVisitSessionDto(prisonCode, "2", startTimestamp = LocalDateTime.of(today.plusDays(4), sessionStartTime), endTimestamp = LocalDateTime.of(today.plusDays(4), sessionEndTime))
@@ -446,7 +446,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
 
     visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2, visitSessionDto3, visitSessionDto4, visitSessionDto5), userType = STAFF)
 
-    // whereabouts returns a 404
+    // prison API get scheduled events returns a 404
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = null, httpStatus = HttpStatus.NOT_FOUND)
 
     // When
@@ -465,7 +465,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when visit whereabouts api returns INTERNAL_SERVER_ERROR sessions are returned but schedules are empty and scheduledEventsAvailable flag is false`() {
+  fun `when prison API get scheduled events returns INTERNAL_SERVER_ERROR sessions are returned but schedules are empty and scheduledEventsAvailable flag is false`() {
     // Given
     val visitSessionDto1 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(today.plusDays(3), sessionStartTime), endTimestamp = LocalDateTime.of(today.plusDays(3), sessionEndTime))
     val visitSessionDto2 = createVisitSessionDto(prisonCode, "2", startTimestamp = LocalDateTime.of(today.plusDays(4), sessionStartTime), endTimestamp = LocalDateTime.of(today.plusDays(4), sessionEndTime))
@@ -475,7 +475,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
 
     visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2, visitSessionDto3, visitSessionDto4, visitSessionDto5), userType = STAFF)
 
-    // whereabouts returns a 404
+    // prison API get scheduled events returns a 404
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = null, httpStatus = HttpStatus.INTERNAL_SERVER_ERROR)
 
     // When
@@ -485,7 +485,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val sessionsAndScheduleDto = getResults(returnResult)
 
-    // scheduledEventsAvailable is set to false if whereabouts throws INTERNAL_SERVER_ERROR
+    // scheduledEventsAvailable is set to false if prison API get scheduled events throws INTERNAL_SERVER_ERROR
     assertThat(sessionsAndScheduleDto.scheduledEventsAvailable).isFalse
 
     // no scheduled events are returned for any dates
