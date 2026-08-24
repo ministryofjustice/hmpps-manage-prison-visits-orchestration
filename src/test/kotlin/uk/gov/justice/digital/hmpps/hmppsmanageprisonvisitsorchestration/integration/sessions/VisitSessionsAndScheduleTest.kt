@@ -219,7 +219,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when visit sessions are returned with NON_ASSOCIATION conflicts the session date is marked with appropriate conflict flag`() {
+  fun `when visit sessions are returned with NON_ASSOCIATION conflicts the session is not returned`() {
     // Given
     // session has NON_ASSOCIATION conflict
     val visitSessionDto1 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(today.plusDays(3), sessionStartTime), endTimestamp = LocalDateTime.of(today.plusDays(3), sessionEndTime), sessionConflicts = setOf(SessionConflict.NON_ASSOCIATION))
@@ -242,9 +242,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     val visitSessionWithDateConflict = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto1.startTimestamp.toLocalDate() }
     assertThat(visitSessionWithDateConflict.sessionDateConflicts.size).isEqualTo(1)
     assertThat(visitSessionWithDateConflict.sessionDateConflicts.first().sessionDateConflict).isEqualTo(SessionDateConflict.NON_ASSOCIATION)
-    assertThat(visitSessionWithDateConflict.visitSessions).hasSize(1)
-    val sessionConflicts = (visitSessionWithDateConflict.visitSessions.flatMap { session -> session.sessionConflicts.map { it.sessionConflict } })
-    assertThat(sessionConflicts).contains(SessionConflict.NON_ASSOCIATION)
+    assertThat(visitSessionWithDateConflict.visitSessions).isEmpty()
     val visitSessionWithNoDateConflict = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto2.startTimestamp.toLocalDate() }
     assertThat(visitSessionWithNoDateConflict.sessionDateConflicts).isEmpty()
     assertThat(visitSessionWithNoDateConflict.visitSessions).isNotEmpty
@@ -255,7 +253,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when visit sessions are returned with PRISON_DATE_BLOCKED conflicts the session date is marked with appropriate conflict flag`() {
+  fun `when visit sessions are returned with PRISON_DATE_BLOCKED conflicts the session is not returned`() {
     // Given
     // session has PRISON_DATE_BLOCKED conflict
     val visitSessionDto1 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(today.plusDays(3), sessionStartTime), endTimestamp = LocalDateTime.of(today.plusDays(3), sessionEndTime), sessionConflicts = setOf(SessionConflict.PRISON_DATE_BLOCKED))
@@ -276,11 +274,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule.size).isEqualTo(13)
     val visitSessionWithDateConflict = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto1.startTimestamp.toLocalDate() }
     assertThat(visitSessionWithDateConflict.sessionDateConflicts.size).isEqualTo(1)
-    assertThat(visitSessionWithDateConflict.visitSessions).hasSize(1)
-    assertThat(visitSessionWithDateConflict.sessionDateConflicts.map { it.sessionDateConflict }).contains(SessionDateConflict.PRISON_DATE_BLOCKED)
-    val sessionConflicts = (visitSessionWithDateConflict.visitSessions.flatMap { session -> session.sessionConflicts.map { it.sessionConflict } })
-    assertThat(sessionConflicts).contains(SessionConflict.PRISON_DATE_BLOCKED)
-
+    assertThat(visitSessionWithDateConflict.visitSessions).isEmpty()
     val visitSessionWithNoDateConflict = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto2.startTimestamp.toLocalDate() }
     assertThat(visitSessionWithNoDateConflict.sessionDateConflicts).isEmpty()
     assertThat(visitSessionWithNoDateConflict.visitSessions).isNotEmpty

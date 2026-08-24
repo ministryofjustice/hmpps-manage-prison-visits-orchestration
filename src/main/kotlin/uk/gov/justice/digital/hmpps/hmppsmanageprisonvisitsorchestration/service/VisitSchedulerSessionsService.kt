@@ -62,6 +62,9 @@ class VisitSchedulerSessionsService(
     const val CLASHING_APPOINTMENT_LOG_MSG = "Visit session for prisonerId - {}, date - {}, start time - {}, end time - {} is unavailable as it clashes with {} medical / legal appointment(s), appointment details - {}"
     const val TOTAL_DAYS_TO_ADD_IF_SESSIONS_UNDER_REVIEW: Int = 2
 
+    // TODO - revisit if we need to return NON_ASSOCIATION / PRISON_DATE_BLOCKED / SESSION_DATE_BLOCKED sessions
+    val EXCLUDED_SESSION_CONFLICTS = setOf(SessionConflict.PRISON_DATE_BLOCKED, SessionConflict.NON_ASSOCIATION, SessionConflict.SESSION_DATE_BLOCKED)
+
     val availableVisitSessionsSortOrder: Comparator<AvailableVisitSessionDto> = compareBy(
       { it.sessionDate },
       { it.sessionTimeSlot.startTime },
@@ -106,6 +109,7 @@ class VisitSchedulerSessionsService(
       }
 
     val sessionsAndSchedules = getSessionsAndScheduleDataForDates(sessionAndScheduleDateRange, dateRangeForPrison, visitSessions, prisonerSchedules)
+    filterOutExcludedSessionsConflicts(sessionsAndSchedules, EXCLUDED_SESSION_CONFLICTS)
 
     // finally filter out to include only included session conflicts from the list of conflicts returned
     if (!includedSessionConflicts.isNullOrEmpty()) {
@@ -546,6 +550,26 @@ class VisitSchedulerSessionsService(
           val includeSessions = sessionsAndSchedule.visitSessions.filter { visitSession ->
             visitSession.sessionConflicts.isEmpty() ||
               visitSession.sessionConflicts.all { it.sessionConflict in includedSessionConflicts }
+          }
+          sessionsAndSchedule.visitSessions = includeSessions
+        }
+
+        // return an empty schedule if sessions are empty
+        if (sessionsAndSchedule.visitSessions.isEmpty()) {
+          sessionsAndSchedule.scheduledEvents = emptyList()
+        }
+      }
+    }
+  }
+
+  private fun filterOutExcludedSessionsConflicts(sessionsAndSchedules: List<SessionsAndScheduleDto>, excludedSessionConflicts: Set<SessionConflict>) {
+    if (excludedSessionConflicts.isNotEmpty()) {
+      sessionsAndSchedules.forEach { sessionsAndSchedule ->
+        if (sessionsAndSchedule.visitSessions.isNotEmpty()) {
+          // include sessions that do no have any excluded session conflicts
+          val includeSessions = sessionsAndSchedule.visitSessions.filter { visitSession ->
+            visitSession.sessionConflicts.isEmpty() ||
+              visitSession.sessionConflicts.none { it.sessionConflict in excludedSessionConflicts }
           }
           sessionsAndSchedule.visitSessions = includeSessions
         }
