@@ -274,6 +274,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule.size).isEqualTo(13)
     val visitSessionWithDateConflict = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto1.startTimestamp.toLocalDate() }
     assertThat(visitSessionWithDateConflict.sessionDateConflicts.size).isEqualTo(1)
+    assertThat(visitSessionWithDateConflict.sessionDateConflicts.map { it.sessionDateConflict }).contains(SessionDateConflict.PRISON_DATE_BLOCKED)
     assertThat(visitSessionWithDateConflict.visitSessions).isEmpty()
     val visitSessionWithNoDateConflict = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto2.startTimestamp.toLocalDate() }
     assertThat(visitSessionWithNoDateConflict.sessionDateConflicts).isEmpty()

@@ -63,7 +63,7 @@ class VisitSchedulerSessionsService(
     const val TOTAL_DAYS_TO_ADD_IF_SESSIONS_UNDER_REVIEW: Int = 2
 
     // TODO - revisit if we need to return NON_ASSOCIATION / PRISON_DATE_BLOCKED / SESSION_DATE_BLOCKED sessions
-    val EXCLUDED_SESSION_CONFLICTS = setOf(SessionConflict.PRISON_DATE_BLOCKED, SessionConflict.NON_ASSOCIATION, SessionConflict.SESSION_DATE_BLOCKED)
+    private val EXCLUDED_SESSION_CONFLICTS = setOf(SessionConflict.PRISON_DATE_BLOCKED, SessionConflict.NON_ASSOCIATION, SessionConflict.SESSION_DATE_BLOCKED)
 
     val availableVisitSessionsSortOrder: Comparator<AvailableVisitSessionDto> = compareBy(
       { it.sessionDate },
@@ -566,7 +566,7 @@ class VisitSchedulerSessionsService(
     if (excludedSessionConflicts.isNotEmpty()) {
       sessionsAndSchedules.forEach { sessionsAndSchedule ->
         if (sessionsAndSchedule.visitSessions.isNotEmpty()) {
-          // include sessions that do no have any excluded session conflicts
+          // include sessions that do not have any of the excluded session conflicts
           val includeSessions = sessionsAndSchedule.visitSessions.filter { visitSession ->
             visitSession.sessionConflicts.isEmpty() ||
               visitSession.sessionConflicts.none { it.sessionConflict in excludedSessionConflicts }
