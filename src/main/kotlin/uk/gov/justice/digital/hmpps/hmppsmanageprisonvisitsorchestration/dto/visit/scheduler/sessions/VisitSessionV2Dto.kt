@@ -40,12 +40,12 @@ data class VisitSessionV2Dto(
   val endTime: LocalTime,
 
   @param:Schema(description = "Session conflicts", required = false)
-  val sessionConflicts: List<SessionConflictDto> = listOf(),
+  val sessionConflicts: List<SessionConflictV2Dto> = listOf(),
 
   @param:Schema(description = "Session vo restriction", required = true)
   val visitOrderRestriction: SessionTemplateVisitOrderRestrictionType,
 ) {
-  constructor(visitSessionDto: VisitSessionDto) : this (
+  constructor(visitSessionDto: VisitSessionDto, sessionConflicts: List<SessionConflictV2Dto>) : this (
     sessionTemplateReference = visitSessionDto.sessionTemplateReference,
     visitRoom = visitSessionDto.visitRoom,
     openVisitCapacity = visitSessionDto.openVisitCapacity,
@@ -54,7 +54,7 @@ data class VisitSessionV2Dto(
     closedVisitBookedCount = visitSessionDto.closedVisitBookedCount,
     startTime = visitSessionDto.startTimestamp.toLocalTime(),
     endTime = visitSessionDto.endTimestamp.toLocalTime(),
-    sessionConflicts = visitSessionDto.sessionConflicts,
+    sessionConflicts = sessionConflicts,
     visitOrderRestriction = visitSessionDto.visitOrderRestriction,
   )
 }
