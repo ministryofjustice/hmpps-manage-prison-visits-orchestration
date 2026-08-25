@@ -542,6 +542,7 @@ class VisitSchedulerSessionsService(
     val sessionConflicts = visitSession.sessionConflicts.map { SessionConflictV2.get(it.sessionConflict) }
 
     return if (sessionConflicts.contains(null)) {
+      LOG.debug("Ignoring session with conflict(s): {}", visitSession.sessionConflicts.map { it.sessionConflict }.toList().joinToString())
       null
     } else {
       val sessionConflicts = visitSession.sessionConflicts.map { SessionConflictV2Dto(SessionConflictV2.get(it.sessionConflict)!!, it.additionalAttributes) }

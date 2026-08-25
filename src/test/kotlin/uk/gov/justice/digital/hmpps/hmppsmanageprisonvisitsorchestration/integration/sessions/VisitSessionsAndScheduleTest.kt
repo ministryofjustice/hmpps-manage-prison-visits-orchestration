@@ -41,7 +41,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     prisonerId: String,
     min: Int?,
     username: String?,
-    includedSessionConflicts: List<SessionConflict>? = null,
+    includedSessionConflicts: List<SessionConflictV2>? = null,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     val uri = "/visit-sessions-and-schedule"
@@ -338,7 +338,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
   @Test
   fun `when include session conflicts are included on request then the session conflicts are included on the response`() {
     // Given
-    val includeSessionConflicts = listOf(SessionConflict.DOUBLE_BOOKING_OR_RESERVATION, SessionConflict.REMAND_VISITS_LIMIT_REACHED)
+    val includeSessionConflicts = listOf(SessionConflictV2.DOUBLE_BOOKING_OR_RESERVATION, SessionConflictV2.REMAND_VISITS_LIMIT_REACHED)
     val sessionConflictDate = today.plusDays(3)
 
     // session has REMAND_VISITS_LIMIT_REACHED and DOUBLE_BOOKING_OR_RESERVATION conflicts and both are requested
@@ -372,7 +372,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
   @Test
   fun `when included session conflicts filter out all sessions then date conflicts remain on the response`() {
     // Given
-    val includeSessionConflicts = listOf(SessionConflict.DOUBLE_BOOKING_OR_RESERVATION)
+    val includeSessionConflicts = listOf(SessionConflictV2.DOUBLE_BOOKING_OR_RESERVATION)
     val sessionConflictDate = today.plusDays(3)
     val visitSessionDto = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime), sessionConflicts = setOf(SessionConflict.PRISON_DATE_BLOCKED))
 

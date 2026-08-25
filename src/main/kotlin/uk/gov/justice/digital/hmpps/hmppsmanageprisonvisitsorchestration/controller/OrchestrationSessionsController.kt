@@ -152,7 +152,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     username: String? = null,
     @RequestParam(value = "includedSessionConflicts", required = false)
     @Parameter(
-      description = "Comma-separated list of session conflicts to include only specific sessions with no session conflicts or sessions with these included session conflicts. If omitted or empty, all sessions and their session conflicts are returned.",
+      description = "Comma-separated list of session conflicts to include only sessions with no session conflicts or sessions where all session conflicts are in this list. Session-level conflicts returned are those represented by SessionConflictV2; date-level conflicts (e.g. NON_ASSOCIATION) are returned separately in sessionDateConflicts.",
     )
     includedSessionConflicts: List<SessionConflictV2>? = null,
   ): VisitSessionsAndScheduleDto = visitSchedulerSessionsService.getVisitSessionsAndSchedule(prisonCode, prisonerId, min, username, includedSessionConflicts)
