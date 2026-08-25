@@ -5,8 +5,6 @@ enum class SessionDateConflict {
   NON_ASSOCIATION,
   PRISON_DATE_BLOCKED,
   OUTSIDE_BOOKING_WINDOW,
-  // TODO - not a date conflict currently, but we may want to consider this in the future
-  // REMAND_VISITS_LIMIT_REACHED,
   ;
 
   companion object {
