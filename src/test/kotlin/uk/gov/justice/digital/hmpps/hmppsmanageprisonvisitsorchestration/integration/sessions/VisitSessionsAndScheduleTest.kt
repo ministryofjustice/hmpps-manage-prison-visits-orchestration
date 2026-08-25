@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionConflict
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionConflictV2
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionDateConflict
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
@@ -242,9 +243,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     val visitSessionWithDateConflict = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto1.startTimestamp.toLocalDate() }
     assertThat(visitSessionWithDateConflict.sessionDateConflicts.size).isEqualTo(1)
     assertThat(visitSessionWithDateConflict.sessionDateConflicts.first().sessionDateConflict).isEqualTo(SessionDateConflict.NON_ASSOCIATION)
-    assertThat(visitSessionWithDateConflict.visitSessions).hasSize(1)
-    val sessionConflicts = (visitSessionWithDateConflict.visitSessions.flatMap { session -> session.sessionConflicts.map { it.sessionConflict } })
-    assertThat(sessionConflicts).contains(SessionConflict.NON_ASSOCIATION)
+    assertThat(visitSessionWithDateConflict.visitSessions).isEmpty()
     val visitSessionWithNoDateConflict = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto2.startTimestamp.toLocalDate() }
     assertThat(visitSessionWithNoDateConflict.sessionDateConflicts).isEmpty()
     assertThat(visitSessionWithNoDateConflict.visitSessions).isNotEmpty
@@ -276,10 +275,10 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule.size).isEqualTo(13)
     val visitSessionWithDateConflict = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto1.startTimestamp.toLocalDate() }
     assertThat(visitSessionWithDateConflict.sessionDateConflicts.size).isEqualTo(1)
-    assertThat(visitSessionWithDateConflict.visitSessions).hasSize(1)
+    assertThat(visitSessionWithDateConflict.visitSessions).isEmpty()
     assertThat(visitSessionWithDateConflict.sessionDateConflicts.map { it.sessionDateConflict }).contains(SessionDateConflict.PRISON_DATE_BLOCKED)
     val sessionConflicts = (visitSessionWithDateConflict.visitSessions.flatMap { session -> session.sessionConflicts.map { it.sessionConflict } })
-    assertThat(sessionConflicts).contains(SessionConflict.PRISON_DATE_BLOCKED)
+    assertThat(sessionConflicts).isEmpty()
 
     val visitSessionWithNoDateConflict = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == visitSessionDto2.startTimestamp.toLocalDate() }
     assertThat(visitSessionWithNoDateConflict.sessionDateConflicts).isEmpty()
@@ -363,7 +362,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(visitSessions).hasSize(2)
     assertThat(visitSessions.map { it.sessionTemplateReference }).containsExactly(visitSessionDto1.sessionTemplateReference, visitSessionDto2.sessionTemplateReference)
     assertThat(visitSessions[0].sessionConflicts).hasSize(2)
-    assertThat(visitSessions[0].sessionConflicts.map { it.sessionConflict }).containsOnly(SessionConflict.DOUBLE_BOOKING_OR_RESERVATION, SessionConflict.REMAND_VISITS_LIMIT_REACHED)
+    assertThat(visitSessions[0].sessionConflicts.map { it.sessionConflict }).containsOnly(SessionConflictV2.DOUBLE_BOOKING_OR_RESERVATION, SessionConflictV2.REMAND_VISITS_LIMIT_REACHED)
     assertThat(visitSessions[1].sessionConflicts).isEmpty()
 
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
