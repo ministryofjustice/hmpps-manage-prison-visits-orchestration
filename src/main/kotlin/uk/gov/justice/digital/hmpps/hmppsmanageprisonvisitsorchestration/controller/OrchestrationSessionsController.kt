@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionConflictV2
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.VisitSessionsAndScheduleDto
@@ -149,7 +150,12 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       example = "user-1",
     )
     username: String? = null,
-  ): VisitSessionsAndScheduleDto = visitSchedulerSessionsService.getVisitSessionsAndSchedule(prisonCode, prisonerId, min, username)
+    @RequestParam(value = "includedSessionConflicts", required = false)
+    @Parameter(
+      description = "Comma-separated list of session conflicts to include only sessions with no session conflicts or sessions where all session conflicts are in this list. Session-level conflicts returned are those represented by SessionConflictV2; date-level conflicts (e.g. NON_ASSOCIATION) are returned separately in sessionDateConflicts.",
+    )
+    includedSessionConflicts: List<SessionConflictV2>? = null,
+  ): VisitSessionsAndScheduleDto = visitSchedulerSessionsService.getVisitSessionsAndSchedule(prisonCode, prisonerId, min, username, includedSessionConflicts)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(GET_VISIT_SESSIONS_AVAILABLE)
