@@ -84,7 +84,6 @@ class VisitSchedulerSessionsService(
     prisonerId: String,
     min: Int?,
     username: String?,
-    includedSessionConflicts: List<SessionConflictV2>?,
   ): VisitSessionsAndScheduleDto {
     var scheduledEventsAvailable = true
     val dateRangeForPrison = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, userType = UserType.STAFF)
@@ -107,11 +106,6 @@ class VisitSchedulerSessionsService(
       }
 
     val sessionsAndSchedules = getSessionsAndScheduleDataForDates(sessionAndScheduleDateRange, dateRangeForPrison, visitSessions, prisonerSchedules)
-
-    // finally filter out to include only included session conflicts from the list of conflicts returned
-    if (!includedSessionConflicts.isNullOrEmpty()) {
-      filterOutNonIncludedSessionConflicts(sessionsAndSchedules, includedSessionConflicts.toSet())
-    }
 
     return VisitSessionsAndScheduleDto(scheduledEventsAvailable, sessionsAndSchedules)
   }
@@ -517,26 +511,6 @@ class VisitSchedulerSessionsService(
   }
 
   private fun isOutsideBookingWindow(date: LocalDate, prisonDateRange: DateRange): Boolean = (date.isBefore(prisonDateRange.fromDate) || date.isAfter(prisonDateRange.toDate))
-
-  private fun filterOutNonIncludedSessionConflicts(sessionsAndSchedules: List<SessionsAndScheduleDto>, includedSessionConflicts: Set<SessionConflictV2>) {
-    if (includedSessionConflicts.isNotEmpty()) {
-      sessionsAndSchedules.forEach { sessionsAndSchedule ->
-        if (sessionsAndSchedule.visitSessions.isNotEmpty()) {
-          // include only sessions that have no conflicts or only included conflicts
-          val includeSessions = sessionsAndSchedule.visitSessions.filter { visitSession ->
-            visitSession.sessionConflicts.isEmpty() ||
-              visitSession.sessionConflicts.all { it.sessionConflict in includedSessionConflicts }
-          }
-          sessionsAndSchedule.visitSessions = includeSessions
-        }
-
-        // return an empty schedule if sessions are empty
-        if (sessionsAndSchedule.visitSessions.isEmpty()) {
-          sessionsAndSchedule.scheduledEvents = emptyList()
-        }
-      }
-    }
-  }
 
   private fun mapToVisitSessionV2Dto(visitSession: VisitSessionDto): VisitSessionV2Dto? {
     val sessionConflicts = visitSession.sessionConflicts.map { SessionConflictV2.get(it.sessionConflict) }

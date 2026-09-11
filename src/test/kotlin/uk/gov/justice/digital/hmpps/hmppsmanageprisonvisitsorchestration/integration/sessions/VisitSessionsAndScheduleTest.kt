@@ -41,7 +41,6 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     prisonerId: String,
     min: Int?,
     username: String?,
-    includedSessionConflicts: List<SessionConflictV2>? = null,
     authHttpHeaders: (HttpHeaders) -> Unit,
   ): WebTestClient.ResponseSpec {
     val uri = "/visit-sessions-and-schedule"
@@ -51,9 +50,6 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
       }
       username?.let {
         queryParams.add("username=$username")
-      }
-      includedSessionConflicts?.let {
-        queryParams.add("includedSessionConflicts=${it.joinToString(",")}")
       }
     }.joinToString("&")
 
@@ -118,7 +114,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = listOf(appointment1, appointment2, appointment3))
 
     // When
-    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, null, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -149,7 +145,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
 
     // When
-    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, null, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -184,7 +180,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = listOf(appointment1, appointment2, appointment3))
 
     // When
-    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, null, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -232,7 +228,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
 
     // When
-    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, null, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -266,7 +262,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
 
     // When
-    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, null, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -300,7 +296,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(4), events = emptyList())
 
     // When
-    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, null, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -336,24 +332,26 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `when include session conflicts are included on request then the session conflicts are included on the response`() {
+  fun `when visit sessions have session conflicts then all session conflicts are included on the response`() {
     // Given
-    val includeSessionConflicts = listOf(SessionConflictV2.DOUBLE_BOOKING_OR_RESERVATION, SessionConflictV2.REMAND_VISITS_LIMIT_REACHED)
     val sessionConflictDate = today.plusDays(3)
-
-    // session has REMAND_VISITS_LIMIT_REACHED and DOUBLE_BOOKING_OR_RESERVATION conflicts and both are requested
-    val visitSessionDto1 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime), sessionConflicts = setOf(SessionConflict.REMAND_VISITS_LIMIT_REACHED, SessionConflict.DOUBLE_BOOKING_OR_RESERVATION))
-    // no conflicts, should be included and keep the same order as returned by visit scheduler
+    val sessionConflicts = setOf(
+      SessionConflict.DOUBLE_BOOKING_OR_RESERVATION,
+      SessionConflict.SESSION_DATE_BLOCKED,
+      SessionConflict.REMAND_VISITS_LIMIT_REACHED,
+      SessionConflict.NO_VO_BALANCE,
+      SessionConflict.NO_PVO_BALANCE,
+      SessionConflict.NO_VO_OR_PVO_BALANCE,
+    )
+    val visitSessionDto1 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime), sessionConflicts = sessionConflicts)
     val visitSessionDto2 = createVisitSessionDto(prisonCode, "2", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime))
-    // this session should not be returned as it has a SESSION_DATE_BLOCKED conflict
-    val visitSessionDto3 = createVisitSessionDto(prisonCode, "3", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime), sessionConflicts = setOf(SessionConflict.SESSION_DATE_BLOCKED, SessionConflict.DOUBLE_BOOKING_OR_RESERVATION))
 
-    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2, visitSessionDto3), userType = STAFF)
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2), userType = STAFF)
 
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
 
     // When
-    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, includeSessionConflicts, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -361,34 +359,8 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     val visitSessions = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == sessionConflictDate }.visitSessions
     assertThat(visitSessions).hasSize(2)
     assertThat(visitSessions.map { it.sessionTemplateReference }).containsExactly(visitSessionDto1.sessionTemplateReference, visitSessionDto2.sessionTemplateReference)
-    assertThat(visitSessions[0].sessionConflicts).hasSize(2)
-    assertThat(visitSessions[0].sessionConflicts.map { it.sessionConflict }).containsOnly(SessionConflictV2.DOUBLE_BOOKING_OR_RESERVATION, SessionConflictV2.REMAND_VISITS_LIMIT_REACHED)
+    assertThat(visitSessions[0].sessionConflicts.map { it.sessionConflict }).containsExactlyInAnyOrderElementsOf(SessionConflictV2.entries)
     assertThat(visitSessions[1].sessionConflicts).isEmpty()
-
-    verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
-    verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
-  }
-
-  @Test
-  fun `when included session conflicts filter out all sessions then date conflicts remain on the response`() {
-    // Given
-    val includeSessionConflicts = listOf(SessionConflictV2.DOUBLE_BOOKING_OR_RESERVATION)
-    val sessionConflictDate = today.plusDays(3)
-    val visitSessionDto = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime), sessionConflicts = setOf(SessionConflict.PRISON_DATE_BLOCKED))
-
-    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto), userType = STAFF)
-
-    prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
-
-    // When
-    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, includeSessionConflicts, roleVSIPOrchestrationServiceHttpHeaders)
-
-    // Then
-    val returnResult = responseSpec.expectStatus().isOk.expectBody()
-    val sessionsAndScheduleDto = getResults(returnResult)
-    val sessionsAndSchedule = sessionsAndScheduleDto.sessionsAndSchedule.first { it.date == sessionConflictDate }
-    assertThat(sessionsAndSchedule.visitSessions).isEmpty()
-    assertThat(sessionsAndSchedule.sessionDateConflicts.map { it.sessionDateConflict }).containsOnly(SessionDateConflict.PRISON_DATE_BLOCKED)
 
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
     verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
@@ -406,7 +378,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = listOf(appointment1, appointment2, appointment3))
 
     // When
-    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, null, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -426,7 +398,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = listOf(appointment1, appointment2, appointment3))
 
     // When
-    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, null, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().is5xxServerError
@@ -449,7 +421,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = null, httpStatus = HttpStatus.NOT_FOUND)
 
     // When
-    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, null, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -478,7 +450,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = null, httpStatus = HttpStatus.INTERNAL_SERVER_ERROR)
 
     // When
-    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, null, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
