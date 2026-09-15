@@ -571,7 +571,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
       val today = LocalDate.now()
       // add 1 to the policyNoticeDaysMin to ensure we are adding whole days
       val client = visitSchedulerPrisonDto.clients.first { it.userType == userType }
-      val fromDate = today.plusDays(client.policyNoticeDaysMin.toLong().plus(1))
+      val fromDate = today.plusDays(client.policyNoticeDaysMin.toLong())
       val toDate = today.plusDays(client.policyNoticeDaysMax.toLong())
       DateRange(fromDate, toDate)
     }

@@ -39,6 +39,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.excepti
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateRangeIterator
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 
 @Service
@@ -90,7 +91,8 @@ class VisitSchedulerSessionsService(
     val sessionAndScheduleDateRange = DateRange(LocalDate.now(), dateRangeForPrison.toDate)
 
     // get sessions for prisoner and date range with usertype as STAFF
-    val visitSessions = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max = null, username, UserType.STAFF)
+    val now = LocalDateTime.now()
+    val visitSessions = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max = null, username, UserType.STAFF)?.filter { it.startTimestamp >= now }
 
     // get schedules for prisoner and date range
     val prisonerSchedules =
