@@ -44,9 +44,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
 
     // appointment is not on the same date as the visits
     val dateRange = DateRange(
-      // VB-5790 - adding 1 day after adding policyNoticeDaysMin as there is a change wherein
-      // fix sessions are returned after n whole days and not and not today + n so adding a day
-      // e.g if today is WED and policyNoticeDaysMin is 2 sessions need to be returned from SATURDAY and not FRIDAY
+      // the booking window starts today plus the configured minimum notice period
       fromDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMin.toLong()),
       toDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMax.toLong()),
     )
