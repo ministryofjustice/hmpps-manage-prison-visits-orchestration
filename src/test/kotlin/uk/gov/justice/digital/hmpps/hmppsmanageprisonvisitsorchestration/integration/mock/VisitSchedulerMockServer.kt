@@ -569,7 +569,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
   ): DateRange {
     val dateRangeToUse = dateRange ?: run {
       val today = LocalDate.now()
-      // add 1 to the policyNoticeDaysMin to ensure we are adding whole days
+      // start the booking window at today plus the configured minimum notice period
       val client = visitSchedulerPrisonDto.clients.first { it.userType == userType }
       val fromDate = today.plusDays(client.policyNoticeDaysMin.toLong())
       val toDate = today.plusDays(client.policyNoticeDaysMax.toLong())
