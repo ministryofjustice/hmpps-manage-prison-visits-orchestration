@@ -146,7 +146,9 @@ class VisitSchedulerSessionsService(
       availableVisitSessions = filterAvailableVisitsByHigherPriorityAppointments(prisonerId, dateRange, availableVisitSessions)
     }
 
-    return availableVisitSessions.sortedWith(availableVisitSessionsSortOrder)
+    return availableVisitSessions.filter {
+      it.sessionDate.atTime(it.sessionTimeSlot.startTime) >= LocalDateTime.now()
+    }.sortedWith(availableVisitSessionsSortOrder)
   }
 
   // gets available visit sessions for a public booker and marks sessions for review if the prisoner has alerts / restrictions or visitors have restrictions
