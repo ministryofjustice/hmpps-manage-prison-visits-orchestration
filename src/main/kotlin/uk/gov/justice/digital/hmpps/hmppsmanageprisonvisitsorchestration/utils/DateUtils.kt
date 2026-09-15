@@ -29,7 +29,7 @@ class DateUtils(private val currentDateUtils: CurrentDateUtils) {
       maxOverride
     }
 
-    // add 1 to the policyNoticeDaysMin to ensure we are adding whole days
+    // start the booking window at today plus the configured minimum notice period
     val bookableStartDate = today.plusDays(min.toLong())
     val bookableEndDate = today.plusDays(max.toLong())
     return DateRange(bookableStartDate, bookableEndDate)
