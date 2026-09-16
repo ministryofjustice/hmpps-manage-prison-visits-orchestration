@@ -218,7 +218,8 @@ class VisitSchedulerSessionsService(
       emptyList()
     }
 
-    return sessions.filter { it.sessionDate.atTime(it.sessionTimeSlot.startTime) >= dateUtils.now() }
+    val now = dateUtils.now()
+    return sessions.filter { it.sessionDate.atTime(it.sessionTimeSlot.startTime) >= now }
   }
 
   fun getSessionCapacity(

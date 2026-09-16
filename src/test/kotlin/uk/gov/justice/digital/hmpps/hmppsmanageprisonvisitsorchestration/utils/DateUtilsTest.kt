@@ -95,7 +95,7 @@ class DateUtilsTest {
   @Test
   fun `adds days if number of days is same as max policy days`() {
     // Given
-    val pvbAdvanceFromDateByDays = (prisonClient.policyNoticeDaysMax - (prisonClient.policyNoticeDaysMin + 1))
+    val pvbAdvanceFromDateByDays = (prisonClient.policyNoticeDaysMax - prisonClient.policyNoticeDaysMin)
 
     // When
     var dateRange = dateUtils.getToDaysDateRange(prisonClient)
@@ -104,6 +104,7 @@ class DateUtilsTest {
     // Then
     Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prisonClient.policyNoticeDaysMin.toLong() + pvbAdvanceFromDateByDays))
     Assertions.assertThat(dateRange.toDate).isEqualTo(today.plusDays(prisonClient.policyNoticeDaysMax.toLong()))
+    Assertions.assertThat(dateRange.fromDate).isEqualTo(dateRange.toDate)
   }
 
   @Test
