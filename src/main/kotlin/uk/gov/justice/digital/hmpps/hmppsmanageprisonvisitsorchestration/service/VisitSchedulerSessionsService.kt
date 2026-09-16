@@ -146,9 +146,7 @@ class VisitSchedulerSessionsService(
       availableVisitSessions = filterAvailableVisitsByHigherPriorityAppointments(prisonerId, dateRange, availableVisitSessions)
     }
 
-    return availableVisitSessions.filter {
-      it.sessionDate.atTime(it.sessionTimeSlot.startTime) >= LocalDateTime.now()
-    }.sortedWith(availableVisitSessionsSortOrder)
+    return availableVisitSessions.sortedWith(availableVisitSessionsSortOrder)
   }
 
   // gets available visit sessions for a public booker and marks sessions for review if the prisoner has alerts / restrictions or visitors have restrictions
@@ -217,7 +215,7 @@ class VisitSchedulerSessionsService(
       emptyList()
     }
 
-    return sessions
+    return sessions.filter { it.sessionDate.atTime(it.sessionTimeSlot.startTime) >= LocalDateTime.now() }
   }
 
   fun getSessionCapacity(
