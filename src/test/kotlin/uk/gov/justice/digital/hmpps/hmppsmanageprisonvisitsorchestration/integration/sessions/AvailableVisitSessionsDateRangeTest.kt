@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.sessions
 
-import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -45,10 +44,8 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
 
     // appointment is not on the same date as the visits
     val dateRange = DateRange(
-      // VB-5790 - adding 1 day after adding policyNoticeDaysMin as there is a change wherein
-      // fix sessions are returned after n whole days and not and not today + n so adding a day
-      // e.g if today is WED and policyNoticeDaysMin is 2 sessions need to be returned from SATURDAY and not FRIDAY
-      fromDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMin.toLong().plus(1)),
+      // the booking window starts today plus the configured minimum notice period
+      fromDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMin.toLong()),
       toDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMax.toLong()),
     )
 
@@ -76,7 +73,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
 
     // appointment is not on the same date as the visits
     val dateRange = DateRange(
-      fromDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMin.toLong().plus(1) + pvbAdvanceFromDateByDays),
+      fromDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMin.toLong() + pvbAdvanceFromDateByDays),
       toDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMax.toLong()),
     )
 
@@ -105,7 +102,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
 
     // appointment is not on the same date as the visits
     val dateRange = DateRange(
-      fromDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMin.toLong().plus(1) + pvbAdvanceFromDateByDays.toLong()),
+      fromDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMin.toLong() + pvbAdvanceFromDateByDays.toLong()),
       toDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMax.toLong()),
     )
 
@@ -134,7 +131,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
 
     // appointment is not on the same date as the visits
     val dateRange = DateRange(
-      fromDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMin.toLong().plus(1) + pvbAdvanceFromDateByDays),
+      fromDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMin.toLong() + pvbAdvanceFromDateByDays),
       toDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMax.toLong()),
     )
 
@@ -163,7 +160,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
 
     // appointment is not on the same date as the visits
     val dateRange = DateRange(
-      fromDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMin.toLong().plus(1)),
+      fromDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMin.toLong()),
       toDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMax.toLong()),
     )
 
@@ -187,15 +184,14 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
   @Test
   fun `when pvbAdvanceFromDateByDays passed makes from date same as to date then from date is moved`() {
     // Given
-    val pvbAdvanceFromDateByDays = publicClient.policyNoticeDaysMax - (publicClient.policyNoticeDaysMin + 1)
+    val pvbAdvanceFromDateByDays = publicClient.policyNoticeDaysMax - publicClient.policyNoticeDaysMin
     visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
 
     // appointment is not on the same date as the visits
     val dateRange = DateRange(
-      fromDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMin.toLong().plus(1) + pvbAdvanceFromDateByDays),
+      fromDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMin.toLong() + pvbAdvanceFromDateByDays),
       toDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMax.toLong()),
     )
-    Assertions.assertThat(dateRange.fromDate).isEqualTo(dateRange.toDate)
 
     // When
     callGetAvailableVisitSessions(
@@ -222,7 +218,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
 
     // appointment is not on the same date as the visits
     val dateRange = DateRange(
-      fromDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMin.toLong().plus(1)),
+      fromDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMin.toLong()),
       toDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMax.toLong()),
     )
 
@@ -264,7 +260,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
 
     // Then
     val dateRange = DateRange(
-      fromDate = LocalDate.now().plusDays(fromDateOverride.toLong().plus(1)),
+      fromDate = LocalDate.now().plusDays(fromDateOverride.toLong()),
       toDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMax.toLong()),
     )
 
@@ -292,7 +288,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
 
     // Then
     val dateRange = DateRange(
-      fromDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMin.toLong().plus(1)),
+      fromDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMin.toLong()),
       toDate = LocalDate.now().plusDays(toDateOverride.toLong()),
     )
 
@@ -322,7 +318,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
     // Then
     // date range should ignore the fromDateOverride as it is less than the prison configured min value
     val dateRange = DateRange(
-      fromDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMin.toLong().plus(1)),
+      fromDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMin.toLong()),
       toDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMax.toLong()),
     )
 
@@ -352,7 +348,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
     // Then
     // date range should use the fromDateOverride as it is more than the prison configured min value
     val dateRange = DateRange(
-      fromDate = LocalDate.now().plusDays(fromDateOverride.toLong().plus(1)),
+      fromDate = LocalDate.now().plusDays(fromDateOverride.toLong()),
       toDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMax.toLong()),
     )
 
@@ -382,7 +378,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
     // Then
     // date range should use the toDateOverride as it is more than the prison configured max value
     val dateRange = DateRange(
-      fromDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMin.toLong().plus(1)),
+      fromDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMin.toLong()),
       toDate = LocalDate.now().plusDays(toDateOverride.toLong()),
     )
 
@@ -413,7 +409,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
     // Then
     // date range should ignore the toDateOverride as it is more than the prison configured max value
     val dateRange = DateRange(
-      fromDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMin.toLong().plus(1)),
+      fromDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMin.toLong()),
       toDate = LocalDate.now().plusDays(publicClient.policyNoticeDaysMax.toLong()),
     )
 

@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import java.time.DayOfWeek.SATURDAY
 import java.time.DayOfWeek.SUNDAY
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Component
 class DateUtils(private val currentDateUtils: CurrentDateUtils) {
@@ -29,8 +30,8 @@ class DateUtils(private val currentDateUtils: CurrentDateUtils) {
       maxOverride
     }
 
-    // add 1 to the policyNoticeDaysMin to ensure we are adding whole days
-    val bookableStartDate = today.plusDays(min.toLong().plus(1))
+    // start the booking window at today plus the configured minimum notice period
+    val bookableStartDate = today.plusDays(min.toLong())
     val bookableEndDate = today.plusDays(max.toLong())
     return DateRange(bookableStartDate, bookableEndDate)
   }
@@ -85,6 +86,10 @@ class DateUtils(private val currentDateUtils: CurrentDateUtils) {
 
     return newFromDate
   }
+
+  fun now(): LocalDateTime = LocalDateTime.now()
+
+  fun today(): LocalDate = currentDateUtils.getCurrentDate()
 
   private fun isWeekend(dateToBeChecked: LocalDate): Boolean = ((dateToBeChecked.dayOfWeek == SATURDAY || dateToBeChecked.dayOfWeek == SUNDAY))
 

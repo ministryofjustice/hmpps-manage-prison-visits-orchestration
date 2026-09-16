@@ -61,7 +61,7 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
     // Given
     val today = if (LocalDate.now().dayOfWeek == DayOfWeek.THURSDAY) LocalDate.now() else LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.THURSDAY))
 
-    val dateRange = DateRange(today.plusDays(2).plusDays(1), today.plusDays(28))
+    val dateRange = DateRange(today.plusDays(2), today.plusDays(28))
     Mockito.`when`(currentDateUtils.getCurrentDate()).thenReturn(today)
 
     val saturdaySession = AvailableVisitSessionDto(today.plusDays(2), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
@@ -100,7 +100,7 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
     // Given
     val today = if (LocalDate.now().dayOfWeek == DayOfWeek.TUESDAY) LocalDate.now() else LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.TUESDAY))
 
-    val dateRange = DateRange(today.plusDays(2).plusDays(1), today.plusDays(28))
+    val dateRange = DateRange(today.plusDays(2), today.plusDays(28))
     Mockito.`when`(currentDateUtils.getCurrentDate()).thenReturn(today)
 
     // same day session not available
@@ -149,7 +149,7 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
     // Given
     val today = if (LocalDate.now().dayOfWeek == DayOfWeek.WEDNESDAY) LocalDate.now() else LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.WEDNESDAY))
 
-    val dateRange = DateRange(today.plusDays(2).plusDays(1), today.plusDays(28))
+    val dateRange = DateRange(today.plusDays(2), today.plusDays(28))
     Mockito.`when`(currentDateUtils.getCurrentDate()).thenReturn(today)
 
     // same day session not available
@@ -197,7 +197,7 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
     // Given
     val today = if (LocalDate.now().dayOfWeek == DayOfWeek.THURSDAY) LocalDate.now() else LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.THURSDAY))
 
-    val dateRange = DateRange(today.plusDays(2).plusDays(1), today.plusDays(28))
+    val dateRange = DateRange(today.plusDays(2), today.plusDays(28))
     Mockito.`when`(currentDateUtils.getCurrentDate()).thenReturn(today)
 
     // same day session not available
@@ -232,10 +232,11 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
 
     val availableSessions = getResults(returnResult)
-    assertThat(availableSessions.size).isEqualTo(2)
+    assertThat(availableSessions.size).isEqualTo(3)
     assertThat(availableSessions.map { it.sessionForReview }).doesNotContain(false)
-    assertThat(availableSessions[0].sessionTemplateReference).isEqualTo(tuesdaySession.sessionTemplateReference)
-    assertThat(availableSessions[1].sessionTemplateReference).isEqualTo(wednesdaySession.sessionTemplateReference)
+    assertThat(availableSessions[0].sessionTemplateReference).isEqualTo(mondaySession.sessionTemplateReference)
+    assertThat(availableSessions[1].sessionTemplateReference).isEqualTo(tuesdaySession.sessionTemplateReference)
+    assertThat(availableSessions[2].sessionTemplateReference).isEqualTo(wednesdaySession.sessionTemplateReference)
   }
 
   @Test
@@ -243,7 +244,7 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
     // Given
     val today = if (LocalDate.now().dayOfWeek == DayOfWeek.FRIDAY) LocalDate.now() else LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.FRIDAY))
 
-    val dateRange = DateRange(today.plusDays(2).plusDays(1), today.plusDays(28))
+    val dateRange = DateRange(today.plusDays(2), today.plusDays(28))
     Mockito.`when`(currentDateUtils.getCurrentDate()).thenReturn(today)
 
     // same day session not available
@@ -284,7 +285,7 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
     // Given
     val today = if (LocalDate.now().dayOfWeek == DayOfWeek.SATURDAY) LocalDate.now() else LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.SATURDAY))
 
-    val dateRange = DateRange(today.plusDays(2).plusDays(1), today.plusDays(28))
+    val dateRange = DateRange(today.plusDays(2), today.plusDays(28))
     Mockito.`when`(currentDateUtils.getCurrentDate()).thenReturn(today)
 
     // same day session not available
@@ -341,7 +342,7 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
     // this should be the first session available
     val nextTuesdaySession = AvailableVisitSessionDto(today.plusDays(7), "session4", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
 
-    val dateRange = DateRange(today.plusDays(2).plusDays(1), today.plusDays(28))
+    val dateRange = DateRange(today.plusDays(2), today.plusDays(28))
     Mockito.`when`(currentDateUtils.getCurrentDate()).thenReturn(today)
     val holidaysDto = HolidaysDto(
       englandAndWalesHolidays = HolidayEventByDivisionDto(
@@ -394,7 +395,7 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
     // this should be the first session available
     val nextWednesdaySession = AvailableVisitSessionDto(today.plusDays(8), "session8", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
 
-    val dateRange = DateRange(today.plusDays(2).plusDays(1), today.plusDays(28))
+    val dateRange = DateRange(today.plusDays(2), today.plusDays(28))
     Mockito.`when`(currentDateUtils.getCurrentDate()).thenReturn(today)
     val holidaysDto = HolidaysDto(
       englandAndWalesHolidays = HolidayEventByDivisionDto(
