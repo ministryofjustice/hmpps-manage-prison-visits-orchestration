@@ -184,7 +184,7 @@ class AvailableVisitSessionsDateRangeTest : IntegrationTestBase() {
   @Test
   fun `when pvbAdvanceFromDateByDays passed makes from date same as to date then from date is moved`() {
     // Given
-    val pvbAdvanceFromDateByDays = publicClient.policyNoticeDaysMax - (publicClient.policyNoticeDaysMin + 1)
+    val pvbAdvanceFromDateByDays = publicClient.policyNoticeDaysMax - publicClient.policyNoticeDaysMin
     visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
 
     // appointment is not on the same date as the visits
