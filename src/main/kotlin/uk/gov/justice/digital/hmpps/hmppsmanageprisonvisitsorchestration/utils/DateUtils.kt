@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import java.time.DayOfWeek.SATURDAY
 import java.time.DayOfWeek.SUNDAY
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Component
 class DateUtils(private val currentDateUtils: CurrentDateUtils) {
@@ -85,6 +86,10 @@ class DateUtils(private val currentDateUtils: CurrentDateUtils) {
 
     return newFromDate
   }
+
+  fun now(): LocalDateTime = LocalDateTime.now()
+
+  fun today(): LocalDate = currentDateUtils.getCurrentDate()
 
   private fun isWeekend(dateToBeChecked: LocalDate): Boolean = ((dateToBeChecked.dayOfWeek == SATURDAY || dateToBeChecked.dayOfWeek == SUNDAY))
 

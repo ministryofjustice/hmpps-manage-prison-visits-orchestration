@@ -39,7 +39,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.excepti
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateRangeIterator
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
 
 @Service
@@ -86,13 +85,17 @@ class VisitSchedulerSessionsService(
     min: Int?,
     username: String?,
   ): VisitSessionsAndScheduleDto {
+    val today = dateUtils.today()
+    val now = dateUtils.now()
+
     var scheduledEventsAvailable = true
     val dateRangeForPrison = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, userType = UserType.STAFF)
-    val sessionAndScheduleDateRange = DateRange(LocalDate.now(), dateRangeForPrison.toDate)
+    val sessionAndScheduleDateRange = DateRange(today, dateRangeForPrison.toDate)
 
     // get sessions for prisoner and date range with usertype as STAFF
-    val now = LocalDateTime.now()
-    val visitSessions = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max = null, username, UserType.STAFF)?.filter { it.startTimestamp >= now }
+
+    var visitSessions = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max = null, username, UserType.STAFF)
+    visitSessions = visitSessions?.filter { it.startTimestamp >= now }
 
     // get schedules for prisoner and date range
     val prisonerSchedules =
@@ -215,7 +218,7 @@ class VisitSchedulerSessionsService(
       emptyList()
     }
 
-    return sessions.filter { it.sessionDate.atTime(it.sessionTimeSlot.startTime) >= LocalDateTime.now() }
+    return sessions.filter { it.sessionDate.atTime(it.sessionTimeSlot.startTime) >= dateUtils.now() }
   }
 
   fun getSessionCapacity(
