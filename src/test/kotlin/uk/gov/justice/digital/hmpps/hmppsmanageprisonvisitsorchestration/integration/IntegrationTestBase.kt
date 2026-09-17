@@ -1007,6 +1007,8 @@ abstract class IntegrationTestBase {
     prisonerIncentiveLevelGroupNames: List<String> = mutableListOf(),
     visitOrderRestriction: SessionTemplateVisitOrderRestrictionType = SessionTemplateVisitOrderRestrictionType.VO_PVO,
     isSessionExcluded: Boolean = false,
+    isAgeRestricted: Boolean = false,
+    ageRestriction: Int = 18,
   ): SessionScheduleDto = SessionScheduleDto(
     sessionTemplateReference = reference,
     sessionDateRange = SessionDateRangeDto(validFromDate, validToDate),
@@ -1023,5 +1025,7 @@ abstract class IntegrationTestBase {
     visitRoom = visitRoom,
     visitOrderRestriction = visitOrderRestriction,
     isSessionExcluded = isSessionExcluded,
+    isAgeRestricted = isAgeRestricted,
+    ageRestriction = ageRestriction,
   )
 }
