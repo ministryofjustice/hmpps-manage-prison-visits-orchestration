@@ -450,6 +450,8 @@ abstract class IntegrationTestBase {
     endTimestamp: LocalDateTime = LocalDateTime.now().plusHours(1),
     sessionConflicts: Set<SessionConflict> = emptySet(),
     visitOrderRestriction: SessionTemplateVisitOrderRestrictionType = SessionTemplateVisitOrderRestrictionType.NONE,
+    isAgeRestricted: Boolean = false,
+    ageRestriction: Int = 18,
   ): VisitSessionDto = VisitSessionDto(
     sessionTemplateReference = sessionTemplateReference,
     prisonCode = prisonCode,
@@ -460,6 +462,8 @@ abstract class IntegrationTestBase {
     openVisitCapacity = 30,
     startTimestamp = startTimestamp,
     endTimestamp = endTimestamp,
+    isAgeRestricted = isAgeRestricted,
+    ageRestriction = ageRestriction,
     sessionConflicts = sessionConflicts.sortedBy { it.name }.map { createSessionConflictDto(it) },
   )
 

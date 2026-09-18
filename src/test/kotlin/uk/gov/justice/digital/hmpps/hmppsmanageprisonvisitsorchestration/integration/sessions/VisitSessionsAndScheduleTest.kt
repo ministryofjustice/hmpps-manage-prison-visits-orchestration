@@ -349,7 +349,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
       SessionConflict.NO_VO_OR_PVO_BALANCE,
       SessionConflict.AGE_RESTRICTION,
     )
-    val visitSessionDto1 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime), sessionConflicts = sessionConflicts)
+    val visitSessionDto1 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime), sessionConflicts = sessionConflicts, isAgeRestricted = true, ageRestriction = 21)
     val visitSessionDto2 = createVisitSessionDto(prisonCode, "2", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime))
 
     visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2), userType = STAFF, youngestVisitorAge = youngestVisitorAge)
@@ -366,6 +366,8 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(visitSessions).hasSize(2)
     assertThat(visitSessions.map { it.sessionTemplateReference }).containsExactly(visitSessionDto1.sessionTemplateReference, visitSessionDto2.sessionTemplateReference)
     assertThat(visitSessions[0].sessionConflicts.map { it.sessionConflict }).containsExactlyInAnyOrderElementsOf(SessionConflictV2.entries)
+    assertThat(visitSessions[0].isAgeRestricted).isTrue
+    assertThat(visitSessions[0].ageRestriction).isEqualTo(21)
     assertThat(visitSessions[1].sessionConflicts).isEmpty()
 
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF, youngestVisitorAge)

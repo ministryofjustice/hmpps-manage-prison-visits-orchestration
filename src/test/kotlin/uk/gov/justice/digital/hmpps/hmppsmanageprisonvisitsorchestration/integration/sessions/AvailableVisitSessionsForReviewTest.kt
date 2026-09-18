@@ -49,7 +49,8 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
   fun `when there are no prisoner alerts or restrictions or visitor restrictions sessionForReview flag is set to false`() {
     // Given
     val youngestVisitorAge = 21
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC, youngestVisitorAge = youngestVisitorAge)
+    val ageRestrictedVisitSession = visitSession1.copy(isAgeRestricted = true, ageRestriction = 21)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(ageRestrictedVisitSession, visitSession2, visitSession3), userType = PUBLIC, youngestVisitorAge = youngestVisitorAge)
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf())
@@ -64,8 +65,10 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
 
     val availableSessions = getResults(returnResult)
     assertThat(availableSessions.size).isEqualTo(3)
-    assertThat(availableSessions[0].sessionTemplateReference).isEqualTo(visitSession1.sessionTemplateReference)
-    assertThat(availableSessions[0].visitOrderRestriction).isEqualTo(visitSession1.visitOrderRestriction)
+    assertThat(availableSessions[0].sessionTemplateReference).isEqualTo(ageRestrictedVisitSession.sessionTemplateReference)
+    assertThat(availableSessions[0].visitOrderRestriction).isEqualTo(ageRestrictedVisitSession.visitOrderRestriction)
+    assertThat(availableSessions[0].isAgeRestricted).isTrue
+    assertThat(availableSessions[0].ageRestriction).isEqualTo(21)
     assertThat(availableSessions[0].sessionForReview).isFalse
     assertThat(availableSessions[1].sessionTemplateReference).isEqualTo(visitSession2.sessionTemplateReference)
     assertThat(availableSessions[1].visitOrderRestriction).isEqualTo(visitSession2.visitOrderRestriction)

@@ -54,6 +54,8 @@ class VisitSessionsTest : IntegrationTestBase() {
       prisonCode,
       "1",
       sessionConflicts = setOf(SessionConflict.AGE_RESTRICTION),
+      isAgeRestricted = true,
+      ageRestriction = 21,
     )
 
     visitSchedulerMockServer.stubGetVisitSessions(
@@ -78,6 +80,8 @@ class VisitSessionsTest : IntegrationTestBase() {
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
     val actualVisitSessions = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<VisitSessionDto>::class.java)
     assertThat(actualVisitSessions.single().sessionConflicts.map { it.sessionConflict }).containsExactly(SessionConflict.AGE_RESTRICTION)
+    assertThat(actualVisitSessions.single().isAgeRestricted).isTrue
+    assertThat(actualVisitSessions.single().ageRestriction).isEqualTo(21)
     verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF, youngestVisitorAge)
   }
 
