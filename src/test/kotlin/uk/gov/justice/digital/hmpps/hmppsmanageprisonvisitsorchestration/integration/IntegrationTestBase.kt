@@ -450,6 +450,8 @@ abstract class IntegrationTestBase {
     endTimestamp: LocalDateTime = LocalDateTime.now().plusHours(1),
     sessionConflicts: Set<SessionConflict> = emptySet(),
     visitOrderRestriction: SessionTemplateVisitOrderRestrictionType = SessionTemplateVisitOrderRestrictionType.NONE,
+    isAgeRestricted: Boolean = false,
+    ageRestriction: Int = 18,
   ): VisitSessionDto = VisitSessionDto(
     sessionTemplateReference = sessionTemplateReference,
     prisonCode = prisonCode,
@@ -460,6 +462,8 @@ abstract class IntegrationTestBase {
     openVisitCapacity = 30,
     startTimestamp = startTimestamp,
     endTimestamp = endTimestamp,
+    isAgeRestricted = isAgeRestricted,
+    ageRestriction = ageRestriction,
     sessionConflicts = sessionConflicts.sortedBy { it.name }.map { createSessionConflictDto(it) },
   )
 
@@ -581,6 +585,7 @@ abstract class IntegrationTestBase {
     currentUser: String? = null,
     userType: UserType? = null,
     authHttpHeaders: (HttpHeaders) -> Unit,
+    youngestVisitorAge: Int? = null,
   ): WebTestClient.ResponseSpec {
     val uri = "/visit-sessions/available"
 
@@ -596,6 +601,7 @@ abstract class IntegrationTestBase {
         toDateOverride = toDateOverride,
         pvbAdvanceFromDateByDays = pvbAdvanceFromDateByDays,
         userType = userType,
+        youngestVisitorAge = youngestVisitorAge,
       ).joinToString("&")
 
     return webTestClient.get().uri("$uri?$uriParams")
@@ -612,6 +618,7 @@ abstract class IntegrationTestBase {
     userType: UserType? = null,
     userName: String? = null,
     authHttpHeaders: (HttpHeaders) -> Unit,
+    youngestVisitorAge: Int? = null,
   ): WebTestClient.ResponseSpec {
     val uri = GET_VISIT_SESSIONS_AVAILABLE_PUBLIC
 
@@ -623,6 +630,7 @@ abstract class IntegrationTestBase {
         excludedApplicationReference = excludedApplicationReference,
         userType = userType,
         userName = userName,
+        youngestVisitorAge = youngestVisitorAge,
       ).joinToString("&")
 
     return webTestClient.get().uri("$uri?$uriParams")
@@ -773,6 +781,7 @@ abstract class IntegrationTestBase {
     toDateOverride: Int? = null,
     currentUser: String? = null,
     userType: UserType? = null,
+    youngestVisitorAge: Int? = null,
   ): List<String> {
     val queryParams = ArrayList<String>()
     queryParams.add("prisonId=$prisonCode")
@@ -801,6 +810,9 @@ abstract class IntegrationTestBase {
     userType?.let {
       queryParams.add("userType=${userType.name}")
     }
+    youngestVisitorAge?.let {
+      queryParams.add("youngestVisitorAge=$youngestVisitorAge")
+    }
 
     return queryParams
   }
@@ -812,6 +824,7 @@ abstract class IntegrationTestBase {
     excludedApplicationReference: String?,
     userType: UserType? = null,
     userName: String? = null,
+    youngestVisitorAge: Int? = null,
   ): List<String> {
     val queryParams = ArrayList<String>()
     queryParams.add("prisonId=$prisonCode")
@@ -827,6 +840,9 @@ abstract class IntegrationTestBase {
     }
     userType?.let {
       queryParams.add("userType=${userType.name}")
+    }
+    youngestVisitorAge?.let {
+      queryParams.add("youngestVisitorAge=$youngestVisitorAge")
     }
 
     return queryParams

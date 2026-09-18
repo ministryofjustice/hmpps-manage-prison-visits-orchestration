@@ -48,7 +48,9 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
   @Test
   fun `when there are no prisoner alerts or restrictions or visitor restrictions sessionForReview flag is set to false`() {
     // Given
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
+    val youngestVisitorAge = 21
+    val ageRestrictedVisitSession = visitSession1.copy(isAgeRestricted = true, ageRestriction = 21)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(ageRestrictedVisitSession, visitSession2, visitSession3), userType = PUBLIC, youngestVisitorAge = youngestVisitorAge)
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
     alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, mutableListOf())
@@ -56,15 +58,17 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
-    val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessionsPublic(webTestClient, prisonCode, prisonerId, visitorIds = visitorIds, excludedApplicationReference = null, userType = PUBLIC, userName = null, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders, youngestVisitorAge = youngestVisitorAge)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
 
     val availableSessions = getResults(returnResult)
     assertThat(availableSessions.size).isEqualTo(3)
-    assertThat(availableSessions[0].sessionTemplateReference).isEqualTo(visitSession1.sessionTemplateReference)
-    assertThat(availableSessions[0].visitOrderRestriction).isEqualTo(visitSession1.visitOrderRestriction)
+    assertThat(availableSessions[0].sessionTemplateReference).isEqualTo(ageRestrictedVisitSession.sessionTemplateReference)
+    assertThat(availableSessions[0].visitOrderRestriction).isEqualTo(ageRestrictedVisitSession.visitOrderRestriction)
+    assertThat(availableSessions[0].isAgeRestricted).isTrue
+    assertThat(availableSessions[0].ageRestriction).isEqualTo(21)
     assertThat(availableSessions[0].sessionForReview).isFalse
     assertThat(availableSessions[1].sessionTemplateReference).isEqualTo(visitSession2.sessionTemplateReference)
     assertThat(availableSessions[1].visitOrderRestriction).isEqualTo(visitSession2.visitOrderRestriction)
@@ -78,7 +82,7 @@ class AvailableVisitSessionsForReviewTest : IntegrationTestBase() {
     verify(prisonApiClientSpy, times(2)).getPrisonerRestrictions(prisonerId)
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
-    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
+    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC, youngestVisitorAge)
     verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 

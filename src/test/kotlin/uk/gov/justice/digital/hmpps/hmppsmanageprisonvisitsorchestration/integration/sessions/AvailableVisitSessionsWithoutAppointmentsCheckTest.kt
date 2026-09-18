@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTimeSlotDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PublicSessionConflict
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.CLOSED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.OPEN
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType.NONE
@@ -36,12 +37,13 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     // Given
     val prisonCode = "MDI"
     val prisonerId = "AA123456B"
-    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = VO)
+    val youngestVisitorAge = 21
+    val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = VO, isAgeRestricted = true, ageRestriction = 21, sessionConflicts = setOf(PublicSessionConflict.AGE_RESTRICTION))
     val visitSession2 = AvailableVisitSessionDto(LocalDate.now().plusDays(1), "session2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = PVO)
     val visitSession3 = AvailableVisitSessionDto(LocalDate.now().plusDays(2), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
 
     val visitSchedulerPrisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC, youngestVisitorAge = youngestVisitorAge)
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
 
@@ -50,7 +52,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, false, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, false, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders, youngestVisitorAge = youngestVisitorAge)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk
@@ -58,9 +60,13 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
       .jsonPath("$.size()").isEqualTo(3)
     val availableSessions = getResults(returnResult)
     assertThat(availableSessions[0].visitOrderRestriction).isEqualTo(visitSession1.visitOrderRestriction)
+    assertThat(availableSessions[0].isAgeRestricted).isTrue
+    assertThat(availableSessions[0].ageRestriction).isEqualTo(21)
+    assertThat(availableSessions[0].sessionConflicts).containsExactly(PublicSessionConflict.AGE_RESTRICTION)
     assertThat(availableSessions[1].visitOrderRestriction).isEqualTo(visitSession2.visitOrderRestriction)
     assertThat(availableSessions[2].visitOrderRestriction).isEqualTo(visitSession3.visitOrderRestriction)
     verify(appointmentsServiceSpy, times(0)).getHigherPriorityAppointments(any(), any(), any())
+    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC, youngestVisitorAge)
   }
 
   @Test
@@ -138,7 +144,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
       .jsonPath("$.size()").isEqualTo(0)
 
     verify(prisonerProfileServiceSpy, times(1)).getBannedRestrictionDateRage(any(), any(), any())
-    verify(visitSchedulerClientSpy, times(0)).getAvailableVisitSessions(any(), any(), any(), any(), any(), anyOrNull(), any())
+    verify(visitSchedulerClientSpy, times(0)).getAvailableVisitSessions(any(), any(), any(), any(), any(), anyOrNull(), any(), anyOrNull())
     verify(appointmentsServiceSpy, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
@@ -385,7 +391,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
 
     // Then
     responseSpec.expectStatus().isNotFound
-    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any())
+    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull())
     verify(appointmentsServiceSpy, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 

@@ -566,6 +566,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     excludedApplicationReference: String? = null,
     username: String? = null,
     userType: UserType,
+    youngestVisitorAge: Int? = null,
   ): DateRange {
     val dateRangeToUse = dateRange ?: run {
       val today = LocalDate.now()
@@ -587,6 +588,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
             excludedApplicationReference = excludedApplicationReference,
             username = username,
             userType = userType,
+            youngestVisitorAge = youngestVisitorAge,
           ).joinToString("&")
         }",
       ).willReturn(
@@ -599,9 +601,10 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     return dateRangeToUse
   }
 
-  fun stubGetVisitSessions(prisonId: String, prisonerId: String, visitSessions: List<VisitSessionDto>?, userType: UserType, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
+  fun stubGetVisitSessions(prisonId: String, prisonerId: String, visitSessions: List<VisitSessionDto>?, userType: UserType, youngestVisitorAge: Int? = null, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
+    val youngestVisitorAgeQueryParam = youngestVisitorAge?.let { "&youngestVisitorAge=$it" }.orEmpty()
     stubFor(
-      get("/visit-sessions?prisonId=$prisonId&prisonerId=$prisonerId&userType=${userType.name}")
+      get("/visit-sessions?prisonId=$prisonId&prisonerId=$prisonerId&userType=${userType.name}$youngestVisitorAgeQueryParam")
         .willReturn(
           if (visitSessions != null) {
             createJsonResponseBuilder()
@@ -943,6 +946,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     excludedApplicationReference: String?,
     username: String?,
     userType: UserType,
+    youngestVisitorAge: Int? = null,
   ): List<String> {
     val queryParams = ArrayList<String>()
     queryParams.add("prisonId=$prisonCode")
@@ -957,6 +961,9 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
       queryParams.add("username=$username")
     }
     queryParams.add("userType=${userType.name}")
+    youngestVisitorAge?.let {
+      queryParams.add("youngestVisitorAge=$youngestVisitorAge")
+    }
     return queryParams
   }
 
