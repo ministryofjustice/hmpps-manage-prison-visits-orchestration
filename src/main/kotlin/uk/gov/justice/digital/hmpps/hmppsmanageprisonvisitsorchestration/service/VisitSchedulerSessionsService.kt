@@ -77,20 +77,22 @@ class VisitSchedulerSessionsService(
     max: Int?,
     username: String?,
     userType: UserType,
-  ): List<VisitSessionDto>? = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max, username, userType)
+    youngestVisitorAge: Int? = null,
+  ): List<VisitSessionDto>? = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max, username, userType, youngestVisitorAge)
 
   fun getVisitSessionsAndSchedule(
     prisonCode: String,
     prisonerId: String,
     min: Int?,
     username: String?,
+    youngestVisitorAge: Int? = null,
   ): VisitSessionsAndScheduleDto {
     var scheduledEventsAvailable = true
     val dateRangeForPrison = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, userType = UserType.STAFF)
     val sessionAndScheduleDateRange = DateRange(LocalDate.now(), dateRangeForPrison.toDate)
 
     // get sessions for prisoner and date range with usertype as STAFF
-    val visitSessions = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max = null, username, UserType.STAFF)
+    val visitSessions = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max = null, username, UserType.STAFF, youngestVisitorAge)
 
     // get schedules for prisoner and date range
     val prisonerSchedules =
@@ -122,6 +124,7 @@ class VisitSchedulerSessionsService(
     toDateOverride: Int? = null,
     username: String? = null,
     userType: UserType,
+    youngestVisitorAge: Int? = null,
   ): List<AvailableVisitSessionDto> {
     val sessionRestriction = updateRequestedRestriction(requestedSessionRestriction, prisonerId, visitors)
 
@@ -136,6 +139,7 @@ class VisitSchedulerSessionsService(
       excludedApplicationReference = excludedApplicationReference,
       username = username,
       userType = userType,
+      youngestVisitorAge = youngestVisitorAge,
       dateRange = dateRange,
       sessionRestriction = sessionRestriction,
     )
@@ -155,6 +159,7 @@ class VisitSchedulerSessionsService(
     excludedApplicationReference: String? = null,
     username: String? = null,
     userType: UserType,
+    youngestVisitorAge: Int? = null,
   ): List<AvailableVisitSessionDto> {
     val sessionRestriction = updateRequestedRestriction(null, prisonerId, visitors)
 
@@ -167,6 +172,7 @@ class VisitSchedulerSessionsService(
       excludedApplicationReference = excludedApplicationReference,
       username = username,
       userType = userType,
+      youngestVisitorAge = youngestVisitorAge,
       dateRange = dateRange,
       sessionRestriction = sessionRestriction,
     ).takeIf { it.isNotEmpty() }?.let {
@@ -193,6 +199,7 @@ class VisitSchedulerSessionsService(
     userType: UserType,
     dateRange: DateRange,
     sessionRestriction: SessionRestriction,
+    youngestVisitorAge: Int? = null,
   ): List<AvailableVisitSessionDto> {
     LOG.debug("getting available visit sessions for prisonerId - {}, dateRange - {}, sessionRestriction - {}, excludedApplicationReference - {}, username - {}, userType - {}, dateRange - {}, sessionRestriction - {}", prisonerId, dateRange, sessionRestriction, excludedApplicationReference, username, userType, dateRange, sessionRestriction)
     val sessions = try {
@@ -207,6 +214,7 @@ class VisitSchedulerSessionsService(
         excludedApplicationReference = excludedApplicationReference,
         username = username,
         userType = userType,
+        youngestVisitorAge = youngestVisitorAge,
       )
     } catch (_: DateRangeNotFoundException) {
       LOG.error("getAvailableVisitSessions range is not returned therefore we do not have a valid date range and should return an empty list")

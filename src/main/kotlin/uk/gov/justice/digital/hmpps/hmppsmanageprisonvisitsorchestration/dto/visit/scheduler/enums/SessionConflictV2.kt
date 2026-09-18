@@ -8,6 +8,7 @@ enum class SessionConflictV2 {
   NO_VO_BALANCE,
   NO_PVO_BALANCE,
   NO_VO_OR_PVO_BALANCE,
+  AGE_RESTRICTION,
   ;
 
   companion object {
@@ -20,6 +21,7 @@ enum class SessionConflictV2 {
       SessionConflict.NO_VO_BALANCE -> NO_VO_BALANCE
       SessionConflict.NO_PVO_BALANCE -> NO_PVO_BALANCE
       SessionConflict.NO_VO_OR_PVO_BALANCE -> NO_VO_OR_PVO_BALANCE
+      SessionConflict.AGE_RESTRICTION -> AGE_RESTRICTION
     }
   }
 }

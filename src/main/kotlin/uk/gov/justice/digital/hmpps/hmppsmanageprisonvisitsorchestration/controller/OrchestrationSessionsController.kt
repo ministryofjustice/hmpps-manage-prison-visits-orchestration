@@ -100,7 +100,10 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     @RequestParam
     @Parameter(description = "user type for the session", example = "STAFF", required = false)
     userType: UserType = UserType.STAFF,
-  ): List<VisitSessionDto>? = visitSchedulerSessionsService.getVisitSessions(prisonCode, prisonerId, min, max, username, userType)
+    @RequestParam(value = "youngestVisitorAge", required = false)
+    @Parameter(description = "Age of the youngest visitor", example = "18", required = false)
+    youngestVisitorAge: Int? = null,
+  ): List<VisitSessionDto>? = visitSchedulerSessionsService.getVisitSessions(prisonCode, prisonerId, min, max, username, userType, youngestVisitorAge)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(GET_VISIT_SESSIONS_AND_SCHEDULE)
@@ -149,7 +152,10 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       example = "user-1",
     )
     username: String? = null,
-  ): VisitSessionsAndScheduleDto = visitSchedulerSessionsService.getVisitSessionsAndSchedule(prisonCode, prisonerId, min, username)
+    @RequestParam(value = "youngestVisitorAge", required = false)
+    @Parameter(description = "Age of the youngest visitor", example = "18", required = false)
+    youngestVisitorAge: Int? = null,
+  ): VisitSessionsAndScheduleDto = visitSchedulerSessionsService.getVisitSessionsAndSchedule(prisonCode, prisonerId, min, username, youngestVisitorAge)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(GET_VISIT_SESSIONS_AVAILABLE)
@@ -220,6 +226,9 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     @RequestParam
     @Parameter(description = "user type for the session", example = "PUBLIC", required = false)
     userType: UserType = UserType.PUBLIC,
+    @RequestParam(value = "youngestVisitorAge", required = false)
+    @Parameter(description = "Age of the youngest visitor", example = "18", required = false)
+    youngestVisitorAge: Int? = null,
   ): List<AvailableVisitSessionDto> = visitSchedulerSessionsService.getAvailableVisitSessions(
     prisonCode = prisonCode,
     prisonerId = prisonerId,
@@ -231,6 +240,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     toDateOverride = toDateOverride,
     username = username,
     userType = userType,
+    youngestVisitorAge = youngestVisitorAge,
     // TODO - to be removed as PVB does not use this parameter
     excludedApplicationReference = excludedApplicationReference,
   )
@@ -286,6 +296,9 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     @RequestParam
     @Parameter(description = "user type for the session", example = "PUBLIC", required = false)
     userType: UserType = UserType.PUBLIC,
+    @RequestParam(value = "youngestVisitorAge", required = false)
+    @Parameter(description = "Age of the youngest visitor", example = "18", required = false)
+    youngestVisitorAge: Int? = null,
   ): List<AvailableVisitSessionDto> = visitSchedulerSessionsService.getAvailableVisitSessionsForPublicUser(
     prisonCode = prisonCode,
     prisonerId = prisonerId,
@@ -293,6 +306,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     excludedApplicationReference = excludedApplicationReference,
     username = username,
     userType = userType,
+    youngestVisitorAge = youngestVisitorAge,
   )
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")

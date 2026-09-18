@@ -42,6 +42,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     min: Int?,
     username: String?,
     authHttpHeaders: (HttpHeaders) -> Unit,
+    youngestVisitorAge: Int? = null,
   ): WebTestClient.ResponseSpec {
     val uri = "/visit-sessions-and-schedule"
     val uriQueryParams = mutableListOf("prisonId=$prisonCode", "prisonerId=$prisonerId").also { queryParams ->
@@ -50,6 +51,9 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
       }
       username?.let {
         queryParams.add("username=$username")
+      }
+      youngestVisitorAge?.let {
+        queryParams.add("youngestVisitorAge=$youngestVisitorAge")
       }
     }.joinToString("&")
 
@@ -335,6 +339,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
   fun `when visit sessions have session conflicts then all session conflicts are included on the response`() {
     // Given
     val sessionConflictDate = today.plusDays(3)
+    val youngestVisitorAge = 17
     val sessionConflicts = setOf(
       SessionConflict.DOUBLE_BOOKING_OR_RESERVATION,
       SessionConflict.SESSION_DATE_BLOCKED,
@@ -342,16 +347,17 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
       SessionConflict.NO_VO_BALANCE,
       SessionConflict.NO_PVO_BALANCE,
       SessionConflict.NO_VO_OR_PVO_BALANCE,
+      SessionConflict.AGE_RESTRICTION,
     )
     val visitSessionDto1 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime), sessionConflicts = sessionConflicts)
     val visitSessionDto2 = createVisitSessionDto(prisonCode, "2", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime))
 
-    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2), userType = STAFF)
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2), userType = STAFF, youngestVisitorAge = youngestVisitorAge)
 
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
 
     // When
-    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, roleVSIPOrchestrationServiceHttpHeaders, youngestVisitorAge)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -362,7 +368,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(visitSessions[0].sessionConflicts.map { it.sessionConflict }).containsExactlyInAnyOrderElementsOf(SessionConflictV2.entries)
     assertThat(visitSessions[1].sessionConflicts).isEmpty()
 
-    verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
+    verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF, youngestVisitorAge)
     verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong() + 1), LocalDate.now().plusDays(maxDays.toLong()))
   }
 

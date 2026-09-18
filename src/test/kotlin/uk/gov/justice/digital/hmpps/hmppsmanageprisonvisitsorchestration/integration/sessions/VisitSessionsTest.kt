@@ -8,6 +8,7 @@ import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionConflict
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
@@ -23,6 +24,7 @@ class VisitSessionsTest : IntegrationTestBase() {
     username: String? = null,
     userType: UserType? = null,
     authHttpHeaders: (HttpHeaders) -> Unit,
+    youngestVisitorAge: Int? = null,
   ): WebTestClient.ResponseSpec {
     val uri = "/visit-sessions"
     val uriQueryParams = mutableListOf("prisonId=$prisonCode", "prisonerId=$prisonerId").also { queryParams ->
@@ -32,11 +34,51 @@ class VisitSessionsTest : IntegrationTestBase() {
       userType?.let {
         queryParams.add("userType=${userType.name}")
       }
+      youngestVisitorAge?.let {
+        queryParams.add("youngestVisitorAge=$youngestVisitorAge")
+      }
     }.joinToString("&")
 
     return webTestClient.get().uri("$uri?$uriQueryParams")
       .headers(authHttpHeaders)
       .exchange()
+  }
+
+  @Test
+  fun `when the youngest visitor has an age conflict it is returned to the caller`() {
+    // Given
+    val prisonCode = "MDI"
+    val prisonerId = "ABC"
+    val youngestVisitorAge = 17
+    val expectedVisitSession = createVisitSessionDto(
+      prisonCode,
+      "1",
+      sessionConflicts = setOf(SessionConflict.AGE_RESTRICTION),
+    )
+
+    visitSchedulerMockServer.stubGetVisitSessions(
+      prisonCode,
+      prisonerId,
+      listOf(expectedVisitSession),
+      userType = STAFF,
+      youngestVisitorAge = youngestVisitorAge,
+    )
+
+    // When
+    val responseSpec = callGetVisitSessions(
+      webTestClient,
+      prisonCode,
+      prisonerId,
+      userType = STAFF,
+      youngestVisitorAge = youngestVisitorAge,
+      authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
+    )
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val actualVisitSessions = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<VisitSessionDto>::class.java)
+    assertThat(actualVisitSessions.single().sessionConflicts.map { it.sessionConflict }).containsExactly(SessionConflict.AGE_RESTRICTION)
+    verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF, youngestVisitorAge)
   }
 
   @Test
