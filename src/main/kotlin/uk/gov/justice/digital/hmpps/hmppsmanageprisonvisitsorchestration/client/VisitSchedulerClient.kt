@@ -283,9 +283,10 @@ class VisitSchedulerClient(
     max: Int?,
     username: String?,
     userType: UserType,
+    youngestVisitorAge: Int? = null,
   ): List<VisitSessionDto>? = webClient.get()
     .uri("/visit-sessions") {
-      visitSessionsUriBuilder(prisonId, prisonerId, min, max, username, userType, it).build()
+      visitSessionsUriBuilder(prisonId, prisonerId, min, max, username, userType, youngestVisitorAge, it).build()
     }
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
@@ -299,12 +300,13 @@ class VisitSchedulerClient(
     excludedApplicationReference: String? = null,
     username: String? = null,
     userType: UserType,
+    youngestVisitorAge: Int? = null,
   ): List<AvailableVisitSessionDto> {
     val uri = "/visit-sessions/available"
 
     return webClient.get()
       .uri(uri) {
-        visitAvailableSessionsUriBuilder(it, prisonId, prisonerId, sessionRestriction, dateRange, excludedApplicationReference, username, userType).build()
+        visitAvailableSessionsUriBuilder(it, prisonId, prisonerId, sessionRestriction, dateRange, excludedApplicationReference, username, userType, youngestVisitorAge).build()
       }
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
@@ -712,13 +714,14 @@ class VisitSchedulerClient(
     return uriBuilder
   }
 
-  private fun visitSessionsUriBuilder(prisonId: String, prisonerId: String?, min: Int?, max: Int?, username: String?, userType: UserType, uriBuilder: UriBuilder): UriBuilder {
+  private fun visitSessionsUriBuilder(prisonId: String, prisonerId: String?, min: Int?, max: Int?, username: String?, userType: UserType, youngestVisitorAge: Int?, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParam("prisonId", prisonId)
     uriBuilder.queryParamIfPresent("prisonerId", Optional.ofNullable(prisonerId))
     uriBuilder.queryParamIfPresent("min", Optional.ofNullable(min))
     uriBuilder.queryParamIfPresent("max", Optional.ofNullable(max))
     uriBuilder.queryParamIfPresent("username", Optional.ofNullable(username))
     uriBuilder.queryParam("userType", userType.name)
+    uriBuilder.queryParamIfPresent("youngestVisitorAge", Optional.ofNullable(youngestVisitorAge))
     return uriBuilder
   }
 
@@ -731,6 +734,7 @@ class VisitSchedulerClient(
     excludedApplicationReference: String? = null,
     username: String? = null,
     userType: UserType,
+    youngestVisitorAge: Int? = null,
   ): UriBuilder {
     uriBuilder.queryParam("prisonId", prisonId)
     uriBuilder.queryParam("prisonerId", prisonerId)
@@ -744,6 +748,7 @@ class VisitSchedulerClient(
       uriBuilder.queryParam("username", it)
     }
     uriBuilder.queryParam("userType", userType.name)
+    uriBuilder.queryParamIfPresent("youngestVisitorAge", Optional.ofNullable(youngestVisitorAge))
     return uriBuilder
   }
 
