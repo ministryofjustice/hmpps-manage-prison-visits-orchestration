@@ -34,6 +34,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
       adjustmentReasonType = AdjustmentReasonType.GOVERNOR_ADJUSTMENT,
       adjustmentReasonText = null,
       userName = "A_USER",
+      caseloadId = prisonId,
     )
 
     val response = VisitOrderPrisonerBalanceDto(
@@ -64,6 +65,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
       adjustmentReasonType = AdjustmentReasonType.GOVERNOR_ADJUSTMENT,
       adjustmentReasonText = null,
       userName = "A_USER",
+      caseloadId = prisonId,
     )
 
     val errorResponse = PrisonerBalanceAdjustmentValidationErrorResponse(status = HttpStatus.UNPROCESSABLE_CONTENT.value(), validationErrors = listOf(PrisonerBalanceAdjustmentValidationErrorCodes.VO_TOTAL_POST_ADJUSTMENT_BELOW_ZERO, PrisonerBalanceAdjustmentValidationErrorCodes.PVO_TOTAL_POST_ADJUSTMENT_BELOW_ZERO))
@@ -91,6 +93,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
       adjustmentReasonType = AdjustmentReasonType.GOVERNOR_ADJUSTMENT,
       adjustmentReasonText = null,
       userName = "A_USER",
+      caseloadId = prisonId,
     )
 
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, createPrisoner(prisonerId, "John", "Smith", LocalDate.now().minusYears(21), prisonId, convictedStatus = "Convicted"))
@@ -113,6 +116,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
       adjustmentReasonType = AdjustmentReasonType.GOVERNOR_ADJUSTMENT,
       adjustmentReasonText = null,
       userName = "A_USER",
+      caseloadId = prisonId,
     )
 
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, createPrisoner(prisonerId, "John", "Smith", LocalDate.now().minusYears(21), prisonId, convictedStatus = "Convicted"))
@@ -135,6 +139,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
       adjustmentReasonType = AdjustmentReasonType.GOVERNOR_ADJUSTMENT,
       adjustmentReasonText = null,
       userName = "A_USER",
+      caseloadId = prisonId,
     )
 
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, createPrisoner(prisonerId, "John", "Smith", LocalDate.now().minusYears(21), prisonId, convictedStatus = "Convicted"))
@@ -157,6 +162,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
       adjustmentReasonType = AdjustmentReasonType.GOVERNOR_ADJUSTMENT,
       adjustmentReasonText = null,
       userName = "A_USER",
+      caseloadId = prisonId,
     )
 
     val invalidRoleHeaders = setAuthorisation(roles = listOf("ROLE_INVALID"))
@@ -192,6 +198,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
       adjustmentReasonType = AdjustmentReasonType.GOVERNOR_ADJUSTMENT,
       adjustmentReasonText = null,
       userName = "A_USER",
+      caseloadId = prisonId,
     )
 
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, createPrisoner(prisonerId, "John", "Smith", LocalDate.now().minusYears(21), "wrong_code", convictedStatus = "Convicted"))
@@ -213,6 +220,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
       adjustmentReasonType = AdjustmentReasonType.GOVERNOR_ADJUSTMENT,
       adjustmentReasonText = null,
       userName = "A_USER",
+      caseloadId = prisonId,
     )
 
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, null, HttpStatus.BAD_REQUEST)
@@ -234,6 +242,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
       adjustmentReasonType = AdjustmentReasonType.GOVERNOR_ADJUSTMENT,
       adjustmentReasonText = null,
       userName = "A_USER",
+      caseloadId = prisonId,
     )
 
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, null, HttpStatus.INTERNAL_SERVER_ERROR)

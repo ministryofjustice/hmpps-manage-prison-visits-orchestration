@@ -18,4 +18,7 @@ data class PrisonerBalanceAdjustmentDto(
 
   @param:Schema(description = "Staff user ID", example = "ABC1234", required = true)
   val userName: String,
+
+  @param:Schema(description = "The caseload from which the adjustment was made", example = "MDI", required = false)
+  val caseloadId: String? = null,
 )
