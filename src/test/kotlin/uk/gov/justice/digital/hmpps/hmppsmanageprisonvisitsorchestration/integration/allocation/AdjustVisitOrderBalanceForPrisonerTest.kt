@@ -13,6 +13,7 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.PrisonerBalanceAdjustmentValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.VISIT_ORDER_PRISONER_BALANCE_ENDPOINT
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceAdjustmentDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitAllocationPrisonerBalanceAdjustmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderPrisonerBalanceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.enums.AdjustmentReasonType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.enums.PrisonerBalanceAdjustmentValidationErrorCodes
@@ -34,7 +35,6 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
       adjustmentReasonType = AdjustmentReasonType.GOVERNOR_ADJUSTMENT,
       adjustmentReasonText = null,
       userName = "A_USER",
-      caseloadId = prisonId,
     )
 
     val response = VisitOrderPrisonerBalanceDto(
@@ -53,7 +53,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     assertThat(prisonerBalanceDto.prisonerId).isEqualTo(prisonerId)
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
-    verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
+    verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, VisitAllocationPrisonerBalanceAdjustmentDto(prisonerBalanceAdjustmentDto, prisonId))
   }
 
   @Test
@@ -65,7 +65,6 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
       adjustmentReasonType = AdjustmentReasonType.GOVERNOR_ADJUSTMENT,
       adjustmentReasonText = null,
       userName = "A_USER",
-      caseloadId = prisonId,
     )
 
     val errorResponse = PrisonerBalanceAdjustmentValidationErrorResponse(status = HttpStatus.UNPROCESSABLE_CONTENT.value(), validationErrors = listOf(PrisonerBalanceAdjustmentValidationErrorCodes.VO_TOTAL_POST_ADJUSTMENT_BELOW_ZERO, PrisonerBalanceAdjustmentValidationErrorCodes.PVO_TOTAL_POST_ADJUSTMENT_BELOW_ZERO))
@@ -81,7 +80,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     assertThat(errorResponseSpec.validationErrors.size).isEqualTo(2)
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
-    verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
+    verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, VisitAllocationPrisonerBalanceAdjustmentDto(prisonerBalanceAdjustmentDto, prisonId))
   }
 
   @Test
@@ -93,7 +92,6 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
       adjustmentReasonType = AdjustmentReasonType.GOVERNOR_ADJUSTMENT,
       adjustmentReasonText = null,
       userName = "A_USER",
-      caseloadId = prisonId,
     )
 
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, createPrisoner(prisonerId, "John", "Smith", LocalDate.now().minusYears(21), prisonId, convictedStatus = "Convicted"))
@@ -104,7 +102,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isNotFound
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
-    verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
+    verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, VisitAllocationPrisonerBalanceAdjustmentDto(prisonerBalanceAdjustmentDto, prisonId))
   }
 
   @Test
@@ -116,7 +114,6 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
       adjustmentReasonType = AdjustmentReasonType.GOVERNOR_ADJUSTMENT,
       adjustmentReasonText = null,
       userName = "A_USER",
-      caseloadId = prisonId,
     )
 
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, createPrisoner(prisonerId, "John", "Smith", LocalDate.now().minusYears(21), prisonId, convictedStatus = "Convicted"))
@@ -127,7 +124,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isBadRequest
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
-    verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
+    verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, VisitAllocationPrisonerBalanceAdjustmentDto(prisonerBalanceAdjustmentDto, prisonId))
   }
 
   @Test
@@ -139,7 +136,6 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
       adjustmentReasonType = AdjustmentReasonType.GOVERNOR_ADJUSTMENT,
       adjustmentReasonText = null,
       userName = "A_USER",
-      caseloadId = prisonId,
     )
 
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, createPrisoner(prisonerId, "John", "Smith", LocalDate.now().minusYears(21), prisonId, convictedStatus = "Convicted"))
@@ -150,7 +146,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     responseSpec.expectStatus().is5xxServerError
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
-    verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
+    verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, VisitAllocationPrisonerBalanceAdjustmentDto(prisonerBalanceAdjustmentDto, prisonId))
   }
 
   @Test
@@ -162,7 +158,6 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
       adjustmentReasonType = AdjustmentReasonType.GOVERNOR_ADJUSTMENT,
       adjustmentReasonText = null,
       userName = "A_USER",
-      caseloadId = prisonId,
     )
 
     val invalidRoleHeaders = setAuthorisation(roles = listOf("ROLE_INVALID"))
@@ -198,7 +193,6 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
       adjustmentReasonType = AdjustmentReasonType.GOVERNOR_ADJUSTMENT,
       adjustmentReasonText = null,
       userName = "A_USER",
-      caseloadId = prisonId,
     )
 
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, createPrisoner(prisonerId, "John", "Smith", LocalDate.now().minusYears(21), "wrong_code", convictedStatus = "Convicted"))
@@ -208,7 +202,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isBadRequest
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
-    verify(visitAllocationApiClientSpy, times(0)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
+    verify(visitAllocationApiClientSpy, times(0)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, VisitAllocationPrisonerBalanceAdjustmentDto(prisonerBalanceAdjustmentDto, prisonId))
   }
 
   @Test
@@ -220,7 +214,6 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
       adjustmentReasonType = AdjustmentReasonType.GOVERNOR_ADJUSTMENT,
       adjustmentReasonText = null,
       userName = "A_USER",
-      caseloadId = prisonId,
     )
 
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, null, HttpStatus.BAD_REQUEST)
@@ -230,7 +223,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isBadRequest
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
-    verify(visitAllocationApiClientSpy, times(0)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
+    verify(visitAllocationApiClientSpy, times(0)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, VisitAllocationPrisonerBalanceAdjustmentDto(prisonerBalanceAdjustmentDto, prisonId))
   }
 
   @Test
@@ -242,7 +235,6 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
       adjustmentReasonType = AdjustmentReasonType.GOVERNOR_ADJUSTMENT,
       adjustmentReasonText = null,
       userName = "A_USER",
-      caseloadId = prisonId,
     )
 
     prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, null, HttpStatus.INTERNAL_SERVER_ERROR)
@@ -252,7 +244,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     responseSpec.expectStatus().is5xxServerError
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
-    verify(visitAllocationApiClientSpy, times(0)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
+    verify(visitAllocationApiClientSpy, times(0)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, VisitAllocationPrisonerBalanceAdjustmentDto(prisonerBalanceAdjustmentDto, prisonId))
   }
 
   fun callAdjustPrisonersVisitOrderBalance(
