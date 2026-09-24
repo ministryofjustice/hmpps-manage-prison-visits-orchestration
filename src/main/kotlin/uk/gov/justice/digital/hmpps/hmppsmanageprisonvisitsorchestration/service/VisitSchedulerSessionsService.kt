@@ -215,6 +215,7 @@ class VisitSchedulerSessionsService(
         username = username,
         userType = userType,
         youngestVisitorAge = youngestVisitorAge,
+        visitorIds = visitors,
       )
     } catch (_: DateRangeNotFoundException) {
       LOG.error("getAvailableVisitSessions range is not returned therefore we do not have a valid date range and should return an empty list")

@@ -43,7 +43,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setupMocks() {
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), visitorIds = visitorIds, userType = PUBLIC)
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
     prisonerContactRegistryMockServer.stubDoVisitorsHaveClosedRestrictions(prisonerId, visitorIds = visitorIds, result = false)
@@ -137,7 +137,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     val eventDate = visitSession1.sessionDate
     val eventStartTime = eventDate.atTime(visitSession1.sessionTimeSlot.startTime.plusMinutes(5))
     val eventEndTime = eventDate.atTime(visitSession1.sessionTimeSlot.endTime.minusMinutes(5))
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC, visitorIds = visitorIds)
 
     val appointment = createScheduledEvent(1L, eventDate, eventType, eventTypeDesc, ADJUDICATION_HEARING.code, ADJUDICATION_HEARING.desc, eventStartTime, eventEndTime)
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, listOf(appointment))
@@ -167,7 +167,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     val eventDate = visitSession1.sessionDate
     val eventStartTime = eventDate.atTime(visitSession1.sessionTimeSlot.startTime.plusMinutes(5))
     val eventEndTime = eventDate.atTime(visitSession1.sessionTimeSlot.endTime.plusMinutes(5))
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC, visitorIds = visitorIds)
 
     val appointment = createScheduledEvent(1L, eventDate, eventType, eventTypeDesc, ADJUDICATION_HEARING.code, ADJUDICATION_HEARING.desc, eventStartTime, eventEndTime)
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, listOf(appointment))
@@ -197,7 +197,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     val eventDate = visitSession1.sessionDate
     val eventStartTime = eventDate.atTime(visitSession1.sessionTimeSlot.startTime.minusMinutes(5))
     val eventEndTime = eventDate.atTime(visitSession1.sessionTimeSlot.endTime.minusMinutes(5))
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC, visitorIds = visitorIds)
 
     val appointment = createScheduledEvent(1L, eventDate, eventType, eventTypeDesc, ADJUDICATION_HEARING.code, ADJUDICATION_HEARING.desc, eventStartTime, eventEndTime)
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, listOf(appointment))
@@ -227,7 +227,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     val eventDate = visitSession1.sessionDate
     val eventStartTime = eventDate.atTime(visitSession1.sessionTimeSlot.startTime)
     val eventEndTime = eventDate.atTime(visitSession1.sessionTimeSlot.endTime)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC, visitorIds = visitorIds)
 
     val appointment = createScheduledEvent(1L, eventDate, eventType, eventTypeDesc, ADJUDICATION_HEARING.code, ADJUDICATION_HEARING.desc, eventStartTime, eventEndTime)
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, listOf(appointment))
@@ -257,7 +257,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     val eventDate = visitSession1.sessionDate
     val eventStartTime = eventDate.atTime(visitSession1.sessionTimeSlot.startTime.minusMinutes(10))
     val eventEndTime = eventDate.atTime(visitSession1.sessionTimeSlot.startTime)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC, visitorIds = visitorIds)
 
     val appointment = createScheduledEvent(1L, eventDate, eventType, eventTypeDesc, ADJUDICATION_HEARING.code, ADJUDICATION_HEARING.desc, eventStartTime, eventEndTime)
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, listOf(appointment))
@@ -288,7 +288,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     val eventDate = visitSession1.sessionDate
     val eventStartTime = eventDate.atTime(visitSession1.sessionTimeSlot.endTime)
     val eventEndTime = eventStartTime.plusMinutes(10)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC, visitorIds = visitorIds)
 
     val appointment = createScheduledEvent(1L, eventDate, eventType, eventTypeDesc, ADJUDICATION_HEARING.code, ADJUDICATION_HEARING.desc, eventStartTime, eventEndTime)
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, listOf(appointment))
@@ -321,7 +321,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     val eventDate = visitSession1.sessionDate
     val eventStartTime = eventDate.atTime(visitSession1.sessionTimeSlot.startTime)
     val eventEndTime = eventDate.atTime(visitSession1.sessionTimeSlot.endTime)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC, visitorIds = visitorIds)
 
     val appointment = createScheduledEvent(1L, eventDate, eventType, eventTypeDesc, eventSubType, "TEST", eventStartTime, eventEndTime)
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, listOf(appointment))
@@ -354,7 +354,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     val eventDate = visitSession1.sessionDate
     val eventStartTime = eventDate.atTime(visitSession1.sessionTimeSlot.startTime)
     val eventEndTime = eventDate.atTime(visitSession1.sessionTimeSlot.endTime)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC, visitorIds = visitorIds)
 
     val appointment = createScheduledEvent(1L, eventDate, eventType, eventTypeDesc, ADJUDICATION_HEARING.code, ADJUDICATION_HEARING.desc, eventStartTime, eventEndTime)
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, listOf(appointment))

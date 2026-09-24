@@ -301,12 +301,13 @@ class VisitSchedulerClient(
     username: String? = null,
     userType: UserType,
     youngestVisitorAge: Int? = null,
+    visitorIds: List<Long>? = null,
   ): List<AvailableVisitSessionDto> {
     val uri = "/visit-sessions/available"
 
     return webClient.get()
       .uri(uri) {
-        visitAvailableSessionsUriBuilder(it, prisonId, prisonerId, sessionRestriction, dateRange, excludedApplicationReference, username, userType, youngestVisitorAge).build()
+        visitAvailableSessionsUriBuilder(it, prisonId, prisonerId, sessionRestriction, dateRange, excludedApplicationReference, username, userType, youngestVisitorAge, visitorIds).build()
       }
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
@@ -735,6 +736,7 @@ class VisitSchedulerClient(
     username: String? = null,
     userType: UserType,
     youngestVisitorAge: Int? = null,
+    visitorIds: List<Long>? = null,
   ): UriBuilder {
     uriBuilder.queryParam("prisonId", prisonId)
     uriBuilder.queryParam("prisonerId", prisonerId)
@@ -749,6 +751,9 @@ class VisitSchedulerClient(
     }
     uriBuilder.queryParam("userType", userType.name)
     uriBuilder.queryParamIfPresent("youngestVisitorAge", Optional.ofNullable(youngestVisitorAge))
+    visitorIds?.let {
+      uriBuilder.queryParam("visitorIds", it.joinToString(","))
+    }
     return uriBuilder
   }
 
