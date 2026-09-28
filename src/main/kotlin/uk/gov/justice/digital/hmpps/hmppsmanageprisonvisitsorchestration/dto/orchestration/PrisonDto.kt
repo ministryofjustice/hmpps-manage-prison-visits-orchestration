@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import java.time.DayOfWeek
 
 @Schema(description = "Prison dto")
@@ -22,13 +23,6 @@ data class PrisonDto(
 
   @param:Schema(description = "is prison active", example = "true", required = true)
   val active: Boolean = false,
-
-  // TODO - remove this once we move to client booking windows
-  @param:Schema(description = "minimum number of days notice from the current date to booked a visit", example = "2", required = true)
-  val policyNoticeDaysMin: Int,
-
-  @param:Schema(description = "maximum number of days notice from the current date to booked a visit", example = "28", required = true)
-  val policyNoticeDaysMax: Int,
 
   @param:Schema(description = "Max number of total visitors")
   @field:Min(1)
@@ -60,6 +54,12 @@ data class PrisonDto(
   @param:Schema(description = "Web address of prison", required = false)
   val webAddress: String?,
 
+  @param:Schema(description = "Staff Client", required = true)
+  val staffClient: PrisonUserClientDto,
+
+  @param:Schema(description = "Public Client", required = false)
+  val publicClient: PrisonUserClientDto? = null,
+
   @param:Schema(description = "prison user client", required = false)
   val clients: List<PrisonUserClientDto> = listOf(),
 ) {
@@ -68,16 +68,15 @@ data class PrisonDto(
     prisonName = prisonRegisterPrisonDto.prisonName,
     prisonNameInWelsh = prisonRegisterPrisonDto.prisonNameInWelsh,
     active = visitSchedulerPrisonDto.active,
-    policyNoticeDaysMin = visitSchedulerPrisonDto.policyNoticeDaysMin,
-    policyNoticeDaysMax = visitSchedulerPrisonDto.policyNoticeDaysMax,
     maxTotalVisitors = visitSchedulerPrisonDto.maxTotalVisitors,
     maxAdultVisitors = visitSchedulerPrisonDto.maxAdultVisitors,
     maxChildVisitors = visitSchedulerPrisonDto.maxChildVisitors,
     adultAgeYears = visitSchedulerPrisonDto.adultAgeYears,
     weekStartDay = visitSchedulerPrisonDto.weekStartDay,
     remandVisitLimitPerWeek = visitSchedulerPrisonDto.remandVisitLimitPerWeek,
+    staffClient = visitSchedulerPrisonDto.clients.first { it.userType == UserType.STAFF },
+    publicClient = visitSchedulerPrisonDto.clients.firstOrNull { it.userType == UserType.PUBLIC },
     clients = visitSchedulerPrisonDto.clients,
-
     emailAddress = prisonRegisterContactDetailsDto.emailAddress,
     phoneNumber = prisonRegisterContactDetailsDto.phoneNumber,
     webAddress = prisonRegisterContactDetailsDto.webAddress,
