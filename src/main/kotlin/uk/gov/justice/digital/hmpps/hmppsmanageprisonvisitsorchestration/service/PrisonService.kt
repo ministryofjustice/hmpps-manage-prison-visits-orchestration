@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerUpdatePrisonDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonClientType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.IsExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
@@ -40,9 +40,9 @@ class PrisonService(
     return PrisonDto(visitSchedulerPrison, prisonRegisterPrison, prisonRegisterPrisonContractDetails)
   }
 
-  fun getSupportedPrisons(type: UserType): List<String> = visitSchedulerClient.getSupportedPrisons(type)
+  fun getSupportedPrisons(type: PrisonClientType): List<String> = visitSchedulerClient.getSupportedPrisons(type)
 
-  fun getSupportedPrisonsDetails(type: UserType): List<PrisonRegisterPrisonDto> {
+  fun getSupportedPrisonsDetails(type: PrisonClientType): List<PrisonRegisterPrisonDto> {
     val supportedPrisonIds = visitSchedulerClient.getSupportedPrisons(type)
     val supportedPrisons = if (supportedPrisonIds.isNotEmpty()) {
       prisonRegisterClient.prisonsByIds(supportedPrisonIds) ?: emptyList()
@@ -74,18 +74,18 @@ class PrisonService(
     prisonCode: String,
     fromDateOverride: Int? = null,
     toDateOverride: Int? = null,
-    userType: UserType,
+    clientType: PrisonClientType,
   ): DateRange {
     val prison = visitSchedulerClient.getPrison(prisonCode)
     val client =
-      prison.clients.firstOrNull { it.userType == userType }
-        ?: prison.clients.firstOrNull { it.userType == UserType.STAFF }
+      prison.clients.firstOrNull { it.clientType == clientType }
+        ?: prison.clients.firstOrNull { it.clientType == PrisonClientType.STAFF }
           ?.also {
-            logger.warn("No client found for prison {} and requested user type {}; falling back to {}", prisonCode, userType, UserType.STAFF)
+            logger.warn("No client found for prison {} and requested user type {}; falling back to {}", prisonCode, clientType, PrisonClientType.STAFF)
           }
         ?: run {
           // Throw a 500 if we reach here. As PUBLIC or STAFF must exist. (If PRISONER / SYSTEM is passed it's also invalid, so 500 is correct).
-          val message = "No client found for prison $prisonCode and user type $userType"
+          val message = "No client found for prison $prisonCode and user type $clientType"
           throw IllegalStateException(message)
         }
     return dateUtils.getToDaysDateRange(client = client, minOverride = fromDateOverride, maxOverride = toDateOverride)

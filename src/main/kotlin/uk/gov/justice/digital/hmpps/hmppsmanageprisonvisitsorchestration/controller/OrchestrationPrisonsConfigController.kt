@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerUpdatePrisonDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonClientType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.PrisonService
 
 const val ORCHESTRATION_PRISONS_CONFIG_CONTROLLER_PATH: String = "/config/prisons"
@@ -62,7 +62,7 @@ class OrchestrationPrisonsConfigController(
   fun getSupportedPrisons(
     @Schema(description = "type", example = "STAFF", required = true)
     @PathVariable
-    type: UserType,
+    type: PrisonClientType,
   ): List<String>? = prisonService.getSupportedPrisons(type)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
@@ -90,7 +90,7 @@ class OrchestrationPrisonsConfigController(
   fun getSupportedPrisonDetails(
     @Schema(description = "type", example = "STAFF", required = true)
     @PathVariable
-    type: UserType,
+    type: PrisonClientType,
   ): List<PrisonRegisterPrisonDto> = prisonService.getSupportedPrisonsDetails(type)
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")

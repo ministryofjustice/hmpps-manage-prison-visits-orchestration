@@ -10,8 +10,8 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import software.amazon.awssdk.services.sns.model.PublishRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonClientType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonerReleaseReasonType
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.PrisonerReleasedNotificationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.EventNotifier
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.listeners.notifiers.PRISONER_RELEASED_TYPE
@@ -39,13 +39,13 @@ class PrisonerReleasedEventTest : PrisonVisitsEventsIntegrationTestBase() {
     val publishRequest = createDomainEventPublishRequest(PRISONER_RELEASED_TYPE, domainEvent)
 
     visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH)
-    visitSchedulerMockServer.stubGetSupportedPrisons(UserType.STAFF, listOf("BRI", "HEI", "ABC"))
+    visitSchedulerMockServer.stubGetSupportedPrisons(PrisonClientType.STAFF, listOf("BRI", "HEI", "ABC"))
     // When
     sendSqSMessage(publishRequest)
 
     // Then
     assertStandardCalls(prisonerReleasedNotifierSpy, VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH, sentRequestToVsip)
-    await untilAsserted { verify(visitSchedulerClient, times(1)).getSupportedPrisons(UserType.STAFF) }
+    await untilAsserted { verify(visitSchedulerClient, times(1)).getSupportedPrisons(PrisonClientType.STAFF) }
   }
 
   @Test
@@ -65,14 +65,14 @@ class PrisonerReleasedEventTest : PrisonVisitsEventsIntegrationTestBase() {
     visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH)
 
     // BRI - not supported on VSIP
-    visitSchedulerMockServer.stubGetSupportedPrisons(UserType.STAFF, listOf("HEI", "ABC"))
+    visitSchedulerMockServer.stubGetSupportedPrisons(PrisonClientType.STAFF, listOf("HEI", "ABC"))
     // When
     sendSqSMessage(publishRequest)
 
     // Then
 
     await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
-    verify(visitSchedulerClient, times(1)).getSupportedPrisons(UserType.STAFF)
+    verify(visitSchedulerClient, times(1)).getSupportedPrisons(PrisonClientType.STAFF)
     verify(visitSchedulerClient, times(0)).processPrisonerReleased(any())
   }
 
@@ -92,14 +92,14 @@ class PrisonerReleasedEventTest : PrisonVisitsEventsIntegrationTestBase() {
     visitSchedulerMockServer.stubPostNotification(VISIT_NOTIFICATION_PRISONER_RELEASED_CHANGE_PATH)
 
     // 404 returned from visit-scheduler
-    visitSchedulerMockServer.stubGetSupportedPrisons(UserType.STAFF, null)
+    visitSchedulerMockServer.stubGetSupportedPrisons(PrisonClientType.STAFF, null)
     // When
     sendSqSMessage(publishRequest)
 
     // Then
 
     await untilCallTo { sqsPrisonVisitsEventsClient.countMessagesOnQueue(prisonVisitsEventsQueueUrl).get() } matches { it == 0 }
-    verify(visitSchedulerClient, times(1)).getSupportedPrisons(UserType.STAFF)
+    verify(visitSchedulerClient, times(1)).getSupportedPrisons(PrisonClientType.STAFF)
     verify(visitSchedulerClient, times(0)).processPrisonerReleased(any())
   }
 

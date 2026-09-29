@@ -38,8 +38,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerUpdatePrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.ApplicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonClientType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationCountDto
@@ -565,13 +565,13 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     dateRange: DateRange? = null,
     excludedApplicationReference: String? = null,
     username: String? = null,
-    userType: UserType,
+    clientType: PrisonClientType,
     youngestVisitorAge: Int? = null,
   ): DateRange {
     val dateRangeToUse = dateRange ?: run {
       val today = LocalDate.now()
       // add 1 to the policyNoticeDaysMin to ensure we are adding whole days
-      val client = visitSchedulerPrisonDto.clients.first { it.userType == userType }
+      val client = visitSchedulerPrisonDto.clients.first { it.clientType == clientType }
       val fromDate = today.plusDays(client.policyNoticeDaysMin.toLong().plus(1))
       val toDate = today.plusDays(client.policyNoticeDaysMax.toLong())
       DateRange(fromDate, toDate)
@@ -587,7 +587,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
             toDate = dateRangeToUse.toDate,
             excludedApplicationReference = excludedApplicationReference,
             username = username,
-            userType = userType,
+            clientType = clientType,
             youngestVisitorAge = youngestVisitorAge,
           ).joinToString("&")
         }",
@@ -601,10 +601,10 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     return dateRangeToUse
   }
 
-  fun stubGetVisitSessions(prisonId: String, prisonerId: String, visitSessions: List<VisitSessionDto>?, userType: UserType, youngestVisitorAge: Int? = null, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
+  fun stubGetVisitSessions(prisonId: String, prisonerId: String, visitSessions: List<VisitSessionDto>?, clientType: PrisonClientType, youngestVisitorAge: Int? = null, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
     val youngestVisitorAgeQueryParam = youngestVisitorAge?.let { "&youngestVisitorAge=$it" }.orEmpty()
     stubFor(
-      get("/visit-sessions?prisonId=$prisonId&prisonerId=$prisonerId&userType=${userType.name}$youngestVisitorAgeQueryParam")
+      get("/visit-sessions?prisonId=$prisonId&prisonerId=$prisonerId&userType=${clientType.name}$youngestVisitorAgeQueryParam")
         .willReturn(
           if (visitSessions != null) {
             createJsonResponseBuilder()
@@ -617,7 +617,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
         ),
     )
   }
-  fun stubGetSupportedPrisons(type: UserType, supportedPrisonsList: List<String>?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
+  fun stubGetSupportedPrisons(type: PrisonClientType, supportedPrisonsList: List<String>?, httpStatus: HttpStatus = HttpStatus.NOT_FOUND) {
     stubFor(
       get("/config/prisons/user-type/${type.name}/supported")
         .willReturn(
@@ -945,7 +945,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     toDate: LocalDate,
     excludedApplicationReference: String?,
     username: String?,
-    userType: UserType,
+    clientType: PrisonClientType,
     youngestVisitorAge: Int? = null,
   ): List<String> {
     val queryParams = ArrayList<String>()
@@ -960,7 +960,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     username?.let {
       queryParams.add("username=$username")
     }
-    queryParams.add("userType=${userType.name}")
+    queryParams.add("userType=${clientType.name}")
     youngestVisitorAge?.let {
       queryParams.add("youngestVisitorAge=$youngestVisitorAge")
     }
