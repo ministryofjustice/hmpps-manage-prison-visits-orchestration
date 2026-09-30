@@ -293,7 +293,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
   fun `visit sessions outside the date range are returned with OUTSIDE_BOOKING_WINDOW conflict flag`() {
     // Given
     val prisonCode = "XYZ"
-    val clients = listOf(PrisonUserClientDto(clientType = STAFF, policyNoticeDaysMin = 2, policyNoticeDaysMax = 4, active = true))
+    val clients = listOf(PrisonUserClientDto(STAFF, clientType = STAFF, policyNoticeDaysMin = 2, policyNoticeDaysMax = 4, active = true))
     val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 4, 6, 3, 3, 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3, clients = clients)
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
     visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, emptyList(), clientType = STAFF)

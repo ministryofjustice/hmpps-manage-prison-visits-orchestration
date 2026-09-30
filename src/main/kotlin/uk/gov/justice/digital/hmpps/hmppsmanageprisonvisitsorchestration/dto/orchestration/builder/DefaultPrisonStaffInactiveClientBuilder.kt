@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 internal class DefaultPrisonStaffInactiveClientBuilder {
   companion object {
     fun build() = PrisonUserClientDto(
+      userType = PrisonClientType.STAFF,
       clientType = PrisonClientType.STAFF,
       policyNoticeDaysMin = 2,
       policyNoticeDaysMax = 28,

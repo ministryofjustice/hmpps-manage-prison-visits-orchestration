@@ -14,9 +14,11 @@ data class VisitSchedulerPrisonDto(
   val active: Boolean = false,
 
   // TODO - remove this once we move to client booking windows
+  @Deprecated("to be removed - use client properties instead")
   @param:Schema(description = "minimum number of days notice from the current date to booked a visit", example = "2", required = true)
   val policyNoticeDaysMin: Int,
 
+  @Deprecated("to be removed - use client properties instead")
   @param:Schema(description = "maximum number of days notice from the current date to booked a visit", example = "28", required = true)
   val policyNoticeDaysMax: Int,
 

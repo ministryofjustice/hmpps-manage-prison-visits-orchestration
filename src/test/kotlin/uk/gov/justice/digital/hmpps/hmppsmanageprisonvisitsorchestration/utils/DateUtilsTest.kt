@@ -24,6 +24,7 @@ class DateUtilsTest {
     policyNoticeDaysMin = 2,
     policyNoticeDaysMax = 28,
     clientType = PrisonClientType.STAFF,
+    userType = PrisonClientType.STAFF,
   )
 
   @Test

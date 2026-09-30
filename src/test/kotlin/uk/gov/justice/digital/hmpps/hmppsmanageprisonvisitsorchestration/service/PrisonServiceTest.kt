@@ -71,6 +71,7 @@ class PrisonServiceTest {
     policyNoticeDaysMin: Int,
     policyNoticeDaysMax: Int,
   ) = PrisonUserClientDto(
+    userType = clientType,
     clientType = clientType,
     policyNoticeDaysMin = policyNoticeDaysMin,
     policyNoticeDaysMax = policyNoticeDaysMax,

@@ -6,6 +6,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 
 @Schema(description = "Prison user client dto")
 data class PrisonUserClientDto(
+  @Deprecated("to be removed - use client type instead")
+  @param:Schema(description = "User type", example = "STAFF", required = true)
+  @field:NotNull
+  val userType: PrisonClientType,
 
   @param:Schema(description = "Prison client type (STAFF / PUBLIC)", example = "STAFF", required = true)
   @field:NotNull
