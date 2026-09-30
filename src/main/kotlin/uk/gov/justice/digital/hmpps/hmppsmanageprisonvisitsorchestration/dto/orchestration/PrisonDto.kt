@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.or
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Min
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.builder.DefaultPrisonStaffInactiveClientBuilder
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterContactDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
@@ -76,7 +77,7 @@ data class PrisonDto(
     adultAgeYears = visitSchedulerPrisonDto.adultAgeYears,
     weekStartDay = visitSchedulerPrisonDto.weekStartDay,
     remandVisitLimitPerWeek = visitSchedulerPrisonDto.remandVisitLimitPerWeek,
-    staffClient = visitSchedulerPrisonDto.clients.first { it.clientType == PrisonClientType.STAFF },
+    staffClient = visitSchedulerPrisonDto.clients.firstOrNull { it.clientType == PrisonClientType.STAFF } ?: DefaultPrisonStaffInactiveClientBuilder.build(),
     publicClient = visitSchedulerPrisonDto.clients.firstOrNull { it.clientType == PrisonClientType.PUBLIC },
     clients = visitSchedulerPrisonDto.clients,
     emailAddress = prisonRegisterContactDetailsDto.emailAddress,
