@@ -55,8 +55,6 @@ class VisitSchedulerSessionsService(
   private val alertsApiClient: AlertsApiClient,
   @param:Value("\${public.service.from-date-override: 2}")
   private val publicServiceFromDateOverride: Long,
-  @param:Value("\${public.service.to-date-override: 28}")
-  private val publicServiceToDateOverride: Long,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -163,7 +161,7 @@ class VisitSchedulerSessionsService(
   ): List<AvailableVisitSessionDto> {
     val sessionRestriction = updateRequestedRestriction(null, prisonerId, visitors)
 
-    val dateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, fromDateOverride = publicServiceFromDateOverride.toInt(), toDateOverride = publicServiceToDateOverride.toInt(), clientType = clientType)
+    val dateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, fromDateOverride = publicServiceFromDateOverride.toInt(), toDateOverride = null, clientType = clientType)
 
     var availableVisitSessions = getAvailableVisitSessionsForDateRange(
       prisonCode = prisonCode,

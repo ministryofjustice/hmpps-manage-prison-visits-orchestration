@@ -31,7 +31,11 @@ class DateUtils(private val currentDateUtils: CurrentDateUtils) {
 
     // add 1 to the policyNoticeDaysMin to ensure we are adding whole days
     val bookableStartDate = today.plusDays(min.toLong().plus(1))
-    val bookableEndDate = today.plusDays(max.toLong())
+    var bookableEndDate = today.plusDays(max.toLong())
+
+    if (bookableEndDate.isBefore(bookableStartDate)) {
+      bookableEndDate = bookableStartDate
+    }
     return DateRange(bookableStartDate, bookableEndDate)
   }
 
