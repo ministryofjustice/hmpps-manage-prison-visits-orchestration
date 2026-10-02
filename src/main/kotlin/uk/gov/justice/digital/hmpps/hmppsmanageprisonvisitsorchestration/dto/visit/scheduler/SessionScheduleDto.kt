@@ -62,4 +62,10 @@ data class SessionScheduleDto(
 
   @param:Schema(description = "Flag to indicate if the session is excluded for the date. True will indicate that the session is excluded.", required = true)
   val isSessionExcluded: Boolean,
+
+  @param:Schema(description = "Determines if the age restriction is enabled for this session", example = "true", required = true)
+  val isAgeRestricted: Boolean,
+
+  @param:Schema(description = "Minimum required age for attending the session", example = "18", required = true)
+  val ageRestriction: Int,
 )

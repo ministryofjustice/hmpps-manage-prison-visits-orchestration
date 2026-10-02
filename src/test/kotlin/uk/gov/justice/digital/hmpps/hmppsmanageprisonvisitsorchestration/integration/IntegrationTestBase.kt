@@ -59,10 +59,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.application.CreateApplicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.OutcomeStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonClientType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionConflict
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
@@ -450,6 +450,8 @@ abstract class IntegrationTestBase {
     endTimestamp: LocalDateTime = LocalDateTime.now().plusHours(1),
     sessionConflicts: Set<SessionConflict> = emptySet(),
     visitOrderRestriction: SessionTemplateVisitOrderRestrictionType = SessionTemplateVisitOrderRestrictionType.NONE,
+    isAgeRestricted: Boolean = false,
+    ageRestriction: Int = 18,
   ): VisitSessionDto = VisitSessionDto(
     sessionTemplateReference = sessionTemplateReference,
     prisonCode = prisonCode,
@@ -460,6 +462,8 @@ abstract class IntegrationTestBase {
     openVisitCapacity = 30,
     startTimestamp = startTimestamp,
     endTimestamp = endTimestamp,
+    isAgeRestricted = isAgeRestricted,
+    ageRestriction = ageRestriction,
     sessionConflicts = sessionConflicts.sortedBy { it.name }.map { createSessionConflictDto(it) },
   )
 
@@ -579,8 +583,9 @@ abstract class IntegrationTestBase {
     fromDateOverride: Int? = null,
     toDateOverride: Int? = null,
     currentUser: String? = null,
-    userType: UserType? = null,
+    clientType: PrisonClientType? = null,
     authHttpHeaders: (HttpHeaders) -> Unit,
+    youngestVisitorAge: Int? = null,
   ): WebTestClient.ResponseSpec {
     val uri = "/visit-sessions/available"
 
@@ -595,7 +600,8 @@ abstract class IntegrationTestBase {
         fromDateOverride = fromDateOverride,
         toDateOverride = toDateOverride,
         pvbAdvanceFromDateByDays = pvbAdvanceFromDateByDays,
-        userType = userType,
+        clientType = clientType,
+        youngestVisitorAge = youngestVisitorAge,
       ).joinToString("&")
 
     return webTestClient.get().uri("$uri?$uriParams")
@@ -609,9 +615,10 @@ abstract class IntegrationTestBase {
     prisonerId: String,
     visitorIds: List<Long>? = null,
     excludedApplicationReference: String? = null,
-    userType: UserType? = null,
+    clientType: PrisonClientType? = null,
     userName: String? = null,
     authHttpHeaders: (HttpHeaders) -> Unit,
+    youngestVisitorAge: Int? = null,
   ): WebTestClient.ResponseSpec {
     val uri = GET_VISIT_SESSIONS_AVAILABLE_PUBLIC
 
@@ -621,8 +628,9 @@ abstract class IntegrationTestBase {
         prisonerId = prisonerId,
         visitorIds = visitorIds,
         excludedApplicationReference = excludedApplicationReference,
-        userType = userType,
+        clientType = clientType,
         userName = userName,
+        youngestVisitorAge = youngestVisitorAge,
       ).joinToString("&")
 
     return webTestClient.get().uri("$uri?$uriParams")
@@ -772,7 +780,8 @@ abstract class IntegrationTestBase {
     fromDateOverride: Int? = null,
     toDateOverride: Int? = null,
     currentUser: String? = null,
-    userType: UserType? = null,
+    clientType: PrisonClientType? = null,
+    youngestVisitorAge: Int? = null,
   ): List<String> {
     val queryParams = ArrayList<String>()
     queryParams.add("prisonId=$prisonCode")
@@ -798,8 +807,11 @@ abstract class IntegrationTestBase {
     currentUser?.let {
       queryParams.add("currentUser=$currentUser")
     }
-    userType?.let {
-      queryParams.add("userType=${userType.name}")
+    clientType?.let {
+      queryParams.add("userType=${clientType.name}")
+    }
+    youngestVisitorAge?.let {
+      queryParams.add("youngestVisitorAge=$youngestVisitorAge")
     }
 
     return queryParams
@@ -810,8 +822,9 @@ abstract class IntegrationTestBase {
     prisonerId: String,
     visitorIds: List<Long>? = null,
     excludedApplicationReference: String?,
-    userType: UserType? = null,
+    clientType: PrisonClientType? = null,
     userName: String? = null,
+    youngestVisitorAge: Int? = null,
   ): List<String> {
     val queryParams = ArrayList<String>()
     queryParams.add("prisonId=$prisonCode")
@@ -825,8 +838,11 @@ abstract class IntegrationTestBase {
     userName?.let {
       queryParams.add("userName=$userName")
     }
-    userType?.let {
-      queryParams.add("userType=${userType.name}")
+    clientType?.let {
+      queryParams.add("userType=${clientType.name}")
+    }
+    youngestVisitorAge?.let {
+      queryParams.add("youngestVisitorAge=$youngestVisitorAge")
     }
 
     return queryParams
@@ -961,8 +977,8 @@ abstract class IntegrationTestBase {
     remandVisitLimitPerWeek: Int,
   ): VisitSchedulerPrisonDto {
     val clients = listOf(
-      PrisonUserClientDto(STAFF, policyNoticeDaysMin = policyNoticeDaysMin, policyNoticeDaysMax = policyNoticeDaysMax, active = true),
-      PrisonUserClientDto(PUBLIC, policyNoticeDaysMin = policyNoticeDaysMin, policyNoticeDaysMax = policyNoticeDaysMax, active = true),
+      PrisonUserClientDto(PrisonClientType.STAFF, PrisonClientType.STAFF, policyNoticeDaysMin = policyNoticeDaysMin, policyNoticeDaysMax = policyNoticeDaysMax, active = true),
+      PrisonUserClientDto(PrisonClientType.PUBLIC, PrisonClientType.PUBLIC, policyNoticeDaysMin = policyNoticeDaysMin, policyNoticeDaysMax = policyNoticeDaysMax, active = true),
     )
     return VisitSchedulerPrisonDto(
       code = prisonCode,
@@ -1007,6 +1023,8 @@ abstract class IntegrationTestBase {
     prisonerIncentiveLevelGroupNames: List<String> = mutableListOf(),
     visitOrderRestriction: SessionTemplateVisitOrderRestrictionType = SessionTemplateVisitOrderRestrictionType.VO_PVO,
     isSessionExcluded: Boolean = false,
+    isAgeRestricted: Boolean = false,
+    ageRestriction: Int = 18,
   ): SessionScheduleDto = SessionScheduleDto(
     sessionTemplateReference = reference,
     sessionDateRange = SessionDateRangeDto(validFromDate, validToDate),
@@ -1023,5 +1041,7 @@ abstract class IntegrationTestBase {
     visitRoom = visitRoom,
     visitOrderRestriction = visitOrderRestriction,
     isSessionExcluded = isSessionExcluded,
+    isAgeRestricted = isAgeRestricted,
+    ageRestriction = ageRestriction,
   )
 }

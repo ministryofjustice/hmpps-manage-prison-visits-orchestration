@@ -23,6 +23,8 @@ enum class SessionDateConflict {
       SessionConflict.NO_PVO_BALANCE -> null
       // as a NO_VO_OR_PVO_BALANCE conflict is specific to the session and does not affect the whole date, we set it to null
       SessionConflict.NO_VO_OR_PVO_BALANCE -> null
+      // as an AGE_RESTRICTION conflict is specific to the session and does not affect the whole date, we set it to null
+      SessionConflict.AGE_RESTRICTION -> null
     }
   }
 }

@@ -18,8 +18,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonVisitBookerRegistryClient.Companion.logger
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.PrisonerBalanceAdjustmentValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceAdjustmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDetailedDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitAllocationPrisonerBalanceAdjustmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderPrisonerBalanceDto
@@ -43,12 +43,12 @@ class VisitAllocationApiClient(
     const val VO_DETAILED_BALANCE_URI = "$VO_BALANCE_ENDPOINT/detailed"
   }
 
-  fun adjustPrisonersVisitOrderBalanceAsMono(prisonerId: String, prisonerBalanceAdjustmentDto: PrisonerBalanceAdjustmentDto): VisitOrderPrisonerBalanceDto {
+  fun adjustPrisonersVisitOrderBalanceAsMono(prisonerId: String, balanceAdjustmentDto: VisitAllocationPrisonerBalanceAdjustmentDto): VisitOrderPrisonerBalanceDto {
     val uri = VO_BALANCE_ENDPOINT.replace("{prisonerId}", prisonerId)
 
     return webClient.put()
       .uri(uri)
-      .body(BodyInserters.fromValue(prisonerBalanceAdjustmentDto))
+      .body(BodyInserters.fromValue(balanceAdjustmentDto))
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono<VisitOrderPrisonerBalanceDto>()

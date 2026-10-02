@@ -12,12 +12,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTimeSlotDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonClientType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.OPEN
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType.NONE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType.PVO
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType.VO
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType.VO_PVO
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.enums.HigherPriorityMedicalOrLegalEvents.ADJUDICATION_HEARING
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.whereabouts.enums.HigherPriorityMedicalOrLegalEvents.MEDICAL_OPTICIAN
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
@@ -43,7 +43,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setupMocks() {
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), clientType = PUBLIC)
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
     prisonerContactRegistryMockServer.stubDoVisitorsHaveClosedRestrictions(prisonerId, visitorIds = visitorIds, result = false)
@@ -59,7 +59,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, clientType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -82,13 +82,13 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     val eventEndTime = null
 
     // evening session - same date
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4), userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4), clientType = PUBLIC)
 
     val appointment = createScheduledEvent(1L, eventDate, eventType, eventTypeDesc, ADJUDICATION_HEARING.code, ADJUDICATION_HEARING.desc, eventStartTime, eventEndTime)
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, listOf(appointment))
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, clientType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -107,14 +107,14 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     // appointment is on same date as visit session with start and end time as null
     val eventDate = visitSession1.sessionDate
     // evening session - same date
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4), userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4), clientType = PUBLIC)
 
     val appointment1 = createScheduledEvent(1L, eventDate, eventType, eventTypeDesc, ADJUDICATION_HEARING.code, ADJUDICATION_HEARING.desc, null, null)
     val appointment2 = createScheduledEvent(2L, eventDate, eventType, eventTypeDesc, MEDICAL_OPTICIAN.code, MEDICAL_OPTICIAN.desc, eventDate.atTime(visitSession1.sessionTimeSlot.startTime), eventDate.atTime(visitSession1.sessionTimeSlot.endTime))
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, listOf(appointment1, appointment2))
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, clientType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -137,13 +137,13 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     val eventDate = visitSession1.sessionDate
     val eventStartTime = eventDate.atTime(visitSession1.sessionTimeSlot.startTime.plusMinutes(5))
     val eventEndTime = eventDate.atTime(visitSession1.sessionTimeSlot.endTime.minusMinutes(5))
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, clientType = PUBLIC)
 
     val appointment = createScheduledEvent(1L, eventDate, eventType, eventTypeDesc, ADJUDICATION_HEARING.code, ADJUDICATION_HEARING.desc, eventStartTime, eventEndTime)
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, listOf(appointment))
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, clientType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -167,13 +167,13 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     val eventDate = visitSession1.sessionDate
     val eventStartTime = eventDate.atTime(visitSession1.sessionTimeSlot.startTime.plusMinutes(5))
     val eventEndTime = eventDate.atTime(visitSession1.sessionTimeSlot.endTime.plusMinutes(5))
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, clientType = PUBLIC)
 
     val appointment = createScheduledEvent(1L, eventDate, eventType, eventTypeDesc, ADJUDICATION_HEARING.code, ADJUDICATION_HEARING.desc, eventStartTime, eventEndTime)
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, listOf(appointment))
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, clientType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -197,13 +197,13 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     val eventDate = visitSession1.sessionDate
     val eventStartTime = eventDate.atTime(visitSession1.sessionTimeSlot.startTime.minusMinutes(5))
     val eventEndTime = eventDate.atTime(visitSession1.sessionTimeSlot.endTime.minusMinutes(5))
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, clientType = PUBLIC)
 
     val appointment = createScheduledEvent(1L, eventDate, eventType, eventTypeDesc, ADJUDICATION_HEARING.code, ADJUDICATION_HEARING.desc, eventStartTime, eventEndTime)
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, listOf(appointment))
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, clientType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -227,13 +227,13 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     val eventDate = visitSession1.sessionDate
     val eventStartTime = eventDate.atTime(visitSession1.sessionTimeSlot.startTime)
     val eventEndTime = eventDate.atTime(visitSession1.sessionTimeSlot.endTime)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, clientType = PUBLIC)
 
     val appointment = createScheduledEvent(1L, eventDate, eventType, eventTypeDesc, ADJUDICATION_HEARING.code, ADJUDICATION_HEARING.desc, eventStartTime, eventEndTime)
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, listOf(appointment))
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, clientType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -257,13 +257,13 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     val eventDate = visitSession1.sessionDate
     val eventStartTime = eventDate.atTime(visitSession1.sessionTimeSlot.startTime.minusMinutes(10))
     val eventEndTime = eventDate.atTime(visitSession1.sessionTimeSlot.startTime)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, clientType = PUBLIC)
 
     val appointment = createScheduledEvent(1L, eventDate, eventType, eventTypeDesc, ADJUDICATION_HEARING.code, ADJUDICATION_HEARING.desc, eventStartTime, eventEndTime)
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, listOf(appointment))
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, clientType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -288,13 +288,13 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     val eventDate = visitSession1.sessionDate
     val eventStartTime = eventDate.atTime(visitSession1.sessionTimeSlot.endTime)
     val eventEndTime = eventStartTime.plusMinutes(10)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, clientType = PUBLIC)
 
     val appointment = createScheduledEvent(1L, eventDate, eventType, eventTypeDesc, ADJUDICATION_HEARING.code, ADJUDICATION_HEARING.desc, eventStartTime, eventEndTime)
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, listOf(appointment))
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, clientType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -321,13 +321,13 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     val eventDate = visitSession1.sessionDate
     val eventStartTime = eventDate.atTime(visitSession1.sessionTimeSlot.startTime)
     val eventEndTime = eventDate.atTime(visitSession1.sessionTimeSlot.endTime)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, clientType = PUBLIC)
 
     val appointment = createScheduledEvent(1L, eventDate, eventType, eventTypeDesc, eventSubType, "TEST", eventStartTime, eventEndTime)
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, listOf(appointment))
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, clientType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -354,13 +354,13 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     val eventDate = visitSession1.sessionDate
     val eventStartTime = eventDate.atTime(visitSession1.sessionTimeSlot.startTime)
     val eventEndTime = eventDate.atTime(visitSession1.sessionTimeSlot.endTime)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3, visitSession4).sortedBy { it.sessionDate }, clientType = PUBLIC)
 
     val appointment = createScheduledEvent(1L, eventDate, eventType, eventTypeDesc, ADJUDICATION_HEARING.code, ADJUDICATION_HEARING.desc, eventStartTime, eventEndTime)
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, listOf(appointment))
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, clientType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -382,7 +382,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, null)
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, clientType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isNotFound
@@ -396,7 +396,7 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, null, HttpStatus.INTERNAL_SERVER_ERROR)
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, true, clientType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().is5xxServerError

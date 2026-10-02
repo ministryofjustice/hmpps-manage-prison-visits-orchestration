@@ -44,6 +44,12 @@ data class VisitSessionV2Dto(
 
   @param:Schema(description = "Session vo restriction", required = true)
   val visitOrderRestriction: SessionTemplateVisitOrderRestrictionType,
+
+  @param:Schema(description = "Determines if the age restriction is enabled for this session", example = "true", required = true)
+  val isAgeRestricted: Boolean,
+
+  @param:Schema(description = "Minimum required age for attending the session", example = "18", required = true)
+  val ageRestriction: Int,
 ) {
   constructor(visitSessionDto: VisitSessionDto, sessionConflicts: List<SessionConflictV2Dto>) : this (
     sessionTemplateReference = visitSessionDto.sessionTemplateReference,
@@ -56,5 +62,7 @@ data class VisitSessionV2Dto(
     endTime = visitSessionDto.endTimestamp.toLocalTime(),
     sessionConflicts = sessionConflicts,
     visitOrderRestriction = visitSessionDto.visitOrderRestriction,
+    isAgeRestricted = visitSessionDto.isAgeRestricted,
+    ageRestriction = visitSessionDto.ageRestriction,
   )
 }

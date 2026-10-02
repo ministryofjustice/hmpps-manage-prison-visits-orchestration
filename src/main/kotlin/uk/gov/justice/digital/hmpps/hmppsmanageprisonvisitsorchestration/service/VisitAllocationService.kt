@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.incentives.IncentiveLevelDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceAdjustmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitAllocationPrisonerBalanceAdjustmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryAttributesDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderHistoryDto
@@ -58,8 +59,9 @@ class VisitAllocationService(
     logger.info("Entered VisitAllocationService - adjustPrisonerVisitOrderBalance, adjust prisonerId $prisonerId's balance with dto $prisonerBalanceAdjustmentDto")
     val prisoner = prisonerSearchService.getPrisoner(prisonerId)
     validatePrisonerLocationAgainstStaffCaseload(prisoner.prisonId!!, staffPrisonId)
+    val visitAllocationPrisonerBalanceAdjustmentDto = VisitAllocationPrisonerBalanceAdjustmentDto(prisonerBalanceAdjustmentDto, staffPrisonId)
 
-    return visitAllocationApiClient.adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
+    return visitAllocationApiClient.adjustPrisonersVisitOrderBalanceAsMono(prisonerId, visitAllocationPrisonerBalanceAdjustmentDto)
   }
 
   fun getVisitOrderHistoryDetails(prisonId: String, prisonerId: String, fromDate: LocalDate, maxResults: Int?): VisitOrderHistoryDetailsDto? {

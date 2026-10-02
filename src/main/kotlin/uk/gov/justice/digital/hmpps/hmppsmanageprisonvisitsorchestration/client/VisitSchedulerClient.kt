@@ -38,8 +38,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerUpdatePrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonClientType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
@@ -282,10 +282,11 @@ class VisitSchedulerClient(
     min: Int?,
     max: Int?,
     username: String?,
-    userType: UserType,
+    clientType: PrisonClientType,
+    youngestVisitorAge: Int? = null,
   ): List<VisitSessionDto>? = webClient.get()
     .uri("/visit-sessions") {
-      visitSessionsUriBuilder(prisonId, prisonerId, min, max, username, userType, it).build()
+      visitSessionsUriBuilder(prisonId, prisonerId, min, max, username, clientType, youngestVisitorAge, it).build()
     }
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
@@ -298,13 +299,14 @@ class VisitSchedulerClient(
     dateRange: DateRange,
     excludedApplicationReference: String? = null,
     username: String? = null,
-    userType: UserType,
+    clientType: PrisonClientType,
+    youngestVisitorAge: Int? = null,
   ): List<AvailableVisitSessionDto> {
     val uri = "/visit-sessions/available"
 
     return webClient.get()
       .uri(uri) {
-        visitAvailableSessionsUriBuilder(it, prisonId, prisonerId, sessionRestriction, dateRange, excludedApplicationReference, username, userType).build()
+        visitAvailableSessionsUriBuilder(it, prisonId, prisonerId, sessionRestriction, dateRange, excludedApplicationReference, username, clientType, youngestVisitorAge).build()
       }
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
@@ -321,7 +323,7 @@ class VisitSchedulerClient(
       .blockOptional(apiTimeout).get()
   }
 
-  fun getSupportedPrisons(type: UserType): List<String> {
+  fun getSupportedPrisons(type: PrisonClientType): List<String> {
     val uri = "/config/prisons/user-type/${type.name}/supported"
     return webClient.get()
       .uri(uri)
@@ -334,10 +336,10 @@ class VisitSchedulerClient(
           Mono.error(e)
         } else {
           LOG.error("getSupportedPrisons NOT_FOUND for get request $uri")
-          Mono.error { NotFoundException("No Supported prisons found for UserType - $type on visit-scheduler") }
+          Mono.error { NotFoundException("No Supported prisons found for PrisonClientType - $type on visit-scheduler") }
         }
       }
-      .blockOptional(apiTimeout).orElseThrow { NotFoundException("No Supported prisons found for UserType - $type on visit-scheduler") }
+      .blockOptional(apiTimeout).orElseThrow { NotFoundException("No Supported prisons found for PrisonClientType - $type on visit-scheduler") }
   }
 
   fun getSessionCapacity(
@@ -712,13 +714,14 @@ class VisitSchedulerClient(
     return uriBuilder
   }
 
-  private fun visitSessionsUriBuilder(prisonId: String, prisonerId: String?, min: Int?, max: Int?, username: String?, userType: UserType, uriBuilder: UriBuilder): UriBuilder {
+  private fun visitSessionsUriBuilder(prisonId: String, prisonerId: String?, min: Int?, max: Int?, username: String?, clientType: PrisonClientType, youngestVisitorAge: Int?, uriBuilder: UriBuilder): UriBuilder {
     uriBuilder.queryParam("prisonId", prisonId)
     uriBuilder.queryParamIfPresent("prisonerId", Optional.ofNullable(prisonerId))
     uriBuilder.queryParamIfPresent("min", Optional.ofNullable(min))
     uriBuilder.queryParamIfPresent("max", Optional.ofNullable(max))
     uriBuilder.queryParamIfPresent("username", Optional.ofNullable(username))
-    uriBuilder.queryParam("userType", userType.name)
+    uriBuilder.queryParam("userType", clientType.name)
+    uriBuilder.queryParamIfPresent("youngestVisitorAge", Optional.ofNullable(youngestVisitorAge))
     return uriBuilder
   }
 
@@ -730,7 +733,8 @@ class VisitSchedulerClient(
     dateRange: DateRange,
     excludedApplicationReference: String? = null,
     username: String? = null,
-    userType: UserType,
+    clientType: PrisonClientType,
+    youngestVisitorAge: Int? = null,
   ): UriBuilder {
     uriBuilder.queryParam("prisonId", prisonId)
     uriBuilder.queryParam("prisonerId", prisonerId)
@@ -743,7 +747,8 @@ class VisitSchedulerClient(
     username?.let {
       uriBuilder.queryParam("username", it)
     }
-    uriBuilder.queryParam("userType", userType.name)
+    uriBuilder.queryParam("userType", clientType.name)
+    uriBuilder.queryParamIfPresent("youngestVisitorAge", Optional.ofNullable(youngestVisitorAge))
     return uriBuilder
   }
 

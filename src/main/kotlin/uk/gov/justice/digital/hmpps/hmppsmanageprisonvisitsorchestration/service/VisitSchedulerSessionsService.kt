@@ -19,12 +19,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonClientType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionConflictV2
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionDateConflict
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.CLOSED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.OPEN
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.ExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.prisons.IsExcludeDateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.PrisonerScheduledEventDto
@@ -55,8 +55,6 @@ class VisitSchedulerSessionsService(
   private val alertsApiClient: AlertsApiClient,
   @param:Value("\${public.service.from-date-override: 2}")
   private val publicServiceFromDateOverride: Long,
-  @param:Value("\${public.service.to-date-override: 28}")
-  private val publicServiceToDateOverride: Long,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -76,25 +74,26 @@ class VisitSchedulerSessionsService(
     min: Int?,
     max: Int?,
     username: String?,
-    userType: UserType,
-  ): List<VisitSessionDto>? = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max, username, userType)
+    clientType: PrisonClientType,
+    youngestVisitorAge: Int? = null,
+  ): List<VisitSessionDto>? = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max, username, clientType, youngestVisitorAge)
 
   fun getVisitSessionsAndSchedule(
     prisonCode: String,
     prisonerId: String,
     min: Int?,
     username: String?,
+    youngestVisitorAge: Int? = null,
   ): VisitSessionsAndScheduleDto {
     val today = dateUtils.today()
     val now = dateUtils.now()
 
     var scheduledEventsAvailable = true
-    val dateRangeForPrison = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, userType = UserType.STAFF)
+    val dateRangeForPrison = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, clientType = PrisonClientType.STAFF)
     val sessionAndScheduleDateRange = DateRange(today, dateRangeForPrison.toDate)
 
-    // get sessions for prisoner and date range with usertype as STAFF
-
-    var visitSessions = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max = null, username, UserType.STAFF)
+    // get sessions for prisoner and date range with clientType as STAFF
+    var visitSessions = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max = null, username, PrisonClientType.STAFF, youngestVisitorAge)
     visitSessions = visitSessions?.filter { it.startTimestamp >= now }
 
     // get schedules for prisoner and date range
@@ -126,12 +125,13 @@ class VisitSchedulerSessionsService(
     fromDateOverride: Int? = null,
     toDateOverride: Int? = null,
     username: String? = null,
-    userType: UserType,
+    clientType: PrisonClientType,
+    youngestVisitorAge: Int? = null,
   ): List<AvailableVisitSessionDto> {
     val sessionRestriction = updateRequestedRestriction(requestedSessionRestriction, prisonerId, visitors)
 
     // advance from date by n days
-    var dateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, fromDateOverride = fromDateOverride, toDateOverride = toDateOverride, userType = userType)
+    var dateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, fromDateOverride = fromDateOverride, toDateOverride = toDateOverride, clientType = clientType)
     dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
 
     var availableVisitSessions = getAvailableVisitSessionsForDateRange(
@@ -140,7 +140,8 @@ class VisitSchedulerSessionsService(
       visitors = visitors,
       excludedApplicationReference = excludedApplicationReference,
       username = username,
-      userType = userType,
+      clientType = clientType,
+      youngestVisitorAge = youngestVisitorAge,
       dateRange = dateRange,
       sessionRestriction = sessionRestriction,
     )
@@ -159,11 +160,12 @@ class VisitSchedulerSessionsService(
     visitors: List<Long>?,
     excludedApplicationReference: String? = null,
     username: String? = null,
-    userType: UserType,
+    clientType: PrisonClientType,
+    youngestVisitorAge: Int? = null,
   ): List<AvailableVisitSessionDto> {
     val sessionRestriction = updateRequestedRestriction(null, prisonerId, visitors)
 
-    val dateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, fromDateOverride = publicServiceFromDateOverride.toInt(), toDateOverride = publicServiceToDateOverride.toInt(), userType = userType)
+    val dateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, fromDateOverride = publicServiceFromDateOverride.toInt(), toDateOverride = null, clientType = clientType)
 
     var availableVisitSessions = getAvailableVisitSessionsForDateRange(
       prisonCode = prisonCode,
@@ -171,7 +173,8 @@ class VisitSchedulerSessionsService(
       visitors = visitors,
       excludedApplicationReference = excludedApplicationReference,
       username = username,
-      userType = userType,
+      clientType = clientType,
+      youngestVisitorAge = youngestVisitorAge,
       dateRange = dateRange,
       sessionRestriction = sessionRestriction,
     ).takeIf { it.isNotEmpty() }?.let {
@@ -195,11 +198,12 @@ class VisitSchedulerSessionsService(
     visitors: List<Long>?,
     excludedApplicationReference: String? = null,
     username: String? = null,
-    userType: UserType,
+    clientType: PrisonClientType,
     dateRange: DateRange,
     sessionRestriction: SessionRestriction,
+    youngestVisitorAge: Int? = null,
   ): List<AvailableVisitSessionDto> {
-    LOG.debug("getting available visit sessions for prisonerId - {}, dateRange - {}, sessionRestriction - {}, excludedApplicationReference - {}, username - {}, userType - {}, dateRange - {}, sessionRestriction - {}", prisonerId, dateRange, sessionRestriction, excludedApplicationReference, username, userType, dateRange, sessionRestriction)
+    LOG.debug("getting available visit sessions for prisonerId - {}, dateRange - {}, sessionRestriction - {}, excludedApplicationReference - {}, username - {}, clientType - {}, dateRange - {}, sessionRestriction - {}", prisonerId, dateRange, sessionRestriction, excludedApplicationReference, username, clientType, dateRange, sessionRestriction)
     val sessions = try {
       val updatedDateRange =
         visitors?.let { prisonerProfileService.getBannedRestrictionDateRage(prisonerId, visitors, dateRange) }
@@ -211,7 +215,8 @@ class VisitSchedulerSessionsService(
         dateRange = updatedDateRange,
         excludedApplicationReference = excludedApplicationReference,
         username = username,
-        userType = userType,
+        clientType = clientType,
+        youngestVisitorAge = youngestVisitorAge,
       )
     } catch (_: DateRangeNotFoundException) {
       LOG.error("getAvailableVisitSessions range is not returned therefore we do not have a valid date range and should return an empty list")

@@ -18,9 +18,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTimeSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonClientType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.VisitSessionV2Dto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.DateUtils
@@ -57,7 +57,6 @@ class VisitSchedulerSessionServiceTest {
     prisonerContactRegistryClient = prisonerContactRegistryClient,
     alertsApiClient = alertsApiClient,
     publicServiceFromDateOverride = publicServiceFromDateOverride,
-    publicServiceToDateOverride = publicServiceToDateOverride,
   )
 
   @Test
@@ -79,12 +78,12 @@ class VisitSchedulerSessionServiceTest {
     whenever(prisonService.getToDaysBookableDateRange(any(), anyOrNull(), anyOrNull(), any())).thenReturn(dateRange)
     whenever(dateUtils.advanceFromDate(any(), anyOrNull())).thenReturn(dateRange)
     whenever(dateUtils.now()).thenReturn(now)
-    whenever(visitSchedulerClient.getAvailableVisitSessions(any(), any(), anyOrNull(), any(), anyOrNull(), anyOrNull(), any())).thenReturn(availableSessionsReturned)
+    whenever(visitSchedulerClient.getAvailableVisitSessions(any(), any(), anyOrNull(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull())).thenReturn(availableSessionsReturned)
 
     // call available sessions
     val availableSessions = visitSchedulerSessionsService.getAvailableVisitSessions(
       prisonCode = "MDI",
-      userType = UserType.PUBLIC,
+      clientType = PrisonClientType.PUBLIC,
       prisonerId = "A",
       requestedSessionRestriction = null,
       visitors = listOf(1),
@@ -122,12 +121,12 @@ class VisitSchedulerSessionServiceTest {
     whenever(prisonService.getToDaysBookableDateRange(any(), anyOrNull(), anyOrNull(), any())).thenReturn(dateRange)
     whenever(dateUtils.advanceFromDate(any(), anyOrNull())).thenReturn(dateRange)
     whenever(dateUtils.now()).thenReturn(now)
-    whenever(visitSchedulerClient.getAvailableVisitSessions(any(), any(), anyOrNull(), any(), anyOrNull(), anyOrNull(), any())).thenReturn(availableSessionsReturned)
+    whenever(visitSchedulerClient.getAvailableVisitSessions(any(), any(), anyOrNull(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull())).thenReturn(availableSessionsReturned)
 
     // call available sessions
     val availableSessions = visitSchedulerSessionsService.getAvailableVisitSessions(
       prisonCode = "MDI",
-      userType = UserType.PUBLIC,
+      clientType = PrisonClientType.PUBLIC,
       prisonerId = "A",
       requestedSessionRestriction = null,
       visitors = listOf(1),
@@ -165,12 +164,12 @@ class VisitSchedulerSessionServiceTest {
     whenever(prisonService.getToDaysBookableDateRange(any(), anyOrNull(), anyOrNull(), any())).thenReturn(dateRange)
     whenever(dateUtils.advanceFromDate(any(), anyOrNull())).thenReturn(dateRange)
     whenever(dateUtils.now()).thenReturn(now)
-    whenever(visitSchedulerClient.getAvailableVisitSessions(any(), any(), anyOrNull(), any(), anyOrNull(), anyOrNull(), any())).thenReturn(availableSessionsReturned)
+    whenever(visitSchedulerClient.getAvailableVisitSessions(any(), any(), anyOrNull(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull())).thenReturn(availableSessionsReturned)
 
     // call available sessions
     val availableSessions = visitSchedulerSessionsService.getAvailableVisitSessions(
       prisonCode = "MDI",
-      userType = UserType.PUBLIC,
+      clientType = PrisonClientType.PUBLIC,
       prisonerId = "A",
       requestedSessionRestriction = null,
       visitors = listOf(1),
@@ -209,14 +208,14 @@ class VisitSchedulerSessionServiceTest {
     whenever(prisonService.getToDaysBookableDateRange(any(), anyOrNull(), anyOrNull(), any())).thenReturn(dateRange)
     whenever(dateUtils.advanceFromDate(any(), anyOrNull())).thenReturn(dateRange)
     whenever(dateUtils.now()).thenReturn(now)
-    whenever(visitSchedulerClient.getAvailableVisitSessions(any(), any(), anyOrNull(), any(), anyOrNull(), anyOrNull(), any())).thenReturn(availableSessionsReturned)
+    whenever(visitSchedulerClient.getAvailableVisitSessions(any(), any(), anyOrNull(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull())).thenReturn(availableSessionsReturned)
     whenever(alertsApiClient.getPrisonerAlerts(any())).thenReturn(RestPage.empty())
     whenever(prisonApiClient.getPrisonerRestrictions(any())).thenReturn(OffenderRestrictionsDto(null, null))
 
     // call available sessions
     val availableSessions = visitSchedulerSessionsService.getAvailableVisitSessionsForPublicUser(
       prisonCode = "MDI",
-      userType = UserType.PUBLIC,
+      clientType = PrisonClientType.PUBLIC,
       prisonerId = "A",
       visitors = listOf(1),
       excludedApplicationReference = null,
@@ -249,14 +248,14 @@ class VisitSchedulerSessionServiceTest {
     whenever(prisonService.getToDaysBookableDateRange(any(), anyOrNull(), anyOrNull(), any())).thenReturn(dateRange)
     whenever(dateUtils.advanceFromDate(any(), anyOrNull())).thenReturn(dateRange)
     whenever(dateUtils.now()).thenReturn(now)
-    whenever(visitSchedulerClient.getAvailableVisitSessions(any(), any(), anyOrNull(), any(), anyOrNull(), anyOrNull(), any())).thenReturn(availableSessionsReturned)
+    whenever(visitSchedulerClient.getAvailableVisitSessions(any(), any(), anyOrNull(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull())).thenReturn(availableSessionsReturned)
     whenever(alertsApiClient.getPrisonerAlerts(any())).thenReturn(RestPage.empty())
     whenever(prisonApiClient.getPrisonerRestrictions(any())).thenReturn(OffenderRestrictionsDto(null, null))
 
     // call available sessions
     val availableSessions = visitSchedulerSessionsService.getAvailableVisitSessionsForPublicUser(
       prisonCode = "MDI",
-      userType = UserType.PUBLIC,
+      clientType = PrisonClientType.PUBLIC,
       prisonerId = "A",
       visitors = listOf(1),
       excludedApplicationReference = null,
@@ -289,14 +288,14 @@ class VisitSchedulerSessionServiceTest {
     whenever(prisonService.getToDaysBookableDateRange(any(), anyOrNull(), anyOrNull(), any())).thenReturn(dateRange)
     whenever(dateUtils.advanceFromDate(any(), anyOrNull())).thenReturn(dateRange)
     whenever(dateUtils.now()).thenReturn(now)
-    whenever(visitSchedulerClient.getAvailableVisitSessions(any(), any(), anyOrNull(), any(), anyOrNull(), anyOrNull(), any())).thenReturn(availableSessionsReturned)
+    whenever(visitSchedulerClient.getAvailableVisitSessions(any(), any(), anyOrNull(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull())).thenReturn(availableSessionsReturned)
     whenever(alertsApiClient.getPrisonerAlerts(any())).thenReturn(RestPage.empty())
     whenever(prisonApiClient.getPrisonerRestrictions(any())).thenReturn(OffenderRestrictionsDto(null, null))
 
     // call available sessions
     val availableSessions = visitSchedulerSessionsService.getAvailableVisitSessionsForPublicUser(
       prisonCode = "MDI",
-      userType = UserType.PUBLIC,
+      clientType = PrisonClientType.PUBLIC,
       prisonerId = "A",
       visitors = listOf(1),
       excludedApplicationReference = null,
@@ -330,7 +329,7 @@ class VisitSchedulerSessionServiceTest {
     whenever(prisonService.getToDaysBookableDateRange(any(), anyOrNull(), anyOrNull(), any())).thenReturn(dateRange)
     whenever(dateUtils.now()).thenReturn(now)
     whenever(dateUtils.today()).thenReturn(today)
-    whenever(visitSchedulerClient.getVisitSessions(any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(availableSessionsReturned)
+    whenever(visitSchedulerClient.getVisitSessions(any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), any(), anyOrNull())).thenReturn(availableSessionsReturned)
 
     // call available sessions
     val visitSessionsAndSchedule = visitSchedulerSessionsService.getVisitSessionsAndSchedule(
@@ -367,7 +366,7 @@ class VisitSchedulerSessionServiceTest {
     whenever(prisonService.getToDaysBookableDateRange(any(), anyOrNull(), anyOrNull(), any())).thenReturn(dateRange)
     whenever(dateUtils.now()).thenReturn(now)
     whenever(dateUtils.today()).thenReturn(today)
-    whenever(visitSchedulerClient.getVisitSessions(any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(availableSessionsReturned)
+    whenever(visitSchedulerClient.getVisitSessions(any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), any(), anyOrNull())).thenReturn(availableSessionsReturned)
 
     // call available sessions
     val visitSessionsAndSchedule = visitSchedulerSessionsService.getVisitSessionsAndSchedule(
@@ -405,7 +404,7 @@ class VisitSchedulerSessionServiceTest {
     whenever(prisonService.getToDaysBookableDateRange(any(), anyOrNull(), anyOrNull(), any())).thenReturn(dateRange)
     whenever(dateUtils.now()).thenReturn(now)
     whenever(dateUtils.today()).thenReturn(today)
-    whenever(visitSchedulerClient.getVisitSessions(any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(availableSessionsReturned)
+    whenever(visitSchedulerClient.getVisitSessions(any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), any(), anyOrNull())).thenReturn(availableSessionsReturned)
 
     // call available sessions
     val visitSessionsAndSchedule = visitSchedulerSessionsService.getVisitSessionsAndSchedule(
@@ -455,5 +454,7 @@ class VisitSchedulerSessionServiceTest {
     startTimestamp = startTime,
     endTimestamp = startTime.plusMinutes(30),
     sessionConflicts = emptyList(),
+    isAgeRestricted = false,
+    ageRestriction = 18,
   )
 }

@@ -12,11 +12,11 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonClientType.STAFF
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionConflict
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionConflictV2
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionDateConflict
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.VisitSessionsAndScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
@@ -42,6 +42,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     min: Int?,
     username: String?,
     authHttpHeaders: (HttpHeaders) -> Unit,
+    youngestVisitorAge: Int? = null,
   ): WebTestClient.ResponseSpec {
     val uri = "/visit-sessions-and-schedule"
     val uriQueryParams = mutableListOf("prisonId=$prisonCode", "prisonerId=$prisonerId").also { queryParams ->
@@ -50,6 +51,9 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
       }
       username?.let {
         queryParams.add("username=$username")
+      }
+      youngestVisitorAge?.let {
+        queryParams.add("youngestVisitorAge=$youngestVisitorAge")
       }
     }.joinToString("&")
 
@@ -105,7 +109,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
       ),
     )
 
-    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, visitSessionDtos, userType = STAFF)
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, visitSessionDtos, clientType = STAFF)
 
     val appointment1 = createScheduledEvent(1L, today.plusDays(4), eventStartTime = LocalDateTime.of(today.plusDays(4), LocalTime.of(9, 0)), eventEndTime = LocalDateTime.of(today.plusDays(4), LocalTime.of(10, 0)))
     val appointment2 = createScheduledEvent(2L, today.plusDays(5), eventStartTime = LocalDateTime.of(today.plusDays(5), LocalTime.of(9, 0)), eventEndTime = LocalDateTime.of(today.plusDays(5), LocalTime.of(10, 0)))
@@ -141,7 +145,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
   @Test
   fun `when no visit sessions and no schedule exists then all dates are returned with empty sessions and schedules`() {
     // Given
-    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, emptyList(), userType = STAFF)
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, emptyList(), clientType = STAFF)
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong()), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
 
     // When
@@ -171,7 +175,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     val visitSessionDto4 = createVisitSessionDto(prisonCode, "4", startTimestamp = LocalDateTime.of(today.plusDays(6), sessionStartTime), endTimestamp = LocalDateTime.of(today.plusDays(6), sessionEndTime))
     val visitSessionDto5 = createVisitSessionDto(prisonCode, "5", startTimestamp = LocalDateTime.of(today.plusDays(7), sessionStartTime), endTimestamp = LocalDateTime.of(today.plusDays(7), sessionEndTime))
 
-    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2, visitSessionDto3, visitSessionDto4, visitSessionDto5), userType = STAFF)
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2, visitSessionDto3, visitSessionDto4, visitSessionDto5), clientType = STAFF)
 
     val appointment1 = createScheduledEvent(1L, today.plusDays(4), eventStartTime = LocalDateTime.of(today.plusDays(4), LocalTime.of(9, 0)), eventEndTime = LocalDateTime.of(today.plusDays(4), LocalTime.of(10, 0)))
     val appointment2 = createScheduledEvent(2L, today.plusDays(9), eventStartTime = LocalDateTime.of(today.plusDays(9), LocalTime.of(9, 0)), eventEndTime = LocalDateTime.of(today.plusDays(9), LocalTime.of(10, 0)))
@@ -223,7 +227,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     // no conflicts
     val visitSessionDto2 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(today.plusDays(4), sessionStartTime), endTimestamp = LocalDateTime.of(today.plusDays(4), sessionEndTime))
 
-    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2), userType = STAFF)
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2), clientType = STAFF)
 
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong()), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
 
@@ -257,7 +261,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     // no conflicts
     val visitSessionDto2 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(today.plusDays(4), sessionStartTime), endTimestamp = LocalDateTime.of(today.plusDays(4), sessionEndTime))
 
-    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2), userType = STAFF)
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2), clientType = STAFF)
 
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong()), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
 
@@ -289,10 +293,10 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
   fun `visit sessions outside the date range are returned with OUTSIDE_BOOKING_WINDOW conflict flag`() {
     // Given
     val prisonCode = "XYZ"
-    val clients = listOf(PrisonUserClientDto(userType = STAFF, policyNoticeDaysMin = 2, policyNoticeDaysMax = 4, active = true))
+    val clients = listOf(PrisonUserClientDto(STAFF, clientType = STAFF, policyNoticeDaysMin = 2, policyNoticeDaysMax = 4, active = true))
     val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 4, 6, 3, 3, 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3, clients = clients)
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
-    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, emptyList(), userType = STAFF)
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, emptyList(), clientType = STAFF)
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong()), toDate = today.plusDays(4), events = emptyList())
 
     // When
@@ -315,7 +319,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[1].visitSessions).isEmpty()
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[1].scheduledEvents).isEmpty()
 
-    // today + 2 - out of booking window
+    // today + 2 - not out of booking window
     assertThat(sessionsAndScheduleDto.sessionsAndSchedule[2].sessionDateConflicts).isEmpty()
 
     // today + 3 - not out of booking window
@@ -332,6 +336,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
   fun `when visit sessions have session conflicts then all session conflicts are included on the response`() {
     // Given
     val sessionConflictDate = today.plusDays(3)
+    val youngestVisitorAge = 17
     val sessionConflicts = setOf(
       SessionConflict.DOUBLE_BOOKING_OR_RESERVATION,
       SessionConflict.SESSION_DATE_BLOCKED,
@@ -339,16 +344,17 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
       SessionConflict.NO_VO_BALANCE,
       SessionConflict.NO_PVO_BALANCE,
       SessionConflict.NO_VO_OR_PVO_BALANCE,
+      SessionConflict.AGE_RESTRICTION,
     )
-    val visitSessionDto1 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime), sessionConflicts = sessionConflicts)
+    val visitSessionDto1 = createVisitSessionDto(prisonCode, "1", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime), sessionConflicts = sessionConflicts, isAgeRestricted = true, ageRestriction = 21)
     val visitSessionDto2 = createVisitSessionDto(prisonCode, "2", startTimestamp = LocalDateTime.of(sessionConflictDate, sessionStartTime), endTimestamp = LocalDateTime.of(sessionConflictDate, sessionEndTime))
 
-    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2), userType = STAFF)
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2), clientType = STAFF, youngestVisitorAge = youngestVisitorAge)
 
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong()), toDate = today.plusDays(maxDays.toLong()), events = emptyList())
 
     // When
-    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetVisitSessionsAndSchedule(webTestClient, prisonCode, prisonerId, min = null, username = null, roleVSIPOrchestrationServiceHttpHeaders, youngestVisitorAge)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk.expectBody()
@@ -357,16 +363,18 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     assertThat(visitSessions).hasSize(2)
     assertThat(visitSessions.map { it.sessionTemplateReference }).containsExactly(visitSessionDto1.sessionTemplateReference, visitSessionDto2.sessionTemplateReference)
     assertThat(visitSessions[0].sessionConflicts.map { it.sessionConflict }).containsExactlyInAnyOrderElementsOf(SessionConflictV2.entries)
+    assertThat(visitSessions[0].isAgeRestricted).isTrue
+    assertThat(visitSessions[0].ageRestriction).isEqualTo(21)
     assertThat(visitSessions[1].sessionConflicts).isEmpty()
 
-    verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF)
+    verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF, youngestVisitorAge)
     verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, LocalDate.now().plusDays(minDays.toLong()), LocalDate.now().plusDays(maxDays.toLong()))
   }
 
   @Test
   fun `when visit sessions returns NOT_FOUND a NOT_FOUND error is returned`() {
     // Given
-    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, null, userType = STAFF, httpStatus = HttpStatus.NOT_FOUND)
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, null, clientType = STAFF, httpStatus = HttpStatus.NOT_FOUND)
 
     val appointment1 = createScheduledEvent(1L, today.plusDays(4), eventStartTime = LocalDateTime.of(today.plusDays(4), LocalTime.of(9, 0)), eventEndTime = LocalDateTime.of(today.plusDays(4), LocalTime.of(10, 0)))
     val appointment2 = createScheduledEvent(2L, today.plusDays(9), eventStartTime = LocalDateTime.of(today.plusDays(9), LocalTime.of(9, 0)), eventEndTime = LocalDateTime.of(today.plusDays(9), LocalTime.of(10, 0)))
@@ -386,7 +394,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
   @Test
   fun `when visit sessions returns INTERNAL_SERVER_ERROR a INTERNAL_SERVER_ERROR error is returned`() {
     // Given
-    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, null, userType = STAFF, httpStatus = HttpStatus.INTERNAL_SERVER_ERROR)
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, null, clientType = STAFF, httpStatus = HttpStatus.INTERNAL_SERVER_ERROR)
 
     val appointment1 = createScheduledEvent(1L, today.plusDays(4), eventStartTime = LocalDateTime.of(today.plusDays(4), LocalTime.of(9, 0)), eventEndTime = LocalDateTime.of(today.plusDays(4), LocalTime.of(10, 0)))
     val appointment2 = createScheduledEvent(2L, today.plusDays(9), eventStartTime = LocalDateTime.of(today.plusDays(9), LocalTime.of(9, 0)), eventEndTime = LocalDateTime.of(today.plusDays(9), LocalTime.of(10, 0)))
@@ -412,7 +420,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     val visitSessionDto4 = createVisitSessionDto(prisonCode, "4", startTimestamp = LocalDateTime.of(today.plusDays(6), sessionStartTime), endTimestamp = LocalDateTime.of(today.plusDays(6), sessionEndTime))
     val visitSessionDto5 = createVisitSessionDto(prisonCode, "5", startTimestamp = LocalDateTime.of(today.plusDays(7), sessionStartTime), endTimestamp = LocalDateTime.of(today.plusDays(7), sessionEndTime))
 
-    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2, visitSessionDto3, visitSessionDto4, visitSessionDto5), userType = STAFF)
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2, visitSessionDto3, visitSessionDto4, visitSessionDto5), clientType = STAFF)
 
     // prison API get scheduled events returns a 404
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong()), toDate = today.plusDays(maxDays.toLong()), events = null, httpStatus = HttpStatus.NOT_FOUND)
@@ -441,7 +449,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     val visitSessionDto4 = createVisitSessionDto(prisonCode, "4", startTimestamp = LocalDateTime.of(today.plusDays(6), sessionStartTime), endTimestamp = LocalDateTime.of(today.plusDays(6), sessionEndTime))
     val visitSessionDto5 = createVisitSessionDto(prisonCode, "5", startTimestamp = LocalDateTime.of(today.plusDays(7), sessionStartTime), endTimestamp = LocalDateTime.of(today.plusDays(7), sessionEndTime))
 
-    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2, visitSessionDto3, visitSessionDto4, visitSessionDto5), userType = STAFF)
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(visitSessionDto1, visitSessionDto2, visitSessionDto3, visitSessionDto4, visitSessionDto5), clientType = STAFF)
 
     // prison API get scheduled events returns a 404
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong()), toDate = today.plusDays(maxDays.toLong()), events = null, httpStatus = HttpStatus.INTERNAL_SERVER_ERROR)

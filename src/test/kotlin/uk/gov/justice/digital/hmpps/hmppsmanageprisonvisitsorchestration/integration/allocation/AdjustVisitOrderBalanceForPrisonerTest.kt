@@ -13,6 +13,7 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.PrisonerBalanceAdjustmentValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.VISIT_ORDER_PRISONER_BALANCE_ENDPOINT
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerBalanceAdjustmentDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitAllocationPrisonerBalanceAdjustmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.VisitOrderPrisonerBalanceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.enums.AdjustmentReasonType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.enums.PrisonerBalanceAdjustmentValidationErrorCodes
@@ -52,7 +53,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     assertThat(prisonerBalanceDto.prisonerId).isEqualTo(prisonerId)
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
-    verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
+    verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, VisitAllocationPrisonerBalanceAdjustmentDto(prisonerBalanceAdjustmentDto, prisonId))
   }
 
   @Test
@@ -79,7 +80,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     assertThat(errorResponseSpec.validationErrors.size).isEqualTo(2)
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
-    verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
+    verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, VisitAllocationPrisonerBalanceAdjustmentDto(prisonerBalanceAdjustmentDto, prisonId))
   }
 
   @Test
@@ -101,7 +102,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isNotFound
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
-    verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
+    verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, VisitAllocationPrisonerBalanceAdjustmentDto(prisonerBalanceAdjustmentDto, prisonId))
   }
 
   @Test
@@ -123,7 +124,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isBadRequest
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
-    verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
+    verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, VisitAllocationPrisonerBalanceAdjustmentDto(prisonerBalanceAdjustmentDto, prisonId))
   }
 
   @Test
@@ -145,7 +146,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     responseSpec.expectStatus().is5xxServerError
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
-    verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
+    verify(visitAllocationApiClientSpy, times(1)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, VisitAllocationPrisonerBalanceAdjustmentDto(prisonerBalanceAdjustmentDto, prisonId))
   }
 
   @Test
@@ -201,7 +202,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isBadRequest
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
-    verify(visitAllocationApiClientSpy, times(0)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
+    verify(visitAllocationApiClientSpy, times(0)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, VisitAllocationPrisonerBalanceAdjustmentDto(prisonerBalanceAdjustmentDto, prisonId))
   }
 
   @Test
@@ -222,7 +223,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     responseSpec.expectStatus().isBadRequest
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
-    verify(visitAllocationApiClientSpy, times(0)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
+    verify(visitAllocationApiClientSpy, times(0)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, VisitAllocationPrisonerBalanceAdjustmentDto(prisonerBalanceAdjustmentDto, prisonId))
   }
 
   @Test
@@ -243,7 +244,7 @@ class AdjustVisitOrderBalanceForPrisonerTest : IntegrationTestBase() {
     responseSpec.expectStatus().is5xxServerError
 
     verify(prisonerSearchClientSpy, times(1)).getPrisonerById(prisonerId)
-    verify(visitAllocationApiClientSpy, times(0)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, prisonerBalanceAdjustmentDto)
+    verify(visitAllocationApiClientSpy, times(0)).adjustPrisonersVisitOrderBalanceAsMono(prisonerId, VisitAllocationPrisonerBalanceAdjustmentDto(prisonerBalanceAdjustmentDto, prisonId))
   }
 
   fun callAdjustPrisonersVisitOrderBalance(

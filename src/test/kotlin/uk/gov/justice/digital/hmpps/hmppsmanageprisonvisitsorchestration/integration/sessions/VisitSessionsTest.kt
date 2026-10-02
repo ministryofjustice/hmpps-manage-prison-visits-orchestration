@@ -8,9 +8,10 @@ import org.mockito.kotlin.verify
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonClientType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonClientType.STAFF
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionConflict
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 
@@ -21,22 +22,67 @@ class VisitSessionsTest : IntegrationTestBase() {
     prisonCode: String,
     prisonerId: String,
     username: String? = null,
-    userType: UserType? = null,
+    clientType: PrisonClientType? = null,
     authHttpHeaders: (HttpHeaders) -> Unit,
+    youngestVisitorAge: Int? = null,
   ): WebTestClient.ResponseSpec {
     val uri = "/visit-sessions"
     val uriQueryParams = mutableListOf("prisonId=$prisonCode", "prisonerId=$prisonerId").also { queryParams ->
       username?.let {
         queryParams.add("username=$username")
       }
-      userType?.let {
-        queryParams.add("userType=${userType.name}")
+      clientType?.let {
+        queryParams.add("userType=${clientType.name}")
+      }
+      youngestVisitorAge?.let {
+        queryParams.add("youngestVisitorAge=$youngestVisitorAge")
       }
     }.joinToString("&")
 
     return webTestClient.get().uri("$uri?$uriQueryParams")
       .headers(authHttpHeaders)
       .exchange()
+  }
+
+  @Test
+  fun `when the youngest visitor has an age conflict it is returned to the caller`() {
+    // Given
+    val prisonCode = "MDI"
+    val prisonerId = "ABC"
+    val youngestVisitorAge = 17
+    val expectedVisitSession = createVisitSessionDto(
+      prisonCode,
+      "1",
+      sessionConflicts = setOf(SessionConflict.AGE_RESTRICTION),
+      isAgeRestricted = true,
+      ageRestriction = 21,
+    )
+
+    visitSchedulerMockServer.stubGetVisitSessions(
+      prisonCode,
+      prisonerId,
+      listOf(expectedVisitSession),
+      clientType = STAFF,
+      youngestVisitorAge = youngestVisitorAge,
+    )
+
+    // When
+    val responseSpec = callGetVisitSessions(
+      webTestClient,
+      prisonCode,
+      prisonerId,
+      clientType = STAFF,
+      youngestVisitorAge = youngestVisitorAge,
+      authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
+    )
+
+    // Then
+    val returnResult = responseSpec.expectStatus().isOk.expectBody()
+    val actualVisitSessions = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<VisitSessionDto>::class.java)
+    assertThat(actualVisitSessions.single().sessionConflicts.map { it.sessionConflict }).containsExactly(SessionConflict.AGE_RESTRICTION)
+    assertThat(actualVisitSessions.single().isAgeRestricted).isTrue
+    assertThat(actualVisitSessions.single().ageRestriction).isEqualTo(21)
+    verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, null, STAFF, youngestVisitorAge)
   }
 
   @Test
@@ -52,10 +98,10 @@ class VisitSessionsTest : IntegrationTestBase() {
       createVisitSessionDto(prisonCode, "5", visitOrderRestriction = SessionTemplateVisitOrderRestrictionType.VO),
     )
 
-    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, expectedVisitSessionDtos, userType = STAFF)
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, expectedVisitSessionDtos, clientType = STAFF)
 
     // When
-    val responseSpec = callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = null, userType = STAFF, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = null, clientType = STAFF, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk
@@ -74,10 +120,10 @@ class VisitSessionsTest : IntegrationTestBase() {
     val prisonCode = "MDI"
     val prisonerId = "ABC"
 
-    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(), userType = STAFF)
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(), clientType = STAFF)
 
     // When
-    val responseSpec = callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = null, userType = STAFF, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = null, clientType = STAFF, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -93,10 +139,10 @@ class VisitSessionsTest : IntegrationTestBase() {
     val username = null
 
     // When
-    callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = username, userType = STAFF, roleVSIPOrchestrationServiceHttpHeaders)
+    callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = username, clientType = STAFF, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, username, userType = STAFF)
+    verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, username, clientType = STAFF)
   }
 
   @Test
@@ -107,10 +153,10 @@ class VisitSessionsTest : IntegrationTestBase() {
     val username = "test-user"
 
     // When
-    callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = username, userType = STAFF, roleVSIPOrchestrationServiceHttpHeaders)
+    callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = username, clientType = STAFF, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
-    verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, username, userType = STAFF)
+    verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, null, null, username, clientType = STAFF)
   }
 
   @Test
@@ -119,10 +165,10 @@ class VisitSessionsTest : IntegrationTestBase() {
     val prisonCode = "MDI"
     val prisonerId = "ABC"
 
-    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(), userType = STAFF)
+    visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, mutableListOf(), clientType = STAFF)
 
     // When
-    val responseSpec = callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = null, userType = STAFF, roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetVisitSessions(webTestClient, prisonCode, prisonerId, username = null, clientType = STAFF, roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -130,7 +176,7 @@ class VisitSessionsTest : IntegrationTestBase() {
       .jsonPath("$.size()").isEqualTo(0)
 
     // Then
-    // verify getVisitSessions on visit-scheduler is called with userType = STAFF
-    verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, min = null, max = null, username = null, userType = STAFF)
+    // verify getVisitSessions on visit-scheduler is called with clientType = STAFF
+    verify(visitSchedulerClientSpy, times(1)).getVisitSessions(prisonCode, prisonerId, min = null, max = null, username = null, clientType = STAFF)
   }
 }
