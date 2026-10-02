@@ -2,14 +2,18 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vi
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonClientType
 
 @Schema(description = "Prison user client dto")
 data class PrisonUserClientDto(
-
+  @Deprecated("to be removed - use client type instead")
   @param:Schema(description = "User type", example = "STAFF", required = true)
   @field:NotNull
-  val userType: UserType,
+  val userType: PrisonClientType,
+
+  @param:Schema(description = "Prison client type (STAFF / PUBLIC)", example = "STAFF", required = true)
+  @field:NotNull
+  val clientType: PrisonClientType,
 
   @param:Schema(description = "minimum number of days notice from the current date to book a visit", example = "2", required = true)
   val policyNoticeDaysMin: Int,

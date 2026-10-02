@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonClientType
 import java.time.DayOfWeek
 
 @Schema(description = "Prison dto")
@@ -24,9 +25,11 @@ data class PrisonDto(
   val active: Boolean = false,
 
   // TODO - remove this once we move to client booking windows
+  @Deprecated("to be removed - use client properties instead")
   @param:Schema(description = "minimum number of days notice from the current date to booked a visit", example = "2", required = true)
   val policyNoticeDaysMin: Int,
 
+  @Deprecated("to be removed - use client properties instead")
   @param:Schema(description = "maximum number of days notice from the current date to booked a visit", example = "28", required = true)
   val policyNoticeDaysMax: Int,
 
@@ -60,6 +63,14 @@ data class PrisonDto(
   @param:Schema(description = "Web address of prison", required = false)
   val webAddress: String?,
 
+  @param:Schema(description = "Staff Client details", required = true)
+  val staffClient: PrisonUserClientDto,
+
+  @param:Schema(description = "Public Client details (if available)", required = false)
+  val publicClient: PrisonUserClientDto? = null,
+
+  // TODO - remove clients as this is now redundant
+  @Deprecated("Use staffClient and / or publicClient instead")
   @param:Schema(description = "prison user client", required = false)
   val clients: List<PrisonUserClientDto> = listOf(),
 ) {
@@ -76,8 +87,9 @@ data class PrisonDto(
     adultAgeYears = visitSchedulerPrisonDto.adultAgeYears,
     weekStartDay = visitSchedulerPrisonDto.weekStartDay,
     remandVisitLimitPerWeek = visitSchedulerPrisonDto.remandVisitLimitPerWeek,
+    staffClient = visitSchedulerPrisonDto.clients.first { it.clientType == PrisonClientType.STAFF },
+    publicClient = visitSchedulerPrisonDto.clients.firstOrNull { it.clientType == PrisonClientType.PUBLIC },
     clients = visitSchedulerPrisonDto.clients,
-
     emailAddress = prisonRegisterContactDetailsDto.emailAddress,
     phoneNumber = prisonRegisterContactDetailsDto.phoneNumber,
     webAddress = prisonRegisterContactDetailsDto.webAddress,

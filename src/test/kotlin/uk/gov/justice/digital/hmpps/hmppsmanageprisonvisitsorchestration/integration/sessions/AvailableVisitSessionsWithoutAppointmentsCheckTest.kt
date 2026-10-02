@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTimeSlotDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonClientType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PublicSessionConflict
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.CLOSED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction.OPEN
@@ -23,7 +24,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType.PVO
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType.VO
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType.VO_PVO
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.DayOfWeek
@@ -43,7 +43,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     val visitSession3 = AvailableVisitSessionDto(LocalDate.now().plusDays(2), "session3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
 
     val visitSchedulerPrisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC, youngestVisitorAge = youngestVisitorAge)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), clientType = PUBLIC, youngestVisitorAge = youngestVisitorAge)
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
 
@@ -52,7 +52,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, false, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders, youngestVisitorAge = youngestVisitorAge)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, false, clientType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders, youngestVisitorAge = youngestVisitorAge)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk
@@ -77,7 +77,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = VO_PVO)
 
     val visitSchedulerPrisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1), excludedApplicationReference = "aledTheGreat", userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1), excludedApplicationReference = "aledTheGreat", clientType = PUBLIC)
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
 
@@ -86,7 +86,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, false, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders, excludedApplicationReference = "aledTheGreat")
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, false, clientType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders, excludedApplicationReference = "aledTheGreat")
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk
@@ -103,12 +103,12 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     val prisonerId = "AA123456B"
     val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), "s1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = PVO)
     val prisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
-    visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonDto, prisonerId, OPEN, mutableListOf(visitSession1), userType = PUBLIC)
+    visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonDto, prisonerId, OPEN, mutableListOf(visitSession1), clientType = PUBLIC)
     visitSchedulerMockServer.stubGetPrison(prisonCode, prisonDto)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, withAppointmentsCheck = false, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, withAppointmentsCheck = false, clientType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk
@@ -128,7 +128,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     val visitSession2 = AvailableVisitSessionDto(LocalDate.now().plusDays(1), "s2", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     val visitSession3 = AvailableVisitSessionDto(LocalDate.now().plusDays(2), "s3", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = NONE)
     val prisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), clientType = PUBLIC)
     visitSchedulerMockServer.stubGetPrison(prisonCode, prisonDto)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
     val visitorIds = listOf(1L, 2L, 3L)
@@ -136,7 +136,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = null)
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, withAppointmentsCheck = false, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, withAppointmentsCheck = false, clientType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     responseSpec.expectStatus().isOk
@@ -156,7 +156,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     val visitorIds = listOf<Long>()
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, withAppointmentsCheck = false, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, withAppointmentsCheck = false, clientType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
 
@@ -176,13 +176,13 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     val prisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
 
     val toDay = LocalDate.now()
-    val publicClient = prisonDto.clients.first { it.userType == PUBLIC }
+    val publicClient = prisonDto.clients.first { it.clientType == PUBLIC }
     val fromDate = toDay.plusDays(publicClient.policyNoticeDaysMin.toLong().plus(1))
     val toDate = toDay.plusDays(publicClient.policyNoticeDaysMax.toLong())
     val dateRange = DateRange(fromDate, toDate)
 
     val moderatedDateRange = DateRange(toDay, toDay.plusWeeks(1))
-    visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonDto, prisonerId, OPEN, mutableListOf(visitSession1), dateRange = moderatedDateRange, userType = PUBLIC)
+    visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonDto, prisonerId, OPEN, mutableListOf(visitSession1), dateRange = moderatedDateRange, clientType = PUBLIC)
 
     visitSchedulerMockServer.stubGetPrison(prisonCode, prisonDto)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
@@ -191,7 +191,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = moderatedDateRange)
 
     // When
-    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, withAppointmentsCheck = false, userType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
+    val responseSpec = callGetAvailableVisitSessions(webTestClient, prisonCode, prisonerId, OPEN, visitorIds = visitorIds, withAppointmentsCheck = false, clientType = PUBLIC, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders)
 
     // Then
     val returnResult = responseSpec.expectStatus().isOk
@@ -217,7 +217,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     )
 
     val visitSchedulerPrisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, CLOSED, mutableListOf(visitSession1), userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, CLOSED, mutableListOf(visitSession1), clientType = PUBLIC)
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictionsDto)
 
@@ -233,7 +233,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
       OPEN,
       visitorIds,
       false,
-      userType = PUBLIC,
+      clientType = PUBLIC,
       authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
     )
 
@@ -262,7 +262,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     )
 
     val visitSchedulerPrisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, CLOSED, mutableListOf(visitSession1), userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, CLOSED, mutableListOf(visitSession1), clientType = PUBLIC)
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictionsDto)
 
@@ -278,7 +278,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
       OPEN,
       visitorIds,
       false,
-      userType = PUBLIC,
+      clientType = PUBLIC,
       authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
     )
 
@@ -299,7 +299,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     val visitSession1 = AvailableVisitSessionDto(LocalDate.now(), "s1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), CLOSED, visitOrderRestriction = VO)
 
     val prisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonDto, prisonerId, CLOSED, mutableListOf(visitSession1), userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonDto, prisonerId, CLOSED, mutableListOf(visitSession1), clientType = PUBLIC)
     visitSchedulerMockServer.stubGetPrison(prisonCode, prisonDto)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
 
@@ -315,7 +315,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
       OPEN,
       visitorIds,
       false,
-      userType = PUBLIC,
+      clientType = PUBLIC,
       authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
     )
 
@@ -335,7 +335,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     val prisonerId = "AA123456B"
 
     val visitSchedulerPrisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(), userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(), clientType = PUBLIC)
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
 
@@ -351,7 +351,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
       OPEN,
       visitorIds,
       false,
-      userType = PUBLIC,
+      clientType = PUBLIC,
       authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
     )
 
@@ -369,7 +369,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     val prisonerId = "AA123456B"
 
     val visitSchedulerPrisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(), NOT_FOUND, userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(), NOT_FOUND, clientType = PUBLIC)
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
 
@@ -385,7 +385,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
       OPEN,
       visitorIds,
       false,
-      userType = PUBLIC,
+      clientType = PUBLIC,
       authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
     )
 
@@ -402,7 +402,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     val prisonerId = "AA123456B"
 
     val visitSchedulerPrisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(), userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(), clientType = PUBLIC)
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, null)
 
@@ -418,13 +418,13 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
       OPEN,
       visitorIds,
       false,
-      userType = PUBLIC,
+      clientType = PUBLIC,
       authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
     )
 
     // Then
     responseSpec.expectStatus().isNotFound
-    verify(visitSchedulerClientSpy, times(0)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, userType = PUBLIC)
+    verify(visitSchedulerClientSpy, times(0)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, clientType = PUBLIC)
     verify(appointmentsServiceSpy, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
@@ -435,7 +435,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     val prisonerId = "AA123456B"
 
     val visitSchedulerPrisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(), userType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(), clientType = PUBLIC)
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, null, INTERNAL_SERVER_ERROR)
 
@@ -451,13 +451,13 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
       OPEN,
       visitorIds,
       false,
-      userType = PUBLIC,
+      clientType = PUBLIC,
       authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
     )
 
     // Then
     responseSpec.expectStatus().is5xxServerError
-    verify(visitSchedulerClientSpy, times(0)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, userType = PUBLIC)
+    verify(visitSchedulerClientSpy, times(0)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, clientType = PUBLIC)
     verify(appointmentsServiceSpy, times(0)).getHigherPriorityAppointments(any(), any(), any())
   }
 
@@ -477,7 +477,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
       CLOSED,
       visitorIds,
       false,
-      userType = PUBLIC,
+      clientType = PUBLIC,
       authHttpHeaders = invalidRole,
     )
 

@@ -18,8 +18,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonClientType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.VisitSessionsAndScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerSessionsService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.validation.NullableNotEmpty
@@ -99,7 +99,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     username: String? = null,
     @RequestParam
     @Parameter(description = "user type for the session", example = "STAFF", required = false)
-    userType: UserType = UserType.STAFF,
+    userType: PrisonClientType = PrisonClientType.STAFF,
     @RequestParam(value = "youngestVisitorAge", required = false)
     @Parameter(description = "Age of the youngest visitor", example = "18", required = false)
     youngestVisitorAge: Int? = null,
@@ -225,7 +225,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     username: String? = null,
     @RequestParam
     @Parameter(description = "user type for the session", example = "PUBLIC", required = false)
-    userType: UserType = UserType.PUBLIC,
+    userType: PrisonClientType = PrisonClientType.PUBLIC,
     @RequestParam(value = "youngestVisitorAge", required = false)
     @Parameter(description = "Age of the youngest visitor", example = "18", required = false)
     youngestVisitorAge: Int? = null,
@@ -239,7 +239,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     fromDateOverride = fromDateOverride,
     toDateOverride = toDateOverride,
     username = username,
-    userType = userType,
+    clientType = userType,
     youngestVisitorAge = youngestVisitorAge,
     // TODO - to be removed as PVB does not use this parameter
     excludedApplicationReference = excludedApplicationReference,
@@ -295,7 +295,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     username: String? = null,
     @RequestParam
     @Parameter(description = "user type for the session", example = "PUBLIC", required = false)
-    userType: UserType = UserType.PUBLIC,
+    userType: PrisonClientType = PrisonClientType.PUBLIC,
     @RequestParam(value = "youngestVisitorAge", required = false)
     @Parameter(description = "Age of the youngest visitor", example = "18", required = false)
     youngestVisitorAge: Int? = null,
@@ -305,7 +305,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     visitors = visitors,
     excludedApplicationReference = excludedApplicationReference,
     username = username,
-    userType = userType,
+    clientType = userType,
     youngestVisitorAge = youngestVisitorAge,
   )
 
