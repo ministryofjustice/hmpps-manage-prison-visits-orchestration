@@ -55,8 +55,6 @@ class PrisonServiceTest {
   private fun prison(clients: List<PrisonUserClientDto>) = VisitSchedulerPrisonDto(
     code = "MDI",
     active = true,
-    policyNoticeDaysMin = 1,
-    policyNoticeDaysMax = 28,
     maxTotalVisitors = 6,
     maxAdultVisitors = 3,
     maxChildVisitors = 3,
@@ -71,7 +69,6 @@ class PrisonServiceTest {
     policyNoticeDaysMin: Int,
     policyNoticeDaysMax: Int,
   ) = PrisonUserClientDto(
-    userType = clientType,
     clientType = clientType,
     policyNoticeDaysMin = policyNoticeDaysMin,
     policyNoticeDaysMax = policyNoticeDaysMax,
