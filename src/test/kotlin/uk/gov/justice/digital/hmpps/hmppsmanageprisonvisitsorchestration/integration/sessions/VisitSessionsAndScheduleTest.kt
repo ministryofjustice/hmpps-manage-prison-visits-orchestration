@@ -294,7 +294,7 @@ class VisitSessionsAndScheduleTest : IntegrationTestBase() {
     // Given
     val prisonCode = "XYZ"
     val clients = listOf(PrisonUserClientDto(clientType = STAFF, policyNoticeDaysMin = 2, policyNoticeDaysMax = 4, active = true))
-    val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(prisonCode, true, 2, 4, 6, 3, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3, clients = clients)
+    val visitSchedulerPrisonDto = VisitSchedulerPrisonDto(code = prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3, clients = clients)
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
     visitSchedulerMockServer.stubGetVisitSessions(prisonCode, prisonerId, emptyList(), clientType = STAFF)
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, fromDate = today.plusDays(minDays.toLong() + 1), toDate = today.plusDays(4), events = emptyList())
