@@ -93,8 +93,7 @@ class VisitSchedulerSessionsService(
     val sessionAndScheduleDateRange = DateRange(today, dateRangeForPrison.toDate)
 
     // get sessions for prisoner and date range with clientType as STAFF
-    var visitSessions = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max = null, username, PrisonClientType.STAFF, youngestVisitorAge)
-    visitSessions = visitSessions?.filter { it.startTimestamp >= now }
+    val visitSessions = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max = null, username, PrisonClientType.STAFF, youngestVisitorAge)?.filter { it.startTimestamp >= now }
 
     // get schedules for prisoner and date range
     val prisonerSchedules =
