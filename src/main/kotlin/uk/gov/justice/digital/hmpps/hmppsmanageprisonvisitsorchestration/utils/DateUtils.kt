@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.IndefiniteDateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonClientType
 import java.time.DayOfWeek.SATURDAY
 import java.time.DayOfWeek.SUNDAY
 import java.time.LocalDate
@@ -12,6 +13,7 @@ import java.time.LocalDateTime
 @Component
 class DateUtils(private val currentDateUtils: CurrentDateUtils) {
   fun getToDaysDateRange(
+    clientType: PrisonClientType,
     client: PrisonUserClientDto,
     minOverride: Int? = null,
     maxOverride: Int? = null,
@@ -30,8 +32,12 @@ class DateUtils(private val currentDateUtils: CurrentDateUtils) {
       maxOverride
     }
 
-    // start the booking window at today plus the configured minimum notice period
-    val bookableStartDate = today.plusDays(min.toLong())
+    // add 1 to the policyNoticeDaysMin for PUBLIC client - not STAFF - to ensure we are adding whole days if client type requested is PUBLIC
+    val bookableStartDate = if (clientType == PrisonClientType.STAFF) {
+      today.plusDays(min.toLong())
+    } else {
+      today.plusDays(min.toLong().plus(1))
+    }
     var bookableEndDate = today.plusDays(max.toLong())
 
     if (bookableEndDate.isBefore(bookableStartDate)) {

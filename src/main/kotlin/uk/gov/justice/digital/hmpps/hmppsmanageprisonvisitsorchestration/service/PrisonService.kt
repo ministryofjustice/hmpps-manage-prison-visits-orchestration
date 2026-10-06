@@ -88,7 +88,7 @@ class PrisonService(
           val message = "No client found for prison $prisonCode and user type $clientType"
           throw IllegalStateException(message)
         }
-    return dateUtils.getToDaysDateRange(client = client, minOverride = fromDateOverride, maxOverride = toDateOverride)
+    return dateUtils.getToDaysDateRange(clientType = clientType, client = client, minOverride = fromDateOverride, maxOverride = toDateOverride)
   }
 
   fun updatePrison(prisonCode: String, updatePrisonDto: VisitSchedulerUpdatePrisonDto): VisitSchedulerPrisonDto = visitSchedulerClient.updatePrison(prisonCode, updatePrisonDto)

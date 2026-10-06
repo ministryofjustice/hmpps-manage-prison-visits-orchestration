@@ -36,7 +36,7 @@ class PrisonServiceTest {
 
     val dateRange = prisonService.getToDaysBookableDateRange(prisonCode = "MDI", clientType = PrisonClientType.PUBLIC)
 
-    assertThat(dateRange.fromDate).isEqualTo(today.plusDays(5))
+    assertThat(dateRange.fromDate).isEqualTo(today.plusDays(6))
     assertThat(dateRange.toDate).isEqualTo(today.plusDays(30))
   }
 
@@ -48,7 +48,7 @@ class PrisonServiceTest {
 
     val dateRange = prisonService.getToDaysBookableDateRange(prisonCode = "MDI", clientType = PrisonClientType.PUBLIC)
 
-    assertThat(dateRange.fromDate).isEqualTo(today.plusDays(2))
+    assertThat(dateRange.fromDate).isEqualTo(today.plusDays(3))
     assertThat(dateRange.toDate).isEqualTo(today.plusDays(28))
   }
 

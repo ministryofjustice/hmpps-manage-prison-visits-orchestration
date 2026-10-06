@@ -29,7 +29,7 @@ class DateUtilsTest {
   @Test
   fun `works out date range correctly with given prison client`() {
     // When
-    val dateRange = dateUtils.getToDaysDateRange(prisonClient)
+    val dateRange = dateUtils.getToDaysDateRange(PrisonClientType.STAFF, prisonClient)
 
     // Then
     Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prisonClient.policyNoticeDaysMin.toLong()))
@@ -42,7 +42,7 @@ class DateUtilsTest {
     val pvbAdvanceFromDateByDays = 1
 
     // When
-    var dateRange = dateUtils.getToDaysDateRange(prisonClient)
+    var dateRange = dateUtils.getToDaysDateRange(PrisonClientType.STAFF, prisonClient)
     dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
 
     // Then
@@ -56,7 +56,7 @@ class DateUtilsTest {
     val pvbAdvanceFromDateByDays = 0
 
     // When
-    var dateRange = dateUtils.getToDaysDateRange(prisonClient)
+    var dateRange = dateUtils.getToDaysDateRange(PrisonClientType.STAFF, prisonClient)
     dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
 
     // Then
@@ -70,7 +70,7 @@ class DateUtilsTest {
     val pvbAdvanceFromDateByDays = -1
 
     // When
-    var dateRange = dateUtils.getToDaysDateRange(prisonClient)
+    var dateRange = dateUtils.getToDaysDateRange(PrisonClientType.STAFF, prisonClient)
     dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
 
     // Then
@@ -84,7 +84,7 @@ class DateUtilsTest {
     val pvbAdvanceFromDateByDays = (prisonClient.policyNoticeDaysMax - prisonClient.policyNoticeDaysMin) + 1
 
     // When
-    var dateRange = dateUtils.getToDaysDateRange(prisonClient)
+    var dateRange = dateUtils.getToDaysDateRange(PrisonClientType.STAFF, prisonClient)
     dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
 
     // Then
@@ -98,7 +98,7 @@ class DateUtilsTest {
     val pvbAdvanceFromDateByDays = (prisonClient.policyNoticeDaysMax - prisonClient.policyNoticeDaysMin)
 
     // When
-    var dateRange = dateUtils.getToDaysDateRange(prisonClient)
+    var dateRange = dateUtils.getToDaysDateRange(PrisonClientType.STAFF, prisonClient)
     dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
 
     // Then
@@ -113,7 +113,7 @@ class DateUtilsTest {
     val pvbAdvanceFromDateByDays = 25
 
     // When
-    var dateRange = dateUtils.getToDaysDateRange(prisonClient)
+    var dateRange = dateUtils.getToDaysDateRange(PrisonClientType.STAFF, prisonClient)
     dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
 
     // Then
@@ -128,7 +128,7 @@ class DateUtilsTest {
 
     // When
     // minOverride is less than allowed prison configuration - ignore this parameter
-    val dateRange = dateUtils.getToDaysDateRange(prisonClient, minOverride = minOverrideDays)
+    val dateRange = dateUtils.getToDaysDateRange(PrisonClientType.STAFF, prisonClient, minOverride = minOverrideDays)
 
     // Then
     Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prisonClient.policyNoticeDaysMin.toLong()))
@@ -142,7 +142,7 @@ class DateUtilsTest {
     val maxOverrideDays = 56
 
     // When
-    val dateRange = dateUtils.getToDaysDateRange(prisonClient, maxOverride = maxOverrideDays)
+    val dateRange = dateUtils.getToDaysDateRange(PrisonClientType.STAFF, prisonClient, maxOverride = maxOverrideDays)
 
     // Then
     Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prisonClient.policyNoticeDaysMin.toLong()))
