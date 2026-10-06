@@ -977,8 +977,8 @@ abstract class IntegrationTestBase {
     remandVisitLimitPerWeek: Int,
   ): VisitSchedulerPrisonDto {
     val clients = listOf(
-      PrisonUserClientDto(PrisonClientType.STAFF, PrisonClientType.STAFF, policyNoticeDaysMin = policyNoticeDaysMin, policyNoticeDaysMax = policyNoticeDaysMax, active = true),
-      PrisonUserClientDto(PrisonClientType.PUBLIC, PrisonClientType.PUBLIC, policyNoticeDaysMin = policyNoticeDaysMin, policyNoticeDaysMax = policyNoticeDaysMax, active = true),
+      PrisonUserClientDto(PrisonClientType.STAFF, policyNoticeDaysMin = policyNoticeDaysMin, policyNoticeDaysMax = policyNoticeDaysMax, active = true),
+      PrisonUserClientDto(PrisonClientType.PUBLIC, policyNoticeDaysMin = policyNoticeDaysMin, policyNoticeDaysMax = policyNoticeDaysMax, active = true),
     )
     return VisitSchedulerPrisonDto(
       code = prisonCode,
@@ -990,8 +990,6 @@ abstract class IntegrationTestBase {
       clients = clients,
       weekStartDay = weekStartDay,
       remandVisitLimitPerWeek = remandVisitLimitPerWeek,
-      policyNoticeDaysMin = policyNoticeDaysMin,
-      policyNoticeDaysMax = policyNoticeDaysMax,
     )
   }
 
