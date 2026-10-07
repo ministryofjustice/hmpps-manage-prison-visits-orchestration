@@ -85,12 +85,15 @@ class VisitSchedulerSessionsService(
     username: String?,
     youngestVisitorAge: Int? = null,
   ): VisitSessionsAndScheduleDto {
+    val today = dateUtils.today()
+    val now = dateUtils.now()
+
     var scheduledEventsAvailable = true
     val dateRangeForPrison = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, clientType = PrisonClientType.STAFF)
-    val sessionAndScheduleDateRange = DateRange(LocalDate.now(), dateRangeForPrison.toDate)
+    val sessionAndScheduleDateRange = DateRange(today, dateRangeForPrison.toDate)
 
     // get sessions for prisoner and date range with clientType as STAFF
-    val visitSessions = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max = null, username, PrisonClientType.STAFF, youngestVisitorAge)
+    val visitSessions = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max = null, username, PrisonClientType.STAFF, youngestVisitorAge)?.filter { it.startTimestamp >= now }
 
     // get schedules for prisoner and date range
     val prisonerSchedules =
@@ -219,7 +222,8 @@ class VisitSchedulerSessionsService(
       emptyList()
     }
 
-    return sessions
+    val now = dateUtils.now()
+    return sessions.filter { it.sessionDate.atTime(it.sessionTimeSlot.startTime) >= now }
   }
 
   fun getSessionCapacity(
