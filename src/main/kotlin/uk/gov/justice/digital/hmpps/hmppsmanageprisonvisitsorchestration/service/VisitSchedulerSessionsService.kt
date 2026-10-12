@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.servic
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.AlertsApiClient
@@ -53,8 +52,6 @@ class VisitSchedulerSessionsService(
   private val prisonApiClient: PrisonApiClient,
   private val prisonerContactRegistryClient: PrisonerContactRegistryClient,
   private val alertsApiClient: AlertsApiClient,
-  @param:Value("\${public.service.from-date-override: 2}")
-  private val publicServiceFromDateOverride: Long,
 ) {
   companion object {
     val LOG: Logger = LoggerFactory.getLogger(this::class.java)
@@ -164,7 +161,7 @@ class VisitSchedulerSessionsService(
   ): List<AvailableVisitSessionDto> {
     val sessionRestriction = updateRequestedRestriction(null, prisonerId, visitors)
 
-    val dateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, fromDateOverride = publicServiceFromDateOverride.toInt(), toDateOverride = null, clientType = clientType)
+    val dateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, fromDateOverride = null, toDateOverride = null, clientType = clientType)
 
     var availableVisitSessions = getAvailableVisitSessionsForDateRange(
       prisonCode = prisonCode,

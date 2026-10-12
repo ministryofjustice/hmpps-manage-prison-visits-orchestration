@@ -42,8 +42,6 @@ class VisitSchedulerSessionServiceTest {
   private val prisonApiClient: PrisonApiClient = mock<PrisonApiClient>()
   private val prisonerContactRegistryClient: PrisonerContactRegistryClient = mock<PrisonerContactRegistryClient>()
   private val alertsApiClient: AlertsApiClient = mock<AlertsApiClient>()
-  private val publicServiceFromDateOverride = 0L
-  private val publicServiceToDateOverride = 2L
 
   private val visitSchedulerSessionsService = VisitSchedulerSessionsService(
     visitSchedulerClient = visitSchedulerClient,
@@ -56,7 +54,6 @@ class VisitSchedulerSessionServiceTest {
     prisonApiClient = prisonApiClient,
     prisonerContactRegistryClient = prisonerContactRegistryClient,
     alertsApiClient = alertsApiClient,
-    publicServiceFromDateOverride = publicServiceFromDateOverride,
   )
 
   @Test

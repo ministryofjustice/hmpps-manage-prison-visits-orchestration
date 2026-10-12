@@ -127,12 +127,6 @@ cache:
     bank-holidays:
       cron: "0 0 0 */7 * ?" #every 7 days
 
-# TODO - to be moved to DB when added to prison configuration  
-public:
-  service:
-    from-date-override: 2
-    to-date-override: 28
-
 api:
   timeout: 10s
   health:
