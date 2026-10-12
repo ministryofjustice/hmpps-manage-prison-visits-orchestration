@@ -24,7 +24,6 @@ generic-service:
     CACHE_EVICT_BANK_HOLIDAYS_CRON: "0 0 0 */1 * ?" #every day on PROD
 
 generic-prometheus-alerts:
-  alertSeverity: visits-alerts
   sqsAlertsQueueNames:
     - "book-a-prison-visit-prod-hmpps_prison_visits_event_queue"
     - "book-a-prison-visit-prod-hmpps_prison_visits_event_dlq"

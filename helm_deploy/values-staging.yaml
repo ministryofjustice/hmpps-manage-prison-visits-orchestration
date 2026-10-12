@@ -30,7 +30,6 @@ generic-service:
     retryDlqSchedule: '*/10 7-20 * * 1-5' # Every 10 minutes 7:00am - 8:50pm UTC Monday-Friday
 
 generic-prometheus-alerts:
-  alertSeverity: visits-alerts-nonprod
   businessHoursOnly: true
   sqsAlertsQueueNames:
     - "book-a-prison-visit-staging-hmpps_prison_visits_event_queue"

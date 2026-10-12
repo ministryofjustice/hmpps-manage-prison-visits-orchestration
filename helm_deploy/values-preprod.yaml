@@ -26,7 +26,6 @@ generic-service:
     SPRINGDOC_SWAGGER-UI_ENABLED: "true"
 
 generic-prometheus-alerts:
-  alertSeverity: visits-alerts-nonprod
   sqsAlertsQueueNames:
     - "book-a-prison-visit-preprod-hmpps_prison_visits_event_queue"
     - "book-a-prison-visit-preprod-hmpps_prison_visits_event_dlq"
