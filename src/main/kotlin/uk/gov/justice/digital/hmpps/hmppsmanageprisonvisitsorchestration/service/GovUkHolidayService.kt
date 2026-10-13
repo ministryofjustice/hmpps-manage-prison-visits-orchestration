@@ -3,10 +3,8 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.servic
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.GovUKHolidayClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidayEventDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidaysDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.utils.CurrentDateUtils
 import java.util.function.Predicate
@@ -28,7 +26,7 @@ class GovUkHolidayService(
 
   fun getGovUKBankHolidays(futureOnly: Boolean = false): List<HolidayEventDto> {
     LOG.debug("Entered getGovUKBankHolidays, futureOnly: {}", futureOnly)
-    var bankHolidays = getBankHolidays()?.englandAndWalesHolidays?.events.orEmpty()
+    var bankHolidays = getBankHolidays()
     if (futureOnly && bankHolidays.isNotEmpty()) {
       bankHolidays = bankHolidays.filter { futureDatedHolidays.test(it) }
     }
@@ -37,20 +35,24 @@ class GovUkHolidayService(
 
   fun getGovUKBankHolidays(dateRange: DateRange): List<HolidayEventDto> {
     LOG.debug("Entered getGovUKBankHolidays, dateRange: {}", dateRange)
-    val bankHolidays = getBankHolidays()?.englandAndWalesHolidays?.events.orEmpty().filter { it.date >= dateRange.fromDate && it.date <= dateRange.toDate }
+    val bankHolidays = getBankHolidays().filter { it.date >= dateRange.fromDate && it.date <= dateRange.toDate }
     return bankHolidays.sortedBy { it.date }
   }
 
-  private fun getBankHolidays(): HolidaysDto? {
+  private fun getBankHolidays(): List<HolidayEventDto> {
     LOG.debug("Entered getBankHolidays")
-    var holidaysDto: HolidaysDto? = null
-    try {
-      holidaysDto = govUKHolidayClient.getHolidays()
-    } catch (e: WebClientResponseException) {
-      // log and ignore the error
-      LOG.info("Failed to acquire bank holidays from gov uk api, exception: {}", e.message)
+
+    // Holiday lookup failures must stop the request rather than shorten the booking notice period.
+    val holidaysDto = govUKHolidayClient.getHolidays()
+    if (holidaysDto == null) {
+      throw IllegalStateException("No bank holiday data was returned by GOV.UK")
     }
 
-    return holidaysDto
+    val bankHolidays = holidaysDto.englandAndWalesHolidays.events
+    if (bankHolidays == null) {
+      throw IllegalStateException("England and Wales bank holiday events were not returned by GOV.UK")
+    }
+
+    return bankHolidays
   }
 }
