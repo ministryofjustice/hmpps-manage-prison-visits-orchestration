@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -12,6 +13,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.CacheManager
+import org.springframework.http.HttpStatus
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.CacheNames
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.alerts.api.enums.PrisonerSupportedAlertCodeType
@@ -210,6 +212,54 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
   @MethodSource("reviewStates")
   fun `a zero day notice period allows visits from tomorrow`(forReview: Boolean) {
     assertBookingWindow(monday.plusDays(4), 0, monday.plusDays(5), forReview)
+  }
+
+  @Test
+  fun `when GOV UK returns NOT_FOUND then the PUBLIC request fails without querying sessions`() {
+    govUkMockServer.stubGetBankHolidays(null, HttpStatus.NOT_FOUND)
+
+    assertPublicRequestFailsWithoutQueryingSessions(HttpStatus.NOT_FOUND)
+  }
+
+  @Test
+  fun `when GOV UK returns INTERNAL_SERVER_ERROR then the PUBLIC request fails without querying sessions`() {
+    govUkMockServer.stubGetBankHolidays(null, HttpStatus.INTERNAL_SERVER_ERROR)
+
+    assertPublicRequestFailsWithoutQueryingSessions(HttpStatus.INTERNAL_SERVER_ERROR)
+  }
+
+  @Test
+  fun `when GOV UK returns an empty response body then the PUBLIC request fails without querying sessions`() {
+    govUkMockServer.stubGetBankHolidays(null, HttpStatus.OK)
+
+    assertPublicRequestFailsWithoutQueryingSessions(HttpStatus.INTERNAL_SERVER_ERROR)
+  }
+
+  @Test
+  fun `when GOV UK returns no holiday events then the PUBLIC request fails without querying sessions`() {
+    govUkMockServer.stubGetBankHolidays(HolidaysDto(HolidayEventByDivisionDto("england-and-wales", null)))
+
+    assertPublicRequestFailsWithoutQueryingSessions(HttpStatus.INTERNAL_SERVER_ERROR)
+  }
+
+  private fun assertPublicRequestFailsWithoutQueryingSessions(expectedStatus: HttpStatus) {
+    whenever(currentDateUtils.getCurrentDate()).thenReturn(monday)
+    val prison = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, adultAgeYears = 18, policyNoticeDaysMin = 1, policyNoticeDaysMax = 28, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
+    val dateRange = DateRange(monday.plusDays(2), monday.plusDays(28))
+    visitSchedulerMockServer.stubGetPrison(prisonCode, prison)
+
+    // Swallowing the holiday error would reach this valid scheduler response and incorrectly return HTTP 200.
+    visitSchedulerMockServer.stubGetAvailableVisitSessions(prison, prisonerId, OPEN, emptyList(), clientType = PUBLIC, dateRange = dateRange)
+
+    callGetAvailableVisitSessionsPublic(
+      webTestClient = webTestClient,
+      prisonCode = prisonCode,
+      prisonerId = prisonerId,
+      clientType = PUBLIC,
+      authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
+    ).expectStatus().isEqualTo(expectedStatus)
+
+    visitSchedulerMockServer.verify(0, getRequestedFor(urlPathEqualTo("/visit-sessions/available")))
   }
 
   private fun assertBookingWindow(today: LocalDate, minimum: Int, firstDay: LocalDate, forReview: Boolean, holidays: List<LocalDate> = emptyList(), maximum: Int = 28) {

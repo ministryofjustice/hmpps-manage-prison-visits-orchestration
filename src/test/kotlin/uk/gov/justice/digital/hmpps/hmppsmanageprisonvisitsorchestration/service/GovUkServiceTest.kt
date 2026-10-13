@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.servic
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.mock
@@ -131,32 +132,72 @@ class GovUkServiceTest {
   }
 
   @Test
-  fun `when future holidays are being retrieved and a NOT_FOUND error occurs then an empty list is returned`() {
-    whenever(
-      govUKHolidayClient.getHolidays(),
-    ).thenThrow(
-      WebClientResponseException.create(HttpStatus.NOT_FOUND.value(), "", HttpHeaders.EMPTY, byteArrayOf(), null),
-    )
+  fun `when future holidays are being retrieved and a NOT_FOUND error occurs then the error is propagated`() {
+    val expectedException = WebClientResponseException.create(HttpStatus.NOT_FOUND.value(), "", HttpHeaders.EMPTY, byteArrayOf(), null)
+    whenever(govUKHolidayClient.getHolidays()).thenThrow(expectedException)
 
-    // When
-    val futureHolidays = govUkHolidayService.getGovUKBankHolidays(futureOnly = true)
+    val exception = assertThrows<WebClientResponseException> {
+      govUkHolidayService.getGovUKBankHolidays(futureOnly = true)
+    }
 
-    // Then
-    assertThat(futureHolidays).isEmpty()
+    assertThat(exception).isSameAs(expectedException)
   }
 
   @Test
-  fun `when all holidays are being retrieved and an INTERNAL_SERVER_ERROR error occurs then an empty list is returned`() {
-    whenever(
-      govUKHolidayClient.getHolidays(),
-    ).thenThrow(
-      WebClientResponseException.create(HttpStatus.INTERNAL_SERVER_ERROR.value(), "", HttpHeaders.EMPTY, byteArrayOf(), null),
-    )
+  fun `when all holidays are being retrieved and an INTERNAL_SERVER_ERROR error occurs then the error is propagated`() {
+    val expectedException = WebClientResponseException.create(HttpStatus.INTERNAL_SERVER_ERROR.value(), "", HttpHeaders.EMPTY, byteArrayOf(), null)
+    whenever(govUKHolidayClient.getHolidays()).thenThrow(expectedException)
 
-    // When
-    val futureHolidays = govUkHolidayService.getGovUKBankHolidays()
+    val exception = assertThrows<WebClientResponseException> {
+      govUkHolidayService.getGovUKBankHolidays()
+    }
 
-    // Then
+    assertThat(exception).isSameAs(expectedException)
+  }
+
+  @Test
+  fun `when holidays are being retrieved for a date range and an error occurs then the error is propagated`() {
+    val expectedException = WebClientResponseException.create(HttpStatus.INTERNAL_SERVER_ERROR.value(), "", HttpHeaders.EMPTY, byteArrayOf(), null)
+    whenever(govUKHolidayClient.getHolidays()).thenThrow(expectedException)
+    val dateRange = DateRange(LocalDate.now(), LocalDate.now().plusDays(7))
+
+    val exception = assertThrows<WebClientResponseException> {
+      govUkHolidayService.getGovUKBankHolidays(dateRange)
+    }
+
+    assertThat(exception).isSameAs(expectedException)
+  }
+
+  @Test
+  fun `when GOV UK returns no holiday data then an exception is thrown`() {
+    whenever(govUKHolidayClient.getHolidays()).thenReturn(null)
+
+    val exception = assertThrows<IllegalStateException> {
+      govUkHolidayService.getGovUKBankHolidays(futureOnly = true)
+    }
+
+    assertThat(exception.message).isEqualTo("No bank holiday data was returned by GOV.UK")
+  }
+
+  @Test
+  fun `when GOV UK returns no England and Wales holiday events then an exception is thrown`() {
+    val holidaysDto = HolidaysDto(HolidayEventByDivisionDto("england-and-wales", null))
+    whenever(govUKHolidayClient.getHolidays()).thenReturn(holidaysDto)
+
+    val exception = assertThrows<IllegalStateException> {
+      govUkHolidayService.getGovUKBankHolidays(futureOnly = true)
+    }
+
+    assertThat(exception.message).isEqualTo("England and Wales bank holiday events were not returned by GOV.UK")
+  }
+
+  @Test
+  fun `when GOV UK successfully returns an empty holiday list then an empty list is returned`() {
+    val holidaysDto = HolidaysDto(HolidayEventByDivisionDto("england-and-wales", emptyList()))
+    whenever(govUKHolidayClient.getHolidays()).thenReturn(holidaysDto)
+
+    val futureHolidays = govUkHolidayService.getGovUKBankHolidays(futureOnly = true)
+
     assertThat(futureHolidays).isEmpty()
   }
 }
