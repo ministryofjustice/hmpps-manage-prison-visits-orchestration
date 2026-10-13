@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orc
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterContactDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerUpdatePrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonClientType
@@ -23,6 +24,7 @@ class PrisonService(
   private val prisonRegisterClient: PrisonRegisterClient,
   private val dateUtils: DateUtils,
   private val excludeDatesService: ExcludeDatesService,
+  private val govUkHolidayService: GovUkHolidayService,
 ) {
   companion object {
     val logger: Logger = LoggerFactory.getLogger(this::class.java)
@@ -76,19 +78,28 @@ class PrisonService(
     toDateOverride: Int? = null,
     clientType: PrisonClientType,
   ): DateRange {
-    val prison = visitSchedulerClient.getPrison(prisonCode)
-    val client =
-      prison.clients.firstOrNull { it.clientType == clientType }
-        ?: prison.clients.firstOrNull { it.clientType == PrisonClientType.STAFF }
-          ?.also {
-            logger.warn("No client found for prison {} and requested user type {}; falling back to {}", prisonCode, clientType, PrisonClientType.STAFF)
-          }
-        ?: run {
-          // Throw a 500 if we reach here. As PUBLIC or STAFF must exist. (If PRISONER / SYSTEM is passed it's also invalid, so 500 is correct).
-          val message = "No client found for prison $prisonCode and user type $clientType"
-          throw IllegalStateException(message)
-        }
+    val client = getPrisonClient(prisonCode, clientType)
     return dateUtils.getToDaysDateRange(clientType = clientType, client = client, minOverride = fromDateOverride, maxOverride = toDateOverride)
+  }
+
+  fun getPublicBookableDateRange(prisonCode: String): DateRange {
+    val bankHolidays = govUkHolidayService.getGovUKBankHolidays(futureOnly = true).map { it.date }
+    val client = getPrisonClient(prisonCode, PrisonClientType.PUBLIC)
+    return dateUtils.getPublicBookableDateRange(client, bankHolidays)
+  }
+
+  private fun getPrisonClient(prisonCode: String, clientType: PrisonClientType): PrisonUserClientDto {
+    val prison = visitSchedulerClient.getPrison(prisonCode)
+    return prison.clients.firstOrNull { it.clientType == clientType }
+      ?: prison.clients.firstOrNull { it.clientType == PrisonClientType.STAFF }
+        ?.also {
+          logger.warn("No client found for prison {} and requested user type {}; falling back to {}", prisonCode, clientType, PrisonClientType.STAFF)
+        }
+      ?: run {
+        // Throw a 500 if we reach here. As PUBLIC or STAFF must exist. (If PRISONER / SYSTEM is passed it's also invalid, so 500 is correct).
+        val message = "No client found for prison $prisonCode and user type $clientType"
+        throw IllegalStateException(message)
+      }
   }
 
   fun updatePrison(prisonCode: String, updatePrisonDto: VisitSchedulerUpdatePrisonDto): VisitSchedulerPrisonDto = visitSchedulerClient.updatePrison(prisonCode, updatePrisonDto)

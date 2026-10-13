@@ -60,6 +60,34 @@ class DateUtils(private val currentDateUtils: CurrentDateUtils) {
     return dateRange
   }
 
+  fun getPublicBookableDateRange(client: PrisonUserClientDto, bankHolidays: List<LocalDate>): DateRange {
+    val today = currentDateUtils.getCurrentDate()
+    val minimumWorkingDaysNotice = client.policyNoticeDaysMin
+    var workingDaysAdded = 0
+    var lastNoticeDay = today
+
+    while (workingDaysAdded < minimumWorkingDaysNotice) {
+      // Move to the next calendar day. Today cannot count as a full day's notice.
+      lastNoticeDay = lastNoticeDay.plusDays(1)
+
+      val fallsOnWeekend = isWeekend(lastNoticeDay)
+      val fallsOnBankHoliday = isBankHoliday(lastNoticeDay, bankHolidays)
+
+      if (!fallsOnWeekend && !fallsOnBankHoliday) {
+        workingDaysAdded++
+      }
+    }
+
+    // Visits can start on the calendar day after the full working-day notice period, including weekends and holidays.
+    val bookableStartDate = lastNoticeDay.plusDays(1)
+    val bookableEndDate = today.plusDays(client.policyNoticeDaysMax.toLong())
+
+    return DateRange(
+      fromDate = bookableStartDate,
+      toDate = bookableEndDate,
+    )
+  }
+
   fun isDateBetweenDateRanges(dateRanges: List<DateRange>, date: LocalDate): Boolean = dateRanges.any { dateRange ->
     !(date.isBefore(dateRange.fromDate) || date.isAfter(dateRange.toDate))
   }

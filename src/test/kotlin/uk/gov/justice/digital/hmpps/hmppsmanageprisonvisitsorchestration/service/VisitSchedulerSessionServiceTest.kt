@@ -37,13 +37,10 @@ class VisitSchedulerSessionServiceTest {
   private val prisonerProfileService: PrisonerProfileService = mock<PrisonerProfileService>()
   private val prisonService: PrisonService = mock<PrisonService>()
   private val excludeDatesService: ExcludeDatesService = mock<ExcludeDatesService>()
-  private val govUkHolidayService: GovUkHolidayService = mock<GovUkHolidayService>()
   private val dateUtils: DateUtils = mock<DateUtils>()
   private val prisonApiClient: PrisonApiClient = mock<PrisonApiClient>()
   private val prisonerContactRegistryClient: PrisonerContactRegistryClient = mock<PrisonerContactRegistryClient>()
   private val alertsApiClient: AlertsApiClient = mock<AlertsApiClient>()
-  private val publicServiceFromDateOverride = 0L
-  private val publicServiceToDateOverride = 2L
 
   private val visitSchedulerSessionsService = VisitSchedulerSessionsService(
     visitSchedulerClient = visitSchedulerClient,
@@ -51,12 +48,10 @@ class VisitSchedulerSessionServiceTest {
     prisonerProfileService = prisonerProfileService,
     prisonService = prisonService,
     excludeDatesService = excludeDatesService,
-    govUkHolidayService = govUkHolidayService,
     dateUtils = dateUtils,
     prisonApiClient = prisonApiClient,
     prisonerContactRegistryClient = prisonerContactRegistryClient,
     alertsApiClient = alertsApiClient,
-    publicServiceFromDateOverride = publicServiceFromDateOverride,
   )
 
   @Test
@@ -205,8 +200,7 @@ class VisitSchedulerSessionServiceTest {
     val availableSessionsReturned = listOf(session1, session2, session3, session4)
     val dateRange = DateRange(today, today.plusDays(1))
 
-    whenever(prisonService.getToDaysBookableDateRange(any(), anyOrNull(), anyOrNull(), any())).thenReturn(dateRange)
-    whenever(dateUtils.advanceFromDate(any(), anyOrNull())).thenReturn(dateRange)
+    whenever(prisonService.getPublicBookableDateRange(any())).thenReturn(dateRange)
     whenever(dateUtils.now()).thenReturn(now)
     whenever(visitSchedulerClient.getAvailableVisitSessions(any(), any(), anyOrNull(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull())).thenReturn(availableSessionsReturned)
     whenever(alertsApiClient.getPrisonerAlerts(any())).thenReturn(RestPage.empty())
@@ -245,8 +239,7 @@ class VisitSchedulerSessionServiceTest {
     val availableSessionsReturned = listOf(session1, session2, session3, session4)
     val dateRange = DateRange(today, today.plusDays(1))
 
-    whenever(prisonService.getToDaysBookableDateRange(any(), anyOrNull(), anyOrNull(), any())).thenReturn(dateRange)
-    whenever(dateUtils.advanceFromDate(any(), anyOrNull())).thenReturn(dateRange)
+    whenever(prisonService.getPublicBookableDateRange(any())).thenReturn(dateRange)
     whenever(dateUtils.now()).thenReturn(now)
     whenever(visitSchedulerClient.getAvailableVisitSessions(any(), any(), anyOrNull(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull())).thenReturn(availableSessionsReturned)
     whenever(alertsApiClient.getPrisonerAlerts(any())).thenReturn(RestPage.empty())
@@ -285,8 +278,7 @@ class VisitSchedulerSessionServiceTest {
     val availableSessionsReturned = listOf(session1, session2, session3, session4)
     val dateRange = DateRange(today, today.plusDays(1))
 
-    whenever(prisonService.getToDaysBookableDateRange(any(), anyOrNull(), anyOrNull(), any())).thenReturn(dateRange)
-    whenever(dateUtils.advanceFromDate(any(), anyOrNull())).thenReturn(dateRange)
+    whenever(prisonService.getPublicBookableDateRange(any())).thenReturn(dateRange)
     whenever(dateUtils.now()).thenReturn(now)
     whenever(visitSchedulerClient.getAvailableVisitSessions(any(), any(), anyOrNull(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull())).thenReturn(availableSessionsReturned)
     whenever(alertsApiClient.getPrisonerAlerts(any())).thenReturn(RestPage.empty())
