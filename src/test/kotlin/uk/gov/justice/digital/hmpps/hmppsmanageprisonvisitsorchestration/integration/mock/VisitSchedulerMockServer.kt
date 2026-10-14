@@ -51,6 +51,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase.Companion.getVisitsQueryParams
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.createJsonResponseBuilder
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.mock.MockUtils.Companion.getJsonString
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -567,11 +568,31 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     username: String? = null,
     clientType: PrisonClientType,
     youngestVisitorAge: Int? = null,
+    useWorkingDays: Boolean = false,
   ): DateRange {
     val dateRangeToUse = dateRange ?: run {
       val today = LocalDate.now()
       val client = visitSchedulerPrisonDto.clients.first { it.clientType == clientType }
-      var fromDate = today.plusDays(client.policyNoticeDaysMin.toLong())
+      var fromDate = today
+
+      if (useWorkingDays) {
+        var workingDaysAdded = 0
+
+        // These tests use an empty bank-holiday list. Holiday tests pass an explicit dateRange.
+        while (workingDaysAdded < client.policyNoticeDaysMin) {
+          fromDate = fromDate.plusDays(1)
+
+          val fallsOnSaturday = fromDate.dayOfWeek == DayOfWeek.SATURDAY
+          val fallsOnSunday = fromDate.dayOfWeek == DayOfWeek.SUNDAY
+
+          if (!fallsOnSaturday && !fallsOnSunday) {
+            workingDaysAdded++
+          }
+        }
+      } else {
+        fromDate = today.plusDays(client.policyNoticeDaysMin.toLong())
+      }
+
       // add 1 to the policyNoticeDaysMin if the clientType is PUBLIC
       if (clientType == PrisonClientType.PUBLIC) {
         fromDate = fromDate.plusDays(1)

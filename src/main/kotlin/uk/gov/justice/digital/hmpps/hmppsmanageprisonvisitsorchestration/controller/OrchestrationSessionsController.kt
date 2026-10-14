@@ -249,7 +249,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
   @GetMapping(GET_VISIT_SESSIONS_AVAILABLE_PUBLIC)
   @Operation(
     summary = "Returns available visit sessions with sessions marked for review for a specified prisoner and visitors combination for the date range passed in.",
-    description = "Returns available visit sessions with sessions marked for review for a specified prisoner and visitors combination for the date range passed in. Marks sessions for review if prisoner alerts / restrictions or visitor restrictions are found. Used by Visits Public only, not PVB",
+    description = "Returns available visit sessions after the prison's minimum notice period in full working days, excluding weekends and England and Wales bank holidays. Visits can start on the following calendar day. The same notice period applies to auto-approved sessions and sessions marked for review. Marks sessions for review if prisoner alerts / restrictions or visitor restrictions are found. Used by Visits Public only, not PVB",
     responses = [
       ApiResponse(
         responseCode = "200",

@@ -8,6 +8,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.PrisonRegisterClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidayEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSchedulerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonClientType
@@ -23,7 +24,8 @@ class PrisonServiceTest {
   private val currentDateUtils = mock<CurrentDateUtils>()
   private val dateUtils = DateUtils(currentDateUtils)
   private val excludeDatesService = mock<ExcludeDatesService>()
-  private val prisonService = PrisonService(visitSchedulerClient, prisonRegisterClient, dateUtils, excludeDatesService)
+  private val govUkHolidayService = mock<GovUkHolidayService>()
+  private val prisonService = PrisonService(visitSchedulerClient, prisonRegisterClient, dateUtils, excludeDatesService, govUkHolidayService)
 
   private val today = LocalDate.of(2026, 7, 16)
 
@@ -49,6 +51,49 @@ class PrisonServiceTest {
     val dateRange = prisonService.getToDaysBookableDateRange(prisonCode = "MDI", clientType = PrisonClientType.PUBLIC)
 
     assertThat(dateRange.fromDate).isEqualTo(today.plusDays(3))
+    assertThat(dateRange.toDate).isEqualTo(today.plusDays(28))
+  }
+
+  @Test
+  fun `PUBLIC working day window uses the public minimum without a two day override`() {
+    val publicClient = prisonClient(PrisonClientType.PUBLIC, policyNoticeDaysMin = 1, policyNoticeDaysMax = 28)
+    val staffClient = prisonClient(PrisonClientType.STAFF, policyNoticeDaysMin = 5, policyNoticeDaysMax = 10)
+    whenever(currentDateUtils.getCurrentDate()).thenReturn(today)
+    whenever(visitSchedulerClient.getPrison("MDI")).thenReturn(prison(clients = listOf(staffClient, publicClient)))
+
+    whenever(govUkHolidayService.getGovUKBankHolidays(futureOnly = true)).thenReturn(emptyList())
+
+    val dateRange = prisonService.getPublicBookableDateRange("MDI")
+
+    // Today is Thursday: Friday is the full working day and visits can start on Saturday.
+    assertThat(dateRange.fromDate).isEqualTo(today.plusDays(2))
+    assertThat(dateRange.toDate).isEqualTo(today.plusDays(28))
+  }
+
+  @Test
+  fun `PUBLIC working day window preserves the fallback to staff policy when there is no public client`() {
+    val staffClient = prisonClient(PrisonClientType.STAFF, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28)
+    whenever(currentDateUtils.getCurrentDate()).thenReturn(today)
+    whenever(visitSchedulerClient.getPrison("MDI")).thenReturn(prison(clients = listOf(staffClient)))
+
+    whenever(govUkHolidayService.getGovUKBankHolidays(futureOnly = true)).thenReturn(listOf(HolidayEventDto(title = "Bank holiday", date = today.plusDays(1))))
+
+    val dateRange = prisonService.getPublicBookableDateRange("MDI")
+
+    // Friday is a holiday, so Monday and Tuesday are the two full working days.
+    assertThat(dateRange.fromDate).isEqualTo(today.plusDays(6))
+    assertThat(dateRange.toDate).isEqualTo(today.plusDays(28))
+  }
+
+  @Test
+  fun `STAFF keeps its calendar day booking window`() {
+    val staffClient = prisonClient(PrisonClientType.STAFF, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28)
+    whenever(currentDateUtils.getCurrentDate()).thenReturn(today)
+    whenever(visitSchedulerClient.getPrison("MDI")).thenReturn(prison(clients = listOf(staffClient)))
+
+    val dateRange = prisonService.getToDaysBookableDateRange(prisonCode = "MDI", clientType = PrisonClientType.STAFF)
+
+    assertThat(dateRange.fromDate).isEqualTo(today.plusDays(2))
     assertThat(dateRange.toDate).isEqualTo(today.plusDays(28))
   }
 

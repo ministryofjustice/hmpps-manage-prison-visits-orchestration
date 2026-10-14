@@ -7,9 +7,14 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.CacheManager
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.CacheNames
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidayEventByDivisionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidaysDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.request.review.VisitorRestrictionsForReview
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTimeSlotDto
@@ -29,6 +34,9 @@ import java.time.LocalTime
 // but only the 2nd call needs to fail
 @DisplayName("Get available visit sessions marked for review test when prison API call to get prisoner restrictions returns an error")
 class AvailableVisitSessionsForReviewFailuresTest : IntegrationTestBase() {
+  @Autowired
+  lateinit var cacheManager: CacheManager
+
   @MockitoBean
   private lateinit var prisonerProfileService: PrisonerProfileService
 
@@ -46,6 +54,8 @@ class AvailableVisitSessionsForReviewFailuresTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setupMocks() {
+    cacheManager.getCache(CacheNames.BANK_HOLIDAYS)?.clear()
+    govUkMockServer.stubGetBankHolidays(HolidaysDto(HolidayEventByDivisionDto("england-and-wales", emptyList())))
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
     prisonerContactRegistryMockServer.stubDoVisitorsHaveClosedRestrictions(prisonerId, visitorIds = visitorIds, result = false)
   }
@@ -55,7 +65,7 @@ class AvailableVisitSessionsForReviewFailuresTest : IntegrationTestBase() {
     // Given
     // fails to get prisoner restrictions so all sessions should be marked for review
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, null, HttpStatus.NOT_FOUND)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, visitSessions = mutableListOf(visitSession1, visitSession2, visitSession3), clientType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, visitSessions = mutableListOf(visitSession1, visitSession2, visitSession3), clientType = PUBLIC, useWorkingDays = true)
 
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
@@ -91,7 +101,7 @@ class AvailableVisitSessionsForReviewFailuresTest : IntegrationTestBase() {
 
     // fails to get prisoner restrictions so all sessions should be marked for review
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, null, HttpStatus.INTERNAL_SERVER_ERROR)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), clientType = PUBLIC)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), clientType = PUBLIC, useWorkingDays = true)
 
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
