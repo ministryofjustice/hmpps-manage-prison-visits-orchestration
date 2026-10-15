@@ -12,6 +12,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.controller.PUBLIC_BOOKER_GET_BOOKER_AUDIT_PATH
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.BookerHistoryAuditDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.BookerAuditType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ActionedByDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType.WEBSITE
@@ -28,17 +29,17 @@ class GetBookerAuditHistoryTest : IntegrationTestBase() {
   fun `when booker has audit history both booker and visit history is combined and returned`() {
     // Given
     val bookerReference = "booker-1"
-    val bookerAudit1 = BookerAuditDto(bookerReference = bookerReference, auditType = "BOOKER_CREATED", text = "booker created", createdTimestamp = LocalDateTime.now())
-    val bookerAudit2 = BookerAuditDto(bookerReference = bookerReference, auditType = "REGISTER_PRISONER_SEARCH", text = "prisoner searched", createdTimestamp = LocalDateTime.now())
-    val bookerAudit3 = BookerAuditDto(bookerReference = bookerReference, auditType = "PRISONER_REGISTERED", text = "prisoner registered", createdTimestamp = LocalDateTime.now())
-    val bookerAudit4 = BookerAuditDto(bookerReference = bookerReference, auditType = "VISITOR_ADDED_TO_PRISONER", text = "visitor 1 added to prisoner", createdTimestamp = LocalDateTime.now())
+    val bookerAudit1 = BookerAuditDto(bookerReference = bookerReference, auditType = BookerAuditType.BOOKER_CREATED, text = "booker created", createdTimestamp = LocalDateTime.now())
+    val bookerAudit2 = BookerAuditDto(bookerReference = bookerReference, auditType = BookerAuditType.REGISTER_PRISONER_SEARCH, text = "prisoner searched", createdTimestamp = LocalDateTime.now())
+    val bookerAudit3 = BookerAuditDto(bookerReference = bookerReference, auditType = BookerAuditType.PRISONER_REGISTERED, text = "prisoner registered", createdTimestamp = LocalDateTime.now())
+    val bookerAudit4 = BookerAuditDto(bookerReference = bookerReference, auditType = BookerAuditType.VISITOR_ADDED_TO_PRISONER, text = "visitor 1 added to prisoner", createdTimestamp = LocalDateTime.now())
     val bookerVisitAudit1 = EventAuditDto(
       type = BOOKED_VISIT,
       actionedBy = ActionedByDto(bookerReference = bookerReference, userName = null, userType = UserType.PUBLIC),
       createTimestamp = LocalDateTime.now(),
       applicationMethodType = WEBSITE,
     )
-    val bookerAudit5 = BookerAuditDto(bookerReference = bookerReference, auditType = "VISITOR_ADDED_TO_PRISONER", text = "visitor 2 added to prisoner", createdTimestamp = LocalDateTime.now())
+    val bookerAudit5 = BookerAuditDto(bookerReference = bookerReference, auditType = BookerAuditType.VISITOR_ADDED_TO_PRISONER, text = "visitor 2 added to prisoner", createdTimestamp = LocalDateTime.now())
 
     visitSchedulerMockServer.stubGetBookerVisitAuditHistory(bookerReference, listOf(bookerVisitAudit1))
     prisonVisitBookerRegistryMockServer.stubGetBookerAuditHistory(bookerReference, listOf(bookerAudit1, bookerAudit2, bookerAudit3, bookerAudit4, bookerAudit5))
@@ -66,10 +67,10 @@ class GetBookerAuditHistoryTest : IntegrationTestBase() {
   fun `when booker has no visit history only booker history is returned`() {
     // Given
     val bookerReference = "booker-1"
-    val bookerAudit1 = BookerAuditDto(bookerReference = bookerReference, auditType = "BOOKER_CREATED", text = "booker created", createdTimestamp = LocalDateTime.now())
-    val bookerAudit2 = BookerAuditDto(bookerReference = bookerReference, auditType = "REGISTER_PRISONER_SEARCH", text = "prisoner searched", createdTimestamp = LocalDateTime.now())
-    val bookerAudit3 = BookerAuditDto(bookerReference = bookerReference, auditType = "PRISONER_REGISTERED", text = "prisoner registered", createdTimestamp = LocalDateTime.now())
-    val bookerAudit4 = BookerAuditDto(bookerReference = bookerReference, auditType = "VISITOR_ADDED_TO_PRISONER", text = "visitor 1 added to prisoner", createdTimestamp = LocalDateTime.now())
+    val bookerAudit1 = BookerAuditDto(bookerReference = bookerReference, auditType = BookerAuditType.BOOKER_CREATED, text = "booker created", createdTimestamp = LocalDateTime.now())
+    val bookerAudit2 = BookerAuditDto(bookerReference = bookerReference, auditType = BookerAuditType.REGISTER_PRISONER_SEARCH, text = "prisoner searched", createdTimestamp = LocalDateTime.now())
+    val bookerAudit3 = BookerAuditDto(bookerReference = bookerReference, auditType = BookerAuditType.PRISONER_REGISTERED, text = "prisoner registered", createdTimestamp = LocalDateTime.now())
+    val bookerAudit4 = BookerAuditDto(bookerReference = bookerReference, auditType = BookerAuditType.VISITOR_ADDED_TO_PRISONER, text = "visitor 1 added to prisoner", createdTimestamp = LocalDateTime.now())
 
     visitSchedulerMockServer.stubGetBookerVisitAuditHistory(bookerReference, emptyList())
     prisonVisitBookerRegistryMockServer.stubGetBookerAuditHistory(bookerReference, listOf(bookerAudit1, bookerAudit2, bookerAudit3, bookerAudit4))
@@ -166,7 +167,7 @@ class GetBookerAuditHistoryTest : IntegrationTestBase() {
   fun `when visit scheduler booker audit call returns NOT_FOUND then NOT_FOUND error is returned`() {
     // Given
     val bookerReference = "booker-1"
-    val bookerAudit1 = BookerAuditDto(bookerReference = bookerReference, auditType = "BOOKER_CREATED", text = "booker created", createdTimestamp = LocalDateTime.now())
+    val bookerAudit1 = BookerAuditDto(bookerReference = bookerReference, auditType = BookerAuditType.BOOKER_CREATED, text = "booker created", createdTimestamp = LocalDateTime.now())
 
     prisonVisitBookerRegistryMockServer.stubGetBookerAuditHistory(bookerReference, listOf(bookerAudit1))
     visitSchedulerMockServer.stubGetBookerVisitAuditHistory(bookerReference, null, HttpStatus.NOT_FOUND)
@@ -184,7 +185,7 @@ class GetBookerAuditHistoryTest : IntegrationTestBase() {
   fun `when visit scheduler booker audit call returns INTERNAL_SERVER_ERROR then INTERNAL_SERVER_ERROR error is returned`() {
     // Given
     val bookerReference = "booker-1"
-    val bookerAudit1 = BookerAuditDto(bookerReference = bookerReference, auditType = "BOOKER_CREATED", text = "booker created", createdTimestamp = LocalDateTime.now())
+    val bookerAudit1 = BookerAuditDto(bookerReference = bookerReference, auditType = BookerAuditType.BOOKER_CREATED, text = "booker created", createdTimestamp = LocalDateTime.now())
 
     prisonVisitBookerRegistryMockServer.stubGetBookerAuditHistory(bookerReference, listOf(bookerAudit1))
     visitSchedulerMockServer.stubGetBookerVisitAuditHistory(bookerReference, null, HttpStatus.INTERNAL_SERVER_ERROR)

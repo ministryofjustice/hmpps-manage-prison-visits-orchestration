@@ -9,6 +9,9 @@ data class BookerHistoryAuditDto(
   @param:Schema(name = "auditType", description = "Audit Type", required = true, example = "PRISONER_REGISTERED")
   val auditType: String,
 
+  @param:Schema(description = "Visit reference", required = false)
+  val bookingReference: String? = null,
+
   @param:Schema(name = "text", description = "Audit summary", required = false)
   val text: String? = null,
 
@@ -19,10 +22,11 @@ data class BookerHistoryAuditDto(
     auditType = eventAuditDto.type.name,
     text = eventAuditDto.text,
     createdTimestamp = eventAuditDto.createTimestamp,
+    bookingReference = eventAuditDto.bookingReference,
   )
 
   constructor(bookerAuditDto: BookerAuditDto) : this(
-    auditType = bookerAuditDto.auditType,
+    auditType = bookerAuditDto.auditType.name,
     text = bookerAuditDto.text,
     createdTimestamp = bookerAuditDto.createdTimestamp,
   )
