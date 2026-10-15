@@ -62,13 +62,13 @@ class GetBookerAuditHistoryTest : IntegrationTestBase() {
     val bookerAuditHistoryList = getResults(returnResult)
 
     Assertions.assertThat(bookerAuditHistoryList.size).isEqualTo(7)
-    Assertions.assertThat(bookerAuditHistoryList[0]).isEqualTo(BookerHistoryAuditDto(bookerAudit1))
-    Assertions.assertThat(bookerAuditHistoryList[1]).isEqualTo(BookerHistoryAuditDto(bookerAudit2))
-    Assertions.assertThat(bookerAuditHistoryList[2]).isEqualTo(BookerHistoryAuditDto(bookerAudit3))
-    Assertions.assertThat(bookerAuditHistoryList[3]).isEqualTo(BookerHistoryAuditDto(bookerAudit4))
-    Assertions.assertThat(bookerAuditHistoryList[4]).isEqualTo(BookerHistoryAuditDto(bookerVisitAudit1))
-    Assertions.assertThat(bookerAuditHistoryList[5]).isEqualTo(BookerHistoryAuditDto(bookerVisitAudit2))
-    Assertions.assertThat(bookerAuditHistoryList[6]).isEqualTo(BookerHistoryAuditDto(bookerAudit5))
+    assertBookerAudit(bookerAuditHistoryList[0], bookerAudit1)
+    assertBookerAudit(bookerAuditHistoryList[1], bookerAudit2)
+    assertBookerAudit(bookerAuditHistoryList[2], bookerAudit3)
+    assertBookerAudit(bookerAuditHistoryList[3], bookerAudit4)
+    assertVisitEventAudit(bookerAuditHistoryList[4], bookerVisitAudit1)
+    assertVisitEventAudit(bookerAuditHistoryList[5], bookerVisitAudit2)
+    assertBookerAudit(bookerAuditHistoryList[6], bookerAudit5)
 
     verify(visitSchedulerClientSpy, times(1)).getBookerHistoryAsMono(bookerReference)
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerAuditHistoryAsMono(bookerReference)
@@ -94,10 +94,10 @@ class GetBookerAuditHistoryTest : IntegrationTestBase() {
     val bookerAuditHistoryList = getResults(returnResult)
 
     Assertions.assertThat(bookerAuditHistoryList.size).isEqualTo(4)
-    Assertions.assertThat(bookerAuditHistoryList[0]).isEqualTo(BookerHistoryAuditDto(bookerAudit1))
-    Assertions.assertThat(bookerAuditHistoryList[1]).isEqualTo(BookerHistoryAuditDto(bookerAudit2))
-    Assertions.assertThat(bookerAuditHistoryList[2]).isEqualTo(BookerHistoryAuditDto(bookerAudit3))
-    Assertions.assertThat(bookerAuditHistoryList[3]).isEqualTo(BookerHistoryAuditDto(bookerAudit4))
+    assertBookerAudit(bookerAuditHistoryList[0], bookerAudit1)
+    assertBookerAudit(bookerAuditHistoryList[1], bookerAudit2)
+    assertBookerAudit(bookerAuditHistoryList[2], bookerAudit3)
+    assertBookerAudit(bookerAuditHistoryList[3], bookerAudit4)
 
     verify(visitSchedulerClientSpy, times(1)).getBookerHistoryAsMono(bookerReference)
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerAuditHistoryAsMono(bookerReference)
@@ -124,7 +124,7 @@ class GetBookerAuditHistoryTest : IntegrationTestBase() {
     val bookerAuditHistoryList = getResults(returnResult)
 
     Assertions.assertThat(bookerAuditHistoryList.size).isEqualTo(1)
-    Assertions.assertThat(bookerAuditHistoryList[0]).isEqualTo(BookerHistoryAuditDto(bookerVisitAudit1))
+    assertVisitEventAudit(bookerAuditHistoryList[0], bookerVisitAudit1)
 
     verify(visitSchedulerClientSpy, times(1)).getBookerHistoryAsMono(bookerReference)
     verify(prisonVisitBookerRegistryClientSpy, times(1)).getBookerAuditHistoryAsMono(bookerReference)
@@ -237,8 +237,6 @@ class GetBookerAuditHistoryTest : IntegrationTestBase() {
     verify(prisonVisitBookerRegistryClientSpy, times(0)).bookerAuthorisation(any())
   }
 
-  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerHistoryAuditDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<BookerHistoryAuditDto>::class.java).toList()
-
   fun callGetBookerAuditHistory(
     webTestClient: WebTestClient,
     authHttpHeaders: (HttpHeaders) -> Unit,
@@ -246,4 +244,20 @@ class GetBookerAuditHistoryTest : IntegrationTestBase() {
   ): WebTestClient.ResponseSpec = webTestClient.get().uri(PUBLIC_BOOKER_GET_BOOKER_AUDIT_PATH.replace("{bookerReference}", bookerReference))
     .headers(authHttpHeaders)
     .exchange()
+
+  private fun getResults(returnResult: WebTestClient.BodyContentSpec): List<BookerHistoryAuditDto> = TestObjectMapper.mapper.readValue(returnResult.returnResult().responseBody, Array<BookerHistoryAuditDto>::class.java).toList()
+
+  private fun assertBookerAudit(bookerAuditHistoryAuditDto: BookerHistoryAuditDto, bookerAuditDto: BookerAuditDto) {
+    Assertions.assertThat(bookerAuditHistoryAuditDto.bookingReference).isNull()
+    Assertions.assertThat(bookerAuditHistoryAuditDto.auditType).isEqualTo(bookerAuditDto.auditType.name)
+    Assertions.assertThat(bookerAuditHistoryAuditDto.text).isEqualTo(bookerAuditDto.text)
+    Assertions.assertThat(bookerAuditHistoryAuditDto.createdTimestamp).isEqualTo(bookerAuditDto.createdTimestamp)
+  }
+
+  private fun assertVisitEventAudit(bookerAuditHistoryAuditDto: BookerHistoryAuditDto, eventAuditDto: EventAuditDto) {
+    Assertions.assertThat(bookerAuditHistoryAuditDto.bookingReference).isEqualTo(eventAuditDto.bookingReference)
+    Assertions.assertThat(bookerAuditHistoryAuditDto.auditType).isEqualTo(eventAuditDto.type.name)
+    Assertions.assertThat(bookerAuditHistoryAuditDto.text).isEqualTo(eventAuditDto.text)
+    Assertions.assertThat(bookerAuditHistoryAuditDto.createdTimestamp).isEqualTo(eventAuditDto.createTimestamp)
+  }
 }
