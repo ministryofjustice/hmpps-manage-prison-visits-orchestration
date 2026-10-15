@@ -80,6 +80,7 @@ class VisitSchedulerSessionsService(
     username: String?,
     youngestVisitorAge: Int? = null,
   ): VisitSessionsAndScheduleDto {
+    // TODO - Enforce validation and throw a bad_request exception if PUBLIC is called on this endpoint (requires frontend change to STAFF service).
     val today = dateUtils.today()
     val now = dateUtils.now()
 
@@ -124,9 +125,16 @@ class VisitSchedulerSessionsService(
   ): List<AvailableVisitSessionDto> {
     val sessionRestriction = updateRequestedRestriction(requestedSessionRestriction, prisonerId, visitors)
 
-    // advance from date by n days
-    var dateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, fromDateOverride = fromDateOverride, toDateOverride = toDateOverride, clientType = clientType)
-    dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
+    val dateRange = if (clientType == PrisonClientType.PUBLIC) {
+      prisonService.getPublicBookableDateRange(prisonCode)
+    } else {
+      val prisonDateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, fromDateOverride = fromDateOverride, toDateOverride = toDateOverride, clientType = clientType)
+      dateUtils.advanceFromDate(prisonDateRange, pvbAdvanceFromDateByDays)
+    }
+
+    if (dateRange.fromDate > dateRange.toDate) {
+      return emptyList()
+    }
 
     var availableVisitSessions = getAvailableVisitSessionsForDateRange(
       prisonCode = prisonCode,

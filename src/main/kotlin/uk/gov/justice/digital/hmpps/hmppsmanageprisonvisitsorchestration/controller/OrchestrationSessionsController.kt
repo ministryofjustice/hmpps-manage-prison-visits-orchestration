@@ -161,7 +161,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
   @GetMapping(GET_VISIT_SESSIONS_AVAILABLE)
   @Operation(
     summary = "Returns only available visit sessions for a specified prisoner by restriction and within the reservable time period",
-    description = "Returns only available visit sessions for a specified prisoner by restriction and within the reservable time period",
+    description = "Returns only available visit sessions for a specified prisoner by restriction and within the reservable time period. PUBLIC uses the same prison-configured booking window as the PUBLIC service endpoint, with full working days of minimum notice excluding weekends and England and Wales bank holidays. Date overrides are ignored for PUBLIC. STAFF retains its calendar-day window and date overrides.",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -186,9 +186,11 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     @RequestParam(value = "prisonerId", required = true)
     @Parameter(description = "Filter results by prisoner id", example = "A12345DC", required = true)
     prisonerId: String,
+    // TODO - to be removed as PVB does not use this parameter
     @RequestParam(value = "sessionRestriction", required = false)
     @Parameter(description = "Filter sessions by session restriction - OPEN or CLOSED, if prisoner has CLOSED it will use that", example = "CLOSED", required = false)
     sessionRestriction: SessionRestriction? = null,
+    // TODO - to be removed as PVB does not use this parameter
     @RequestParam(value = "visitors", required = false)
     @Parameter(
       description = "List of visitors who require visit sessions",
@@ -196,6 +198,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     )
     @NullableNotEmpty(message = "An empty visitors list is not allowed")
     visitors: List<Long>? = null,
+    // TODO - to be removed as PVB does not use this parameter
     @RequestParam(value = "withAppointmentsCheck", required = false)
     @Parameter(
       description = "Defaults to true if not passed. If true, will not return visit times that clash with higher priority legal or medical appointments.",
@@ -208,24 +211,29 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       example = "dfs-wjs-eqr",
     )
     excludedApplicationReference: String? = null,
+    // TODO - to be removed as PVB does not use this parameter
     @RequestParam(value = "pvbAdvanceFromDateByDays", required = false)
-    @Parameter(description = "For PVB only. Allows service to advance the opening session slot booking window by n days on top of any other overrides. Defaults to 0 if not passed.")
+    @Parameter(description = "Ignored for PUBLIC. For other client types, advances the opening session slot booking window by n calendar days on top of any other overrides. Defaults to 0 if not passed.")
     pvbAdvanceFromDateByDays: Int? = 0,
     @RequestParam(value = "fromDateOverride", required = false)
-    @Parameter(description = "minimum override in days for opening session slot booking window, E.g. 2 will set min booking window to today + 2 days")
+    // TODO - Confirm with Simon that fromDate / toDate can be removed (fromDate discussed, toDate not discussed)
+    @Parameter(description = "Ignored for PUBLIC. Minimum calendar-day notice override for other client types; cannot reduce the prison's configured minimum.")
     fromDateOverride: Int? = null,
     @RequestParam(value = "toDateOverride", required = false)
-    @Parameter(description = "maximum override in days for closing session slot booking window, E.g. 28 will set max booking window to today + 28 days")
+    @Parameter(description = "Ignored for PUBLIC. Maximum calendar-day booking window override for other client types; cannot exceed the prison's configured maximum.")
     toDateOverride: Int? = null,
+    // TODO - to be removed as PVB does not use this parameter
     @RequestParam(value = "username", required = false)
     @Parameter(
       description = "Username for the user making the request. Used to exclude user's pending applications from session capacity count. Optional, ignored if not passed in.",
       example = "user-1",
     )
     username: String? = null,
+    // TODO - to be removed as PVB does not use this parameter
     @RequestParam
     @Parameter(description = "user type for the session", example = "PUBLIC", required = false)
     userType: PrisonClientType = PrisonClientType.PUBLIC,
+    // TODO - Can be removed and defaulted inside the service layer
     @RequestParam(value = "youngestVisitorAge", required = false)
     @Parameter(description = "Age of the youngest visitor", example = "18", required = false)
     youngestVisitorAge: Int? = null,
@@ -241,7 +249,6 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     username = username,
     clientType = userType,
     youngestVisitorAge = youngestVisitorAge,
-    // TODO - to be removed as PVB does not use this parameter
     excludedApplicationReference = excludedApplicationReference,
   )
 
@@ -293,6 +300,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       example = "user-1",
     )
     username: String? = null,
+    // TODO - Can be removed and defaulted inside the service layer
     @RequestParam
     @Parameter(description = "user type for the session", example = "PUBLIC", required = false)
     userType: PrisonClientType = PrisonClientType.PUBLIC,
