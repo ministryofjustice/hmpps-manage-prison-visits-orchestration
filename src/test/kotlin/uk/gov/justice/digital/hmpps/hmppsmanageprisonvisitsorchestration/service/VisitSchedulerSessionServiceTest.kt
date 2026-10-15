@@ -70,8 +70,7 @@ class VisitSchedulerSessionServiceTest {
     val availableSessionsReturned = listOf(session1, session2, session3, session4)
     val dateRange = DateRange(today, today.plusDays(1))
 
-    whenever(prisonService.getToDaysBookableDateRange(any(), anyOrNull(), anyOrNull(), any())).thenReturn(dateRange)
-    whenever(dateUtils.advanceFromDate(any(), anyOrNull())).thenReturn(dateRange)
+    whenever(prisonService.getPublicBookableDateRange(any())).thenReturn(dateRange)
     whenever(dateUtils.now()).thenReturn(now)
     whenever(visitSchedulerClient.getAvailableVisitSessions(any(), any(), anyOrNull(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull())).thenReturn(availableSessionsReturned)
 
@@ -113,8 +112,7 @@ class VisitSchedulerSessionServiceTest {
     val availableSessionsReturned = listOf(session1, session2, session3, session4)
     val dateRange = DateRange(today, today.plusDays(1))
 
-    whenever(prisonService.getToDaysBookableDateRange(any(), anyOrNull(), anyOrNull(), any())).thenReturn(dateRange)
-    whenever(dateUtils.advanceFromDate(any(), anyOrNull())).thenReturn(dateRange)
+    whenever(prisonService.getPublicBookableDateRange(any())).thenReturn(dateRange)
     whenever(dateUtils.now()).thenReturn(now)
     whenever(visitSchedulerClient.getAvailableVisitSessions(any(), any(), anyOrNull(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull())).thenReturn(availableSessionsReturned)
 
@@ -156,8 +154,7 @@ class VisitSchedulerSessionServiceTest {
     val availableSessionsReturned = listOf(session1, session2, session3, session4)
     val dateRange = DateRange(today, today.plusDays(1))
 
-    whenever(prisonService.getToDaysBookableDateRange(any(), anyOrNull(), anyOrNull(), any())).thenReturn(dateRange)
-    whenever(dateUtils.advanceFromDate(any(), anyOrNull())).thenReturn(dateRange)
+    whenever(prisonService.getPublicBookableDateRange(any())).thenReturn(dateRange)
     whenever(dateUtils.now()).thenReturn(now)
     whenever(visitSchedulerClient.getAvailableVisitSessions(any(), any(), anyOrNull(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull())).thenReturn(availableSessionsReturned)
 

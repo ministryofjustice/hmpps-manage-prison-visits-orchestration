@@ -6,8 +6,13 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.CacheManager
 import org.springframework.http.HttpStatus
 import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.CacheNames
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidayEventByDivisionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidaysDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
@@ -28,6 +33,16 @@ import java.time.LocalTime
 
 @DisplayName("Get available visit sessions with appointments check")
 class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
+  @Autowired
+  lateinit var cacheManager: CacheManager
+
+  @BeforeEach
+  fun setupBankHolidays() {
+    cacheManager.getCache(CacheNames.BANK_HOLIDAYS)?.clear()
+    govUkMockServer.resetAll()
+    govUkMockServer.stubGetBankHolidays(HolidaysDto(HolidayEventByDivisionDto("england-and-wales", emptyList())))
+  }
+
   private val prisonCode = "MDI"
   private val prisonerId = "AA123456B"
   private val visitSession1 = AvailableVisitSessionDto(LocalDate.now().plusDays(3), "session1", SessionTimeSlotDto(LocalTime.of(9, 0), LocalTime.of(10, 0)), OPEN, visitOrderRestriction = VO)
@@ -38,12 +53,14 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
   private val visitSchedulerPrisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
   private val visitorIds = listOf(1L, 2L, 3L)
 
+  private lateinit var dateRange: DateRange
+
   private val eventType = "APP"
   private val eventTypeDesc = "Appointment"
 
   @BeforeEach
   fun setupMocks() {
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), clientType = PUBLIC)
+    dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), clientType = PUBLIC)
     visitSchedulerMockServer.stubGetPrison(prisonCode, visitSchedulerPrisonDto)
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, OffenderRestrictionsDto(offenderRestrictions = emptyList()))
     prisonerContactRegistryMockServer.stubDoVisitorsHaveClosedRestrictions(prisonerId, visitorIds = visitorIds, result = false)
@@ -54,7 +71,6 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
   fun `when there are no clashing appointments sessions are returned`() {
     // Given
     // appointment is not on the same date as the visits
-    val dateRange = DateRange(fromDate = LocalDate.now().plusDays(2).plusDays(1), LocalDate.now().plusDays(28))
 
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
 
@@ -378,7 +394,6 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
   @Test
   fun `when call to whereabouts throws 404 then same 404 error status is sent back`() {
     // Given
-    val dateRange = DateRange(LocalDate.now().plusDays(2).plusDays(1), LocalDate.now().plusDays(28))
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, null)
 
     // When
@@ -392,7 +407,6 @@ class AvailableVisitSessionsWithAppointmentsCheckTest : IntegrationTestBase() {
   @Test
   fun `when call to whereabouts throws INTERNAL_SERVER_ERROR then same INTERNAL_SERVER_ERROR error status is sent back`() {
     // Given
-    val dateRange = DateRange(LocalDate.now().plusDays(2).plusDays(1), LocalDate.now().plusDays(28))
     prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, null, HttpStatus.INTERNAL_SERVER_ERROR)
 
     // When

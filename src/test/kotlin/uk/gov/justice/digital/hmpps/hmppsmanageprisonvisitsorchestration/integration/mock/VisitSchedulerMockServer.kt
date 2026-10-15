@@ -568,7 +568,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     username: String? = null,
     clientType: PrisonClientType,
     youngestVisitorAge: Int? = null,
-    useWorkingDays: Boolean = false,
+    useWorkingDays: Boolean = clientType == PrisonClientType.PUBLIC,
   ): DateRange {
     val dateRangeToUse = dateRange ?: run {
       val today = LocalDate.now()

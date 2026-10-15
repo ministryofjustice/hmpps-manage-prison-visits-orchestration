@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
@@ -37,7 +38,7 @@ import java.time.LocalTime
 import java.time.temporal.TemporalAdjusters
 import java.util.stream.Stream
 
-@DisplayName("PUBLIC available visit sessions use full working days for the minimum booking window")
+@DisplayName("PUBLIC and PVB available visit sessions use the same full working day booking window")
 class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase() {
 
   companion object {
@@ -259,6 +260,16 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
       authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
     ).expectStatus().isEqualTo(expectedStatus)
 
+    callGetAvailableVisitSessions(
+      webTestClient = webTestClient,
+      prisonCode = prisonCode,
+      prisonerId = prisonerId,
+      sessionRestriction = OPEN,
+      withAppointmentsCheck = false,
+      clientType = PUBLIC,
+      authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
+    ).expectStatus().isEqualTo(expectedStatus)
+
     visitSchedulerMockServer.verify(0, getRequestedFor(urlPathEqualTo("/visit-sessions/available")))
   }
 
@@ -299,10 +310,28 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
     ).expectStatus().isOk.expectBody().returnResult()
     val availableSessions = TestObjectMapper.mapper.readValue(result.responseBody, Array<AvailableVisitSessionDto>::class.java)
 
+    // PVB PUBLIC requests must use the same window, even when the legacy overrides are supplied.
+    val pvbResult = callGetAvailableVisitSessions(
+      webTestClient = webTestClient,
+      prisonCode = prisonCode,
+      prisonerId = prisonerId,
+      sessionRestriction = OPEN,
+      visitorIds = visitorIds,
+      withAppointmentsCheck = true,
+      fromDateOverride = 30,
+      toDateOverride = 1,
+      pvbAdvanceFromDateByDays = 20,
+      clientType = PUBLIC,
+      authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
+    ).expectStatus().isOk.expectBody().returnResult()
+    val pvbSessions = TestObjectMapper.mapper.readValue(pvbResult.responseBody, Array<AvailableVisitSessionDto>::class.java)
+
+    assertThat(pvbSessions.map { it.sessionDate }).containsExactlyElementsOf(availableSessions.map { it.sessionDate })
+
     if (firstDay <= dateRange.toDate) {
       assertThat(availableSessions.map { it.sessionDate }).containsExactlyElementsOf(sessions.map { it.sessionDate })
       assertThat(availableSessions.map { it.sessionForReview }).containsOnly(forReview)
-      verify(visitSchedulerClientSpy).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
+      verify(visitSchedulerClientSpy, times(2)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
     } else {
       // Else the date is past the "toDate (end date)", so we expect no sessions to be returned.
       assertThat(availableSessions).isEmpty()

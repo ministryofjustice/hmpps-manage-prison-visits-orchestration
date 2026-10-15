@@ -1,16 +1,22 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.sessions
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.CacheManager
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.CacheNames
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidayEventByDivisionDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.govuk.holidays.HolidaysDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
@@ -32,6 +38,16 @@ import java.time.LocalTime
 
 @DisplayName("Get available visit sessions without appointments check")
 class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase() {
+  @Autowired
+  lateinit var cacheManager: CacheManager
+
+  @BeforeEach
+  fun setupBankHolidays() {
+    cacheManager.getCache(CacheNames.BANK_HOLIDAYS)?.clear()
+    govUkMockServer.resetAll()
+    govUkMockServer.stubGetBankHolidays(HolidaysDto(HolidayEventByDivisionDto("england-and-wales", emptyList())))
+  }
+
   @Test
   fun `when visit sessions for parameters are available then these sessions are returned`() {
     // Given
@@ -176,10 +192,7 @@ class AvailableVisitSessionsWithoutAppointmentsCheckTest : IntegrationTestBase()
     val prisonDto = createVisitSchedulerPrisonDto(prisonCode, active = true, maxTotalVisitors = 6, maxAdultVisitors = 3, maxChildVisitors = 3, policyNoticeDaysMin = 2, policyNoticeDaysMax = 28, adultAgeYears = 18, weekStartDay = DayOfWeek.MONDAY, remandVisitLimitPerWeek = 3)
 
     val toDay = LocalDate.now()
-    val publicClient = prisonDto.clients.first { it.clientType == PUBLIC }
-    val fromDate = toDay.plusDays(publicClient.policyNoticeDaysMin.toLong().plus(1))
-    val toDate = toDay.plusDays(publicClient.policyNoticeDaysMax.toLong())
-    val dateRange = DateRange(fromDate, toDate)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonDto, prisonerId, OPEN, emptyList(), clientType = PUBLIC)
 
     val moderatedDateRange = DateRange(toDay, toDay.plusWeeks(1))
     visitSchedulerMockServer.stubGetAvailableVisitSessions(prisonDto, prisonerId, OPEN, mutableListOf(visitSession1), dateRange = moderatedDateRange, clientType = PUBLIC)
