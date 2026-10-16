@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTimeSlotDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonClientType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionTemplateVisitOrderRestrictionType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
@@ -75,19 +74,7 @@ class VisitSchedulerSessionServiceTest {
     whenever(visitSchedulerClient.getAvailableVisitSessions(any(), any(), anyOrNull(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull())).thenReturn(availableSessionsReturned)
 
     // call available sessions
-    val availableSessions = visitSchedulerSessionsService.getAvailableVisitSessions(
-      prisonCode = "MDI",
-      clientType = PrisonClientType.PUBLIC,
-      prisonerId = "A",
-      requestedSessionRestriction = null,
-      visitors = listOf(1),
-      withAppointmentsCheck = false,
-      excludedApplicationReference = null,
-      pvbAdvanceFromDateByDays = 0,
-      fromDateOverride = null,
-      toDateOverride = null,
-      username = null,
-    )
+    val availableSessions = visitSchedulerSessionsService.getAvailableVisitSessionsForPvb(prisonCode = "MDI", prisonerId = "A")
 
     // all sessions starting after current time are returned
     assertThat(availableSessions).hasSize(3)
@@ -117,19 +104,7 @@ class VisitSchedulerSessionServiceTest {
     whenever(visitSchedulerClient.getAvailableVisitSessions(any(), any(), anyOrNull(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull())).thenReturn(availableSessionsReturned)
 
     // call available sessions
-    val availableSessions = visitSchedulerSessionsService.getAvailableVisitSessions(
-      prisonCode = "MDI",
-      clientType = PrisonClientType.PUBLIC,
-      prisonerId = "A",
-      requestedSessionRestriction = null,
-      visitors = listOf(1),
-      withAppointmentsCheck = false,
-      excludedApplicationReference = null,
-      pvbAdvanceFromDateByDays = 0,
-      fromDateOverride = null,
-      toDateOverride = null,
-      username = null,
-    )
+    val availableSessions = visitSchedulerSessionsService.getAvailableVisitSessionsForPvb(prisonCode = "MDI", prisonerId = "A")
 
     // all sessions starting after current time are returned
     assertThat(availableSessions).hasSize(4)
@@ -159,19 +134,7 @@ class VisitSchedulerSessionServiceTest {
     whenever(visitSchedulerClient.getAvailableVisitSessions(any(), any(), anyOrNull(), any(), anyOrNull(), anyOrNull(), any(), anyOrNull())).thenReturn(availableSessionsReturned)
 
     // call available sessions
-    val availableSessions = visitSchedulerSessionsService.getAvailableVisitSessions(
-      prisonCode = "MDI",
-      clientType = PrisonClientType.PUBLIC,
-      prisonerId = "A",
-      requestedSessionRestriction = null,
-      visitors = listOf(1),
-      withAppointmentsCheck = false,
-      excludedApplicationReference = null,
-      pvbAdvanceFromDateByDays = 0,
-      fromDateOverride = null,
-      toDateOverride = null,
-      username = null,
-    )
+    val availableSessions = visitSchedulerSessionsService.getAvailableVisitSessionsForPvb(prisonCode = "MDI", prisonerId = "A")
 
     // all sessions starting after current time are returned
     assertThat(availableSessions).hasSize(4)
@@ -204,14 +167,7 @@ class VisitSchedulerSessionServiceTest {
     whenever(prisonApiClient.getPrisonerRestrictions(any())).thenReturn(OffenderRestrictionsDto(null, null))
 
     // call available sessions
-    val availableSessions = visitSchedulerSessionsService.getAvailableVisitSessionsForPublicUser(
-      prisonCode = "MDI",
-      clientType = PrisonClientType.PUBLIC,
-      prisonerId = "A",
-      visitors = listOf(1),
-      excludedApplicationReference = null,
-      username = null,
-    )
+    val availableSessions = visitSchedulerSessionsService.getAvailableVisitSessionsForPublic(prisonCode = "MDI", prisonerId = "A", visitors = listOf(1), excludedApplicationReference = null, username = null)
 
     // all sessions starting after current time are returned
     assertThat(availableSessions).hasSize(3)
@@ -243,14 +199,7 @@ class VisitSchedulerSessionServiceTest {
     whenever(prisonApiClient.getPrisonerRestrictions(any())).thenReturn(OffenderRestrictionsDto(null, null))
 
     // call available sessions
-    val availableSessions = visitSchedulerSessionsService.getAvailableVisitSessionsForPublicUser(
-      prisonCode = "MDI",
-      clientType = PrisonClientType.PUBLIC,
-      prisonerId = "A",
-      visitors = listOf(1),
-      excludedApplicationReference = null,
-      username = null,
-    )
+    val availableSessions = visitSchedulerSessionsService.getAvailableVisitSessionsForPublic(prisonCode = "MDI", prisonerId = "A", visitors = listOf(1), excludedApplicationReference = null, username = null)
 
     // all sessions starting after current time are returned
     assertThat(availableSessions).hasSize(4)
@@ -282,14 +231,7 @@ class VisitSchedulerSessionServiceTest {
     whenever(prisonApiClient.getPrisonerRestrictions(any())).thenReturn(OffenderRestrictionsDto(null, null))
 
     // call available sessions
-    val availableSessions = visitSchedulerSessionsService.getAvailableVisitSessionsForPublicUser(
-      prisonCode = "MDI",
-      clientType = PrisonClientType.PUBLIC,
-      prisonerId = "A",
-      visitors = listOf(1),
-      excludedApplicationReference = null,
-      username = null,
-    )
+    val availableSessions = visitSchedulerSessionsService.getAvailableVisitSessionsForPublic(prisonCode = "MDI", prisonerId = "A", visitors = listOf(1), excludedApplicationReference = null, username = null)
 
     // all sessions starting after current time are returned
     assertThat(availableSessions).hasSize(4)
@@ -321,7 +263,7 @@ class VisitSchedulerSessionServiceTest {
     whenever(visitSchedulerClient.getVisitSessions(any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), any(), anyOrNull())).thenReturn(availableSessionsReturned)
 
     // call available sessions
-    val visitSessionsAndSchedule = visitSchedulerSessionsService.getVisitSessionsAndSchedule(
+    val visitSessionsAndSchedule = visitSchedulerSessionsService.getVisitSessionsAndScheduleForStaff(
       prisonCode = "MDI",
       prisonerId = "A",
       min = null,
@@ -358,7 +300,7 @@ class VisitSchedulerSessionServiceTest {
     whenever(visitSchedulerClient.getVisitSessions(any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), any(), anyOrNull())).thenReturn(availableSessionsReturned)
 
     // call available sessions
-    val visitSessionsAndSchedule = visitSchedulerSessionsService.getVisitSessionsAndSchedule(
+    val visitSessionsAndSchedule = visitSchedulerSessionsService.getVisitSessionsAndScheduleForStaff(
       prisonCode = "MDI",
       prisonerId = "A",
       min = null,
@@ -396,7 +338,7 @@ class VisitSchedulerSessionServiceTest {
     whenever(visitSchedulerClient.getVisitSessions(any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), any(), anyOrNull())).thenReturn(availableSessionsReturned)
 
     // call available sessions
-    val visitSessionsAndSchedule = visitSchedulerSessionsService.getVisitSessionsAndSchedule(
+    val visitSessionsAndSchedule = visitSchedulerSessionsService.getVisitSessionsAndScheduleForStaff(
       prisonCode = "MDI",
       prisonerId = "A",
       min = null,

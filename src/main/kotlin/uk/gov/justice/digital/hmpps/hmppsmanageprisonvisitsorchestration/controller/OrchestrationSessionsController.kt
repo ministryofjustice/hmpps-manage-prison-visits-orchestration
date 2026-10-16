@@ -5,8 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import jakarta.validation.constraints.NotEmpty
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
@@ -18,8 +17,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionCapacityDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSessionDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonClientType
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.SessionRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.sessions.VisitSessionsAndScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.service.VisitSchedulerSessionsService
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.validation.NullableNotEmpty
@@ -39,77 +36,11 @@ const val GET_VISIT_SESSIONS_SCHEDULE = "$GET_VISIT_SESSIONS/schedule"
 
 @RestController
 class OrchestrationSessionsController(private val visitSchedulerSessionsService: VisitSchedulerSessionsService) {
-
-  companion object {
-    val LOG: Logger = LoggerFactory.getLogger(this::class.java)
-  }
-
-  @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
-  @GetMapping(GET_VISIT_SESSIONS)
-  @Operation(
-    summary = "Returns all visit sessions which are within the reservable time period - whether or not they are full",
-    description = "Retrieve all visits for a specified prisoner",
-    responses = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Visit session information returned",
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorized to access this endpoint",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "400",
-        description = "Incorrect request to Get visit sessions ",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-    ],
-  )
-  fun getVisitSessions(
-    @RequestParam(value = "prisonId", required = true)
-    @Parameter(
-      description = "Query by NOMIS Prison Identifier",
-      example = "MDI",
-    )
-    prisonCode: String,
-    @RequestParam(value = "prisonerId", required = false)
-    @Parameter(
-      description = "Filter results by prisoner id",
-      example = "A12345DC",
-    )
-    prisonerId: String?,
-    @RequestParam(value = "min", required = false)
-    @Parameter(
-      description = "Override the default minimum number of days notice from the current date",
-      example = "2",
-    )
-    min: Int?,
-    @RequestParam(value = "max", required = false)
-    @Parameter(
-      description = "Override the default maximum number of days to book-ahead from the current date",
-      example = "28",
-    )
-    max: Int?,
-    @RequestParam(value = "username", required = false)
-    @Parameter(
-      description = "Username for the user making the request. Used to exclude user's pending applications from session capacity count. Optional, ignored if not passed in.",
-      example = "user-1",
-    )
-    username: String? = null,
-    @RequestParam
-    @Parameter(description = "user type for the session", example = "STAFF", required = false)
-    userType: PrisonClientType = PrisonClientType.STAFF,
-    @RequestParam(value = "youngestVisitorAge", required = false)
-    @Parameter(description = "Age of the youngest visitor", example = "18", required = false)
-    youngestVisitorAge: Int? = null,
-  ): List<VisitSessionDto>? = visitSchedulerSessionsService.getVisitSessions(prisonCode, prisonerId, min, max, username, userType, youngestVisitorAge)
-
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(GET_VISIT_SESSIONS_AND_SCHEDULE)
   @Operation(
-    summary = "Returns all visit sessions and prisoner schedule for a specified prisoner",
-    description = "Retrieve all visit sessions and schedule for a specified prisoner",
+    summary = "Returns all visit sessions and prisoner schedule for a specified prisoner for STAFF client",
+    description = "Retrieve all visit sessions and schedule for a specified prisoner for STAFF client",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -127,7 +58,7 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       ),
     ],
   )
-  fun getVisitSessionsAndSchedule(
+  fun getVisitSessionsAndScheduleForStaff(
     @RequestParam(value = "prisonId", required = true)
     @Parameter(
       description = "Query by NOMIS Prison Identifier",
@@ -155,13 +86,19 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
     @RequestParam(value = "youngestVisitorAge", required = false)
     @Parameter(description = "Age of the youngest visitor", example = "18", required = false)
     youngestVisitorAge: Int? = null,
-  ): VisitSessionsAndScheduleDto = visitSchedulerSessionsService.getVisitSessionsAndSchedule(prisonCode, prisonerId, min, username, youngestVisitorAge)
+  ): VisitSessionsAndScheduleDto = visitSchedulerSessionsService.getVisitSessionsAndScheduleForStaff(
+    prisonCode,
+    prisonerId,
+    min,
+    username,
+    youngestVisitorAge,
+  )
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(GET_VISIT_SESSIONS_AVAILABLE)
   @Operation(
-    summary = "Returns only available visit sessions for a specified prisoner by restriction and within the reservable time period",
-    description = "Returns only available visit sessions for a specified prisoner by restriction and within the reservable time period. PUBLIC uses the same prison-configured booking window as the PUBLIC service endpoint, with full working days of minimum notice excluding weekends and England and Wales bank holidays. Date overrides are ignored for PUBLIC. STAFF retains its calendar-day window and date overrides.",
+    summary = "Returns only available visit sessions for a specified prisoner by restriction and within the reservable time period for PVB",
+    description = "Returns only available visit sessions for a specified prisoner by restriction and within the reservable time period for PVB. Always checks prisoner restrictions and higher priority appointments. Visitor restrictions, review flags and caller overrides are not applied. Uses the same prison-configured booking window as the PUBLIC service endpoint, with full working days of minimum notice excluding weekends and England and Wales bank holidays.",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -179,83 +116,22 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       ),
     ],
   )
-  fun getAvailableVisitSessions(
+  fun getAvailableVisitSessionsForPvb(
     @RequestParam(value = "prisonId", required = true)
     @Parameter(description = "Query by NOMIS Prison Identifier", example = "MDI", required = true)
     prisonCode: String,
     @RequestParam(value = "prisonerId", required = true)
     @Parameter(description = "Filter results by prisoner id", example = "A12345DC", required = true)
     prisonerId: String,
-    // TODO - to be removed as PVB does not use this parameter
-    @RequestParam(value = "sessionRestriction", required = false)
-    @Parameter(description = "Filter sessions by session restriction - OPEN or CLOSED, if prisoner has CLOSED it will use that", example = "CLOSED", required = false)
-    sessionRestriction: SessionRestriction? = null,
-    // TODO - to be removed as PVB does not use this parameter
-    @RequestParam(value = "visitors", required = false)
-    @Parameter(
-      description = "List of visitors who require visit sessions",
-      example = "4729510,4729220",
-    )
-    @NullableNotEmpty(message = "An empty visitors list is not allowed")
-    visitors: List<Long>? = null,
-    // TODO - to be removed as PVB does not use this parameter
-    @RequestParam(value = "withAppointmentsCheck", required = false)
-    @Parameter(
-      description = "Defaults to true if not passed. If true, will not return visit times that clash with higher priority legal or medical appointments.",
-    )
-    withAppointmentsCheck: Boolean? = true,
-    // TODO - to be removed as PVB does not use this parameter
-    @RequestParam(value = "excludedApplicationReference", required = false)
-    @Parameter(
-      description = "The current application reference to be excluded from capacity count and double booking",
-      example = "dfs-wjs-eqr",
-    )
-    excludedApplicationReference: String? = null,
-    // TODO - to be removed as PVB does not use this parameter
-    @RequestParam(value = "pvbAdvanceFromDateByDays", required = false)
-    @Parameter(description = "Ignored for PUBLIC. For other client types, advances the opening session slot booking window by n calendar days on top of any other overrides. Defaults to 0 if not passed.")
-    pvbAdvanceFromDateByDays: Int? = 0,
-    @RequestParam(value = "fromDateOverride", required = false)
-    // TODO - Confirm with Simon that fromDate / toDate can be removed (fromDate discussed, toDate not discussed)
-    @Parameter(description = "Ignored for PUBLIC. Minimum calendar-day notice override for other client types; cannot reduce the prison's configured minimum.")
-    fromDateOverride: Int? = null,
-    @RequestParam(value = "toDateOverride", required = false)
-    @Parameter(description = "Ignored for PUBLIC. Maximum calendar-day booking window override for other client types; cannot exceed the prison's configured maximum.")
-    toDateOverride: Int? = null,
-    // TODO - to be removed as PVB does not use this parameter
-    @RequestParam(value = "username", required = false)
-    @Parameter(
-      description = "Username for the user making the request. Used to exclude user's pending applications from session capacity count. Optional, ignored if not passed in.",
-      example = "user-1",
-    )
-    username: String? = null,
-    // TODO - to be removed as PVB does not use this parameter
-    @RequestParam
-    @Parameter(description = "user type for the session", example = "PUBLIC", required = false)
-    userType: PrisonClientType = PrisonClientType.PUBLIC,
-    // TODO - Can be removed and defaulted inside the service layer
-    @RequestParam(value = "youngestVisitorAge", required = false)
-    @Parameter(description = "Age of the youngest visitor", example = "18", required = false)
-    youngestVisitorAge: Int? = null,
-  ): List<AvailableVisitSessionDto> = visitSchedulerSessionsService.getAvailableVisitSessions(
+  ): List<AvailableVisitSessionDto> = visitSchedulerSessionsService.getAvailableVisitSessionsForPvb(
     prisonCode = prisonCode,
     prisonerId = prisonerId,
-    requestedSessionRestriction = sessionRestriction,
-    withAppointmentsCheck = withAppointmentsCheck ?: true,
-    pvbAdvanceFromDateByDays = pvbAdvanceFromDateByDays ?: 0,
-    visitors = visitors,
-    fromDateOverride = fromDateOverride,
-    toDateOverride = toDateOverride,
-    username = username,
-    clientType = userType,
-    youngestVisitorAge = youngestVisitorAge,
-    excludedApplicationReference = excludedApplicationReference,
   )
 
   @PreAuthorize("hasAnyRole('VISIT_SCHEDULER', 'VSIP_ORCHESTRATION_SERVICE')")
   @GetMapping(GET_VISIT_SESSIONS_AVAILABLE_PUBLIC)
   @Operation(
-    summary = "Returns available visit sessions with sessions marked for review for a specified prisoner and visitors combination for the date range passed in.",
+    summary = "Returns available visit sessions for a prisoner and visitors, marking sessions that require review.",
     description = "Returns available visit sessions after the prison's minimum notice period in full working days, excluding weekends and England and Wales bank holidays. Visits can start on the following calendar day. The same notice period applies to auto-approved sessions and sessions marked for review. Marks sessions for review if prisoner alerts / restrictions or visitor restrictions are found. Used by Visits Public only, not PVB",
     responses = [
       ApiResponse(
@@ -274,20 +150,20 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       ),
     ],
   )
-  fun getAvailableVisitSessions(
+  fun getAvailableVisitSessionsForPublic(
     @RequestParam(value = "prisonId", required = true)
     @Parameter(description = "Query by NOMIS Prison Identifier", example = "MDI", required = true)
     prisonCode: String,
     @RequestParam(value = "prisonerId", required = true)
     @Parameter(description = "Filter results by prisoner id", example = "A12345DC", required = true)
     prisonerId: String,
-    @RequestParam(value = "visitors", required = false)
+    @RequestParam(value = "visitors", required = true)
     @Parameter(
-      description = "List of visitors who require visit sessions",
+      description = "comma separated list of visitors who require visit sessions",
       example = "4729510,4729220",
     )
-    @NullableNotEmpty(message = "An empty visitors list is not allowed")
-    visitors: List<Long>? = null,
+    @NotEmpty(message = "An empty visitors list is not allowed")
+    visitors: List<Long>,
     @RequestParam(value = "excludedApplicationReference", required = false)
     @Parameter(
       description = "The current application reference to be excluded from capacity count and double booking",
@@ -300,20 +176,15 @@ class OrchestrationSessionsController(private val visitSchedulerSessionsService:
       example = "user-1",
     )
     username: String? = null,
-    // TODO - Can be removed and defaulted inside the service layer
-    @RequestParam
-    @Parameter(description = "user type for the session", example = "PUBLIC", required = false)
-    userType: PrisonClientType = PrisonClientType.PUBLIC,
     @RequestParam(value = "youngestVisitorAge", required = false)
     @Parameter(description = "Age of the youngest visitor", example = "18", required = false)
     youngestVisitorAge: Int? = null,
-  ): List<AvailableVisitSessionDto> = visitSchedulerSessionsService.getAvailableVisitSessionsForPublicUser(
+  ): List<AvailableVisitSessionDto> = visitSchedulerSessionsService.getAvailableVisitSessionsForPublic(
     prisonCode = prisonCode,
     prisonerId = prisonerId,
     visitors = visitors,
     excludedApplicationReference = excludedApplicationReference,
     username = username,
-    clientType = userType,
     youngestVisitorAge = youngestVisitorAge,
   )
 
