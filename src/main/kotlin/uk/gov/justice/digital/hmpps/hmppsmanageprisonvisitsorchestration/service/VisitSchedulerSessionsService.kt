@@ -63,35 +63,24 @@ class VisitSchedulerSessionsService(
     )
   }
 
-  fun getVisitSessions(
-    prisonCode: String,
-    prisonerId: String?,
-    min: Int?,
-    max: Int?,
-    username: String?,
-    clientType: PrisonClientType,
-    youngestVisitorAge: Int? = null,
-  ): List<VisitSessionDto>? = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max, username, clientType, youngestVisitorAge)
-
-  fun getVisitSessionsAndSchedule(
+  fun getVisitSessionsAndScheduleForStaff(
     prisonCode: String,
     prisonerId: String,
     min: Int?,
     username: String?,
     youngestVisitorAge: Int? = null,
   ): VisitSessionsAndScheduleDto {
-    // TODO - Enforce validation and throw a bad_request exception if PUBLIC is called on this endpoint (requires frontend change to STAFF service).
+    val clientType = PrisonClientType.STAFF
+
     val today = dateUtils.today()
     val now = dateUtils.now()
 
     var scheduledEventsAvailable = true
-    val dateRangeForPrison = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, clientType = PrisonClientType.STAFF)
+    val dateRangeForPrison = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, clientType = clientType)
     val sessionAndScheduleDateRange = DateRange(today, dateRangeForPrison.toDate)
 
-    // get sessions for prisoner and date range with clientType as STAFF
-    val visitSessions = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max = null, username, PrisonClientType.STAFF, youngestVisitorAge)?.filter { it.startTimestamp >= now }
+    val visitSessions = visitSchedulerClient.getVisitSessions(prisonCode, prisonerId, min, max = null, username, clientType, youngestVisitorAge)?.filter { it.startTimestamp >= now }
 
-    // get schedules for prisoner and date range
     val prisonerSchedules =
       try {
         prisonApiClient.getEvents(prisonerId, dateRangeForPrison.fromDate, dateRangeForPrison.toDate)
@@ -109,81 +98,52 @@ class VisitSchedulerSessionsService(
     return VisitSessionsAndScheduleDto(scheduledEventsAvailable, sessionsAndSchedules)
   }
 
-  fun getAvailableVisitSessions(
+  fun getAvailableVisitSessionsForPvb(
     prisonCode: String,
     prisonerId: String,
-    requestedSessionRestriction: SessionRestriction?,
-    visitors: List<Long>?,
-    withAppointmentsCheck: Boolean,
-    excludedApplicationReference: String? = null,
-    pvbAdvanceFromDateByDays: Int,
-    fromDateOverride: Int? = null,
-    toDateOverride: Int? = null,
-    username: String? = null,
-    clientType: PrisonClientType,
-    youngestVisitorAge: Int? = null,
   ): List<AvailableVisitSessionDto> {
-    val sessionRestriction = updateRequestedRestriction(requestedSessionRestriction, prisonerId, visitors)
-
-    val dateRange = if (clientType == PrisonClientType.PUBLIC) {
-      prisonService.getPublicBookableDateRange(prisonCode)
-    } else {
-      val prisonDateRange = prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, fromDateOverride = fromDateOverride, toDateOverride = toDateOverride, clientType = clientType)
-      dateUtils.advanceFromDate(prisonDateRange, pvbAdvanceFromDateByDays)
-    }
-
+    val dateRange = prisonService.getPublicBookableDateRange(prisonCode)
     if (dateRange.fromDate > dateRange.toDate) {
       return emptyList()
     }
 
-    var availableVisitSessions = getAvailableVisitSessionsForDateRange(
+    val sessionRestriction = getSessionRestriction(prisonerId = prisonerId, visitors = null)
+
+    var availableVisitSessions = getAvailablePublicVisitSessionsForDateRange(
       prisonCode = prisonCode,
       prisonerId = prisonerId,
-      visitors = visitors,
-      excludedApplicationReference = excludedApplicationReference,
-      username = username,
-      clientType = clientType,
-      youngestVisitorAge = youngestVisitorAge,
       dateRange = dateRange,
       sessionRestriction = sessionRestriction,
     )
 
-    if (withAppointmentsCheck && availableVisitSessions.isNotEmpty()) {
+    if (availableVisitSessions.isNotEmpty()) {
       availableVisitSessions = filterAvailableVisitsByHigherPriorityAppointments(prisonerId, dateRange, availableVisitSessions)
     }
 
     return availableVisitSessions.sortedWith(availableVisitSessionsSortOrder)
   }
 
-  // gets available visit sessions for a public booker and marks sessions for review if the prisoner has alerts / restrictions or visitors have restrictions
-  fun getAvailableVisitSessionsForPublicUser(
+  fun getAvailableVisitSessionsForPublic(
     prisonCode: String,
     prisonerId: String,
-    visitors: List<Long>?,
+    visitors: List<Long>,
     excludedApplicationReference: String? = null,
     username: String? = null,
-    clientType: PrisonClientType,
     youngestVisitorAge: Int? = null,
   ): List<AvailableVisitSessionDto> {
-    val sessionRestriction = updateRequestedRestriction(null, prisonerId, visitors)
-
-    val dateRange = if (clientType == PrisonClientType.PUBLIC) {
-      prisonService.getPublicBookableDateRange(prisonCode)
-    } else {
-      prisonService.getToDaysBookableDateRange(prisonCode = prisonCode, clientType = clientType)
-    }
-
+    val dateRange = prisonService.getPublicBookableDateRange(prisonCode)
     if (dateRange.fromDate > dateRange.toDate) {
       return emptyList()
     }
 
-    val availableVisitSessions = getAvailableVisitSessionsForDateRange(
+    val sessionRestriction = getSessionRestriction(prisonerId = prisonerId, visitors = visitors)
+
+    val availableVisitSessions = getAvailablePublicVisitSessionsForDateRange(
       prisonCode = prisonCode,
       prisonerId = prisonerId,
       visitors = visitors,
       excludedApplicationReference = excludedApplicationReference,
       username = username,
-      clientType = clientType,
       youngestVisitorAge = youngestVisitorAge,
       dateRange = dateRange,
       sessionRestriction = sessionRestriction,
@@ -196,18 +156,17 @@ class VisitSchedulerSessionsService(
     return availableVisitSessions.sortedWith(availableVisitSessionsSortOrder)
   }
 
-  private fun getAvailableVisitSessionsForDateRange(
+  private fun getAvailablePublicVisitSessionsForDateRange(
     prisonCode: String,
     prisonerId: String,
-    visitors: List<Long>?,
-    excludedApplicationReference: String? = null,
-    username: String? = null,
-    clientType: PrisonClientType,
     dateRange: DateRange,
     sessionRestriction: SessionRestriction,
+    visitors: List<Long>? = null,
+    excludedApplicationReference: String? = null,
+    username: String? = null,
     youngestVisitorAge: Int? = null,
   ): List<AvailableVisitSessionDto> {
-    LOG.debug("getting available visit sessions for prisonerId - {}, dateRange - {}, sessionRestriction - {}, excludedApplicationReference - {}, username - {}, clientType - {}, dateRange - {}, sessionRestriction - {}", prisonerId, dateRange, sessionRestriction, excludedApplicationReference, username, clientType, dateRange, sessionRestriction)
+    LOG.debug("Getting available PUBLIC visit sessions for prisonerId - {}, dateRange - {}, sessionRestriction - {}, excludedApplicationReference - {}, username - {}", prisonerId, dateRange, sessionRestriction, excludedApplicationReference, username)
     val sessions = try {
       val updatedDateRange =
         visitors?.let { prisonerProfileService.getBannedRestrictionDateRage(prisonerId, visitors, dateRange) }
@@ -219,11 +178,11 @@ class VisitSchedulerSessionsService(
         dateRange = updatedDateRange,
         excludedApplicationReference = excludedApplicationReference,
         username = username,
-        clientType = clientType,
+        clientType = PrisonClientType.PUBLIC,
         youngestVisitorAge = youngestVisitorAge,
       )
     } catch (_: DateRangeNotFoundException) {
-      LOG.error("getAvailableVisitSessions range is not returned therefore we do not have a valid date range and should return an empty list")
+      LOG.error("getAvailablePublicVisitSessionsForDateRange range is not returned therefore we do not have a valid date range and should return an empty list")
       emptyList()
     }
 
@@ -254,23 +213,11 @@ class VisitSchedulerSessionsService(
     }
   }
 
-  private fun updateRequestedRestriction(
-    requestedSessionRestriction: SessionRestriction?,
-    prisonerId: String,
-    visitors: List<Long>?,
-  ): SessionRestriction = if (prisonerProfileService.hasPrisonerGotClosedRestrictions(prisonerId) ||
-    (if (visitors != null) prisonerProfileService.hasVisitorsGotClosedRestrictions(prisonerId, visitors) else false)
-  ) {
-    CLOSED
-  } else {
-    requestedSessionRestriction ?: OPEN
-  }
-
   fun getAvailableVisitSessionsRestriction(
     prisonerId: String,
     visitors: List<Long>?,
   ): AvailableVisitSessionRestrictionDto {
-    val sessionRestriction = updateRequestedRestriction(requestedSessionRestriction = null, prisonerId, visitors)
+    val sessionRestriction = getSessionRestriction(prisonerId, visitors)
     return AvailableVisitSessionRestrictionDto(sessionRestriction)
   }
 
@@ -340,6 +287,17 @@ class VisitSchedulerSessionsService(
 
   private fun getOverridingEventDetails(events: List<ScheduledEventDto>): String = events.joinToString(" and ")
 
+  private fun getSessionRestriction(
+    prisonerId: String,
+    visitors: List<Long>?,
+  ): SessionRestriction = if (prisonerProfileService.hasPrisonerGotClosedRestrictions(prisonerId) ||
+    (visitors != null && prisonerProfileService.hasVisitorsGotClosedRestrictions(prisonerId, visitors))
+  ) {
+    CLOSED
+  } else {
+    OPEN
+  }
+
   private fun hasOverlappingTimes(
     scheduledEventStartTime: LocalTime,
     scheduledEventEndTime: LocalTime,
@@ -366,7 +324,7 @@ class VisitSchedulerSessionsService(
 
   private fun setSessionForReview(
     prisonerId: String,
-    visitors: List<Long>?,
+    visitors: List<Long>,
     dateRange: DateRange,
     availableSessions: List<AvailableVisitSessionDto>,
   ) {
@@ -389,8 +347,7 @@ class VisitSchedulerSessionsService(
     }
 
     // check for visitor restrictions that will force the session to go under review
-    // TODO - remove visitors != null check as visitors should always be passed
-    if (visitors != null && hasSessionsNotUnderReview(availableSessions)) {
+    if (hasSessionsNotUnderReview(availableSessions)) {
       val visitorRestrictionDateRanges = getVisitorsRestrictionDateRanges(prisonerId, visitors, visitorRestrictionCodesForReview, dateRange)
       markSessionsForReview(visitorRestrictionDateRanges, availableSessions)
     }

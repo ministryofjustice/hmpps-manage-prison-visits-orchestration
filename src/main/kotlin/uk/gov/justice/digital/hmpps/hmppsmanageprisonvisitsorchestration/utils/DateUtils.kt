@@ -46,20 +46,6 @@ class DateUtils(private val currentDateUtils: CurrentDateUtils) {
     return DateRange(bookableStartDate, bookableEndDate)
   }
 
-  fun advanceFromDate(dateRange: DateRange, pvbAdvanceFromDateByDays: Int): DateRange {
-    // if pvbAdvanceFromDateByDays is greater than zero and new from date is before toDate
-    if (pvbAdvanceFromDateByDays > 0) {
-      val fromDate = dateRange.fromDate.plusDays(pvbAdvanceFromDateByDays.toLong())
-
-      // check if new fromDate is before or equal to toDate
-      if (fromDate <= dateRange.toDate) {
-        return DateRange(fromDate, dateRange.toDate)
-      }
-    }
-
-    return dateRange
-  }
-
   fun getPublicBookableDateRange(client: PrisonUserClientDto, bankHolidays: List<LocalDate>): DateRange {
     val today = currentDateUtils.getCurrentDate()
     val minimumWorkingDaysNotice = client.policyNoticeDaysMin
@@ -114,15 +100,6 @@ class DateUtils(private val currentDateUtils: CurrentDateUtils) {
     }
 
     return uniqueDateRanges.distinct()
-  }
-
-  fun advanceDaysIfWeekendOrBankHoliday(fromDate: LocalDate, toDate: LocalDate, bankHolidays: List<LocalDate>): LocalDate {
-    var newFromDate = fromDate
-    while ((isWeekend(newFromDate) || isBankHoliday(newFromDate, bankHolidays)) && newFromDate < toDate) {
-      newFromDate = newFromDate.plusDays(1)
-    }
-
-    return newFromDate
   }
 
   fun now(): LocalDateTime = LocalDateTime.now()

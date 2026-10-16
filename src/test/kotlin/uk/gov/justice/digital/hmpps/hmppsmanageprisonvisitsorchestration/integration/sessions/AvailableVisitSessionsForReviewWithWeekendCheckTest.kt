@@ -252,23 +252,9 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
     // Swallowing the holiday error would reach this valid scheduler response and incorrectly return HTTP 200.
     visitSchedulerMockServer.stubGetAvailableVisitSessions(prison, prisonerId, OPEN, emptyList(), clientType = PUBLIC, dateRange = dateRange)
 
-    callGetAvailableVisitSessionsPublic(
-      webTestClient = webTestClient,
-      prisonCode = prisonCode,
-      prisonerId = prisonerId,
-      clientType = PUBLIC,
-      authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
-    ).expectStatus().isEqualTo(expectedStatus)
+    callGetAvailableVisitSessionsForPublic(webTestClient = webTestClient, prisonCode = prisonCode, prisonerId = prisonerId, visitorIds = visitorIds, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders).expectStatus().isEqualTo(expectedStatus)
 
-    callGetAvailableVisitSessions(
-      webTestClient = webTestClient,
-      prisonCode = prisonCode,
-      prisonerId = prisonerId,
-      sessionRestriction = OPEN,
-      withAppointmentsCheck = false,
-      clientType = PUBLIC,
-      authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
-    ).expectStatus().isEqualTo(expectedStatus)
+    callGetAvailableVisitSessionsForPvb(webTestClient = webTestClient, prisonCode = prisonCode, prisonerId = prisonerId, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders).expectStatus().isEqualTo(expectedStatus)
 
     visitSchedulerMockServer.verify(0, getRequestedFor(urlPathEqualTo("/visit-sessions/available")))
   }
@@ -300,33 +286,15 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
       prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
     }
 
-    val result = callGetAvailableVisitSessionsPublic(
-      webTestClient = webTestClient,
-      prisonCode = prisonCode,
-      prisonerId = prisonerId,
-      visitorIds = visitorIds,
-      clientType = PUBLIC,
-      authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
-    ).expectStatus().isOk.expectBody().returnResult()
+    val result = callGetAvailableVisitSessionsForPublic(webTestClient = webTestClient, prisonCode = prisonCode, prisonerId = prisonerId, visitorIds = visitorIds, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders).expectStatus().isOk.expectBody().returnResult()
     val availableSessions = TestObjectMapper.mapper.readValue(result.responseBody, Array<AvailableVisitSessionDto>::class.java)
 
-    // PVB PUBLIC requests must use the same window, even when the legacy overrides are supplied.
-    val pvbResult = callGetAvailableVisitSessions(
-      webTestClient = webTestClient,
-      prisonCode = prisonCode,
-      prisonerId = prisonerId,
-      sessionRestriction = OPEN,
-      visitorIds = visitorIds,
-      withAppointmentsCheck = true,
-      fromDateOverride = 30,
-      toDateOverride = 1,
-      pvbAdvanceFromDateByDays = 20,
-      clientType = PUBLIC,
-      authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders,
-    ).expectStatus().isOk.expectBody().returnResult()
+    // PVB uses the same PUBLIC window, without visitor review checks.
+    val pvbResult = callGetAvailableVisitSessionsForPvb(webTestClient = webTestClient, prisonCode = prisonCode, prisonerId = prisonerId, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders).expectStatus().isOk.expectBody().returnResult()
     val pvbSessions = TestObjectMapper.mapper.readValue(pvbResult.responseBody, Array<AvailableVisitSessionDto>::class.java)
 
     assertThat(pvbSessions.map { it.sessionDate }).containsExactlyElementsOf(availableSessions.map { it.sessionDate })
+    assertThat(pvbSessions).allMatch { !it.sessionForReview }
 
     if (firstDay <= dateRange.toDate) {
       assertThat(availableSessions.map { it.sessionDate }).containsExactlyElementsOf(sessions.map { it.sessionDate })

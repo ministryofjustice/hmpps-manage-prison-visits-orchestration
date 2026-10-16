@@ -571,65 +571,35 @@ abstract class IntegrationTestBase {
     .headers(authHttpHeaders)
     .exchange()
 
-  fun callGetAvailableVisitSessions(
+  fun callGetAvailableVisitSessionsForPvb(
     webTestClient: WebTestClient,
     prisonCode: String,
     prisonerId: String,
-    sessionRestriction: SessionRestriction,
-    visitorIds: List<Long>? = null,
-    withAppointmentsCheck: Boolean,
-    excludedApplicationReference: String? = null,
-    pvbAdvanceFromDateByDays: Int? = null,
-    fromDateOverride: Int? = null,
-    toDateOverride: Int? = null,
-    currentUser: String? = null,
-    clientType: PrisonClientType? = null,
     authHttpHeaders: (HttpHeaders) -> Unit,
-    youngestVisitorAge: Int? = null,
-  ): WebTestClient.ResponseSpec {
-    val uri = "/visit-sessions/available"
+  ): WebTestClient.ResponseSpec = webTestClient.get()
+    .uri("/visit-sessions/available?prisonId=$prisonCode&prisonerId=$prisonerId")
+    .headers(authHttpHeaders)
+    .exchange()
 
-    val uriParams =
-      getAvailableVisitSessionQueryParams(
-        prisonCode = prisonCode,
-        prisonerId = prisonerId,
-        sessionRestriction = sessionRestriction,
-        visitorIds = visitorIds,
-        withAppointmentsCheck = withAppointmentsCheck,
-        excludedApplicationReference = excludedApplicationReference,
-        fromDateOverride = fromDateOverride,
-        toDateOverride = toDateOverride,
-        pvbAdvanceFromDateByDays = pvbAdvanceFromDateByDays,
-        clientType = clientType,
-        youngestVisitorAge = youngestVisitorAge,
-      ).joinToString("&")
-
-    return webTestClient.get().uri("$uri?$uriParams")
-      .headers(authHttpHeaders)
-      .exchange()
-  }
-
-  fun callGetAvailableVisitSessionsPublic(
+  fun callGetAvailableVisitSessionsForPublic(
     webTestClient: WebTestClient,
     prisonCode: String,
     prisonerId: String,
     visitorIds: List<Long>? = null,
     excludedApplicationReference: String? = null,
-    clientType: PrisonClientType? = null,
-    userName: String? = null,
+    username: String? = null,
     authHttpHeaders: (HttpHeaders) -> Unit,
     youngestVisitorAge: Int? = null,
   ): WebTestClient.ResponseSpec {
     val uri = GET_VISIT_SESSIONS_AVAILABLE_PUBLIC
 
     val uriParams =
-      getAvailableVisitSessionV2QueryParams(
+      getPublicAvailableVisitSessionQueryParams(
         prisonCode = prisonCode,
         prisonerId = prisonerId,
         visitorIds = visitorIds,
         excludedApplicationReference = excludedApplicationReference,
-        clientType = clientType,
-        userName = userName,
+        username = username,
         youngestVisitorAge = youngestVisitorAge,
       ).joinToString("&")
 
@@ -769,61 +739,12 @@ abstract class IntegrationTestBase {
     visitContact = visitContact,
   )
 
-  private fun getAvailableVisitSessionQueryParams(
-    prisonCode: String,
-    prisonerId: String,
-    sessionRestriction: SessionRestriction,
-    visitorIds: List<Long>? = null,
-    withAppointmentsCheck: Boolean,
-    excludedApplicationReference: String?,
-    pvbAdvanceFromDateByDays: Int?,
-    fromDateOverride: Int? = null,
-    toDateOverride: Int? = null,
-    currentUser: String? = null,
-    clientType: PrisonClientType? = null,
-    youngestVisitorAge: Int? = null,
-  ): List<String> {
-    val queryParams = ArrayList<String>()
-    queryParams.add("prisonId=$prisonCode")
-    queryParams.add("prisonerId=$prisonerId")
-    queryParams.add("sessionRestriction=${sessionRestriction.name}")
-    visitorIds?.let {
-      queryParams.add("visitors=${it.joinToString(",")}")
-    }
-    queryParams.add("withAppointmentsCheck=$withAppointmentsCheck")
-
-    excludedApplicationReference?.let {
-      queryParams.add("excludedApplicationReference=$excludedApplicationReference")
-    }
-    pvbAdvanceFromDateByDays?.let {
-      queryParams.add("pvbAdvanceFromDateByDays=$pvbAdvanceFromDateByDays")
-    }
-    fromDateOverride?.let {
-      queryParams.add("fromDateOverride=$fromDateOverride")
-    }
-    toDateOverride?.let {
-      queryParams.add("toDateOverride=$toDateOverride")
-    }
-    currentUser?.let {
-      queryParams.add("currentUser=$currentUser")
-    }
-    clientType?.let {
-      queryParams.add("userType=${clientType.name}")
-    }
-    youngestVisitorAge?.let {
-      queryParams.add("youngestVisitorAge=$youngestVisitorAge")
-    }
-
-    return queryParams
-  }
-
-  private fun getAvailableVisitSessionV2QueryParams(
+  private fun getPublicAvailableVisitSessionQueryParams(
     prisonCode: String,
     prisonerId: String,
     visitorIds: List<Long>? = null,
     excludedApplicationReference: String?,
-    clientType: PrisonClientType? = null,
-    userName: String? = null,
+    username: String? = null,
     youngestVisitorAge: Int? = null,
   ): List<String> {
     val queryParams = ArrayList<String>()
@@ -835,11 +756,8 @@ abstract class IntegrationTestBase {
     excludedApplicationReference?.let {
       queryParams.add("excludedApplicationReference=$excludedApplicationReference")
     }
-    userName?.let {
-      queryParams.add("userName=$userName")
-    }
-    clientType?.let {
-      queryParams.add("userType=${clientType.name}")
+    username?.let {
+      queryParams.add("username=$username")
     }
     youngestVisitorAge?.let {
       queryParams.add("youngestVisitorAge=$youngestVisitorAge")

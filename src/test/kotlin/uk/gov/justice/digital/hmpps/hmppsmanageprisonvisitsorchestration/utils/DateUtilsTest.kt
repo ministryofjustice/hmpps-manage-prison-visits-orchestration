@@ -8,9 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.IndefiniteDateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.PrisonUserClientDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.PrisonClientType
-import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.temporal.TemporalAdjusters
 
 @ExtendWith(MockitoExtension::class)
 class DateUtilsTest {
@@ -33,91 +31,6 @@ class DateUtilsTest {
 
     // Then
     Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prisonClient.policyNoticeDaysMin.toLong()))
-    Assertions.assertThat(dateRange.toDate).isEqualTo(today.plusDays(prisonClient.policyNoticeDaysMax.toLong()))
-  }
-
-  @Test
-  fun `adds 1 day to from date if advance date by days is 1`() {
-    // Given
-    val pvbAdvanceFromDateByDays = 1
-
-    // When
-    var dateRange = dateUtils.getToDaysDateRange(PrisonClientType.STAFF, prisonClient)
-    dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
-
-    // Then
-    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prisonClient.policyNoticeDaysMin.toLong() + pvbAdvanceFromDateByDays))
-    Assertions.assertThat(dateRange.toDate).isEqualTo(today.plusDays(prisonClient.policyNoticeDaysMax.toLong()))
-  }
-
-  @Test
-  fun `adds no days if advance date by days is zero`() {
-    // Given
-    val pvbAdvanceFromDateByDays = 0
-
-    // When
-    var dateRange = dateUtils.getToDaysDateRange(PrisonClientType.STAFF, prisonClient)
-    dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
-
-    // Then
-    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prisonClient.policyNoticeDaysMin.toLong()))
-    Assertions.assertThat(dateRange.toDate).isEqualTo(today.plusDays(prisonClient.policyNoticeDaysMax.toLong()))
-  }
-
-  @Test
-  fun `adds no days if advance date by days is negative value`() {
-    // Given
-    val pvbAdvanceFromDateByDays = -1
-
-    // When
-    var dateRange = dateUtils.getToDaysDateRange(PrisonClientType.STAFF, prisonClient)
-    dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
-
-    // Then
-    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prisonClient.policyNoticeDaysMin.toLong()))
-    Assertions.assertThat(dateRange.toDate).isEqualTo(today.plusDays(prisonClient.policyNoticeDaysMax.toLong()))
-  }
-
-  @Test
-  fun `adds no days if number of days is more than max policy days`() {
-    // Given
-    val pvbAdvanceFromDateByDays = (prisonClient.policyNoticeDaysMax - prisonClient.policyNoticeDaysMin) + 1
-
-    // When
-    var dateRange = dateUtils.getToDaysDateRange(PrisonClientType.STAFF, prisonClient)
-    dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
-
-    // Then
-    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prisonClient.policyNoticeDaysMin.toLong()))
-    Assertions.assertThat(dateRange.toDate).isEqualTo(today.plusDays(prisonClient.policyNoticeDaysMax.toLong()))
-  }
-
-  @Test
-  fun `adds days if number of days is same as max policy days`() {
-    // Given
-    val pvbAdvanceFromDateByDays = (prisonClient.policyNoticeDaysMax - prisonClient.policyNoticeDaysMin)
-
-    // When
-    var dateRange = dateUtils.getToDaysDateRange(PrisonClientType.STAFF, prisonClient)
-    dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
-
-    // Then
-    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prisonClient.policyNoticeDaysMin.toLong() + pvbAdvanceFromDateByDays))
-    Assertions.assertThat(dateRange.toDate).isEqualTo(today.plusDays(prisonClient.policyNoticeDaysMax.toLong()))
-    Assertions.assertThat(dateRange.fromDate).isEqualTo(dateRange.toDate)
-  }
-
-  @Test
-  fun `adds days if number of days is less than max policy days`() {
-    // Given
-    val pvbAdvanceFromDateByDays = 25
-
-    // When
-    var dateRange = dateUtils.getToDaysDateRange(PrisonClientType.STAFF, prisonClient)
-    dateRange = dateUtils.advanceFromDate(dateRange, pvbAdvanceFromDateByDays)
-
-    // Then
-    Assertions.assertThat(dateRange.fromDate).isEqualTo(today.plusDays(prisonClient.policyNoticeDaysMin.toLong() + pvbAdvanceFromDateByDays))
     Assertions.assertThat(dateRange.toDate).isEqualTo(today.plusDays(prisonClient.policyNoticeDaysMax.toLong()))
   }
 
@@ -269,66 +182,5 @@ class DateUtilsTest {
     val dateRanges: List<DateRange> = emptyList()
 
     Assertions.assertThat(dateUtils.isDateBetweenDateRanges(dateRanges, dateToBeChecked)).isFalse
-  }
-
-  @Test
-  fun `when advanceDaysIfWeekendOrBankHoliday called with fromDate falling on Saturday then new fromDate is set to the next Monday`() {
-    // date ranges are empty
-    val fromDate = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.SATURDAY))
-    val toDate = fromDate.plusWeeks(1)
-
-    val newFromDate = dateUtils.advanceDaysIfWeekendOrBankHoliday(fromDate, toDate, emptyList())
-
-    val expectedFromDate = fromDate.with(TemporalAdjusters.next(DayOfWeek.MONDAY))
-    Assertions.assertThat(newFromDate).isEqualTo(expectedFromDate)
-  }
-
-  @Test
-  fun `when advanceDaysIfWeekendOrBankHoliday called with fromDate falling on Sunday then new fromDate is set to the next Monday`() {
-    val fromDate = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.SUNDAY))
-    val toDate = fromDate.plusWeeks(1)
-
-    val newFromDate = dateUtils.advanceDaysIfWeekendOrBankHoliday(fromDate, toDate, emptyList())
-
-    val expectedFromDate = fromDate.with(TemporalAdjusters.next(DayOfWeek.MONDAY))
-    Assertions.assertThat(newFromDate).isEqualTo(expectedFromDate)
-  }
-
-  @Test
-  fun `when advanceDaysIfWeekendOrBankHoliday called with fromDate falling on weekday then new fromDate is same as fromDate`() {
-    val fromDate = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY))
-    val toDate = fromDate.plusWeeks(1)
-
-    val newFromDate = dateUtils.advanceDaysIfWeekendOrBankHoliday(fromDate, toDate, emptyList())
-
-    Assertions.assertThat(newFromDate).isEqualTo(fromDate)
-  }
-
-  @Test
-  fun `when advanceDaysIfWeekendOrBankHoliday called with list of holidays then the holiday dates are skipped`() {
-    val fromDate = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY))
-    val toDate = fromDate.plusWeeks(1)
-
-    // fromDate and fromDate + 1 are holidays
-    val holidays = listOf(fromDate, fromDate.plusDays(1))
-    val newFromDate = dateUtils.advanceDaysIfWeekendOrBankHoliday(fromDate, toDate, holidays)
-
-    val expectedFromDate = fromDate.plusDays(2)
-    Assertions.assertThat(newFromDate).isEqualTo(expectedFromDate)
-  }
-
-  @Test
-  fun `when advanceDaysIfWeekendOrBankHoliday called then new fromDate does not exceed toDate`() {
-    val fromDate = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.SATURDAY))
-
-    // toDate falls on a Sunday
-    val toDate = fromDate.plusDays(1)
-
-    val holidays = emptyList<LocalDate>()
-    val newFromDate = dateUtils.advanceDaysIfWeekendOrBankHoliday(fromDate, toDate, holidays)
-
-    // ensure that the fromDate does not go over toDate
-    val expectedFromDate = toDate
-    Assertions.assertThat(newFromDate).isEqualTo(expectedFromDate)
   }
 }
