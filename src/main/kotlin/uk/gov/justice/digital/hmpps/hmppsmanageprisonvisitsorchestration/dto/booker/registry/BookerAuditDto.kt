@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry
 
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.BookerAuditType
 import java.time.LocalDateTime
 
 @Schema(description = "Audit entry for booker.")
@@ -9,7 +10,7 @@ data class BookerAuditDto(
   val bookerReference: String,
 
   @param:Schema(name = "auditType", description = "Audit Type", required = true, example = "PRISONER_REGISTERED")
-  val auditType: String,
+  val auditType: BookerAuditType,
 
   @param:Schema(name = "text", description = "Audit summary", required = true)
   val text: String,
