@@ -32,6 +32,9 @@ data class EventAuditDto(
   @field:NullableNotBlank
   var text: String? = null,
 
+  @param:Schema(description = "Visit reference", required = false)
+  val bookingReference: String? = null,
+
   @param:Schema(description = "event creat date and time", example = "2018-12-01T13:45:00", required = true)
   @field:NotBlank
   val createTimestamp: LocalDateTime = LocalDateTime.now(),
