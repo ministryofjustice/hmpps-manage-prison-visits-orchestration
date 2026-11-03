@@ -85,6 +85,28 @@ class VisitFromExternalSystemEventTest {
   }
 
   @Test
+  fun `SOCIAL_VIDEO visit type string in message attributes is mapped for create and update`() {
+    val attributes = mapOf(
+      "prisonerId" to "A1243B",
+      "prisonId" to "MKI",
+      "clientName" to "client-name",
+      "clientVisitReference" to "client-visit-reference",
+      "visitRoom" to "A1",
+      "visitType" to "SOCIAL_VIDEO",
+      "visitRestriction" to "OPEN",
+      "startTimestamp" to LocalDateTime.now().toString(),
+      "endTimestamp" to LocalDateTime.now().plusHours(1).toString(),
+      "visitContact" to mapOf("name" to "John Smith"),
+      "createDateTime" to LocalDateTime.now().toString(),
+      "visitReference" to "ab-cd-ef-gh",
+    )
+    val event = VisitFromExternalSystemEvent(messageId = "message-id", eventType = "VisitCreated", messageAttributes = attributes)
+
+    assertThat(event.toCreateVisitFromExternalSystemDto().visitType).isEqualTo(VisitType.SOCIAL_VIDEO)
+    assertThat(event.toUpdateVisitFromExternalSystemDto().visitType).isEqualTo(VisitType.SOCIAL_VIDEO)
+  }
+
+  @Test
   fun `get a UpdateVisitFromExternalSystemDto from message attributes`() {
     val visitFromExternalSystemEvent = VisitFromExternalSystemEvent(
       messageId = "message-id",
