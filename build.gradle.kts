@@ -3,7 +3,6 @@ plugins {
   kotlin("plugin.spring") version "2.4.21"
   id("org.jetbrains.kotlin.plugin.noarg") version "2.4.21"
   id("org.owasp.dependencycheck") version "13.0.0"
-  kotlin("kapt") version "2.4.21"
 }
 
 configurations {
@@ -27,7 +26,7 @@ dependencies {
   implementation("org.springframework.data:spring-data-commons:4.1.2")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0")
 
-  kapt("org.springframework.boot:spring-boot-configuration-processor")
+  annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:3.0.3")
   testImplementation("io.swagger.parser.v3:swagger-parser:2.1.48")
