@@ -4,6 +4,7 @@ import tools.jackson.module.kotlin.jacksonObjectMapper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CreateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.UpdateVisitFromExternalSystemDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 
 data class VisitFromExternalSystemEvent(
   val messageId: String,
@@ -14,14 +15,24 @@ data class VisitFromExternalSystemEvent(
 ) {
   fun toCreateVisitFromExternalSystemDto(): CreateVisitFromExternalSystemDto {
     val mapper = jacksonObjectMapper()
-    return mapper.convertValue(this.messageAttributes, CreateVisitFromExternalSystemDto::class.java)
+    return mapper.convertValue(this.messageAttributes, CreateVisitFromExternalSystemDto::class.java).also {
+      validateActionedBy(it.userType, it.actionedBy)
+    }
   }
   fun toUpdateVisitFromExternalSystemDto(): UpdateVisitFromExternalSystemDto {
     val mapper = jacksonObjectMapper()
-    return mapper.convertValue(this.messageAttributes, UpdateVisitFromExternalSystemDto::class.java)
+    return mapper.convertValue(this.messageAttributes, UpdateVisitFromExternalSystemDto::class.java).also {
+      validateActionedBy(it.userType, it.actionedBy)
+    }
   }
   fun toCancelVisitFromExternalSystemDto(): CancelVisitFromExternalSystemDto {
     val mapper = jacksonObjectMapper()
     return mapper.convertValue(this.messageAttributes, CancelVisitFromExternalSystemDto::class.java)
+  }
+
+  private fun validateActionedBy(userType: UserType?, actionedBy: String?) {
+    require((userType != UserType.STAFF && userType != UserType.PUBLIC) || !actionedBy.isNullOrBlank()) {
+      "actionedBy must be provided for STAFF or PUBLIC users"
+    }
   }
 }

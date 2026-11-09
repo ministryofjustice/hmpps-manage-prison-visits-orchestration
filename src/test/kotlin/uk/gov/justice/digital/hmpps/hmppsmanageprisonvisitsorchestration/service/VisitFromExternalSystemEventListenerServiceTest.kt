@@ -9,12 +9,16 @@ import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.Mockito
 import org.mockito.exceptions.base.MockitoException
 import org.mockito.kotlin.any
+import org.mockito.kotlin.check
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
@@ -28,6 +32,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSubStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorSupportDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitNoteType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus
@@ -93,6 +99,9 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
         "prisonId" to "MKI",
         "clientName" to "client-name",
         "clientVisitReference" to "client-visit-reference",
+        "actionedBy" to "external-user",
+        "applicationMethodType" to "PHONE",
+        "userType" to "STAFF",
         "visitRoom" to "A1",
         "visitType" to VisitType.SOCIAL,
         "visitRestriction" to VisitRestriction.OPEN,
@@ -114,16 +123,26 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
       ),
     )
 
-    @Test
-    fun `will process a visit create event`() {
+    @ParameterizedTest
+    @ValueSource(strings = ["actionedBy", "username"])
+    fun `will process a visit create event`(actorField: String) {
       whenever(visitSchedulerClient.createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())).thenReturn(visitDto)
 
-      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
+      val event = visitFromExternalSystemEvent.copy(
+        messageAttributes = (visitFromExternalSystemEvent.messageAttributes - "actionedBy") + (actorField to "external-user"),
+      )
+      val message = TestObjectMapper.mapper.writeValueAsString(event)
 
       assertDoesNotThrow {
         visitFromExternalSystemEventListenerService.onEventReceived(message).get()
       }
-      verify(visitSchedulerClient, times(1)).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())
+      verify(visitSchedulerClient, times(1)).createVisitFromExternalSystem(
+        check {
+          assertThat(it.actionedBy).isEqualTo("external-user")
+          assertThat(it.applicationMethodType).isEqualTo(ApplicationMethodType.PHONE)
+          assertThat(it.userType).isEqualTo(UserType.STAFF)
+        },
+      )
     }
 
     @Test
@@ -138,6 +157,25 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
       }
       assertThat(exception.message).contains(exceptionMessage)
       verify(visitSchedulerClient, times(1)).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["STAFF", "PUBLIC"])
+    fun `will not forward create events without an identified staff or public actor`(userType: String) {
+      val attributes = (visitFromExternalSystemEvent.messageAttributes + ("userType" to userType)) - "actionedBy"
+      val actorAttributes = listOf(emptyMap<String, String?>()) + listOf("actionedBy", "username").flatMap { field ->
+        listOf(null, "", " \t").map { value -> mapOf(field to value) }
+      }
+
+      actorAttributes.forEach { actor ->
+        val event = visitFromExternalSystemEvent.copy(messageAttributes = attributes + actor)
+        val exception = assertThrows<Exception> {
+          visitFromExternalSystemEventListenerService.onEventReceived(TestObjectMapper.mapper.writeValueAsString(event)).get()
+        }
+        assertThat(exception).hasRootCauseInstanceOf(IllegalArgumentException::class.java)
+          .hasRootCauseMessage("actionedBy must be provided for STAFF or PUBLIC users")
+        verifyNoInteractions(visitSchedulerClient)
+      }
     }
 
     @Test
@@ -159,6 +197,9 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
       eventType = "VisitUpdated",
       messageAttributes = mapOf(
         "visitReference" to "v9-d7-ed-7u",
+        "actionedBy" to "A1243B",
+        "applicationMethodType" to "BY_PRISONER",
+        "userType" to "PRISONER",
         "visitRoom" to "A1",
         "visitType" to "SOCIAL",
         "visitRestriction" to "OPEN",
@@ -179,16 +220,26 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
       ),
     )
 
-    @Test
-    fun `will process a visit update event`() {
+    @ParameterizedTest
+    @ValueSource(strings = ["actionedBy", "username"])
+    fun `will process a visit update event`(actorField: String) {
       whenever(visitSchedulerClient.updateVisitFromExternalSystem(any<UpdateVisitFromExternalSystemDto>())).thenReturn(visitDto)
 
-      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
+      val event = visitFromExternalSystemEvent.copy(
+        messageAttributes = (visitFromExternalSystemEvent.messageAttributes - "actionedBy") + (actorField to "A1243B"),
+      )
+      val message = TestObjectMapper.mapper.writeValueAsString(event)
 
       assertDoesNotThrow {
         visitFromExternalSystemEventListenerService.onEventReceived(message).get()
       }
-      verify(visitSchedulerClient, times(1)).updateVisitFromExternalSystem(any<UpdateVisitFromExternalSystemDto>())
+      verify(visitSchedulerClient, times(1)).updateVisitFromExternalSystem(
+        check {
+          assertThat(it.actionedBy).isEqualTo("A1243B")
+          assertThat(it.applicationMethodType).isEqualTo(ApplicationMethodType.BY_PRISONER)
+          assertThat(it.userType).isEqualTo(UserType.PRISONER)
+        },
+      )
     }
 
     @Test
@@ -203,6 +254,25 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
       }
       assertThat(exception.message).contains(exceptionMessage)
       verify(visitSchedulerClient, times(1)).updateVisitFromExternalSystem(any<UpdateVisitFromExternalSystemDto>())
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["STAFF", "PUBLIC"])
+    fun `will not forward update events without an identified staff or public actor`(userType: String) {
+      val attributes = (visitFromExternalSystemEvent.messageAttributes + ("userType" to userType)) - "actionedBy"
+      val actorAttributes = listOf(emptyMap<String, String?>()) + listOf("actionedBy", "username").flatMap { field ->
+        listOf(null, "", " \t").map { value -> mapOf(field to value) }
+      }
+
+      actorAttributes.forEach { actor ->
+        val event = visitFromExternalSystemEvent.copy(messageAttributes = attributes + actor)
+        val exception = assertThrows<Exception> {
+          visitFromExternalSystemEventListenerService.onEventReceived(TestObjectMapper.mapper.writeValueAsString(event)).get()
+        }
+        assertThat(exception).hasRootCauseInstanceOf(IllegalArgumentException::class.java)
+          .hasRootCauseMessage("actionedBy must be provided for STAFF or PUBLIC users")
+        verifyNoInteractions(visitSchedulerClient)
+      }
     }
 
     @Test

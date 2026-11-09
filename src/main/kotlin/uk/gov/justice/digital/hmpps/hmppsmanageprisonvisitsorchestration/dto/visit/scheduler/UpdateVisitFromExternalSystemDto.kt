@@ -1,9 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler
 
+import com.fasterxml.jackson.annotation.JsonAlias
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitRestriction
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitType
 import java.time.LocalDateTime
@@ -37,4 +40,11 @@ data class UpdateVisitFromExternalSystemDto(
   @param:Schema(description = "Additional support associated with the visit")
   @field:Valid
   val visitorSupport: VisitorSupportDto? = null,
+  @param:Schema(description = "Username or Identifier for user who actioned this request. Also accepts username. Required and nonblank for STAFF or PUBLIC users.", required = false)
+  @param:JsonAlias("username")
+  val actionedBy: String? = null,
+  @param:Schema(description = "application method", required = false)
+  val applicationMethodType: ApplicationMethodType? = null,
+  @param:Schema(description = "User type for user who actioned this request", required = false)
+  val userType: UserType? = null,
 )
