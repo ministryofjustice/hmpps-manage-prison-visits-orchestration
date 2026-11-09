@@ -1,5 +1,15 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.visit.external.system
 
+import com.github.tomakehurst.wiremock.client.WireMock.absent
+import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
+import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
+import com.github.tomakehurst.wiremock.client.WireMock.okJson
+import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.put
+import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import org.awaitility.Awaitility
 import org.awaitility.Awaitility.await
 import org.awaitility.kotlin.await
@@ -11,6 +21,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -141,6 +153,9 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
         "prisonId" to "MKI",
         "clientName" to "client-name",
         "clientVisitReference" to "client-visit-reference",
+        "actionedBy" to "external-user",
+        "applicationMethodType" to "PHONE",
+        "userType" to "STAFF",
         "visitRoom" to "A1",
         "visitType" to VisitType.SOCIAL,
         "visitRestriction" to VisitRestriction.OPEN,
@@ -164,11 +179,15 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
 
     private val createVisitFromExternalSystemDto = visitFromExternalSystemEvent.toCreateVisitFromExternalSystemDto()
 
-    @Test
-    fun `will process a visit write create event`() {
+    @ParameterizedTest
+    @ValueSource(strings = ["actionedBy", "username"])
+    fun `will process a visit write create event`(actorField: String) {
       visitSchedulerMockServer.stubPostVisitFromExternalSystem(createVisitFromExternalSystemDto, visitDto)
 
-      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
+      val event = visitFromExternalSystemEvent.copy(
+        messageAttributes = (visitFromExternalSystemEvent.messageAttributes - "actionedBy") + (actorField to "external-user"),
+      )
+      val message = TestObjectMapper.mapper.writeValueAsString(event)
       vweQueueSqsClient.sendMessage(
         SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
       )
@@ -177,6 +196,43 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
         verify(visitSchedulerClient, times(1)).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())
       }
       awaitQueueEmpty()
+      visitSchedulerMockServer.verify(
+        postRequestedFor(urlEqualTo("/visits/external-system"))
+          .withRequestBody(matchingJsonPath("$.actionedBy", equalTo("external-user")))
+          .withRequestBody(matchingJsonPath("$.username", absent()))
+          .withRequestBody(matchingJsonPath("$.applicationMethodType", equalTo("PHONE")))
+          .withRequestBody(matchingJsonPath("$.userType", equalTo("STAFF"))),
+      )
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun `will process a legacy create event with omitted or null metadata`(explicitNull: Boolean) {
+      val metadataFields = setOf("actionedBy", "applicationMethodType", "userType")
+      val attributes = visitFromExternalSystemEvent.messageAttributes - metadataFields
+      val legacyEvent = visitFromExternalSystemEvent.copy(
+        messageAttributes = if (explicitNull) attributes + metadataFields.associateWith { null } else attributes,
+      )
+      val expectedDto = createVisitFromExternalSystemDto.copy(actionedBy = null, applicationMethodType = null, userType = null)
+      val expectedJson = objectMapper.writeValueAsString(expectedDto)
+      visitSchedulerMockServer.stubFor(
+        post(urlEqualTo("/visits/external-system"))
+          .withRequestBody(equalToJson(expectedJson))
+          .willReturn(okJson(objectMapper.writeValueAsString(visitDto))),
+      )
+
+      vweQueueSqsClient.sendMessage(
+        SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(TestObjectMapper.mapper.writeValueAsString(legacyEvent)).build(),
+      )
+
+      await untilAsserted {
+        verify(visitSchedulerClient, times(1)).createVisitFromExternalSystem(any<CreateVisitFromExternalSystemDto>())
+      }
+      awaitQueueEmpty()
+      visitSchedulerMockServer.verify(
+        postRequestedFor(urlEqualTo("/visits/external-system"))
+          .withRequestBody(equalToJson(expectedJson)),
+      )
     }
 
     @Test
@@ -223,6 +279,9 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
       eventType = "VisitUpdated",
       messageAttributes = mapOf(
         "visitReference" to "v9-d7-ed-7u",
+        "actionedBy" to "A1243B",
+        "applicationMethodType" to "BY_PRISONER",
+        "userType" to "PRISONER",
         "visitRoom" to "A1",
         "visitType" to VisitType.SOCIAL,
         "visitRestriction" to VisitRestriction.OPEN,
@@ -245,11 +304,15 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
 
     private val updateVisitFromExternalSystemDto = visitFromExternalSystemEvent.toUpdateVisitFromExternalSystemDto()
 
-    @Test
-    fun `will process a visit write update event`() {
+    @ParameterizedTest
+    @ValueSource(strings = ["actionedBy", "username"])
+    fun `will process a visit write update event`(actorField: String) {
       visitSchedulerMockServer.stubPutVisitFromExternalSystem(updateVisitFromExternalSystemDto, visitDto)
 
-      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
+      val event = visitFromExternalSystemEvent.copy(
+        messageAttributes = (visitFromExternalSystemEvent.messageAttributes - "actionedBy") + (actorField to "A1243B"),
+      )
+      val message = TestObjectMapper.mapper.writeValueAsString(event)
       vweQueueSqsClient.sendMessage(
         SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
       )
@@ -258,6 +321,43 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
         verify(visitSchedulerClient, times(1)).updateVisitFromExternalSystem(any<UpdateVisitFromExternalSystemDto>())
       }
       awaitQueueEmpty()
+      visitSchedulerMockServer.verify(
+        putRequestedFor(urlEqualTo("/visits/external-system/v9-d7-ed-7u"))
+          .withRequestBody(matchingJsonPath("$.actionedBy", equalTo("A1243B")))
+          .withRequestBody(matchingJsonPath("$.username", absent()))
+          .withRequestBody(matchingJsonPath("$.applicationMethodType", equalTo("BY_PRISONER")))
+          .withRequestBody(matchingJsonPath("$.userType", equalTo("PRISONER"))),
+      )
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun `will process a legacy update event with omitted or null metadata`(explicitNull: Boolean) {
+      val metadataFields = setOf("actionedBy", "applicationMethodType", "userType")
+      val attributes = visitFromExternalSystemEvent.messageAttributes - metadataFields
+      val legacyEvent = visitFromExternalSystemEvent.copy(
+        messageAttributes = if (explicitNull) attributes + metadataFields.associateWith { null } else attributes,
+      )
+      val expectedDto = updateVisitFromExternalSystemDto.copy(actionedBy = null, applicationMethodType = null, userType = null)
+      val expectedJson = objectMapper.writeValueAsString(expectedDto)
+      visitSchedulerMockServer.stubFor(
+        put(urlEqualTo("/visits/external-system/v9-d7-ed-7u"))
+          .withRequestBody(equalToJson(expectedJson))
+          .willReturn(okJson(objectMapper.writeValueAsString(visitDto))),
+      )
+
+      vweQueueSqsClient.sendMessage(
+        SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(TestObjectMapper.mapper.writeValueAsString(legacyEvent)).build(),
+      )
+
+      await untilAsserted {
+        verify(visitSchedulerClient, times(1)).updateVisitFromExternalSystem(any<UpdateVisitFromExternalSystemDto>())
+      }
+      awaitQueueEmpty()
+      visitSchedulerMockServer.verify(
+        putRequestedFor(urlEqualTo("/visits/external-system/v9-d7-ed-7u"))
+          .withRequestBody(equalToJson(expectedJson)),
+      )
     }
 
     @Test
