@@ -22,12 +22,15 @@ data class VisitFromExternalSystemEvent(
   fun toUpdateVisitFromExternalSystemDto(): UpdateVisitFromExternalSystemDto {
     val mapper = jacksonObjectMapper()
     return mapper.convertValue(this.messageAttributes, UpdateVisitFromExternalSystemDto::class.java).also {
+      require(it.clientName.isNotBlank()) { "clientName must be provided for external visit updates" }
       validateActionedBy(it.userType, it.actionedBy)
     }
   }
   fun toCancelVisitFromExternalSystemDto(): CancelVisitFromExternalSystemDto {
     val mapper = jacksonObjectMapper()
-    return mapper.convertValue(this.messageAttributes, CancelVisitFromExternalSystemDto::class.java)
+    return mapper.convertValue(this.messageAttributes, CancelVisitFromExternalSystemDto::class.java).also {
+      require(it.clientName.isNotBlank()) { "clientName must be provided for external visit cancellations" }
+    }
   }
 
   private fun validateActionedBy(userType: UserType?, actionedBy: String?) {

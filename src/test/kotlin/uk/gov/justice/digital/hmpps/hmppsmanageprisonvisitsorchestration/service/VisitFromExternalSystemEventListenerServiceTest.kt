@@ -19,11 +19,12 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
+import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitContactDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CreateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.UpdateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
@@ -197,6 +198,7 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
       eventType = "VisitUpdated",
       messageAttributes = mapOf(
         "visitReference" to "v9-d7-ed-7u",
+        "clientName" to "client-name",
         "actionedBy" to "A1243B",
         "applicationMethodType" to "BY_PRISONER",
         "userType" to "PRISONER",
@@ -235,11 +237,24 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
       }
       verify(visitSchedulerClient, times(1)).updateVisitFromExternalSystem(
         check {
+          assertThat(it.clientName).isEqualTo("client-name")
           assertThat(it.actionedBy).isEqualTo("A1243B")
           assertThat(it.applicationMethodType).isEqualTo(ApplicationMethodType.BY_PRISONER)
           assertThat(it.userType).isEqualTo(UserType.PRISONER)
         },
       )
+    }
+
+    @Test
+    fun `will not forward update events without a nonblank client name`() {
+      val clientAttributes = listOf(emptyMap<String, String?>()) + listOf(null, "", " \t").map { mapOf("clientName" to it) }
+      clientAttributes.forEach { client ->
+        val event = visitFromExternalSystemEvent.copy(messageAttributes = (visitFromExternalSystemEvent.messageAttributes - "clientName") + client)
+        assertThrows<Exception> {
+          visitFromExternalSystemEventListenerService.onEventReceived(TestObjectMapper.mapper.writeValueAsString(event)).get()
+        }
+        verifyNoInteractions(visitSchedulerClient)
+      }
     }
 
     @Test
@@ -294,6 +309,7 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
       eventType = "VisitCancelled",
       messageAttributes = mapOf(
         "visitReference" to "v9-d7-ed-7u",
+        "clientName" to "client-name",
         "cancelOutcome" to mapOf("outcomeStatus" to "CANCELLATION", "text" to "Whatever"),
         "userType" to "PRISONER",
         "actionedBy" to "AF34567G",
@@ -308,22 +324,46 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
       ),
     )
 
-    @Test
-    fun `will process a visit cancel event`() {
-      whenever(visitSchedulerClient.cancelVisit(any(), any<CancelVisitDto>())).thenReturn(visitDto)
+    @ParameterizedTest
+    @ValueSource(strings = ["PRISONER", "STAFF", "PUBLIC", "SYSTEM"])
+    fun `will process a visit cancel event using only the external cancellation route`(userType: String) {
+      whenever(visitSchedulerClient.cancelVisitFromExternalSystem(any<CancelVisitFromExternalSystemDto>())).thenReturn(visitDto)
 
-      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
+      val event = visitFromExternalSystemEvent.copy(messageAttributes = visitFromExternalSystemEvent.messageAttributes + ("userType" to userType))
+      val message = TestObjectMapper.mapper.writeValueAsString(event)
 
       assertDoesNotThrow {
         visitFromExternalSystemEventListenerService.onEventReceived(message).get()
       }
-      verify(visitSchedulerClient, times(1)).cancelVisit(any(), any<CancelVisitDto>())
+      verify(visitSchedulerClient, times(1)).cancelVisitFromExternalSystem(
+        check {
+          assertThat(it.visitReference).isEqualTo("v9-d7-ed-7u")
+          assertThat(it.clientName).isEqualTo("client-name")
+          assertThat(it.actionedBy).isEqualTo("AF34567G")
+          assertThat(it.userType).isEqualTo(UserType.valueOf(userType))
+          assertThat(it.cancelOutcome.text).isEqualTo("Whatever")
+          assertThat(it.applicationMethodType).isEqualTo(if (userType == "PRISONER") ApplicationMethodType.BY_PRISONER else ApplicationMethodType.NOT_KNOWN)
+        },
+      )
+      verifyNoMoreInteractions(visitSchedulerClient)
+    }
+
+    @Test
+    fun `will not forward cancel events without a nonblank client name`() {
+      val clientAttributes = listOf(emptyMap<String, String?>()) + listOf(null, "", " \t").map { mapOf("clientName" to it) }
+      clientAttributes.forEach { client ->
+        val event = visitFromExternalSystemEvent.copy(messageAttributes = (visitFromExternalSystemEvent.messageAttributes - "clientName") + client)
+        assertThrows<Exception> {
+          visitFromExternalSystemEventListenerService.onEventReceived(TestObjectMapper.mapper.writeValueAsString(event)).get()
+        }
+        verifyNoInteractions(visitSchedulerClient)
+      }
     }
 
     @Test
     fun `will throw an exception if visit scheduler client returns an error on cancel event received`() {
       val exceptionMessage = "Failed to cancel visit from external system"
-      whenever(visitSchedulerClient.cancelVisit(any(), any<CancelVisitDto>())).thenThrow(MockitoException(exceptionMessage))
+      whenever(visitSchedulerClient.cancelVisitFromExternalSystem(any<CancelVisitFromExternalSystemDto>())).thenThrow(MockitoException(exceptionMessage))
 
       val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
 
@@ -331,7 +371,8 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
         visitFromExternalSystemEventListenerService.onEventReceived(message).get()
       }
       assertThat(exception.message).contains(exceptionMessage)
-      verify(visitSchedulerClient, times(1)).cancelVisit(any(), any<CancelVisitDto>())
+      verify(visitSchedulerClient, times(1)).cancelVisitFromExternalSystem(any<CancelVisitFromExternalSystemDto>())
+      verifyNoMoreInteractions(visitSchedulerClient)
     }
 
     @Test
@@ -341,7 +382,7 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
       assertThrows<Exception> {
         visitFromExternalSystemEventListenerService.onEventReceived(message).get()
       }
-      verify(visitSchedulerClient, times(0)).cancelVisit(any(), any<CancelVisitDto>())
+      verifyNoInteractions(visitSchedulerClient)
     }
   }
 

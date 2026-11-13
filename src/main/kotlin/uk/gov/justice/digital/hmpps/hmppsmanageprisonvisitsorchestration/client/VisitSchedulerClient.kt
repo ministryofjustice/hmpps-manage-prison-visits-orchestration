@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.AvailableVisitSessionDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.BookingRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CreateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.DateRange
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
@@ -265,6 +266,13 @@ class VisitSchedulerClient(
   fun cancelVisit(reference: String, cancelVisitDto: CancelVisitDto): VisitDto? = webClient.put()
     .uri("/visits/$reference/cancel")
     .body(BodyInserters.fromValue(cancelVisitDto))
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono<VisitDto>().block(apiTimeout)
+
+  fun cancelVisitFromExternalSystem(requestDto: CancelVisitFromExternalSystemDto): VisitDto? = webClient.put()
+    .uri("/visits/external-system/${requestDto.visitReference}/cancel")
+    .body(BodyInserters.fromValue(requestDto))
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono<VisitDto>().block(apiTimeout)
