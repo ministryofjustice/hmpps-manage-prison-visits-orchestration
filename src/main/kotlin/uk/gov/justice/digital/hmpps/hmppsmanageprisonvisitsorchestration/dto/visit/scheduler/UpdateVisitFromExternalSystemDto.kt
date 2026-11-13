@@ -13,9 +13,8 @@ import java.time.LocalDateTime
 
 data class UpdateVisitFromExternalSystemDto(
   val visitReference: String,
-  @param:Schema(description = "External system that owns the visit", required = true)
-  @field:NotBlank
-  val clientName: String,
+  @param:Schema(description = "External system that owns the visit. Missing, null or blank skips ownership validation; nonblank values must match exactly.", required = false)
+  val clientName: String? = null,
   @param:Schema(description = "Visit Room", example = "A1", required = true)
   @field:NotBlank
   val visitRoom: String,

@@ -23,6 +23,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.NullAndEmptySource
 import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.times
@@ -335,13 +336,13 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
 
     @ParameterizedTest
     @ValueSource(booleans = [false, true])
-    fun `will process a legacy update event with omitted or null metadata`(explicitNull: Boolean) {
-      val metadataFields = setOf("actionedBy", "applicationMethodType", "userType")
+    fun `will process a legacy update event with omitted or null client name and metadata`(explicitNull: Boolean) {
+      val metadataFields = setOf("clientName", "actionedBy", "applicationMethodType", "userType")
       val attributes = visitFromExternalSystemEvent.messageAttributes - metadataFields
       val legacyEvent = visitFromExternalSystemEvent.copy(
         messageAttributes = if (explicitNull) attributes + metadataFields.associateWith { null } else attributes,
       )
-      val expectedDto = updateVisitFromExternalSystemDto.copy(actionedBy = null, applicationMethodType = null, userType = null)
+      val expectedDto = updateVisitFromExternalSystemDto.copy(clientName = null, actionedBy = null, applicationMethodType = null, userType = null)
       val expectedJson = objectMapper.writeValueAsString(expectedDto)
       visitSchedulerMockServer.stubFor(
         put(urlEqualTo("/visits/external-system/v9-d7-ed-7u"))
@@ -361,6 +362,27 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
         putRequestedFor(urlEqualTo("/visits/external-system/v9-d7-ed-7u"))
           .withRequestBody(equalToJson(expectedJson)),
       )
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = [" \t", " client-name "])
+    fun `will forward optional update client name unchanged`(clientName: String?) {
+      val event = visitFromExternalSystemEvent.copy(messageAttributes = visitFromExternalSystemEvent.messageAttributes + ("clientName" to clientName))
+      val expectedDto = updateVisitFromExternalSystemDto.copy(clientName = clientName)
+      visitSchedulerMockServer.stubPutVisitFromExternalSystem(expectedDto, visitDto)
+
+      vweQueueSqsClient.sendMessage(
+        SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(TestObjectMapper.mapper.writeValueAsString(event)).build(),
+      )
+
+      await untilAsserted {
+        visitSchedulerMockServer.verify(
+          putRequestedFor(urlEqualTo("/visits/external-system/v9-d7-ed-7u"))
+            .withRequestBody(equalToJson(objectMapper.writeValueAsString(expectedDto))),
+        )
+      }
+      awaitQueueEmpty()
     }
 
     @ParameterizedTest
@@ -415,6 +437,42 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
         "invalidField" to "OPEN",
       ),
     )
+
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun `will process a cancel event with omitted or null client name`(explicitNull: Boolean) {
+      val attributes = visitFromExternalSystemEvent.messageAttributes - "clientName"
+      val event = visitFromExternalSystemEvent.copy(messageAttributes = if (explicitNull) attributes + ("clientName" to null) else attributes)
+      assertCancelEventForwarded(event, visitFromExternalSystemEvent.toCancelVisitFromExternalSystemDto().copy(clientName = null))
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = [" \t", " client-name "])
+    fun `will forward optional cancel client name unchanged`(clientName: String?) {
+      val event = visitFromExternalSystemEvent.copy(messageAttributes = visitFromExternalSystemEvent.messageAttributes + ("clientName" to clientName))
+      assertCancelEventForwarded(event, visitFromExternalSystemEvent.toCancelVisitFromExternalSystemDto().copy(clientName = clientName))
+    }
+
+    private fun assertCancelEventForwarded(event: VisitFromExternalSystemEvent, expectedDto: CancelVisitFromExternalSystemDto) {
+      val path = "/visits/external-system/${expectedDto.visitReference}/cancel"
+      val expectedBody = objectMapper.writeValueAsString(expectedDto)
+      visitSchedulerMockServer.stubFor(
+        put(urlEqualTo(path))
+          .withRequestBody(equalToJson(expectedBody))
+          .willReturn(okJson(objectMapper.writeValueAsString(visitDto))),
+      )
+
+      vweQueueSqsClient.sendMessage(
+        SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(TestObjectMapper.mapper.writeValueAsString(event)).build(),
+      )
+
+      await untilAsserted {
+        visitSchedulerMockServer.verify(putRequestedFor(urlEqualTo(path)).withRequestBody(equalToJson(expectedBody)))
+      }
+      awaitQueueEmpty()
+      visitSchedulerMockServer.verify(0, putRequestedFor(urlEqualTo("/visits/${expectedDto.visitReference}/cancel")))
+    }
 
     @ParameterizedTest
     @ValueSource(strings = ["PRISONER", "STAFF"])
