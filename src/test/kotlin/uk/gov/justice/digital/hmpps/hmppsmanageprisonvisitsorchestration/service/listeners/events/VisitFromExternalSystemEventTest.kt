@@ -129,6 +129,7 @@ class VisitFromExternalSystemEventTest {
       eventType = "VisitUpdated",
       messageAttributes = mapOf(
         "visitReference" to "v9-d7-ed-7u",
+        "clientName" to "client-name",
         "actionedBy" to "A1243B",
         "applicationMethodType" to "BY_PRISONER",
         "userType" to "PRISONER",
@@ -149,6 +150,7 @@ class VisitFromExternalSystemEventTest {
     assertInstanceOf<UpdateVisitFromExternalSystemDto>(updateVisitFromExternalSystemDto)
     updateVisitFromExternalSystemDto.let {
       assertThat(it.visitReference).isEqualTo(visitFromExternalSystemEvent.messageAttributes["visitReference"])
+      assertThat(it.clientName).isEqualTo("client-name")
       assertThat(it.actionedBy).isEqualTo("A1243B")
       assertThat(it.applicationMethodType).isEqualTo(ApplicationMethodType.BY_PRISONER)
       assertThat(it.userType).isEqualTo(UserType.PRISONER)
@@ -198,6 +200,7 @@ class VisitFromExternalSystemEventTest {
       eventType = "VisitCancelled",
       messageAttributes = mapOf(
         "visitReference" to "v9-d7-ed-7u",
+        "clientName" to "client-name",
         "cancelOutcome" to mapOf("outcomeStatus" to "CANCELLATION", "text" to "Whatever"),
         "userType" to "PRISONER",
         "actionedBy" to "A1243B",
@@ -209,6 +212,8 @@ class VisitFromExternalSystemEventTest {
     assertInstanceOf<CancelVisitFromExternalSystemDto>(cancelVisitFromExternalSystemDto)
     cancelVisitFromExternalSystemDto.let {
       assertThat(it.visitReference).isEqualTo(visitFromExternalSystemEvent.messageAttributes["visitReference"])
+      assertThat(it.clientName).isEqualTo("client-name")
+      assertThat(it.applicationMethodType).isEqualTo(ApplicationMethodType.BY_PRISONER)
       assertThat(it.userType.toString()).isEqualTo(visitFromExternalSystemEvent.messageAttributes["userType"])
       assertThat(it.actionedBy).isEqualTo(visitFromExternalSystemEvent.messageAttributes["actionedBy"])
 

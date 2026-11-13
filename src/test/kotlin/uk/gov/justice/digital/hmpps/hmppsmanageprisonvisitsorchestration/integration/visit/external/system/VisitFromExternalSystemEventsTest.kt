@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.visit.external.system
 
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.absent
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
@@ -32,7 +33,7 @@ import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.PurgeQueueRequest
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.orchestration.VisitContactDto
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CancelVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.CreateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.UpdateVisitFromExternalSystemDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
@@ -279,6 +280,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
       eventType = "VisitUpdated",
       messageAttributes = mapOf(
         "visitReference" to "v9-d7-ed-7u",
+        "clientName" to "client-name",
         "actionedBy" to "A1243B",
         "applicationMethodType" to "BY_PRISONER",
         "userType" to "PRISONER",
@@ -323,6 +325,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
       awaitQueueEmpty()
       visitSchedulerMockServer.verify(
         putRequestedFor(urlEqualTo("/visits/external-system/v9-d7-ed-7u"))
+          .withRequestBody(matchingJsonPath("$.clientName", equalTo("client-name")))
           .withRequestBody(matchingJsonPath("$.actionedBy", equalTo("A1243B")))
           .withRequestBody(matchingJsonPath("$.username", absent()))
           .withRequestBody(matchingJsonPath("$.applicationMethodType", equalTo("BY_PRISONER")))
@@ -360,9 +363,10 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
       )
     }
 
-    @Test
-    fun `if visit scheduler returns error, expect event to be added to the dlq`() {
-      visitSchedulerMockServer.stubPutVisitFromExternalSystem(updateVisitFromExternalSystemDto, visitDto, status = HttpStatus.BAD_REQUEST)
+    @ParameterizedTest
+    @ValueSource(ints = [400, 403, 404])
+    fun `if visit scheduler rejects update, expect event to be added to the dlq`(status: Int) {
+      visitSchedulerMockServer.stubPutVisitFromExternalSystem(updateVisitFromExternalSystemDto, visitDto, status = HttpStatus.valueOf(status))
 
       val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
       vweQueueSqsClient.sendMessage(
@@ -397,6 +401,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
       eventType = "VisitCancelled",
       messageAttributes = mapOf(
         "visitReference" to "v9-d7-ed-7u",
+        "clientName" to "client-name",
         "cancelOutcome" to mapOf("outcomeStatus" to "CANCELLATION", "text" to "Whatever"),
         "userType" to "PRISONER",
         "actionedBy" to "AF34567G",
@@ -411,24 +416,50 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
       ),
     )
 
-    @Test
-    fun `will process a visit cancel event`() {
+    @ParameterizedTest
+    @ValueSource(strings = ["PRISONER", "STAFF"])
+    fun `will process a visit cancel event`(userType: String) {
       val visitRef = visitFromExternalSystemEvent.messageAttributes["visitReference"].toString()
-      visitSchedulerMockServer.stubCancelVisit(visitRef, visitDto)
+      val applicationMethodType = if (userType == "PRISONER") "BY_PRISONER" else "NOT_KNOWN"
+      val expectedBody = """
+        {
+          "visitReference": "$visitRef",
+          "clientName": "client-name",
+          "cancelOutcome": {"outcomeStatus": "CANCELLATION", "text": "Whatever"},
+          "actionedBy": "AF34567G",
+          "userType": "$userType",
+          "applicationMethodType": "$applicationMethodType"
+        }
+      """.trimIndent()
+      visitSchedulerMockServer.stubFor(
+        put(urlEqualTo("/visits/external-system/$visitRef/cancel"))
+          .withRequestBody(equalToJson(expectedBody))
+          .willReturn(okJson(objectMapper.writeValueAsString(visitDto))),
+      )
 
-      val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
+      val event = visitFromExternalSystemEvent.copy(messageAttributes = visitFromExternalSystemEvent.messageAttributes + ("userType" to userType))
+      val message = TestObjectMapper.mapper.writeValueAsString(event)
       vweQueueSqsClient.sendMessage(
         SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
       )
 
-      await untilAsserted { verify(visitSchedulerClient, times(1)).cancelVisit(any(), any<CancelVisitDto>()) }
+      await untilAsserted { verify(visitSchedulerClient, times(1)).cancelVisitFromExternalSystem(any<CancelVisitFromExternalSystemDto>()) }
       awaitQueueEmpty()
+      visitSchedulerMockServer.verify(
+        putRequestedFor(urlEqualTo("/visits/external-system/$visitRef/cancel"))
+          .withRequestBody(equalToJson(expectedBody)),
+      )
+      visitSchedulerMockServer.verify(0, putRequestedFor(urlEqualTo("/visits/$visitRef/cancel")))
     }
 
-    @Test
-    fun `if visit scheduler returns error, expect event to be added to the dlq`() {
+    @ParameterizedTest
+    @ValueSource(ints = [400, 403, 404])
+    fun `if visit scheduler rejects cancellation, expect event to be added to the dlq without internal fallback`(status: Int) {
       val visitRef = visitFromExternalSystemEvent.messageAttributes["visitReference"].toString()
-      visitSchedulerMockServer.stubCancelVisit(visitRef, null)
+      visitSchedulerMockServer.stubFor(
+        put(urlEqualTo("/visits/external-system/$visitRef/cancel"))
+          .willReturn(aResponse().withStatus(status)),
+      )
 
       val message = TestObjectMapper.mapper.writeValueAsString(visitFromExternalSystemEvent)
       vweQueueSqsClient.sendMessage(
@@ -436,6 +467,8 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
       )
 
       awaitDlqHasOneMessage()
+      visitSchedulerMockServer.verify(putRequestedFor(urlEqualTo("/visits/external-system/$visitRef/cancel")))
+      visitSchedulerMockServer.verify(0, putRequestedFor(urlEqualTo("/visits/$visitRef/cancel")))
     }
 
     @Test
@@ -447,7 +480,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
 
       awaitDlqHasOneMessage()
       await untilAsserted {
-        verify(visitSchedulerClient, times(0)).cancelVisit(any(), any<CancelVisitDto>())
+        verify(visitSchedulerClient, times(0)).cancelVisitFromExternalSystem(any<CancelVisitFromExternalSystemDto>())
       }
     }
   }
