@@ -14,6 +14,7 @@ import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.Mockito
 import org.mockito.exceptions.base.MockitoException
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.check
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
@@ -246,15 +247,18 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
     }
 
     @Test
-    fun `will not forward update events without a nonblank client name`() {
-      val clientAttributes = listOf(emptyMap<String, String?>()) + listOf(null, "", " \t").map { mapOf("clientName" to it) }
+    fun `will forward update events with optional client name unchanged`() {
+      val clientAttributes = listOf(emptyMap<String, String?>()) + listOf(null, "", " \t", "client-name", " client-name ").map { mapOf("clientName" to it) }
       clientAttributes.forEach { client ->
         val event = visitFromExternalSystemEvent.copy(messageAttributes = (visitFromExternalSystemEvent.messageAttributes - "clientName") + client)
-        assertThrows<Exception> {
+        assertDoesNotThrow {
           visitFromExternalSystemEventListenerService.onEventReceived(TestObjectMapper.mapper.writeValueAsString(event)).get()
         }
-        verifyNoInteractions(visitSchedulerClient)
       }
+      val captor = argumentCaptor<UpdateVisitFromExternalSystemDto>()
+      verify(visitSchedulerClient, times(clientAttributes.size)).updateVisitFromExternalSystem(captor.capture())
+      assertThat(captor.allValues.map { it.clientName }).containsExactlyElementsOf(clientAttributes.map { it["clientName"] })
+      verifyNoMoreInteractions(visitSchedulerClient)
     }
 
     @Test
@@ -349,15 +353,18 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
     }
 
     @Test
-    fun `will not forward cancel events without a nonblank client name`() {
-      val clientAttributes = listOf(emptyMap<String, String?>()) + listOf(null, "", " \t").map { mapOf("clientName" to it) }
+    fun `will forward cancel events with optional client name unchanged`() {
+      val clientAttributes = listOf(emptyMap<String, String?>()) + listOf(null, "", " \t", "client-name", " client-name ").map { mapOf("clientName" to it) }
       clientAttributes.forEach { client ->
         val event = visitFromExternalSystemEvent.copy(messageAttributes = (visitFromExternalSystemEvent.messageAttributes - "clientName") + client)
-        assertThrows<Exception> {
+        assertDoesNotThrow {
           visitFromExternalSystemEventListenerService.onEventReceived(TestObjectMapper.mapper.writeValueAsString(event)).get()
         }
-        verifyNoInteractions(visitSchedulerClient)
       }
+      val captor = argumentCaptor<CancelVisitFromExternalSystemDto>()
+      verify(visitSchedulerClient, times(clientAttributes.size)).cancelVisitFromExternalSystem(captor.capture())
+      assertThat(captor.allValues.map { it.clientName }).containsExactlyElementsOf(clientAttributes.map { it["clientName"] })
+      verifyNoMoreInteractions(visitSchedulerClient)
     }
 
     @Test
