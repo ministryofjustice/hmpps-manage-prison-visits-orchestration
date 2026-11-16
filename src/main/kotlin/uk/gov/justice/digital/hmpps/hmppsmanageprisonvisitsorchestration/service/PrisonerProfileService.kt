@@ -45,10 +45,15 @@ class PrisonerProfileService(
     return prisonerProfile
   }
 
-  fun hasVisitorsGotClosedRestrictions(prisonerId: String, visitors: List<Long>): Boolean = prisonerContactRegistryClient.doVisitorsHaveClosedRestrictions(prisonerId, visitors)
+  fun hasVisitorsGotClosedRestrictions(prisonerId: String, visitors: List<Long>): Boolean {
+    val x = prisonerContactRegistryClient.doVisitorsHaveClosedRestrictions(prisonerId, visitors)
+    println("x = $x")
+    return x
+  }
 
   fun hasPrisonerGotClosedRestrictions(prisonerId: String): Boolean {
     val offenderRestrictionsDto = prisonApiClient.getPrisonerRestrictions(prisonerId)
+    println(offenderRestrictionsDto)
     return offenderRestrictionsDto.let {
       it.offenderRestrictions?.any { restriction -> CLOSED.name.equals(restriction.restrictionType, true) } ?: false
     }

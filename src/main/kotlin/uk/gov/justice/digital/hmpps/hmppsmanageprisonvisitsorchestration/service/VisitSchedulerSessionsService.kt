@@ -137,6 +137,7 @@ class VisitSchedulerSessionsService(
     }
 
     val sessionRestriction = getSessionRestriction(prisonerId = prisonerId, visitors = visitors)
+    println("dvs session restriction: $sessionRestriction")
 
     val availableVisitSessions = getAvailablePublicVisitSessionsForDateRange(
       prisonCode = prisonCode,
@@ -166,7 +167,7 @@ class VisitSchedulerSessionsService(
     username: String? = null,
     youngestVisitorAge: Int? = null,
   ): List<AvailableVisitSessionDto> {
-    LOG.debug("Getting available PUBLIC visit sessions for prisonerId - {}, dateRange - {}, sessionRestriction - {}, excludedApplicationReference - {}, username - {}", prisonerId, dateRange, sessionRestriction, excludedApplicationReference, username)
+    LOG.info("Getting available PUBLIC visit sessions for prisonerId - {}, dateRange - {}, sessionRestriction - {}, excludedApplicationReference - {}, username - {}", prisonerId, dateRange, sessionRestriction, excludedApplicationReference, username)
     val sessions = try {
       val updatedDateRange =
         visitors?.let { prisonerProfileService.getBannedRestrictionDateRage(prisonerId, visitors, dateRange) }
@@ -180,6 +181,7 @@ class VisitSchedulerSessionsService(
         username = username,
         clientType = PrisonClientType.PUBLIC,
         youngestVisitorAge = youngestVisitorAge,
+        visitorIds = visitors,
       )
     } catch (_: DateRangeNotFoundException) {
       LOG.error("getAvailablePublicVisitSessionsForDateRange range is not returned therefore we do not have a valid date range and should return an empty list")

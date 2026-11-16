@@ -568,6 +568,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     username: String? = null,
     clientType: PrisonClientType,
     youngestVisitorAge: Int? = null,
+    visitorIds: List<Long>? = null,
     useWorkingDays: Boolean = clientType == PrisonClientType.PUBLIC,
   ): DateRange {
     val dateRangeToUse = dateRange ?: run {
@@ -613,6 +614,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
             username = username,
             clientType = clientType,
             youngestVisitorAge = youngestVisitorAge,
+            visitors = visitorIds,
           ).joinToString("&")
         }",
       ).willReturn(
@@ -622,6 +624,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
       ),
     )
 
+    println("dateRangeToUse: $dateRangeToUse")
     return dateRangeToUse
   }
 
@@ -971,6 +974,7 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     username: String?,
     clientType: PrisonClientType,
     youngestVisitorAge: Int? = null,
+    visitors: List<Long>? = null,
   ): List<String> {
     val queryParams = ArrayList<String>()
     queryParams.add("prisonId=$prisonCode")
@@ -988,6 +992,10 @@ class VisitSchedulerMockServer : WireMockServer(8092) {
     youngestVisitorAge?.let {
       queryParams.add("youngestVisitorAge=$youngestVisitorAge")
     }
+    visitors?.let {
+      queryParams.add("visitorIds=${it.joinToString(",")}")
+    }
+    println("queryParams: $queryParams")
     return queryParams
   }
 

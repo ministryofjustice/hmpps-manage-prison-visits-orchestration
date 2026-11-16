@@ -65,7 +65,7 @@ class AvailableVisitSessionsForReviewFailuresTest : IntegrationTestBase() {
     // Given
     // fails to get prisoner restrictions so all sessions should be marked for review
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, null, HttpStatus.NOT_FOUND)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, visitSessions = mutableListOf(visitSession1, visitSession2, visitSession3), clientType = PUBLIC, useWorkingDays = true)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, visitSessions = mutableListOf(visitSession1, visitSession2, visitSession3), clientType = PUBLIC, useWorkingDays = true, visitorIds = visitorIds)
 
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
@@ -91,7 +91,7 @@ class AvailableVisitSessionsForReviewFailuresTest : IntegrationTestBase() {
 
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
-    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
+    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC, visitorIds = visitorIds)
     verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 
@@ -101,7 +101,7 @@ class AvailableVisitSessionsForReviewFailuresTest : IntegrationTestBase() {
 
     // fails to get prisoner restrictions so all sessions should be marked for review
     prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, null, HttpStatus.INTERNAL_SERVER_ERROR)
-    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), clientType = PUBLIC, useWorkingDays = true)
+    val dateRange = visitSchedulerMockServer.stubGetAvailableVisitSessions(visitSchedulerPrisonDto, prisonerId, OPEN, mutableListOf(visitSession1, visitSession2, visitSession3), clientType = PUBLIC, useWorkingDays = true, visitorIds = visitorIds)
 
     prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds = visitorIds, dateRange = dateRange, result = dateRange)
     prisonerContactRegistryMockServer.stubGetVisitorRestrictionsDateRanges(prisonerId, visitorIds, visitorRestrictionsForReview, dateRange, emptyList())
@@ -124,7 +124,7 @@ class AvailableVisitSessionsForReviewFailuresTest : IntegrationTestBase() {
 
     verify(alertsApiClientSpy, times(1)).getPrisonerAlerts(prisonerId)
     verify(visitSchedulerClientSpy, times(1)).getPrison(prisonCode)
-    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
+    verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC, visitorIds = visitorIds)
     verify(prisonApiClientSpy, times(1)).getEvents(prisonerId, dateRange.fromDate, dateRange.toDate)
   }
 

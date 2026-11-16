@@ -278,7 +278,7 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
 
     // Only stub if the date is inside our booking window, otherwise the method exits early with no sessions.
     if (firstDay <= dateRange.toDate) {
-      visitSchedulerMockServer.stubGetAvailableVisitSessions(prison, prisonerId, OPEN, sessions.reversed(), clientType = PUBLIC, dateRange = dateRange)
+      visitSchedulerMockServer.stubGetAvailableVisitSessions(prison, prisonerId, OPEN, sessions.reversed(), clientType = PUBLIC, dateRange = dateRange, visitorIds = visitorIds)
       prisonerContactRegistryMockServer.stubGetBannedRestrictionDateRage(prisonerId, visitorIds, dateRange, dateRange)
       prisonApiMockServer.stubGetScheduledEvents(prisonerId, dateRange.fromDate, dateRange.toDate, emptyList())
       val alerts = if (forReview) mutableListOf(createAlertResponseDto(code = PrisonerSupportedAlertCodeType.CC1.name, activeFrom = today)) else mutableListOf()
@@ -290,6 +290,7 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
     val availableSessions = TestObjectMapper.mapper.readValue(result.responseBody, Array<AvailableVisitSessionDto>::class.java)
 
     // PVB uses the same PUBLIC window, without visitor review checks.
+    visitSchedulerMockServer.stubGetAvailableVisitSessions(prison, prisonerId, OPEN, sessions.reversed(), clientType = PUBLIC, dateRange = dateRange)
     val pvbResult = callGetAvailableVisitSessionsForPvb(webTestClient = webTestClient, prisonCode = prisonCode, prisonerId = prisonerId, authHttpHeaders = roleVSIPOrchestrationServiceHttpHeaders).expectStatus().isOk.expectBody().returnResult()
     val pvbSessions = TestObjectMapper.mapper.readValue(pvbResult.responseBody, Array<AvailableVisitSessionDto>::class.java)
 
@@ -299,7 +300,8 @@ class AvailableVisitSessionsForReviewWithWeekendCheckTest : IntegrationTestBase(
     if (firstDay <= dateRange.toDate) {
       assertThat(availableSessions.map { it.sessionDate }).containsExactlyElementsOf(sessions.map { it.sessionDate })
       assertThat(availableSessions.map { it.sessionForReview }).containsOnly(forReview)
-      verify(visitSchedulerClientSpy, times(2)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
+      verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC)
+      verify(visitSchedulerClientSpy, times(1)).getAvailableVisitSessions(prisonCode, prisonerId, OPEN, dateRange, null, null, PUBLIC, visitorIds = visitorIds)
     } else {
       // Else the date is past the "toDate (end date)", so we expect no sessions to be returned.
       assertThat(availableSessions).isEmpty()
