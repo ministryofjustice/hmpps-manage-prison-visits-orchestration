@@ -161,13 +161,13 @@ class OrchestrationExceptionHandler {
 
   @ExceptionHandler(BookerPrisonerRegistrationException::class)
   fun handleBookerPrisonerRegistrationException(e: BookerPrisonerRegistrationException): ResponseEntity<ValidationErrorResponse> {
-    log.debug("Prisoner failed registration with exception: {}, {}", e.message, e.errorCode)
+    log.debug("Prisoner failed registration with exception: {}, {}", e.message, e.errorCodes)
     val message = e.localizedMessage
     val error = BookerPrisonerRegistrationErrorResponse(
       status = HttpStatus.UNPROCESSABLE_CONTENT.value(),
       userMessage = "Prisoner registration failed",
       developerMessage = message,
-      validationError = e.errorCode,
+      validationErrors = e.errorCodes,
     )
 
     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(error)
@@ -257,7 +257,7 @@ data class BookerPrisonerRegistrationErrorResponse(
   override val errorCode: Int? = null,
   override val userMessage: String? = null,
   override val developerMessage: String? = null,
-  val validationError: BookerPrisonerRegistrationErrorCodes,
+  val validationErrors: List<BookerPrisonerRegistrationErrorCodes>,
 ) : ValidationErrorResponse(status, errorCode, userMessage, developerMessage)
 
 data class BookerVisitorRequestValidationErrorResponse(
