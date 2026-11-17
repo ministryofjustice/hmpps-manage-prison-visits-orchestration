@@ -4,8 +4,5 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 
 enum class BookerPrisonerRegistrationErrorCodes : ValidationErrorCodes {
   PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER,
-  PRISONER_NOT_FOUND,
-  LAST_NAME_INCORRECT,
-  DOB_INCORRECT,
-  PRISON_CODE_INCORRECT,
+  FAILED_REGISTRATION,
 }
