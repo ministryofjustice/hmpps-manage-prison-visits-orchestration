@@ -38,7 +38,7 @@ data class EventAuditOrchestrationDto(
   val createTimestamp: LocalDateTime = LocalDateTime.now(),
 
   @param:Schema(description = "Additional Audit attributes", required = true)
-  @field:NotBlank
+  @field:NotNull
   val auditAttributes: List<EventAuditAttributeDto>,
 ) {
   constructor(eventAuditDto: EventAuditDto, actionedByFullName: String?) : this(
