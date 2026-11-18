@@ -313,6 +313,7 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
         "cancelOutcome" to mapOf("outcomeStatus" to "CANCELLATION", "text" to "Whatever"),
         "userType" to "PRISONER",
         "actionedBy" to "AF34567G",
+        "applicationMethodType" to "PHONE",
       ),
     )
 
@@ -342,10 +343,22 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
           assertThat(it.actionedBy).isEqualTo("AF34567G")
           assertThat(it.userType).isEqualTo(UserType.valueOf(userType))
           assertThat(it.cancelOutcome.text).isEqualTo("Whatever")
-          assertThat(it.applicationMethodType).isEqualTo(if (userType == "PRISONER") ApplicationMethodType.BY_PRISONER else ApplicationMethodType.NOT_KNOWN)
+          assertThat(it.applicationMethodType).isEqualTo(ApplicationMethodType.PHONE)
         },
       )
       verifyNoMoreInteractions(visitSchedulerClient)
+    }
+
+    @Test
+    fun `will not forward cancel events with a missing null or invalid application method`() {
+      val methodAttributes = listOf(emptyMap<String, String?>()) + listOf(null, "UNKNOWN").map { mapOf("applicationMethodType" to it) }
+      methodAttributes.forEach { method ->
+        val event = visitFromExternalSystemEvent.copy(messageAttributes = (visitFromExternalSystemEvent.messageAttributes - "applicationMethodType") + method)
+        assertThrows<Exception> {
+          visitFromExternalSystemEventListenerService.onEventReceived(TestObjectMapper.mapper.writeValueAsString(event)).get()
+        }
+        verifyNoInteractions(visitSchedulerClient)
+      }
     }
 
     @Test

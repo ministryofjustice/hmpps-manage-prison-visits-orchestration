@@ -13,7 +13,6 @@ data class CancelVisitFromExternalSystemDto(
   val cancelOutcome: OutcomeDto,
   val userType: UserType,
   val actionedBy: String,
-) {
-  val applicationMethodType: ApplicationMethodType
-    get() = if (userType == UserType.PRISONER) ApplicationMethodType.BY_PRISONER else ApplicationMethodType.NOT_KNOWN
-}
+  @param:Schema(description = "Application method supplied by the external system", required = true)
+  val applicationMethodType: ApplicationMethodType,
+)
