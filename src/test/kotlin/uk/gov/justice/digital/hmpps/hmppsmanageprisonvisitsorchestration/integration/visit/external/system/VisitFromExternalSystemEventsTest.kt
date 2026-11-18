@@ -405,6 +405,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
         "cancelOutcome" to mapOf("outcomeStatus" to "CANCELLATION", "text" to "Whatever"),
         "userType" to "PRISONER",
         "actionedBy" to "AF34567G",
+        "applicationMethodType" to "PHONE",
       ),
     )
 
@@ -420,7 +421,6 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
     @ValueSource(strings = ["PRISONER", "STAFF"])
     fun `will process a visit cancel event`(userType: String) {
       val visitRef = visitFromExternalSystemEvent.messageAttributes["visitReference"].toString()
-      val applicationMethodType = if (userType == "PRISONER") "BY_PRISONER" else "NOT_KNOWN"
       val expectedBody = """
         {
           "visitReference": "$visitRef",
@@ -428,7 +428,7 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
           "cancelOutcome": {"outcomeStatus": "CANCELLATION", "text": "Whatever"},
           "actionedBy": "AF34567G",
           "userType": "$userType",
-          "applicationMethodType": "$applicationMethodType"
+          "applicationMethodType": "PHONE"
         }
       """.trimIndent()
       visitSchedulerMockServer.stubFor(

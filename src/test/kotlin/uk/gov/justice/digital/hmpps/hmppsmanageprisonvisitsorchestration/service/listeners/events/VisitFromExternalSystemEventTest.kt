@@ -193,8 +193,9 @@ class VisitFromExternalSystemEventTest {
     }
   }
 
-  @Test
-  fun `get a CancelVisitFromExternalSystemDto from message attributes`() {
+  @ParameterizedTest
+  @ValueSource(strings = ["PRISONER", "STAFF", "PUBLIC", "SYSTEM"])
+  fun `get a CancelVisitFromExternalSystemDto preserving the supplied application method`(userType: String) {
     val visitFromExternalSystemEvent = VisitFromExternalSystemEvent(
       messageId = "message-id",
       eventType = "VisitCancelled",
@@ -202,8 +203,9 @@ class VisitFromExternalSystemEventTest {
         "visitReference" to "v9-d7-ed-7u",
         "clientName" to "client-name",
         "cancelOutcome" to mapOf("outcomeStatus" to "CANCELLATION", "text" to "Whatever"),
-        "userType" to "PRISONER",
+        "userType" to userType,
         "actionedBy" to "A1243B",
+        "applicationMethodType" to "PHONE",
       ),
     )
 
@@ -213,7 +215,7 @@ class VisitFromExternalSystemEventTest {
     cancelVisitFromExternalSystemDto.let {
       assertThat(it.visitReference).isEqualTo(visitFromExternalSystemEvent.messageAttributes["visitReference"])
       assertThat(it.clientName).isEqualTo("client-name")
-      assertThat(it.applicationMethodType).isEqualTo(ApplicationMethodType.BY_PRISONER)
+      assertThat(it.applicationMethodType).isEqualTo(ApplicationMethodType.PHONE)
       assertThat(it.userType.toString()).isEqualTo(visitFromExternalSystemEvent.messageAttributes["userType"])
       assertThat(it.actionedBy).isEqualTo(visitFromExternalSystemEvent.messageAttributes["actionedBy"])
 
