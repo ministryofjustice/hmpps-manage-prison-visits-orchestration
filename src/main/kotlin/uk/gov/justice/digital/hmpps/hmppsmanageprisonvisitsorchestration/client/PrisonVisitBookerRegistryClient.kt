@@ -404,7 +404,9 @@ class PrisonVisitBookerRegistryClient(
     if (e is WebClientResponseException && isUnprocessableEntityError(e)) {
       try {
         val errorResponse = objectMapper.readValue(e.responseBodyAsString, RegistryPrisonerRegistrationErrorResponse::class.java)
-        check(errorResponse.validationErrors.isNotEmpty()) { "Booker prisoner registration error response has no validation errors" }
+        if (errorResponse.validationErrors.isEmpty()) {
+          throw IllegalStateException("Booker prisoner registration error response has no validation errors")
+        }
         val publicErrorCode = if (RegistryPrisonerRegistrationErrorCodes.PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER in errorResponse.validationErrors) {
           BookerPrisonerRegistrationErrorCodes.PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER
         } else {
