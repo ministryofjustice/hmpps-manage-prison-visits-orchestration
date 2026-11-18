@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.or
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditAttributeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.EventAuditType
@@ -32,9 +33,13 @@ data class EventAuditOrchestrationDto(
   @field:NullableNotBlank
   var text: String? = null,
 
-  @param:Schema(description = "event creat date and time", example = "2018-12-01T13:45:00", required = true)
+  @param:Schema(description = "event creation date and time", example = "2018-12-01T13:45:00", required = true)
   @field:NotBlank
   val createTimestamp: LocalDateTime = LocalDateTime.now(),
+
+  @param:Schema(description = "Additional Audit attributes", required = true)
+  @field:NotBlank
+  val auditAttributes: List<EventAuditAttributeDto>,
 ) {
   constructor(eventAuditDto: EventAuditDto, actionedByFullName: String?) : this(
     type = eventAuditDto.type,
@@ -43,5 +48,6 @@ data class EventAuditOrchestrationDto(
     userType = eventAuditDto.actionedBy.userType,
     createTimestamp = eventAuditDto.createTimestamp,
     text = eventAuditDto.text,
+    auditAttributes = eventAuditDto.auditAttributes,
   )
 }

@@ -29,10 +29,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ActionedByDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditAttributeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType.EMAIL
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType.NOT_APPLICABLE
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.EventAuditAttributeTypes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.EventAuditType.BOOKED_VISIT
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.EventAuditType.CANCELLED_VISIT
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.EventAuditType.PRISONER_RESTRICTION_CHANGE_EVENT
@@ -137,12 +139,21 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     actionedBy3 = ActionedByDto(bookerReference = null, userName = "test-user", userType = STAFF)
     actionedBy4 = ActionedByDto(bookerReference = null, userName = "test-user1", userType = STAFF)
     actionedBy5 = ActionedByDto(bookerReference = null, userName = "test-user2", userType = STAFF)
+    val eventAuditAttribute1 = EventAuditAttributeDto(
+      attributeName = EventAuditAttributeTypes.AUTO_REJECTION_REASON,
+      attributeValue = "test",
+    )
 
-    eventAudit1 = EventAuditDto(type = BOOKED_VISIT, actionedBy = actionedBy1, applicationMethodType = EMAIL)
-    eventAudit2 = EventAuditDto(type = PRISONER_RESTRICTION_CHANGE_EVENT, actionedBy = actionedBy2, applicationMethodType = NOT_APPLICABLE)
-    eventAudit3 = EventAuditDto(type = UPDATED_VISIT, actionedBy = actionedBy3, applicationMethodType = EMAIL)
-    eventAudit4 = EventAuditDto(type = UPDATED_VISIT, actionedBy = actionedBy4, applicationMethodType = EMAIL)
-    eventAudit5 = EventAuditDto(type = CANCELLED_VISIT, actionedBy = actionedBy5, applicationMethodType = EMAIL)
+    val eventAuditAttribute2 = EventAuditAttributeDto(
+      attributeName = EventAuditAttributeTypes.AUTO_REJECTION_REASON,
+      attributeValue = "test-2",
+    )
+
+    eventAudit1 = EventAuditDto(type = BOOKED_VISIT, actionedBy = actionedBy1, applicationMethodType = EMAIL, auditAttributes = listOf(eventAuditAttribute1))
+    eventAudit2 = EventAuditDto(type = PRISONER_RESTRICTION_CHANGE_EVENT, actionedBy = actionedBy2, applicationMethodType = NOT_APPLICABLE, auditAttributes = emptyList())
+    eventAudit3 = EventAuditDto(type = UPDATED_VISIT, actionedBy = actionedBy3, applicationMethodType = EMAIL, auditAttributes = emptyList())
+    eventAudit4 = EventAuditDto(type = UPDATED_VISIT, actionedBy = actionedBy4, applicationMethodType = EMAIL, auditAttributes = emptyList())
+    eventAudit5 = EventAuditDto(type = CANCELLED_VISIT, actionedBy = actionedBy5, applicationMethodType = EMAIL, auditAttributes = listOf(eventAuditAttribute1, eventAuditAttribute2))
 
     notification1 = createNotificationEvent(NotificationEventType.NON_ASSOCIATION_EVENT)
 
@@ -1516,6 +1527,8 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     assertThat(eventAuditOrchestrationDto.text).isEqualTo(eventAuditDto.text)
     assertThat(eventAuditOrchestrationDto.applicationMethodType).isEqualTo(eventAuditDto.applicationMethodType)
     assertThat(eventAuditOrchestrationDto.createTimestamp).isEqualTo(eventAuditDto.createTimestamp)
+    assertThat(eventAuditOrchestrationDto.auditAttributes.size).isEqualTo(eventAuditDto.auditAttributes.size)
+    assertThat(eventAuditOrchestrationDto.auditAttributes).containsAll(eventAuditDto.auditAttributes)
   }
 
   private fun assertVisitNotifications(
