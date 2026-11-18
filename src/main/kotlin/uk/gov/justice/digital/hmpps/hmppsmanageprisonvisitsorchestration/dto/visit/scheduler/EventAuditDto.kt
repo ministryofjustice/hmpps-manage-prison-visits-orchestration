@@ -35,4 +35,7 @@ data class EventAuditDto(
   @param:Schema(description = "event creat date and time", example = "2018-12-01T13:45:00", required = true)
   @field:NotBlank
   val createTimestamp: LocalDateTime = LocalDateTime.now(),
+
+  @param:Schema(description = "Event audit attributes, empty list if no additional data associated", required = true)
+  val auditAttributes: List<EventAuditAttributeDto>,
 )

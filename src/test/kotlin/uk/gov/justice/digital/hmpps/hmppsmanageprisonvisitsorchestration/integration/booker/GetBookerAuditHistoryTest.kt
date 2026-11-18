@@ -37,6 +37,7 @@ class GetBookerAuditHistoryTest : IntegrationTestBase() {
       actionedBy = ActionedByDto(bookerReference = bookerReference, userName = null, userType = UserType.PUBLIC),
       createTimestamp = LocalDateTime.now(),
       applicationMethodType = WEBSITE,
+      auditAttributes = listOf(),
     )
     val bookerAudit5 = BookerAuditDto(bookerReference = bookerReference, auditType = "VISITOR_ADDED_TO_PRISONER", text = "visitor 2 added to prisoner", createdTimestamp = LocalDateTime.now())
 
@@ -100,6 +101,7 @@ class GetBookerAuditHistoryTest : IntegrationTestBase() {
       actionedBy = ActionedByDto(bookerReference = bookerReference, userName = null, userType = UserType.PUBLIC),
       createTimestamp = LocalDateTime.now(),
       applicationMethodType = WEBSITE,
+      auditAttributes = emptyList(),
     )
     visitSchedulerMockServer.stubGetBookerVisitAuditHistory(bookerReference, listOf(bookerVisitAudit1))
     prisonVisitBookerRegistryMockServer.stubGetBookerAuditHistory(bookerReference, emptyList())
@@ -127,6 +129,7 @@ class GetBookerAuditHistoryTest : IntegrationTestBase() {
       actionedBy = ActionedByDto(bookerReference = bookerReference, userName = null, userType = UserType.PUBLIC),
       createTimestamp = LocalDateTime.now(),
       applicationMethodType = WEBSITE,
+      auditAttributes = emptyList(),
     )
     prisonVisitBookerRegistryMockServer.stubGetBookerAuditHistory(bookerReference, null, HttpStatus.NOT_FOUND)
     visitSchedulerMockServer.stubGetBookerVisitAuditHistory(bookerReference, listOf(bookerVisitAudit1))
@@ -149,6 +152,7 @@ class GetBookerAuditHistoryTest : IntegrationTestBase() {
       actionedBy = ActionedByDto(bookerReference = bookerReference, userName = null, userType = UserType.PUBLIC),
       createTimestamp = LocalDateTime.now(),
       applicationMethodType = WEBSITE,
+      auditAttributes = emptyList(),
     )
     prisonVisitBookerRegistryMockServer.stubGetBookerAuditHistory(bookerReference, null, HttpStatus.INTERNAL_SERVER_ERROR)
     visitSchedulerMockServer.stubGetBookerVisitAuditHistory(bookerReference, listOf(bookerVisitAudit1))
