@@ -11,6 +11,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
+import tools.jackson.core.JacksonException
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.ClientUtils.Companion.isUnprocessableEntityError
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VisitSchedulerClient.Companion.LOG
@@ -28,6 +29,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.PrisonVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterPrisonerForBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegisterVisitorForBookerPrisonerDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RegistryPrisonerRegistrationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.RejectVisitorRequestDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.UpdateRegisteredPrisonerPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.VisitorRequestsCountByPrisonCodeDto
@@ -36,6 +38,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.boo
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.BookerSearchResultsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.admin.SearchBookerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.BookerPrisonerRegistrationErrorCodes
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.enums.RegistryPrisonerRegistrationErrorCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.StaffUsernameDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerPrisonerRegistrationException
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.exception.BookerPrisonerValidationException
@@ -400,10 +403,19 @@ class PrisonVisitBookerRegistryClient(
   private fun getPrisonerRegistrationErrorResponse(e: Throwable): Throwable {
     if (e is WebClientResponseException && isUnprocessableEntityError(e)) {
       try {
-        return BookerPrisonerRegistrationException(BookerPrisonerRegistrationErrorCodes.FAILED_REGISTRATION)
-      } catch (jsonProcessingException: Exception) {
-        LOG.error("An error occurred processing the booker prisoner registration error response - ${e.stackTraceToString()}")
-        throw jsonProcessingException
+        val errorResponse = objectMapper.readValue(e.responseBodyAsString, RegistryPrisonerRegistrationErrorResponse::class.java)
+        if (errorResponse.validationErrors.isEmpty()) {
+          throw IllegalStateException("Booker prisoner registration error response has no validation errors")
+        }
+        val publicErrorCode = if (RegistryPrisonerRegistrationErrorCodes.PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER in errorResponse.validationErrors) {
+          BookerPrisonerRegistrationErrorCodes.PRISONER_ALREADY_REGISTERED_AGAINST_BOOKER
+        } else {
+          BookerPrisonerRegistrationErrorCodes.FAILED_REGISTRATION
+        }
+        return BookerPrisonerRegistrationException(publicErrorCode)
+      } catch (jsonProcessingException: JacksonException) {
+        logger.error("An error occurred processing the booker prisoner registration error response", jsonProcessingException)
+        throw IllegalStateException("Invalid booker prisoner registration validation response")
       }
     }
 
