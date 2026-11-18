@@ -21,7 +21,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.UPDATE_PERMITTED_PRISONER_PRISON
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.VALIDATE_PRISONER
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.client.WITHDRAW_VISITOR_REQUEST
-import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerRegistrationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerPrisonerValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.config.BookerVisitorRequestValidationErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.booker.registry.AddVisitorToBookerPrisonerRequestDto
@@ -148,11 +147,11 @@ class PrisonVisitBookerRegistryMockServer : WireMockServer(8098) {
     )
   }
 
-  fun stubRegisterPrisonerForBooker(bookerReference: String, httpStatus: HttpStatus, errorResponse: BookerPrisonerRegistrationErrorResponse? = null) {
+  fun stubRegisterPrisonerForBooker(bookerReference: String, httpStatus: HttpStatus, errorResponse: String? = null) {
     val responseBuilder = createJsonResponseBuilder().withStatus(httpStatus.value())
 
     errorResponse?.let {
-      responseBuilder.withBody(getJsonString(it))
+      responseBuilder.withBody(it)
     }
 
     stubFor(
