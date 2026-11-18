@@ -29,7 +29,7 @@ generic-service:
     HMPPS_SQS_USE_WEB_TOKEN: "true"
     HMPPS_SQS_ENABLED: "true"
     APPLICATIONINSIGHTS_STATSBEAT_DISABLED: "true"
-    JAVA_TOOL_OPTIONS: "$(JAVA_PROXY_TOOL_OPTIONS) -Xmx512m -XX:+ExitOnOutOfMemoryError -XX:MaxRAMPercentage=50.0"
+    JAVA_TOOL_OPTIONS: "$(JAVA_PROXY_TOOL_OPTIONS) -Xmx512m -XX:+ExitOnOutOfMemoryError -XX:MaxRAMPercentage=50.0 -XX:-UseBASE64Intrinsics"
 
 
 
