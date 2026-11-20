@@ -23,6 +23,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.times
@@ -418,8 +419,8 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
     )
 
     @ParameterizedTest
-    @ValueSource(strings = ["PRISONER", "STAFF"])
-    fun `will process a visit cancel event`(userType: String) {
+    @CsvSource("PRISONER,actionedBy", "STAFF,actionedBy", "PUBLIC,username")
+    fun `will process a visit cancel event`(userType: String, actorField: String) {
       val visitRef = visitFromExternalSystemEvent.messageAttributes["visitReference"].toString()
       val expectedBody = """
         {
@@ -437,7 +438,9 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
           .willReturn(okJson(objectMapper.writeValueAsString(visitDto))),
       )
 
-      val event = visitFromExternalSystemEvent.copy(messageAttributes = visitFromExternalSystemEvent.messageAttributes + ("userType" to userType))
+      val event = visitFromExternalSystemEvent.copy(
+        messageAttributes = (visitFromExternalSystemEvent.messageAttributes - "actionedBy") + mapOf("userType" to userType, actorField to "AF34567G"),
+      )
       val message = TestObjectMapper.mapper.writeValueAsString(event)
       vweQueueSqsClient.sendMessage(
         SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(message).build(),
@@ -450,6 +453,33 @@ class VisitFromExternalSystemEventsTest : PrisonVisitsEventsIntegrationTestBase(
           .withRequestBody(equalToJson(expectedBody)),
       )
       visitSchedulerMockServer.verify(0, putRequestedFor(urlEqualTo("/visits/$visitRef/cancel")))
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun `forwards a system cancellation with a missing or null actor`(explicitNull: Boolean) {
+      val visitRef = "test-visit"
+      val attributes = mapOf(
+        "visitReference" to visitRef,
+        "clientName" to "test-owner",
+        "userType" to "SYSTEM",
+        "applicationMethodType" to "WEBSITE",
+        "cancelOutcome" to mapOf("outcomeStatus" to "ESTABLISHMENT_CANCELLED"),
+      )
+      val event = visitFromExternalSystemEvent.copy(
+        who = "test-sender",
+        messageAttributes = if (explicitNull) attributes + ("actionedBy" to null) else attributes,
+      )
+      val route = urlEqualTo("/visits/external-system/$visitRef/cancel")
+      val expectedBody = equalToJson(TestObjectMapper.mapper.writeValueAsString(attributes))
+      visitSchedulerMockServer.stubFor(put(route).withRequestBody(expectedBody).willReturn(okJson(objectMapper.writeValueAsString(visitDto))))
+
+      vweQueueSqsClient.sendMessage(
+        SendMessageRequest.builder().queueUrl(vweQueueUrl).messageBody(TestObjectMapper.mapper.writeValueAsString(event)).build(),
+      )
+
+      await untilAsserted { visitSchedulerMockServer.verify(putRequestedFor(route).withRequestBody(expectedBody)) }
+      awaitQueueEmpty()
     }
 
     @ParameterizedTest
