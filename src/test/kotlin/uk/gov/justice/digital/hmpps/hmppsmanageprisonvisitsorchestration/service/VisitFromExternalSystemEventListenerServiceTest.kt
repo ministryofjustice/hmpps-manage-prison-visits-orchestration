@@ -349,6 +349,24 @@ internal class VisitFromExternalSystemEventListenerServiceTest {
       verifyNoMoreInteractions(visitSchedulerClient)
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = ["STAFF", "PUBLIC"])
+    fun `will not forward cancel events without an identified staff or public actor`(userType: String) {
+      val attributes = (visitFromExternalSystemEvent.messageAttributes + ("userType" to userType)) - "actionedBy"
+      val actorAttributes = listOf(emptyMap<String, String?>()) + listOf("actionedBy", "username").flatMap { field ->
+        listOf(null, "", " \t").map { value -> mapOf(field to value) }
+      }
+
+      actorAttributes.forEach { actor ->
+        val event = visitFromExternalSystemEvent.copy(messageAttributes = attributes + actor, who = "test-sender")
+        val exception = assertThrows<Exception> {
+          visitFromExternalSystemEventListenerService.onEventReceived(TestObjectMapper.mapper.writeValueAsString(event)).get()
+        }
+        assertThat(exception).hasRootCauseMessage("actionedBy must be provided for STAFF or PUBLIC users")
+        verifyNoInteractions(visitSchedulerClient)
+      }
+    }
+
     @Test
     fun `will not forward cancel events with a missing null or invalid application method`() {
       val methodAttributes = listOf(emptyMap<String, String?>()) + listOf(null, "UNKNOWN").map { mapOf("applicationMethodType" to it) }

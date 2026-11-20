@@ -30,6 +30,7 @@ data class VisitFromExternalSystemEvent(
     val mapper = jacksonObjectMapper()
     return mapper.convertValue(this.messageAttributes, CancelVisitFromExternalSystemDto::class.java).also {
       require(it.clientName.isNotBlank()) { "clientName must be provided for external visit cancellations" }
+      validateActionedBy(it.userType, it.actionedBy)
     }
   }
 
