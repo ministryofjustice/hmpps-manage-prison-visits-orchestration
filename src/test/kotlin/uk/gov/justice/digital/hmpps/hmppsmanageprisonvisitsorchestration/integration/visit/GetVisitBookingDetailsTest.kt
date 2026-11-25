@@ -145,7 +145,7 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     )
 
     val eventAuditAttribute2 = EventAuditAttributeDto(
-      attributeName = EventAuditAttributeTypes.AUTO_REJECTION_REASON,
+      attributeName = EventAuditAttributeTypes.VISIT_UPDATE_SLOT_CHANGED_NEW_START_TIME,
       attributeValue = "test-2",
     )
 
