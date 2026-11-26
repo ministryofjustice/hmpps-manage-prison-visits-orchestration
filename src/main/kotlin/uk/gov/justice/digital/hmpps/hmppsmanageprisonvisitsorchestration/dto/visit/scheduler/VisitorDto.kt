@@ -13,4 +13,6 @@ data class VisitorDto(
 
   @param:Schema(description = "true if visitor is the contact for the visit otherwise false", example = "true", required = false)
   val visitContact: Boolean?,
+  @param:Schema(description = "Whether the visitor attended; null if not recorded", example = "false")
+  val attended: Boolean? = null,
 )

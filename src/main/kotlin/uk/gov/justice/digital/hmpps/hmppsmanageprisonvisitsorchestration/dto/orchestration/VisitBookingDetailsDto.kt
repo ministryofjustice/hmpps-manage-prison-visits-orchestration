@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.register.PrisonRegisterPrisonDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitAttendanceDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitNoteDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSubStatus
@@ -66,6 +67,8 @@ data class VisitBookingDetailsDto(
   val notifications: List<VisitNotificationDto>,
   @param:Schema(description = "Enum denoting why alerts and restrictions were skipped; absent if not skipped", required = false)
   val skipAlertsAndRestrictionReason: SkipAlertsAndRestrictionReason?,
+  @param:Schema(description = "Additional attendance details, if recorded")
+  val attendanceDetails: VisitAttendanceDetailsDto? = null,
 ) {
   constructor(
     visit: VisitDto,
@@ -93,10 +96,14 @@ data class VisitBookingDetailsDto(
     visitorSupport = visit.visitorSupport,
     prison = prison,
     prisoner = PrisonerDetailsDto(visit.prisonerId, prisonerDto, prisonerAlerts, prisonerRestrictions),
-    visitors = visitVisitors.map { VisitorDetailsDto(it) }.toList(),
+    visitors = visitVisitors.map { contact ->
+      val attended = visit.visitors?.firstOrNull { it.nomisPersonId == contact.contactId }?.attended
+      VisitorDetailsDto(contact, attended)
+    },
     events = events,
     notifications = notifications.map { VisitNotificationDto(it) },
     skipAlertsAndRestrictionReason = skipAlertsAndRestrictionReason,
+    attendanceDetails = visit.attendanceDetails,
   )
 }
 
@@ -165,6 +172,8 @@ data class VisitorDetailsDto(
   val restrictions: List<RestrictionDto> = listOf(),
   @param:Schema(description = "Primary address for the contact or the first address if no primary address available, null if address list is empty", required = false)
   val primaryAddress: AddressDto?,
+  @param:Schema(description = "Whether the visitor attended; null if not recorded", example = "false")
+  val attended: Boolean? = null,
 ) {
   constructor(prisonerContactDto: PrisonerContactDto) : this(
     personId = prisonerContactDto.personId,
@@ -177,7 +186,7 @@ data class VisitorDetailsDto(
     primaryAddress = prisonerContactDto.address,
   )
 
-  constructor(contactWithOptionalPrisonerRelationshipDto: ContactWithOptionalPrisonerRelationshipDto) : this(
+  constructor(contactWithOptionalPrisonerRelationshipDto: ContactWithOptionalPrisonerRelationshipDto, attended: Boolean? = null) : this(
     personId = contactWithOptionalPrisonerRelationshipDto.contactId,
     firstName = contactWithOptionalPrisonerRelationshipDto.firstName,
     lastName = contactWithOptionalPrisonerRelationshipDto.lastName,
@@ -185,6 +194,7 @@ data class VisitorDetailsDto(
     relationshipDescription = contactWithOptionalPrisonerRelationshipDto.relationshipDescription,
     restrictions = contactWithOptionalPrisonerRelationshipDto.restrictions,
     primaryAddress = contactWithOptionalPrisonerRelationshipDto.address,
+    attended = attended,
   )
 }
 

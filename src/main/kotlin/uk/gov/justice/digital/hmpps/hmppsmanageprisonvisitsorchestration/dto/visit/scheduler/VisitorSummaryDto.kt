@@ -16,11 +16,14 @@ data class VisitorSummaryDto(
 
   @param:Schema(description = "Visitor's last name", example = "Smith", required = false)
   var lastName: String? = null,
+  @param:Schema(description = "Whether the visitor attended; null if not recorded", example = "false")
+  val attended: Boolean? = null,
 ) {
   constructor(
     visitorDto: VisitorDto,
   ) :
     this(
       nomisPersonId = visitorDto.nomisPersonId,
+      attended = visitorDto.attended,
     )
 }

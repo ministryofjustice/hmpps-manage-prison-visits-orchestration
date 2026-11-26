@@ -65,6 +65,8 @@ class VisitDto(
   val firstBookedDateTime: LocalDateTime? = null,
   @param:Schema(description = "External system details associated with the visit")
   val visitExternalSystemDetails: VisitExternalSystemDetails?,
+  @param:Schema(description = "Additional attendance details, if recorded")
+  val attendanceDetails: VisitAttendanceDetailsDto? = null,
 )
 
 data class VisitExternalSystemDetails(

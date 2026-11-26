@@ -31,7 +31,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.ContactDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditAttributeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.EventAuditDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitAttendanceDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSearchDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSearchSubject.VISITORS
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSubStatus.NOT_ATTENDED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType.EMAIL
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.ApplicationMethodType.NOT_APPLICABLE
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.EventAuditAttributeTypes
@@ -40,9 +44,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.EventAuditType.PRISONER_RESTRICTION_CHANGE_EVENT
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.EventAuditType.UPDATED_VISIT
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.NotificationEventAttributeType
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.OutcomeStatus.VISITOR_DECLINED_ENTRY
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.PUBLIC
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.STAFF
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.UserType.SYSTEM
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus.COMPLETED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.NotificationEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventAttributeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.visitnotification.VisitNotificationEventDto
@@ -50,6 +56,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integra
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 @DisplayName("Test for $GET_VISIT_FULL_DETAILS_BY_VISIT_REFERENCE")
 class GetVisitBookingDetailsTest : IntegrationTestBase() {
@@ -161,6 +168,48 @@ class GetVisitBookingDetailsTest : IntegrationTestBase() {
     eventAttribute2 = VisitNotificationEventAttributeDto(NotificationEventAttributeType.VISITOR_RESTRICTION, "BAN")
     eventAttribute3 = VisitNotificationEventAttributeDto(NotificationEventAttributeType.VISITOR_RESTRICTION_ID, "123")
     notification2 = createNotificationEvent(NotificationEventType.VISITOR_RESTRICTION_UPSERTED_EVENT, additionalData = listOf(eventAttribute1, eventAttribute2, eventAttribute3))
+  }
+
+  @Test
+  fun `Completed visit passes scheduler attendance through to the booking details`() {
+    val visit = createVisitDto(
+      prisonCode = prisonCode,
+      prisonerId = prisonerId,
+      visitStatus = COMPLETED,
+      visitSubStatus = NOT_ATTENDED,
+      outcomeStatus = VISITOR_DECLINED_ENTRY,
+      visitors = listOf(createVisitorDto(visitor1, true).copy(attended = false), createVisitorDto(visitor2, false)),
+      attendanceDetails = VisitAttendanceDetailsDto(
+        search = VisitSearchDto(VISITORS),
+        actualEndTime = LocalTime.of(13, 30, 2),
+      ),
+    )
+    visitSchedulerMockServer.stubGetVisit(visit.reference, visit)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(prisonerId, prisonerDto)
+    prisonRegisterMockServer.stubGetPrison(prisonCode, prison)
+    alertApiMockServer.stubGetPrisonerAlertsMono(prisonerId, emptyList())
+    prisonApiMockServer.stubGetPrisonerRestrictions(prisonerId, offenderRestrictions)
+    prisonerContactRegistryMockServer.stubSearchContacts(
+      contactIds = listOf(visitor1.contactId, visitor2.contactId),
+      prisonerId = prisonerId,
+      contactsList = listOf(visitor2, visitor1),
+    )
+    visitSchedulerMockServer.stubGetVisitHistory(visit.reference, listOf(eventAudit1))
+    visitSchedulerMockServer.stubGetVisitNotificationEvents(visit.reference, emptyList())
+
+    callGetVisitFullDetailsByReference(webTestClient, visit.reference, roleVSIPOrchestrationServiceHttpHeaders)
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.visitStatus").isEqualTo("COMPLETED")
+      .jsonPath("$.visitSubStatus").isEqualTo("NOT_ATTENDED")
+      .jsonPath("$.outcomeStatus").isEqualTo("VISITOR_DECLINED_ENTRY")
+      .jsonPath("$.attendanceDetails.search.subject").isEqualTo("VISITORS")
+      .jsonPath("$.attendanceDetails.search.type").doesNotHaveJsonPath()
+      .jsonPath("$.attendanceDetails.actualStartTime").doesNotHaveJsonPath()
+      .jsonPath("$.attendanceDetails.actualEndTime").isEqualTo("13:30:02")
+      .jsonPath("$.visitors[0].personId").isEqualTo(visitor1.contactId)
+      .jsonPath("$.visitors[0].attended").isEqualTo(false)
+      .jsonPath("$.visitors[1].attended").doesNotHaveJsonPath()
   }
 
   @Test

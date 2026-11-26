@@ -39,6 +39,8 @@ data class VisitSummaryDto(
   val endTimestamp: LocalDateTime,
   @param:Schema(description = "List of visitors associated with the visit", required = false)
   val visitors: List<VisitorSummaryDto>? = listOf(),
+  @param:Schema(description = "Additional attendance details, if recorded")
+  val attendanceDetails: VisitAttendanceDetailsDto? = null,
 ) {
   constructor(
     visitDto: VisitDto,
@@ -54,5 +56,6 @@ data class VisitSummaryDto(
       startTimestamp = visitDto.startTimestamp,
       endTimestamp = visitDto.endTimestamp,
       visitors = visitDto.visitors?.map { VisitorSummaryDto(it) },
+      attendanceDetails = visitDto.attendanceDetails,
     )
 }

@@ -47,6 +47,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.vis
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionDateRangeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.SessionTimeSlotDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitAttendanceDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitExternalSystemDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitPreviewDto
@@ -314,6 +315,7 @@ abstract class IntegrationTestBase {
     contact: ContactDto? = ContactDto("Jane Doe", "01234567890", "email@example.com"),
     firstBookedDate: LocalDateTime? = null,
     visitExternalSystemDetails: VisitExternalSystemDetails? = null,
+    attendanceDetails: VisitAttendanceDetailsDto? = null,
   ): VisitDto = VisitDto(
     applicationReference = applicationReference,
     sessionTemplateReference = sessionTemplateReference,
@@ -334,6 +336,7 @@ abstract class IntegrationTestBase {
     visitContact = contact,
     firstBookedDateTime = firstBookedDate,
     visitExternalSystemDetails = visitExternalSystemDetails,
+    attendanceDetails = attendanceDetails,
   )
 
   final fun createVisitPreviewDto(
