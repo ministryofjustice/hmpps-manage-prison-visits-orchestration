@@ -18,14 +18,21 @@ import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.pri
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prison.api.OffenderRestrictionsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.prisoner.search.PrisonerDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.allocation.PrisonerVOBalanceDetailedDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitAttendanceDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSearchDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSearchSubject.PRISONER
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSearchType.RUBDOWN_LEVEL_B
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSubStatus.ATTENDED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorDto
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.VisitorSummaryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.dto.visit.scheduler.enums.VisitStatus.COMPLETED
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageprisonvisitsorchestration.integration.TestObjectMapper
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.Period
 import java.time.temporal.TemporalAdjusters
 
@@ -112,6 +119,54 @@ class GetPrisonerProfileTest(
   ): WebTestClient.ResponseSpec = webTestClient.get().uri("/prisoner/$prisonId/$prisonerId/profile")
     .headers(authHttpHeaders)
     .exchange()
+
+  @Test
+  fun `visit summaries preserve recorded attendance and omit unrecorded attendance`() {
+    val completedVisit = createVisitDto(
+      reference = "completed-visit",
+      prisonerId = PRISONER_ID,
+      visitStatus = COMPLETED,
+      visitSubStatus = ATTENDED,
+      visitors = listOf(visit1Visitors[0].copy(attended = true), visit1Visitors[1].copy(attended = false), visit1Visitors[2]),
+      attendanceDetails = VisitAttendanceDetailsDto(
+        search = VisitSearchDto(PRISONER, RUBDOWN_LEVEL_B),
+        actualStartTime = LocalTime.of(13, 45, 1),
+        actualEndTime = LocalTime.of(14, 30, 2),
+      ),
+    )
+    val visits = listOf(completedVisit, visit2)
+    prisonOffenderSearchMockServer.stubGetPrisonerById(PRISONER_ID, prisonerDto)
+    prisonApiMockServer.stubGetInmateDetails(PRISONER_ID, inmateDetailDto)
+    visitAllocationApiMockServer.stubGetPrisonerVOBalanceDetailed(PRISONER_ID, visitBalancesDto)
+    alertApiMockServer.stubGetPrisonerAlertsMono(PRISONER_ID, emptyList())
+    prisonApiMockServer.stubGetPrisonerRestrictions(PRISONER_ID, OffenderRestrictionsDto(bookingId = 1, emptyList()))
+    prisonerContactRegistryMockServer.stubSearchContacts(
+      contactIds = getContactIdsFromVisits(visits),
+      prisonerId = PRISONER_ID,
+      withRestrictions = false,
+      contactsList = contactsDto,
+    )
+    prisonRegisterMockServer.stubGetPrisonNames(prisons)
+    // Stub the downstream response to exercise the mapping without changing the profile's status filter.
+    stubGetVisits(visits)
+
+    callGetPrisonerProfile(webTestClient, roleVSIPOrchestrationServiceHttpHeaders, PRISON_CODE, PRISONER_ID)
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.visits[0].reference").isEqualTo(completedVisit.reference)
+      .jsonPath("$.visits[0].visitStatus").isEqualTo("COMPLETED")
+      .jsonPath("$.visits[0].visitSubStatus").isEqualTo("ATTENDED")
+      .jsonPath("$.visits[0].attendanceDetails.search.subject").isEqualTo("PRISONER")
+      .jsonPath("$.visits[0].attendanceDetails.search.type").isEqualTo("RUBDOWN_LEVEL_B")
+      .jsonPath("$.visits[0].attendanceDetails.actualStartTime").isEqualTo("13:45:01")
+      .jsonPath("$.visits[0].attendanceDetails.actualEndTime").isEqualTo("14:30:02")
+      .jsonPath("$.visits[0].visitors[0].attended").isEqualTo(true)
+      .jsonPath("$.visits[0].visitors[1].attended").isEqualTo(false)
+      .jsonPath("$.visits[0].visitors[2].nomisPersonId").isEqualTo(visitor3.personId)
+      .jsonPath("$.visits[0].visitors[2].attended").doesNotHaveJsonPath()
+      .jsonPath("$.visits[1].reference").isEqualTo(visit2.reference)
+      .jsonPath("$.visits[1].attendanceDetails").doesNotHaveJsonPath()
+  }
 
   @Test
   fun `when valid prisoner prisoner profile is collated and returned`() {
