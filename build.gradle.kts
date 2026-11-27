@@ -24,7 +24,7 @@ dependencies {
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.34.0")
 
   implementation("org.springframework.data:spring-data-commons:4.2.0")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.1")
 
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
@@ -33,7 +33,7 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
   testImplementation("org.testcontainers:testcontainers-localstack:2.0.5")
-  testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
+  testImplementation("org.awaitility:awaitility-kotlin:4.4.0")
   testImplementation("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
   testImplementation(kotlin("test"))
 }
